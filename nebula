@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+# | (c) Tremeschin, AGPLv3-only License | Protostar Project | #
+
+import itertools
+# STD imports
+import os
+import shutil
+import subprocess
+import sys as system
+import tempfile
+from contextlib import contextmanager
+from enum import Enum
+from pathlib import Path
+from functools import partial
+
+import requests
+
+# ------------------------------------------------------------------------------------------------|
+
+# Binaries shorthands
+python = system.executable
+pip = [python, "-m", "pip"]
+rustup = "rustup"
+cargo = "cargo"
+sh = "sh"
+
+# ------------------------------------------------------------------------------------------------|
+# Initial dependencies bootstrap
+
+# Ensure pip
+try: __import__("pip")
+except ModuleNotFoundError:
+    import ensurepip
+    ensurepip.bootstrap()
+
+same = lambda x: (x, x)
+dependencies = [
+    ("typer", "typer[all]"),
+    same("platform"),
+    same("requests"),
+    same("iteration_utilities"),
+    same("loguru"),
+    same("forbiddenfruit"),
+    same("datetime"),
+    same("arrow"),
+    same("toml"),
+]
+
+for importName, packageName in dependencies:
+    while True:
+        try:
+            globals()[importName] = __import__(importName)
+            break
+        except ModuleNotFoundError:
+            subprocess.run(pip + ["install", packageName])
+
+# ------------------------------------------------------------------------------------------------|
+
+from iteration_utilities import deepflatten
+
+# Add milliseconds to timedelta for logging
+forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
+
+# [[a, b], c, [d, e, f], [g, h]] -> [a, b, c, d, e, f, g, h]
+flatten = lambda stuff: deepflatten(stuff, types=list)
+
+# run(["binary", "-m"], "arg1", "arg2")
+run = lambda *a,**k: subprocess.run(map(str, flatten(a)), **k)
+
+# # Utility functions
+
+def binaryExists(binary) -> bool:
+    return shutil.which(binary) is not None
+
+@contextmanager
+def download(url) -> Path:
+    with tempfile.NamedTemporaryFile() as temp:
+        temp.write(requests.get(url).content)
+        yield Path(temp.name)
+
+# functools.partial doesn't support type hinting, so we convert
+# a partial to a dummy function that have those
+def callablePartial(f: partial, *a, **k):
+    def call(): f(*a, **k)
+    return call
+
+# ------------------------------------------------------------------------------------------------|
+
+ABOUT = """
+Broken Source Software Manager script
+
+(c) 2023 Tremeschin, AGPLv3-only License.
+"""
+
+class Nebula:
+    def __init__(self) -> None:
+        self.typerApp = typer.Typer(help=ABOUT)
+        self.typerApp.command()(self.compile)
+        self.typerApp.command()(self.date)
+
+        # Set up empty logger
+        loguru.logger.remove()
+        self.logger = loguru.logger.bind()
+
+        # Add stdout logging
+        self.logger.add(system.stdout, colorize=True, level="TRACE",
+            format=f"[<green>{{elapsed.milliseconds}}ms</green>]─[<level>{{level:7}}</level>]<level> ▸ {{message}}</level>")
+
+        # self.* functions logging
+        for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
+            setattr(self, f"{logType}", getattr(self.logger, logType))
+
+        # Directories
+        self.Root     = Path(__file__).absolute().parent
+        self.Releases = self.Root/"Releases"
+        self.Build    = self.Releases/"Build"
+
+        # Cargo dictionary
+        self.cargotoml = toml.loads((self.Root/"Cargo.toml").read_text())
+
+        # Add Typer commands for all projects
+        for project in self.cargotoml["bin"]:
+            projectName = project["name"]
+
+            # List of required features specified in Cargo.tml
+            if len(features := project.get("required-features", [])) > 0:
+                features = [["--features", f] for f in features]
+
+            # This is a bit sophisticated, projectName should be kept after the callable
+            # is created, so we have a method that creates a method with given string
+            def runProjectTemplate(projectName, features):
+                def runProject(ctx: typer.Context):
+                    run(cargo, "run", "--bin", projectName, features, "--", ctx.args)
+                return runProject
+
+            # Create Typer command
+            self.typerApp.command(
+                name=projectName.lower(),
+                help=f"(AUTO) Runs project: {projectName}",
+                context_settings=dict(allow_extra_args=True, ignore_unknown_options=True)
+            )(runProjectTemplate(projectName, features))
+
+        # Execute the CLI
+        self.typerApp()
+
+    # Rust stable toolchain
+    def installRust(self) -> None:
+        if not binaryExists("rustup"):
+            with download("https://sh.rustup.rs") as file:
+                self.info("Installing Rustup")
+                run(sh, file, "--profile", "default", "-y")
+        if not all([binaryExists(b) for b in ["rustc", "cargo"]]):
+            self.info("Installing Rust Stable Toolchain")
+            run(rustup, "default", "stable")
+
+    def date(self) -> None:
+        """Set current dates on Cargo.toml"""
+        date = arrow.utcnow().format("YYYY.M.D")
+        print(date)
+
+    def compile(self, project: str, target: str) -> None:
+        """Compile a project to a target platform"""
+
+        self.info("Compiling project")
+        run(cargo, project.value)
+
+# ------------------------------------------------------------------------------------------------|
+
+if __name__ == "__main__":
+    nebula = Nebula()
+
+class Platform(Enum):
+    Windows = "windows"
+    Linux   = "linux"
+    macOS   = "mac"

@@ -5,6 +5,11 @@ if [ -z $(which rustup 2> /dev/null) ]; then
     curl -sSL https://sh.rustup.rs | sh -s -- -y
 fi
 
+if [ -z $(which python 2> /dev/null) ]; then
+    echo "Please install Python first."
+    exit
+fi
+
 # Fix to find rustup as PATH doesn't update
 export PATH=$PATH:$USERPROFILE/.cargo/bin:$CARGO_HOME/bin
 source $CARGO_HOME/env
@@ -16,10 +21,14 @@ rustup default stable
 git clone https://www.github.com/BrokenSource/Protostar
 cd Protostar
 
+# Make manager script executable
+chmod +x ./nebula
+
 # Init public submodules projects
 projects=(
     "Ardmin"
     "Assets"
+    # "Harper"
     # "HypeWord"
     # "PhasorFlow"
     # "ShaderFlow"

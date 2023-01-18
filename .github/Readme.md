@@ -5,16 +5,17 @@
   <i>Readme available in:</i>
 
   <!-- Preferably order in number of speakers: EN, CN, IN, ES, FR, RU, PT, JP, DE -->
+  <!-- You must add "Translations are community Driven, BrokenSource official language is English and Portuguese, we don't take responsibility for innacuracies" -->
 
   <a href="Readme.md">   <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a>
-  <a href="Readme cn.md"><img src="https://hatscripts.github.io/circle-flags/flags/cn.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme in.md"><img src="https://hatscripts.github.io/circle-flags/flags/in.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme es.md"><img src="https://hatscripts.github.io/circle-flags/flags/es.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme fr.md"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme ru.md"><img src="https://hatscripts.github.io/circle-flags/flags/ru.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme pt.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a>
-  <a href="Readme jp.md"><img src="https://hatscripts.github.io/circle-flags/flags/jp.svg" style="vertical-align: middle;" width="30"></a>
-  <a href="Readme de.md"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-cn.md"><img src="https://hatscripts.github.io/circle-flags/flags/cn.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-in.md"><img src="https://hatscripts.github.io/circle-flags/flags/in.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-es.md"><img src="https://hatscripts.github.io/circle-flags/flags/es.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-fr.md"><img src="https://hatscripts.github.io/circle-flags/flags/fr.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-ru.md"><img src="https://hatscripts.github.io/circle-flags/flags/ru.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-pt.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a>
+  <a href="Readme-jp.md"><img src="https://hatscripts.github.io/circle-flags/flags/jp.svg" style="vertical-align: middle;" width="30"></a>
+  <a href="Readme-de.md"><img src="https://hatscripts.github.io/circle-flags/flags/de.svg" style="vertical-align: middle;" width="30"></a>
 </div>
 
 <sub><i><b>Note:</b> This is a "Developer Mode" repository, if you intend to only run one of my projects go to their respective repository Releases or (hope) get from your package manager.</i></sub>
@@ -71,31 +72,14 @@
 <br>
 
 ## ▸ Compiling, Executing Projects
-Run projects with the following command:
+See available projects and commands with:
 
 <div align="center">
 
   ```ps
-  cargo (project) -- --help
+  ./nebula --help
   ```
 </div>
-
-*<b>Where</b> (project):*
-
-- `ardmin`: Ardour Session Minimizer, blazing fast small CLI tool to simplify (in size) an Ardour Session Folder by deleting unused sources (WAV, MIDI), old plugin states and _somewhat_ non important files.
-
-- `harper`: Secret
-
-- `hypeword`: Secret
-
-- `phasorflow`: Simplified equations for Newton-Raphson Power Flow and a new State of the Art Backwards Forwards Sweep-Like Asyncronous Sweep Power Flow that works for Meshed Grids implemented in Rust. **(Not OSS yet)**
-
-- `shaderflow`: [Modular Music Visualizer](https://github.com/Tremeschin/ModularMusicVisualizer) rewrite. Early stages.
-
-- `viyline`: Solar panel IV curve tracker, a DIY physical circuit project using PIC16F877A.
-
-*<b>NOTE:</b> Most projects have a built-in CLI with help, but it's always good to check the original repository for specific instructions if any.*
-
 
 
 <!-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # -->
@@ -103,6 +87,12 @@ Run projects with the following command:
 
 # ● Contributing
 Thanks for taking your time to contribute to Broken Source Software projects!!
+
+
+## ▸ Development Workflow
+The general ideas behind Protostar are:
+- A `Clone.sh` file for "public" bootstrapping
+- `Manager.py`
 
 
 ## ▸ Help Needed
