@@ -137,7 +137,12 @@ class Nebula:
             self.typerApp.command(
                 name=projectName.lower(),
                 help=f"(AUTO) Runs project: {projectName}",
-                context_settings=dict(allow_extra_args=True, ignore_unknown_options=True)
+
+                # Catch extra (unknown to typer) arguments that are sent to Rust
+                context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
+
+                # Rust projects implement their own --help
+                add_help_option=False,
             )(runProjectTemplate(projectName, features))
 
         # Execute the CLI
