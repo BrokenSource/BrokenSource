@@ -1,0 +1,9 @@
+[alias]
+ardmin = "run --bin Ardmin"
+harper = "run --bin Harper --features egui"
+hypeword = "run --bin HypeWord"
+phasorflow = "run --bin PhasorFlow --all-features"
+viyline = "run --bin ViyLine --features egui"
+
+[build]
+target-dir = "Releases/Build"

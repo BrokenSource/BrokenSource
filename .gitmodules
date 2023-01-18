@@ -1,0 +1,21 @@
+[submodule "Assets"]
+	path = Assets
+	url = https://github.com/BrokenSource/Assets
+[submodule "HypeWord"]
+	path = HypeWord
+	url = https://github.com/BrokenSource/HypeWord
+[submodule "PhasorFlow"]
+	path = PhasorFlow
+	url = https://github.com/BrokenSource/PhasorFlow
+[submodule "ShaderFlow"]
+	path = ShaderFlow
+	url = https://github.com/BrokenSource/ShaderFlow
+[submodule "ViyLine"]
+	path = ViyLine
+	url = https://github.com/BrokenSource/ViyLine
+[submodule "Harper"]
+	path = Harper
+	url = https://github.com/BrokenSource/Harper
+[submodule "Ardmin"]
+	path = Ardmin
+	url = https://github.com/BrokenSource/Ardmin

@@ -1,0 +1,138 @@
+
+# ------------------------------------------------------------------------------------------------|
+
+[package]
+name = "BrokenSource"
+version = "2023.1.18"
+edition = "2021"
+authors = ["Tremeschin"]
+description = "Broken Source Software's Monorepo"
+repository = "https://github.com/BrokenSource/Protostar"
+
+# ------------------------------------------------------------------------------------------------|
+
+[lib]
+name = "Protostar"
+path = "Protostar/Protostar.rs"
+
+# ------------------------------------------------------------------------------------------------|
+
+# Ardmin project
+[[bin]]
+name = "Ardmin"
+path = "Ardmin/Ardmin.rs"
+
+# Harper project
+[[bin]]
+name = "Harper"
+path = "Harper/Harper.rs"
+required-features = [
+    "egui"
+]
+
+# HypeWord project
+[[bin]]
+name = "HypeWord"
+path = "HypeWord/HypeWord.rs"
+required-features = [
+    "ndarray"
+]
+
+# PhasorFlow project
+[[bin]]
+name = "PhasorFlow"
+path = "PhasorFlow/PhasorFlow.rs"
+required-features = [
+    "ndarray"
+]
+
+# ShaderFlow project
+[[bin]]
+name = "ShaderFlow"
+path = "ShaderFlow/ShaderFlow.rs"
+required-features = [
+    "ndarray",
+    "egui"
+]
+
+# ViyLine project
+[[bin]]
+name = "ViyLine"
+path = "ViyLine/ViyLine.rs"
+required-features = [
+    "egui"
+]
+
+# ------------------------------------------------------------------------------------------------|
+
+[features]
+egui = ["dep:egui", "dep:eframe"]
+ndarray = ["dep:ndarray", "dep:ndarray-linalg"]
+
+# ------------------------------------------------------------------------------------------------|
+
+[dependencies]
+
+# Math / time / iterables
+libm = "0.2.5"
+num = "0.4.0"
+chrono = "0.4.22"
+itertools = "0.10.5"
+unordered-pair = "0.2.4"
+
+# Serialization / Data Structures
+toml = "0.5.9"
+serde = {version="1.0.145", features=["derive"]}
+serde_derive = "1.0.145"
+serde_json = "1.0.86"
+strum = {version="0.24.1", features=["derive"]}
+strum_macros = "0.24.3"
+
+# Logging / CLI
+clap = {version="4.0.10", features=["derive", "color", "error-context", "suggestions", "usage"]}
+fern = {version="0.6.1", features=["chrono", "colored", "date-based"]}
+log = "0.4.17"
+
+# Feature: [ndarray]
+ndarray = {version="0.15.6", optional=true}
+ndarray-linalg = {version="0.16.0", optional=true, features=["intel-mkl-static"]}
+
+# Feature: [egui]
+eframe = {version="0.19.0", optional=true, features=["persistence"]}
+egui = { version = "0.19.0", optional = true, features = ["persistence"] }
+
+# # Others
+lru-cache = "0.1.2"
+serialport = "4.2.0"
+
+# Path
+tempfile = "3.3.0"
+directories = "4.0.1"
+glob = "0.3.1"
+rust-embed = "6.4.1" # TODO
+
+# MIDI Files
+midly = "0.5.3"
+bincode = "1.3.3"
+
+# "Builder"-like syntax
+derive_setters = "0.1.5"
+derive-new = "0.5.9"
+smart-default = "0.6.0"
+
+# String utils
+str-macro = "1.0.0"
+fstrings = "0.2.3"
+fs_extra = "1.2.0"
+regex = "1.7.1"
+
+# ------------------------------------------------------------------------------------------------|
+
+[profile.ultra]
+inherits = "release"
+panic = "abort"
+opt-level = 3
+strip = true
+lto = true
+
+# ------------------------------------------------------------------------------------------------|
