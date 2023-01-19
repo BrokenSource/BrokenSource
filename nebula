@@ -130,7 +130,7 @@ class Nebula:
             # Create Typer command
             self.typerApp.command(
                 name=projectName.lower(),
-                help=f"(AUTO) Runs project: {projectName}",
+                help=f"Project: {projectName}",
 
                 # Catch extra (unknown to typer) arguments that are sent to Rust
                 context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
