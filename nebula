@@ -94,7 +94,7 @@ Broken Source Software Manager script
 
 class Nebula:
     def __init__(self) -> None:
-        self.typerApp = typer.Typer(help=ABOUT)
+        self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True)
         self.typerApp.command()(self.compile)
         self.typerApp.command()(self.date)
 
@@ -143,6 +143,7 @@ class Nebula:
 
                 # Rust projects implement their own --help
                 add_help_option=False,
+
             )(runProjectTemplate(projectName, features))
 
         # Execute the CLI
