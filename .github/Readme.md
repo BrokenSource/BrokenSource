@@ -104,9 +104,6 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 <br>
 
 # ● License
+- **Code:**  All projects have their own license. Check `License.md` on respective repository.
 
-## ▸ Code
-- **All projects have their own license.** Check `License.md` on respective repository.
-
-## ▸ Assets
-- See [Assets](https://github.com/BrokenSource/Assets) repository.
+- **Assets:** See [Assets](https://github.com/BrokenSource/Assets) repository.

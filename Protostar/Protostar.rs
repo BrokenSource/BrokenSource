@@ -1,6 +1,13 @@
 // | (c) Tremeschin, AGPLv3-only License | Protostar Project | //
 #![allow(non_snake_case)]
 
+/*
+ *   Protostar is the shared code between all Rust projects.
+ * We export a lot of common imports to be readily available
+ * and define quality of life functions, classes that hoperully
+ * are useful to one or more projects.
+ */
+
 // Mostly std
 pub use core::fmt::Error;
 pub use std::collections::HashMap;
