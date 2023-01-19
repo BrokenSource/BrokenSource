@@ -113,6 +113,9 @@ class Nebula:
         for project in self.cargotoml["bin"]:
             projectName = project["name"]
 
+            # Don't add non existing projects (private repos)
+            if not (self.Root/project["path"]).exists(): continue
+
             # List of required features specified in Cargo.tml
             if len(features := project.get("required-features", [])) > 0:
                 features = [["--features", f] for f in features]
