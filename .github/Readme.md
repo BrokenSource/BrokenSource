@@ -65,7 +65,7 @@
   ```
 </div>
 
-**NOTE:** You'll probably need to configure yourself some C++ libraries like OpenBLAS, LAPACK and installing MinGW 64 bits.
+**NOTE:** You'll probably need to configure yourself some C/C++/FORTRAN libraries like OpenBLAS, LAPACK and installing MinGW 64 bits compiler for projects that depends on `ndarray-linalg`.
 
 <sub><i><b>Continue</b> reading...</i></sub>
 
