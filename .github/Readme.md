@@ -74,39 +74,23 @@
 <br>
 
 ## ▸ Compiling, Executing Projects
-See available projects and commands with:
-
-<div align="center">
-
-  ```ps
-  ./nebula --help
-  ```
-</div>
+Simply run `./nebula` and see all available commands!
 
 
-<!-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # -->
+
 <br>
 
 # ● Contributing
 Thanks for taking your time to contribute to Broken Source Software projects!!
 
-
-## ▸ Development Workflow
-The general ideas behind Protostar are:
-- A `Clone.sh` file for "public" bootstrapping
-- `Manager.py`
-
-
 ## ▸ Help Needed
 - Designer needed for the logos
-
 
 ## ▸ Reporting Issues
 - **We do not** test enough or at all the code on Windows or MacOS, you may need to follow instructions on debugging.
 - Always give **minimal steps** to reproduce the error (instructions or code).
 - Most projects deal with Audio or Video, issues may be file-specific.
 - **We only support the latest versions of any given project**, Protostar is rolling-release model.
-
 
 ## ▸ Suggesting Enhancements
 - Rejection of ideas in Free and Open Source Software is a common and intimidating problem to newcomers, so we want to reduce the fear and cooperate with you.
@@ -117,18 +101,12 @@ The general ideas behind Protostar are:
 
 
 
-
-<!-- # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # -->
 <br>
 
-# ● Licenses / Licensing
+# ● License
 
 ## ▸ Code
-- **Every project have their own license.** Always check the `Readme.md` and `License.md` on their respective repository.
+- **All projects have their own license.** Check `License.md` on respective repository.
 
-## ▸ Logos
-- All logos under CC BY-SA 4.0. All logos are made using Inkscape (FOSS) and are hosted on the [BrokenSource/Assets](https://github.com/BrokenSource/Assets) repository.
-- The Fonts we use are:
-  - **Under Open Font License**: "Alegreya Sans", "Dongle".
-  - **GNU Unifont Glyphs**: [`GPLv2-or-later`, `SIL Open Font License`](http://unifoundry.com/unifont/index.html)
-  - **DejaVu fonts**: See [here](https://dejavu-fonts.github.io/License.html).
+## ▸ Assets
+- See [Assets](https://github.com/BrokenSource/Assets) repository.
