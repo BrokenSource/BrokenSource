@@ -39,7 +39,7 @@
 <div align="center">
 
   ```ps
-  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/Clone.sh | sh
+  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/nebula | python
   ```
 </div>
 <sub><i><b>Continue</b> reading...</i></sub>
@@ -53,13 +53,15 @@
 </div>
 <p>
 
-- Install [Git](https://git-scm.com/download/win).
-- Right click a folder, open `Git Bash Here`.
+- Shift+ Right Click a target directory on Windows Explorer, "Open PowerShell here", run:
 
 <div align="center">
 
   ```ps
-  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/Clone.sh | sh
+  winget install -e --id Python.Python.3.11
+  ```
+  ```ps
+  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/nebula | python
   ```
 </div>
 

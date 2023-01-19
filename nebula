@@ -2,7 +2,6 @@
 # | (c) Tremeschin, AGPLv3-only License | Protostar Project | #
 
 import itertools
-# STD imports
 import os
 import shutil
 import subprocess
@@ -10,8 +9,8 @@ import sys as system
 import tempfile
 from contextlib import contextmanager
 from enum import Enum
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import requests
 
@@ -25,7 +24,7 @@ cargo = "cargo"
 sh = "sh"
 
 # ------------------------------------------------------------------------------------------------|
-# Initial dependencies bootstrap
+# Install dependencies.
 
 # Ensure pip
 try: __import__("pip")
@@ -44,6 +43,7 @@ dependencies = [
     same("datetime"),
     same("arrow"),
     same("toml"),
+    same("pygit2"),
 ]
 
 for importName, packageName in dependencies:
@@ -52,14 +52,11 @@ for importName, packageName in dependencies:
             globals()[importName] = __import__(importName)
             break
         except ModuleNotFoundError:
-            subprocess.run(pip + ["install", packageName])
+            subprocess.run(pip + ["install", packageName, "--user"])
 
 # ------------------------------------------------------------------------------------------------|
 
 from iteration_utilities import deepflatten
-
-# Add milliseconds to timedelta for logging
-forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
 
 # [[a, b], c, [d, e, f], [g, h]] -> [a, b, c, d, e, f, g, h]
 flatten = lambda stuff: deepflatten(stuff, types=list)
@@ -94,21 +91,15 @@ Broken Source Software Manager script
 
 class Nebula:
     def __init__(self) -> None:
+        self.setupLog()
+
+    # Builds CLI commands and starts Typer
+    def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True)
         self.typerApp.command()(self.compile)
         self.typerApp.command()(self.date)
-
-        # Set up empty logger
-        loguru.logger.remove()
-        self.logger = loguru.logger.bind()
-
-        # Add stdout logging
-        self.logger.add(system.stdout, colorize=True, level="TRACE",
-            format=f"[<green>{{elapsed.milliseconds}}ms</green>]─[<level>{{level:7}}</level>]<level> ▸ {{message}}</level>")
-
-        # self.* functions logging
-        for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
-            setattr(self, f"{logType}", getattr(self.logger, logType))
+        self.typerApp.command()(self.hints)
+        self.installRust()
 
         # Directories
         self.Root     = Path(__file__).absolute().parent
@@ -149,31 +140,89 @@ class Nebula:
         # Execute the CLI
         self.typerApp()
 
+    # Clone Protostar repository and submodules to current directory
+    def gitCloneProtostar(self) -> None:
+
+        # Not the most pretty progress bar but it does the job
+        class GitCloneProgress(pygit2.RemoteCallbacks):
+            def transfer_progress(self, stats):
+                print(f"\r:: Progress: ({stats.received_bytes} bytes) ({stats.indexed_objects}/{stats.total_objects} objects)", end='', flush=True)
+                if stats.indexed_objects == stats.total_objects: print("\r", end='')
+
+        self.info("Cloning Protostar repository..")
+        protostarRepo = pygit2.clone_repository("https://github.com/BrokenSource/Protostar", "Protostar", callbacks=GitCloneProgress())
+        os.chdir("Protostar")
+
+        # Attempt to init and clone public submodules
+        for submodule in protostarRepo.listall_submodules():
+            try:
+                protostarRepo.init_submodules([submodule])
+                protostarRepo.update_submodules([submodule], callbacks=GitCloneProgress())
+                self.info(f"Cloning submodule: [{submodule}]")
+
+            # Ignore private submodules
+            except Exception as error:
+                if "authentication" not in str(error):
+                    raise error
+
+        self.info("Now type 'cd Protostar' and './nebula'")
+
+    # Initiates self.* logging capabilities
+    def setupLog(self) -> None:
+
+        # Add milliseconds to timedelta for logging
+        forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
+
+        # Set up empty logger
+        loguru.logger.remove()
+        self.logger = loguru.logger.bind()
+
+        # Add stdout logging
+        self.logger.add(system.stdout, colorize=True, level="TRACE",
+            format=f"[<green>{{elapsed.milliseconds}}ms</green>]─[<level>{{level:7}}</level>]<level> ▸ {{message}}</level>")
+
+        # self.* functions logging
+        for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
+            setattr(self, f"{logType}", getattr(self.logger, logType))
+
     # Rust stable toolchain
     def installRust(self) -> None:
         if not binaryExists("rustup"):
-            with download("https://sh.rustup.rs") as file:
-                self.info("Installing Rustup")
-                run(sh, file, "--profile", "default", "-y")
+            self.info("Installing Rustup")
+            run(sh, download("https://sh.rustup.rs"), "--profile", "default", "-y")
         if not all([binaryExists(b) for b in ["rustc", "cargo"]]):
             self.info("Installing Rust Stable Toolchain")
             run(rustup, "default", "stable")
 
+    # # Commands section
+
+    def hints(self):
+        """Let Nebula find Quality of Life stuff you can add to your system"""
+
+        # "$ ./nebula" -> "$ nebula"
+        if not "." in os.environ.get("PATH").split(os.pathsep):
+            self.info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './nebula' but simply 'nebula'. Add to your shell config: 'export PATH=$PATH:.'")
+
     def date(self) -> None:
-        """Set current dates on Cargo.toml"""
+        """Set current UTC dates on Cargo.toml"""
         date = arrow.utcnow().format("YYYY.M.D")
         print(date)
 
     def compile(self, project: str, target: str) -> None:
         """Compile a project to a target platform"""
-
-        self.info("Compiling project")
-        run(cargo, project.value)
+        self.date()
+        # run(cargo, project.value)
 
 # ------------------------------------------------------------------------------------------------|
 
 if __name__ == "__main__":
     nebula = Nebula()
+
+    # Running from a file or pipe?
+    if system.stdin.isatty():
+        nebula.cli()
+    else:
+        nebula.gitCloneProtostar()
 
 class Platform(Enum):
     Windows = "windows"
