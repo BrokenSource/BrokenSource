@@ -221,14 +221,24 @@ class Nebula:
 
     def release(self, project: str, target: str, profile: str="ultra") -> None:
         """Compile and release a project to a target platform"""
+
+        # Acronym for all available platforms
+        if target == "all":
+            for target in ["linux", "windows", "macos"]:
+                try:
+                    self.release(project, target)
+                except NotImplementedError:
+                    pass
+            return
+
         date = self.date()
 
         # Distros IDs: https://distro.readthedocs.io/en/latest/
         linuxDistro = distro.id()
-        host = platform.system()
+        host = platform.system().lower()
 
         # # Install Requirements depending on host platform
-        if host == "Linux":
+        if host == "linux":
             if target == "linux":
                 pass
 
@@ -244,7 +254,7 @@ class Nebula:
                         system.exit()
 
             elif target == "macos":
-                raise RuntimeError("macOS Releases not supported from Linux")
+                raise NotImplementedError("macOS Releases not supported from Linux")
 
         elif host == "windows":
             raise NotImplementedError("Nebula releases on Windows not implemented")
