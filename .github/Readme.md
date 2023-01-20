@@ -61,7 +61,7 @@
   winget install -e --id Python.Python.3.11
   ```
   ```ps
-  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/nebula | python
+  (Invoke-WebRequest -Uri https://github.com/BrokenSource/Protostar/raw/Master/nebula -UseBasicParsing).Content | python -
   ```
 </div>
 
