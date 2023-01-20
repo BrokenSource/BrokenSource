@@ -34,16 +34,17 @@ except ModuleNotFoundError:
 
 same = lambda x: (x, x)
 dependencies = [
-    ("typer", "typer[all]"),
-    same("platform"),
-    same("requests"),
+    same("arrow"),
+    same("datetime"),
+    same("distro"),
+    same("forbiddenfruit"),
     same("iteration_utilities"),
     same("loguru"),
-    same("forbiddenfruit"),
-    same("datetime"),
-    same("arrow"),
-    same("toml"),
+    same("platform"),
     same("pygit2"),
+    same("requests"),
+    same("toml"),
+    ("typer", "typer[all]"),
 ]
 
 for importName, packageName in dependencies:
@@ -62,7 +63,7 @@ from iteration_utilities import deepflatten
 flatten = lambda stuff: deepflatten(stuff, types=list)
 
 # run(["binary", "-m"], "arg1", "arg2")
-run = lambda *a,**k: subprocess.run(map(str, flatten(a)), **k)
+run = lambda *a, **k: subprocess.run(map(str, flatten(a)), **k)
 
 # # Utility functions
 
@@ -83,6 +84,11 @@ def callablePartial(f: partial, *a, **k):
 
 # ------------------------------------------------------------------------------------------------|
 
+class Platform(Enum):
+    Windows = "windows"
+    Linux   = "linux"
+    macOS   = "mac"
+
 ABOUT = """
 Broken Source Software Manager script
 
@@ -90,16 +96,17 @@ Broken Source Software Manager script
 """
 
 class Nebula:
+    Projects = []
+
     def __init__(self) -> None:
         self.setupLog()
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True)
-        self.typerApp.command()(self.compile)
+        self.typerApp.command()(self.release)
         self.typerApp.command()(self.date)
         self.typerApp.command()(self.hints)
-        self.installRust()
 
         # Directories
         self.Root     = Path(__file__).absolute().parent
@@ -112,6 +119,7 @@ class Nebula:
         # Add Typer commands for all projects
         for project in self.cargotoml["bin"]:
             projectName = project["name"]
+            Nebula.Projects.append(projectName)
 
             # Don't add non existing projects (private repos)
             if not (self.Root/project["path"]).exists(): continue
@@ -145,6 +153,8 @@ class Nebula:
 
     # Clone Protostar repository and submodules to current directory
     def gitCloneProtostar(self) -> None:
+        self.info("Installing Rust")
+        self.installRust()
 
         # Not the most pretty progress bar but it does the job
         class GitCloneProgress(pygit2.RemoteCallbacks):
@@ -211,10 +221,48 @@ class Nebula:
         date = arrow.utcnow().format("YYYY.M.D")
         print(date)
 
-    def compile(self, project: str, target: str) -> None:
-        """Compile a project to a target platform"""
+    def release(self, project: str, target: Platform) -> None:
+        """Compile and release a project to a target platform"""
         self.date()
-        # run(cargo, project.value)
+
+        # Distros IDs: https://distro.readthedocs.io/en/latest/
+        linuxDistro = distro.id()
+        host = platform.system()
+
+        if host == "Linux":
+            if target == Platform.Linux:
+                pass
+
+            # Windows compile pre-requisites
+            elif target == Platform.Windows:
+                if linuxDistro == "arch":
+                    run("sudo pacman -Syu base-devel mingw-w64-toolchain upx".split())
+                elif id == "ubuntu":
+                    run("sudo apt update")
+                else:
+                    self.error(f"Your Linux distro [{id}] is not listed for dependencies, continue anyway?")
+                    if input(":: ").lower() not in ["y", "yes"]:
+                        system.exit()
+
+            elif target == Platform.macOS:
+                raise RuntimeError("macOS Releases not supported")
+
+        elif host == Platform.Windows:
+            raise NotImplementedError("Windows nebula Releases")
+
+        elif host == Platform.macOS:
+            raise NotImplementedError("macOS Nebula Releases")
+
+        # Add Rust target
+        targetTriple = {
+            Platform.Linux:   "x86_64-unknown-linux-gnu",
+            Platform.Windows: "x86_64-pc-windows-gnu",
+            Platform.macOS:   "x86_64-apple-darwin",
+        }.get(target)
+
+        # TODO Rust required Features
+        run(rustup, "target", "add", targetTriple)
+        run(cargo, "build", "--target", targetTriple, "--bin", project, "--profile", "ultra")
 
 # ------------------------------------------------------------------------------------------------|
 
@@ -226,8 +274,3 @@ if __name__ == "__main__":
         nebula.cli()
     else:
         nebula.gitCloneProtostar()
-
-class Platform(Enum):
-    Windows = "windows"
-    Linux   = "linux"
-    macOS   = "mac"
