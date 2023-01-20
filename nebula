@@ -214,9 +214,17 @@ class Nebula:
         if not "." in os.environ.get("PATH").split(os.pathsep):
             self.info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './nebula' but simply 'nebula'. Add to your shell config: 'export PATH=$PATH:.'")
 
-    def date(self) -> None:
-        """Set current UTC dates on Cargo.toml, returns date string"""
+    # NOTE: Also returns date string
+    def date(self) -> str:
+        """Set current UTC dates on Cargo.toml"""
         date = arrow.utcnow().format("YYYY.M.D")
+
+        # Find "version=" line and set it to "version={date}"", write back to file
+        (self.Root/"Cargo.toml").write_text('\n'.join(
+            [line if not line.startswith("version") else f'version = "{date}"'
+            for line in (self.Root/"Cargo.toml").read_text().split("\n")]
+        ))
+
         return date
 
     def release(self, project: str, target: str, profile: str="ultra") -> None:
