@@ -21,6 +21,7 @@ python = system.executable
 pip = [python, "-m", "pip"]
 rustup = "rustup"
 cargo = "cargo"
+upx = "upx"
 sh = "sh"
 
 # ------------------------------------------------------------------------------------------------|
@@ -84,11 +85,6 @@ def callablePartial(f: partial, *a, **k):
 
 # ------------------------------------------------------------------------------------------------|
 
-class Platform(Enum):
-    Windows = "windows"
-    Linux   = "linux"
-    macOS   = "mac"
-
 ABOUT = """
 Broken Source Software Manager script
 
@@ -96,7 +92,7 @@ Broken Source Software Manager script
 """
 
 class Nebula:
-    Projects = []
+    ProjectsAndFeatures = {}
 
     def __init__(self) -> None:
         self.setupLog()
@@ -107,6 +103,7 @@ class Nebula:
         self.typerApp.command()(self.release)
         self.typerApp.command()(self.date)
         self.typerApp.command()(self.hints)
+        self.typerApp.command()(self.releaseAll)
 
         # Directories
         self.Root     = Path(__file__).absolute().parent
@@ -119,7 +116,6 @@ class Nebula:
         # Add Typer commands for all projects
         for project in self.cargotoml["bin"]:
             projectName = project["name"]
-            Nebula.Projects.append(projectName)
 
             # Don't add non existing projects (private repos)
             if not (self.Root/project["path"]).exists(): continue
@@ -127,6 +123,8 @@ class Nebula:
             # List of required features specified in Cargo.tml
             if len(features := project.get("required-features", [])) > 0:
                 features = [["--features", f] for f in features]
+
+            Nebula.ProjectsAndFeatures[projectName] = features
 
             # This is a bit sophisticated, projectName should be kept after the callable
             # is created, so we have a method that creates a method with given string
@@ -217,26 +215,27 @@ class Nebula:
             self.info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './nebula' but simply 'nebula'. Add to your shell config: 'export PATH=$PATH:.'")
 
     def date(self) -> None:
-        """Set current UTC dates on Cargo.toml"""
+        """Set current UTC dates on Cargo.toml, returns date string"""
         date = arrow.utcnow().format("YYYY.M.D")
-        print(date)
+        return date
 
-    def release(self, project: str, target: Platform) -> None:
+    def release(self, project: str, target: str, profile: str="ultra") -> None:
         """Compile and release a project to a target platform"""
-        self.date()
+        date = self.date()
 
         # Distros IDs: https://distro.readthedocs.io/en/latest/
         linuxDistro = distro.id()
         host = platform.system()
 
+        # # Install Requirements depending on host platform
         if host == "Linux":
-            if target == Platform.Linux:
+            if target == "linux":
                 pass
 
             # Windows compile pre-requisites
-            elif target == Platform.Windows:
+            elif target == "windows":
                 if linuxDistro == "arch":
-                    run("sudo pacman -Syu base-devel mingw-w64-toolchain upx".split())
+                    run("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
                 elif id == "ubuntu":
                     run("sudo apt update")
                 else:
@@ -244,25 +243,59 @@ class Nebula:
                     if input(":: ").lower() not in ["y", "yes"]:
                         system.exit()
 
-            elif target == Platform.macOS:
-                raise RuntimeError("macOS Releases not supported")
+            elif target == "macos":
+                raise RuntimeError("macOS Releases not supported from Linux")
 
-        elif host == Platform.Windows:
-            raise NotImplementedError("Windows nebula Releases")
+        elif host == "windows":
+            raise NotImplementedError("Nebula releases on Windows not implemented")
 
-        elif host == Platform.macOS:
-            raise NotImplementedError("macOS Nebula Releases")
+        elif host == "macos":
+            raise NotImplementedError("Nebula releases on macOS not implemented")
 
-        # Add Rust target
-        targetTriple = {
-            Platform.Linux:   "x86_64-unknown-linux-gnu",
-            Platform.Windows: "x86_64-pc-windows-gnu",
-            Platform.macOS:   "x86_64-apple-darwin",
-        }.get(target)
+        # # Target platform
+        if target == "linux":
+            targetTriple  = "x86_64-unknown-linux-gnu"
+            compileSuffix = ""
+            releaseSuffix = ".bin"
 
-        # TODO Rust required Features
+        elif target == "windows":
+            targetTriple  = "x86_64-pc-windows-gnu"
+            compileSuffix = ".exe"
+            releaseSuffix = ".exe"
+
+        elif target == "macos":
+            targetTriple  = "x86_64-apple-darwin"
+            compileSuffix = ""
+            releaseSuffix = ".bin"
+
+        # Add target toolchain for Rust
         run(rustup, "target", "add", targetTriple)
-        run(cargo, "build", "--target", targetTriple, "--bin", project, "--profile", "ultra")
+
+        # Build the binary
+        run(cargo, "build",
+            "--bin", project,
+            "--target", targetTriple,
+            "--profile", profile,
+            Nebula.ProjectsAndFeatures[project]
+        )
+
+        # Post-compile binary namings and release name
+        compiledBinary   = self.Build/targetTriple/profile/f"{project}{compileSuffix}"
+        releaseBinary    = self.Releases/f"{project.lower()}-{target}-{date}{releaseSuffix}"
+        releaseBinaryUPX = releaseBinary.parent/(releaseBinary.stem + f"-upx{releaseSuffix}")
+
+        # Default release and UPX
+        shutil.copy(compiledBinary, releaseBinary)
+        run(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+
+    def releaseAll(self):
+        """Attempt release of all projects for all platforms, let it fail or not"""
+        for project in Nebula.ProjectsAndFeatures.keys():
+            for target in ["linux", "windows", "macos"]:
+                try:
+                    self.release(project, target)
+                except Exception:
+                    pass
 
 # ------------------------------------------------------------------------------------------------|
 
