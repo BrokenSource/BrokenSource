@@ -64,7 +64,7 @@ from iteration_utilities import deepflatten
 flatten = lambda stuff: deepflatten(stuff, types=list)
 
 # run(["binary", "-m"], "arg1", "arg2")
-run = lambda *a, **k: subprocess.run(map(str, flatten(a)), **k)
+shell = lambda *a, **k: subprocess.run(map(str, flatten(a)), **k)
 
 # # Utility functions
 
@@ -130,7 +130,7 @@ class Nebula:
             # is created, so we have a method that creates a method with given string
             def runProjectTemplate(projectName, features):
                 def runProject(ctx: typer.Context):
-                    run(cargo, "run", "--bin", projectName, features, "--", ctx.args)
+                    shell(cargo, "run", "--bin", projectName, features, "--", ctx.args)
                 return runProject
 
             # Create Typer command
@@ -200,10 +200,10 @@ class Nebula:
     def installRust(self) -> None:
         if not binaryExists("rustup"):
             self.info("Installing Rustup")
-            run(sh, download("https://sh.rustup.rs"), "--profile", "default", "-y")
+            shell(sh, download("https://sh.rustup.rs"), "--profile", "default", "-y")
         if not all([binaryExists(b) for b in ["rustc", "cargo"]]):
             self.info("Installing Rust Stable Toolchain")
-            run(rustup, "default", "stable")
+            shell(rustup, "default", "stable")
 
     # # Commands section
 
@@ -253,9 +253,9 @@ class Nebula:
             # Windows compile pre-requisites
             elif target == "windows":
                 if linuxDistro == "arch":
-                    run("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
+                    shell("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
                 elif id == "ubuntu":
-                    run("sudo apt update")
+                    shell("sudo apt update")
                 else:
                     self.error(f"Your Linux distro [{id}] is not listed for dependencies, continue anyway?")
                     if input(":: ").lower() not in ["y", "yes"]:
@@ -287,10 +287,10 @@ class Nebula:
             releaseSuffix = ".bin"
 
         # Add target toolchain for Rust
-        run(rustup, "target", "add", targetTriple)
+        shell(rustup, "target", "add", targetTriple)
 
         # Build the binary
-        run(cargo, "build",
+        shell(cargo, "build",
             "--bin", project,
             "--target", targetTriple,
             "--profile", profile,
@@ -304,7 +304,7 @@ class Nebula:
 
         # Default release and UPX
         shutil.copy(compiledBinary, releaseBinary)
-        run(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+        shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
 
     def releaseAll(self):
         """Attempt release of all projects for all platforms, let it fail or not"""
