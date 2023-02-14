@@ -15,16 +15,6 @@ from pathlib import Path
 import requests
 
 # ------------------------------------------------------------------------------------------------|
-
-# Binaries shorthands
-python = system.executable
-pip = [python, "-m", "pip"]
-rustup = "rustup"
-cargo = "cargo"
-upx = "upx"
-sh = "sh"
-
-# ------------------------------------------------------------------------------------------------|
 # Install dependencies.
 
 # Ensure pip
@@ -54,17 +44,20 @@ for importName, packageName in dependencies:
             globals()[importName] = __import__(importName)
             break
         except ModuleNotFoundError:
-            subprocess.run(pip + ["install", packageName, "--user"])
+            subprocess.run(["pip", "install", packageName, "--user"])
 
 # ------------------------------------------------------------------------------------------------|
 
 from iteration_utilities import deepflatten
 
+# ['', True, "string", None, "--a"] -> [True, "string", "--a"]
+truthyList = lambda stuff: [x for x in stuff if x]
+
 # [[a, b], c, [d, e, f], [g, h]] -> [a, b, c, d, e, f, g, h]
 flatten = lambda stuff: deepflatten(stuff, types=list)
 
 # run(["binary", "-m"], "arg1", "arg2")
-shell = lambda *a, **k: subprocess.run(map(str, flatten(a)), **k)
+shell = lambda *a, **k: subprocess.run(truthyList(map(str, flatten(a))), **k)
 
 # # Utility functions
 
@@ -85,6 +78,24 @@ def callablePartial(f: partial, *a, **k):
 
 # ------------------------------------------------------------------------------------------------|
 
+# "nightly" or "stable"
+RUSTUP_TOOLCHAIN = "nightly"
+
+# Distros IDs: https://distro.readthedocs.io/en/latest/
+LINUX_DISTRO = distro.id()
+HOST_OS = platform.system().lower()
+
+# Binaries shorthands
+python = system.executable
+sh = "sh" if (HOST_OS != "windows") else None
+pip = [python, "-m", "pip"]
+rustup = "rustup"
+cargo = "cargo"
+chmod = "chmod"
+upx = "upx"
+
+# ------------------------------------------------------------------------------------------------|
+
 ABOUT = """
 Broken Source Software Manager script
 
@@ -96,6 +107,7 @@ class Nebula:
 
     def __init__(self) -> None:
         self.setupLog()
+        self.installRust()
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
@@ -196,14 +208,22 @@ class Nebula:
         for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
             setattr(self, f"{logType}", getattr(self.logger, logType))
 
-    # Rust stable toolchain
+    # Install Rust toolchain on macOS, Linux
     def installRust(self) -> None:
-        if not binaryExists("rustup"):
-            self.info("Installing Rustup")
-            shell(sh, download("https://sh.rustup.rs"), "--profile", "default", "-y")
-        if not all([binaryExists(b) for b in ["rustc", "cargo"]]):
-            self.info("Installing Rust Stable Toolchain")
-            shell(rustup, "default", "stable")
+        if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
+            self.info(f"Installing Rust [{RUSTUP_TOOLCHAIN}]")
+
+            # Get rustup link for each platform
+            rustInstaller = dict(
+                windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
+                linux=  "https://sh.rustup.rs",
+                macos=  "https://sh.rustup.rs"
+            ).get(HOST_OS)
+
+            # Download and install Rust
+            with download(rustInstaller) as installer:
+                shell(sh, installer, "--profile", "default", "-y")
+                shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
     # # Commands section
 
@@ -241,18 +261,15 @@ class Nebula:
 
         date = self.date()
 
-        # Distros IDs: https://distro.readthedocs.io/en/latest/
-        linuxDistro = distro.id()
-        host = platform.system().lower()
 
         # # Install Requirements depending on host platform
-        if host == "linux":
+        if HOST_OS == "linux":
             if target == "linux":
                 pass
 
             # Windows compile pre-requisites
             elif target == "windows":
-                if linuxDistro == "arch":
+                if LINUX_DISTRO == "arch":
                     shell("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
                 elif id == "ubuntu":
                     shell("sudo apt update")
@@ -264,10 +281,10 @@ class Nebula:
             elif target == "macos":
                 raise NotImplementedError("macOS Releases not supported from Linux")
 
-        elif host == "windows":
+        elif HOST_OS == "windows":
             raise NotImplementedError("Nebula releases on Windows not implemented")
 
-        elif host == "macos":
+        elif HOST_OS == "macos":
             raise NotImplementedError("Nebula releases on macOS not implemented")
 
         # # Target platform
