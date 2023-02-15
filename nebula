@@ -112,10 +112,10 @@ class Nebula:
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True)
-        self.typerApp.command()(self.release)
         self.typerApp.command()(self.date)
+        self.typerApp.command()(self.release)
+        self.typerApp.command()(self.requirements)
         self.typerApp.command()(self.hints)
-        self.typerApp.command()(self.releaseAll)
 
         # Directories
         self.Root     = Path(__file__).absolute().parent
@@ -247,20 +247,8 @@ class Nebula:
 
         return date
 
-    def release(self, project: str, target: str, profile: str="ultra") -> None:
-        """Compile and release a project to a target platform"""
-
-        # Acronym for all available platforms
-        if target == "all":
-            for target in ["linux", "windows", "macos"]:
-                try:
-                    self.release(project, target)
-                except NotImplementedError:
-                    pass
-            return
-
-        date = self.date()
-
+    def requirements(self):
+        """Install requirements based on platform"""
 
         # # Install Requirements depending on host platform
         if HOST_OS == "linux":
@@ -271,8 +259,6 @@ class Nebula:
             elif target == "windows":
                 if LINUX_DISTRO == "arch":
                     shell("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
-                elif id == "ubuntu":
-                    shell("sudo apt update")
                 else:
                     self.error(f"Your Linux distro [{id}] is not listed for dependencies, continue anyway?")
                     if input(":: ").lower() not in ["y", "yes"]:
@@ -286,6 +272,23 @@ class Nebula:
 
         elif HOST_OS == "macos":
             raise NotImplementedError("Nebula releases on macOS not implemented")
+
+    def release(self, project: str, target: str, profile: str="ultra") -> None:
+        """Compile and release a project (or 'all') to a target (or 'all') platform"""
+
+        # Acronym for all available projects
+        if project == "all":
+            for project in Nebula.ProjectsAndFeatures.keys():
+                self.release(project, target=target)
+
+        # Acronym for all available platforms
+        if target == "all":
+            for target in ["linux", "windows"]:
+                try: self.release(project, target)
+                except NotImplementedError: pass
+            return
+
+        date = self.date()
 
         # # Target platform
         if target == "linux":
@@ -322,15 +325,6 @@ class Nebula:
         # Default release and UPX
         shutil.copy(compiledBinary, releaseBinary)
         shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
-
-    def releaseAll(self):
-        """Attempt release of all projects for all platforms, let it fail or not"""
-        for project in Nebula.ProjectsAndFeatures.keys():
-            for target in ["linux", "windows", "macos"]:
-                try:
-                    self.release(project, target)
-                except Exception:
-                    pass
 
 # ------------------------------------------------------------------------------------------------|
 

@@ -4,7 +4,7 @@
 /*
  *   Protostar is the shared code between all Rust projects.
  * We export a lot of common imports to be readily available
- * and define quality of life functions, classes that hoperully
+ * and define quality of life functions, classes that hopefully
  * are useful to one or more projects.
  */
 
@@ -119,6 +119,9 @@ pub fn setupLog() {
 }
 
 // -----------------------------------------------------------------------------------------------|
+// Protostar exports
+
+pub mod Const;
 
 pub fn betterGlob(globPattern: PathBuf) -> Vec<PathBuf> {
     glob(globPattern.into_os_string().into_string().unwrap().as_str())
