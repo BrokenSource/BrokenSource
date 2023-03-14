@@ -20,8 +20,13 @@ import requests
 # Ensure pip
 try: __import__("pip")
 except ModuleNotFoundError:
-    import ensurepip
-    ensurepip.bootstrap()
+    try:
+        import ensurepip
+        ensurepip.bootstrap()
+    except ModuleNotFoundError:
+        with tempfile.NamedTemporaryFile() as getpip:
+            getpip.write_bytes(requests.get("https://bootstrap.pypa.io/get-pip.py").content)
+            subprocess.run([system.executable, getpip])
 
 same = lambda x: (x, x)
 dependencies = [
@@ -258,7 +263,7 @@ class Nebula:
             # Windows compile pre-requisites
             elif target == "windows":
                 if LINUX_DISTRO == "arch":
-                    shell("sudo pacman -Syu base-devel mingw-w64-toolchain upx --needed --noconfirm".split())
+                    shell("sudo pacman -Syu base-devel mingw-w64-toolchain gcc-fortran upx --needed --noconfirm".split())
                 else:
                     self.error(f"Your Linux distro [{id}] is not listed for dependencies, continue anyway?")
                     if input(":: ").lower() not in ["y", "yes"]:
@@ -285,7 +290,7 @@ class Nebula:
         if target == "all":
             for target in ["linux", "windows"]:
                 try: self.release(project, target)
-                except NotImplementedError: pass
+                except FileNotFoundError: pass   # Didn't compile
             return
 
         date = self.date()

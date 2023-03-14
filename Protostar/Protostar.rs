@@ -121,7 +121,7 @@ pub fn setupLog() {
 // -----------------------------------------------------------------------------------------------|
 // Protostar exports
 
-pub mod Const;
+pub mod Constants;
 
 pub fn betterGlob(globPattern: PathBuf) -> Vec<PathBuf> {
     glob(globPattern.into_os_string().into_string().unwrap().as_str())
@@ -139,4 +139,8 @@ pub fn remove(path: PathBuf) {
             _rmfile(&path)
         }
     }.expect(format!("Failed to remove path [{}]", path.display()).as_str());
+}
+
+pub fn moveFile(from: &PathBuf, to: &PathBuf) {
+    std::fs::rename(&from, &to).expect(format!("Failed to move file [{}] to [{}]", from.display(), to.display()).as_str());
 }
