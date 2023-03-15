@@ -61,8 +61,12 @@ truthyList = lambda stuff: [x for x in stuff if x]
 # [[a, b], c, [d, e, f], [g, h]] -> [a, b, c, d, e, f, g, h]
 flatten = lambda stuff: deepflatten(stuff, types=list)
 
-# run(["binary", "-m"], "arg1", "arg2")
-shell = lambda *a, **k: subprocess.run(truthyList(map(str, flatten(a))), **k)
+# Flatten a list, remove falsy values, convert to strings
+__shellify = lambda stuff: truthyList(map(str, flatten(stuff)))
+
+# shell(["binary", "-m"], "arg1", "arg2")
+shell = lambda *a, **k: subprocess.run(__shellify(a), **k)
+output = lambda *a, **k: subprocess.check_output(__shellify(a), **k).decode("utf-8")
 
 # # Utility functions
 
@@ -215,8 +219,10 @@ class Nebula:
 
     # Install Rust toolchain on macOS, Linux
     def installRust(self) -> None:
+
+        # Install rustup for toolchains
         if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
-            self.info(f"Installing Rust [{RUSTUP_TOOLCHAIN}]")
+            self.info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
             rustInstaller = dict(
@@ -228,6 +234,11 @@ class Nebula:
             # Download and install Rust
             with download(rustInstaller) as installer:
                 shell(sh, installer, "--profile", "default", "-y")
+
+        # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
+        for line in output(rustup, "toolchain", "list").split("\n"):
+            if ("default" in line) and (line.split("-")[0] == RUSTUP_TOOLCHAIN):
+                self.info(f"Installing Rust [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
     # # Commands section
