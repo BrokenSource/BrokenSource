@@ -239,8 +239,8 @@ class Nebula:
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
         for line in output(rustup, "toolchain", "list").split("\n"):
-            if ("default" in line) and (line.split("-")[0] == RUSTUP_TOOLCHAIN):
-                self.info(f"Installing Rust [{RUSTUP_TOOLCHAIN}]")
+            if ("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN):
+                self.info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
     # # Commands section
