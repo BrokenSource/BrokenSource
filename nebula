@@ -172,8 +172,6 @@ class Nebula:
 
     # Clone Protostar repository and submodules to current directory
     def gitCloneProtostar(self) -> None:
-        self.info("Installing Rust")
-        self.installRust()
 
         # Not the most pretty progress bar but it does the job
         class GitCloneProgress(pygit2.RemoteCallbacks):
@@ -189,13 +187,17 @@ class Nebula:
         for submodule in protostarRepo.listall_submodules():
             try:
                 protostarRepo.init_submodules([submodule])
-                protostarRepo.update_submodules([submodule], callbacks=GitCloneProgress())
                 self.info(f"Cloning submodule: [{submodule}]")
+                protostarRepo.update_submodules([submodule], callbacks=GitCloneProgress())
+
+                # Open submodule as a repository, checkout Master branch
+                submoduleRepo = pygit2.Repository(f"Protostar/{submodule}")
+                submoduleRepo.checkout(submoduleRepo.lookup_branch("Master"))
 
             # Ignore private submodules
             except Exception as error:
-                if "authentication" not in str(error):
-                    raise error
+                if "authentication" in str(error): ...
+                raise error
 
         self.info("Now type 'cd Protostar' and './nebula'")
 
