@@ -53,6 +53,23 @@ for importName, packageName in dependencies:
 
 # ------------------------------------------------------------------------------------------------|
 
+# Add milliseconds to timedelta for logging
+forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
+
+# Set up empty logger
+loguru.logger.remove()
+logger = loguru.logger.bind()
+
+# Add stdout logging
+logger.add(system.stdout, colorize=True, level="TRACE",
+    format=f"[<green>{{elapsed.milliseconds}}ms</green>]─[<level>{{level:7}}</level>]<level> ▸ {{message}}</level>")
+
+# self.* functions logging
+for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
+    globals()[logType] = getattr(logger, logType)
+
+# ------------------------------------------------------------------------------------------------|
+
 from iteration_utilities import deepflatten
 
 # ['', True, "string", None, "--a"] -> [True, "string", "--a"]
@@ -64,14 +81,27 @@ flatten = lambda stuff: deepflatten(stuff, types=list)
 # Flatten a list, remove falsy values, convert to strings
 __shellify = lambda stuff: truthyList(map(str, flatten(stuff)))
 
-# shell(["binary", "-m"], "arg1", "arg2")
-shell = lambda *a, **k: subprocess.run(__shellify(a), **k)
-output = lambda *a, **k: subprocess.check_output(__shellify(a), **k).decode("utf-8")
+# shell(["binary", "-m"], "arg1", "arg2", 3)
+def shell(*a, output=False, **k):
+    command = __shellify(a)
+    info(f"Running command {command}")
+    if output:
+        try:
+            return subprocess.check_output(__shellify(a), **k).decode("utf-8")
+        except subprocess.CalledProcessError as error:
+            return error.output.decode("utf-8")
+    else:
+        subprocess.run(command, **k)
 
 # # Utility functions
 
 def binaryExists(binary) -> bool:
     return shutil.which(binary) is not None
+
+def getBinary(binary) -> Path:
+    if not binaryExists(binary):
+        raise FileNotFoundError(f"Binary {binary} not found in PATH")
+    return Path(shutil.which(binary))
 
 @contextmanager
 def download(url) -> Path:
@@ -98,9 +128,12 @@ HOST_OS = platform.system().lower()
 python = system.executable
 sh = "sh" if (HOST_OS != "windows") else None
 pip = [python, "-m", "pip"]
+pacman = "pacman"
 rustup = "rustup"
 cargo = "cargo"
 chmod = "chmod"
+sudo = "sudo"
+apt = "apt"
 upx = "upx"
 
 # ------------------------------------------------------------------------------------------------|
@@ -115,7 +148,6 @@ class Nebula:
     ProjectsAndFeatures = {}
 
     def __init__(self) -> None:
-        self.setupLog()
         self.installRust()
 
     # Builds CLI commands and starts Typer
@@ -179,7 +211,7 @@ class Nebula:
                 print(f"\r:: Progress: ({stats.received_bytes} bytes) ({stats.indexed_objects}/{stats.total_objects} objects)", end='', flush=True)
                 if stats.indexed_objects == stats.total_objects: print("\r", end='')
 
-        self.info("Cloning Protostar repository..")
+        info("Cloning Protostar repository..")
         protostarRepo = pygit2.clone_repository("https://github.com/BrokenSource/Protostar", "Protostar", callbacks=GitCloneProgress())
         os.chdir("Protostar")
 
@@ -187,7 +219,7 @@ class Nebula:
         for submodule in protostarRepo.listall_submodules():
             try:
                 protostarRepo.init_submodules([submodule])
-                self.info(f"Cloning submodule: [{submodule}]")
+                info(f"Cloning submodule: [{submodule}]")
                 protostarRepo.update_submodules([submodule], callbacks=GitCloneProgress())
 
                 # Open submodule as a repository, checkout Master branch
@@ -199,32 +231,14 @@ class Nebula:
                 if "authentication" in str(error): ...
                 raise error
 
-        self.info("Now type 'cd Protostar' and './nebula'")
-
-    # Initiates self.* logging capabilities
-    def setupLog(self) -> None:
-
-        # Add milliseconds to timedelta for logging
-        forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
-
-        # Set up empty logger
-        loguru.logger.remove()
-        self.logger = loguru.logger.bind()
-
-        # Add stdout logging
-        self.logger.add(system.stdout, colorize=True, level="TRACE",
-            format=f"[<green>{{elapsed.milliseconds}}ms</green>]─[<level>{{level:7}}</level>]<level> ▸ {{message}}</level>")
-
-        # self.* functions logging
-        for logType in ["info", "warning", "error", "debug", "trace", "success", "critical"]:
-            setattr(self, f"{logType}", getattr(self.logger, logType))
+        info("Now type 'cd Protostar' and './nebula'")
 
     # Install Rust toolchain on macOS, Linux
     def installRust(self) -> None:
 
         # Install rustup for toolchains
         if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
-            self.info(f"Installing Rustup default profile")
+            info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
             rustInstaller = dict(
@@ -238,9 +252,9 @@ class Nebula:
                 shell(sh, installer, "--profile", "default", "-y")
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
-        for line in output(rustup, "toolchain", "list").split("\n"):
+        for line in shell(rustup, "toolchain", "list", output=True).split("\n"):
             if ("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN):
-                self.info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
+                info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
     # # Commands section
@@ -250,7 +264,7 @@ class Nebula:
 
         # "$ ./nebula" -> "$ nebula"
         if not "." in os.environ.get("PATH").split(os.pathsep):
-            self.info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './nebula' but simply 'nebula'. Add to your shell config: 'export PATH=$PATH:.'")
+            info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './nebula' but simply 'nebula'. Add to your shell config: 'export PATH=$PATH:.'")
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -264,32 +278,6 @@ class Nebula:
         ))
 
         return date
-
-    def requirements(self):
-        """Install requirements based on platform"""
-
-        # # Install Requirements depending on host platform
-        if HOST_OS == "linux":
-            if target == "linux":
-                pass
-
-            # Windows compile pre-requisites
-            elif target == "windows":
-                if LINUX_DISTRO == "arch":
-                    shell("sudo pacman -Syu base-devel mingw-w64-toolchain gcc-fortran upx --needed --noconfirm".split())
-                else:
-                    self.error(f"Your Linux distro [{id}] is not listed for dependencies, continue anyway?")
-                    if input(":: ").lower() not in ["y", "yes"]:
-                        system.exit()
-
-            elif target == "macos":
-                raise NotImplementedError("macOS Releases not supported from Linux")
-
-        elif HOST_OS == "windows":
-            raise NotImplementedError("Nebula releases on Windows not implemented")
-
-        elif HOST_OS == "macos":
-            raise NotImplementedError("Nebula releases on macOS not implemented")
 
     def release(self, project: str, target: str, profile: str="ultra") -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platform"""
@@ -343,6 +331,35 @@ class Nebula:
         # Default release and UPX
         shutil.copy(compiledBinary, releaseBinary)
         shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+
+    def requirements(self):
+        """Install requirements based on platform"""
+
+        # # Install Requirements depending on host platform
+        if HOST_OS == "linux":
+            if LINUX_DISTRO == "arch":
+                self.shell(sudo, pacman, "-Syu", "base-devel gcc-fortran mingw-w64-toolchain upx".split())
+                return
+
+            self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+
+            if LINUX_DISTRO == "ubuntu":
+                self.shell(sudo, apt, "update")
+                self.shell(sudo, apt, "install", "build-essential mingw-w64 gcc upx".split())
+
+        elif HOST_OS == "windows":
+            raise NotImplementedError("Nebula releases on Windows not implemented")
+
+        elif HOST_OS == "macos":
+            raise NotImplementedError("Nebula releases on macOS not tested / implemented")
+
+            # Install Homebrew
+            with download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
+                self.shell(bash, installer)
+
+            # Install make dependencies
+            self.shell(brew, "install", "mingw-w64", "upx")
+
 
 # ------------------------------------------------------------------------------------------------|
 
