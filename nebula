@@ -109,16 +109,10 @@ def download(url) -> Path:
         temp.write(requests.get(url).content)
         yield Path(temp.name)
 
-# functools.partial doesn't support type hinting, so we convert
-# a partial to a dummy function that have those
-def callablePartial(f: partial, *a, **k):
-    def call(): f(*a, **k)
-    return call
-
 # ------------------------------------------------------------------------------------------------|
 
 # "nightly" or "stable"
-RUSTUP_TOOLCHAIN = "nightly"
+RUSTUP_TOOLCHAIN = "stable"
 
 # Distros IDs: https://distro.readthedocs.io/en/latest/
 LINUX_DISTRO = distro.id()
@@ -184,8 +178,9 @@ class Nebula:
             # This is a bit sophisticated, projectName should be kept after the callable
             # is created, so we have a method that creates a method with given string
             def runProjectTemplate(projectName, features):
-                def runProject(ctx: typer.Context):
-                    shell(cargo, "run", "--bin", projectName, features, "--", ctx.args)
+                def runProject(ctx: typer.Context, release: bool=False):
+                    release = ["--profile", "release"] if release else []
+                    shell(cargo, "run", "--bin", projectName, features, release, "--", ctx.args)
                 return runProject
 
             # Create Typer command
@@ -255,7 +250,7 @@ class Nebula:
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
         for line in shell(rustup, "toolchain", "list", output=True).split("\n"):
-            if ("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN):
+            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
