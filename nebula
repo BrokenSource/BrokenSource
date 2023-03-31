@@ -145,7 +145,8 @@ Broken Source Software Manager script
 """
 
 class Nebula:
-    ProjectsAndFeatures = {}
+    ProjectFeatures = {}
+    FindProjectLowercase = {}
 
     def __init__(self) -> None:
         self.installRust()
@@ -177,7 +178,8 @@ class Nebula:
             if len(features := project.get("required-features", [])) > 0:
                 features = [["--features", f] for f in features]
 
-            Nebula.ProjectsAndFeatures[projectName] = features
+            Nebula.ProjectFeatures[projectName] = features
+            Nebula.FindProjectLowercase[projectName.lower()] = projectName
 
             # This is a bit sophisticated, projectName should be kept after the callable
             # is created, so we have a method that creates a method with given string
@@ -279,38 +281,38 @@ class Nebula:
 
         return date
 
-    def release(self, project: str, target: str, profile: str="ultra") -> None:
+    def release(self, project: str, platform: str, profile: str="ultra") -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platform"""
+
+        platformsConfiguration = {
+            "linux-amd64":   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
+            # "linux-arm":     ("aarch64-unknown-linux-gnu", "",     ".bin"),
+            "windows-amd64": ("x86_64-pc-windows-gnu",     ".exe", ".exe"),
+            # "macos-amd64":   ("x86_64-apple-darwin",       "",     ".bin"),
+            # "macos-arm":     ("aarch64-apple-darwin",      "",     ".bin"),
+        }
 
         # Acronym for all available projects
         if project == "all":
-            for project in Nebula.ProjectsAndFeatures.keys():
-                self.release(project, target=target)
+            for project in Nebula.ProjectFeatures.keys():
+                self.release(project, platform, profile)
+
+        # Project CLI input may be lowercase
+        project = Nebula.FindProjectLowercase.get(project, project)
 
         # Acronym for all available platforms
-        if target == "all":
-            for target in ["linux", "windows"]:
-                try: self.release(project, target)
-                except FileNotFoundError: pass   # Didn't compile
+        if platform == "all":
+            for platform in platformsConfiguration.keys():
+                try: self.release(project, platform, profile)
+                except FileNotFoundError:
+                    error(f"Could not compile [{project}] for [{platform}]")
             return
 
-        date = self.date()
-
         # # Target platform
-        if target == "linux":
-            targetTriple  = "x86_64-unknown-linux-gnu"
-            compileSuffix = ""
-            releaseSuffix = ".bin"
+        (targetTriple, compileSuffix, releaseSuffix) = platformsConfiguration[platform]
 
-        elif target == "windows":
-            targetTriple  = "x86_64-pc-windows-gnu"
-            compileSuffix = ".exe"
-            releaseSuffix = ".exe"
-
-        elif target == "macos":
-            targetTriple  = "x86_64-apple-darwin"
-            compileSuffix = ""
-            releaseSuffix = ".bin"
+        # Update dates
+        date = self.date()
 
         # Add target toolchain for Rust
         shell(rustup, "target", "add", targetTriple)
@@ -320,12 +322,12 @@ class Nebula:
             "--bin", project,
             "--target", targetTriple,
             "--profile", profile,
-            Nebula.ProjectsAndFeatures[project]
+            Nebula.ProjectFeatures[project]
         )
 
         # Post-compile binary namings and release name
         compiledBinary   = self.Build/targetTriple/profile/f"{project}{compileSuffix}"
-        releaseBinary    = self.Releases/f"{project.lower()}-{target}-{date}{releaseSuffix}"
+        releaseBinary    = self.Releases/f"{project.lower()}-{platform}-{date}{releaseSuffix}"
         releaseBinaryUPX = releaseBinary.parent/(releaseBinary.stem + f"-upx{releaseSuffix}")
 
         # Default release and UPX

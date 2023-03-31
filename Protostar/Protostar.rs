@@ -38,9 +38,9 @@ pub use regex::Regex;
 // Math
 pub use libm::*;
 pub use unordered_pair::UnorderedPair;
-pub use num::complex::Complex;
-pub use num::complex::ComplexFloat;
 pub use itertools::Itertools;
+pub use num::complex::Complex64;
+pub use rand;
 
 // Cache
 pub use lru_cache::LruCache;
@@ -50,6 +50,7 @@ pub use glob::glob;
 pub use clap::Parser;
 pub use serde_derive::Deserialize;
 pub use serde_derive::Serialize;
+pub use serde_with::serde_as;
 pub use strum::Display;
 pub use toml::Value;
 
@@ -58,6 +59,25 @@ pub use derive_setters::Setters;
 pub use smart_default::SmartDefault;
 pub use derive_new::new;
 pub use str_macro::str;
+
+// -----------------------------------------------------------------------------------------------|
+
+macro_rules! chainDerives {
+    ($name:ident => #[derive($($derive:ident),*)]) => {
+        #[macro_export]
+        macro_rules! $name {
+            ($i:item) => {
+                #[serde_as]
+                #[derive($($derive),*)]
+                $i
+            }
+        }
+    }
+}
+
+chainDerives! {Protostruct => #[derive(SmartDefault, Setters, Serialize, Deserialize, Clone)]}
+chainDerives! {Protoenum   => #[derive(SmartDefault,          Serialize, Deserialize, Clone)]}
+
 
 // -----------------------------------------------------------------------------------------------|
 
