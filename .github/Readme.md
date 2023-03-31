@@ -78,6 +78,7 @@
 ## ▸ Compiling, Executing Projects
 Simply run `./nebula` and see all available commands!
 
+<sub><b>Tip:</b> you can run `./nebula (command) --help` to learn more about a command</sub>
 
 
 <br>

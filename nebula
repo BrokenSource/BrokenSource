@@ -82,9 +82,9 @@ flatten = lambda stuff: deepflatten(stuff, types=list)
 __shellify = lambda stuff: truthyList(map(str, flatten(stuff)))
 
 # shell(["binary", "-m"], "arg1", "arg2", 3)
-def shell(*a, output=False, **k):
+def shell(*a, output=False, echo=True, **k):
     command = __shellify(a)
-    info(f"Running command {command}")
+    if echo: info(f"Running command {command}")
     if output:
         try:
             return subprocess.check_output(__shellify(a), **k).decode("utf-8")
@@ -249,7 +249,7 @@ class Nebula:
                 shell(sh, installer, "--profile", "default", "-y")
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
-        for line in shell(rustup, "toolchain", "list", output=True).split("\n"):
+        for line in shell(rustup, "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
