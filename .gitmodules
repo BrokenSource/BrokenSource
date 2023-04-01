@@ -19,3 +19,9 @@
 [submodule "Ardmin"]
 	path = Ardmin
 	url = https://github.com/BrokenSource/Ardmin
+[submodule "Sortia"]
+	path = Sortia
+	url = https://github.com/BrokenSource/Sortia
+[submodule "Oscillospoor"]
+	path = Oscillospoor
+	url = https://github.com/BrokenSource/Oscillospoor
