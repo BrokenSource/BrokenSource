@@ -83,6 +83,15 @@ macro_rules! Protoenum {
    }
 }
 
+/// Import a module and export all its contents, useful for mod.rs folders
+#[macro_export]
+macro_rules! import {
+    ($module:ident) => {
+        pub mod $module;
+        pub use $module::*;
+    }
+}
+
 // ------------------------------------------------------------------------------------------------|
 
 // Basic logging
