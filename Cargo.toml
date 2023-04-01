@@ -42,7 +42,7 @@ required-features = []
 name = "PhasorFlow"
 path = "PhasorFlow/PhasorFlow.rs"
 required-features = [
-    "cairo",
+    "skia"
 ]
 
 # ShaderFlow project
@@ -68,11 +68,12 @@ required-features = [
 # ------------------------------------------------------------------------------------------------|
 
 [features]
-cairo = ["dep:cairo-rs"]
-egui = ["dep:egui", "dep:eframe"]
-midi = ["dep:midly", "dep:bincode"]
+cairo   = ["dep:cairo-rs"]
+egui    = ["dep:egui", "dep:eframe"]
+midi    = ["dep:midly", "dep:bincode"]
 ndarray = ["dep:ndarray", "dep:ndarray-linalg"]
 shaders = ["dep:wgpu", "dep:winit"]
+skia    = ["dep:skia-safe"]
 
 # ------------------------------------------------------------------------------------------------|
 
@@ -121,11 +122,11 @@ regex = "1.7.1"
 # ------------------------------------------------------------------------------------------------|
 
 # Feature: [cairo]
-cairo-rs = {version="0.17.0", optional=true, features=["pdf", "png", "win32-surface", "xcb", "xlib", "svg"]}
+cairo-rs = {version="0.17.0", optional=true, features=["pdf", "png", "svg"]}
 
 # Feature: [egui]
 eframe = {version="0.19.0", optional=true, features=["persistence"]}
-egui = {version = "0.19.0", optional=true, features=["persistence"]}
+egui = {version="0.19.0", optional=true, features=["persistence"]}
 
 # Feature: [midi]
 midly = {version="0.5.3", optional=true}
@@ -143,6 +144,9 @@ wgpu = {version="0.15.1", optional=true}
 winit = {version="0.28.1", optional=true}
 serde_with = "2.3.1"
 rand = "0.8.5"
+
+# Feature: [skia]
+skia-safe = {version="0.60.0", optional=true}
 
 # ------------------------------------------------------------------------------------------------|
 

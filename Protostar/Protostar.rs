@@ -59,6 +59,9 @@ pub use smart_default::SmartDefault;
 pub use derive_new::new;
 pub use str_macro::str;
 
+#[cfg(feature = "skia")]
+pub use skia_safe as skia;
+
 // ------------------------------------------------------------------------------------------------|
 
 #[macro_export]
