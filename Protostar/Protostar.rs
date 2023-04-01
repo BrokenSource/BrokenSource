@@ -9,7 +9,6 @@
  */
 
 // Mostly std
-pub use core::fmt::Error;
 pub use std::collections::HashMap;
 pub use std::collections::HashSet;
 pub use std::collections::BTreeMap;
@@ -60,26 +59,28 @@ pub use smart_default::SmartDefault;
 pub use derive_new::new;
 pub use str_macro::str;
 
-// -----------------------------------------------------------------------------------------------|
+// ------------------------------------------------------------------------------------------------|
 
-macro_rules! chainDerives {
-    ($name:ident => #[derive($($derive:ident),*)]) => {
-        #[macro_export]
-        macro_rules! $name {
-            ($i:item) => {
-                #[serde_as]
-                #[derive($($derive),*)]
-                $i
-            }
-        }
-    }
+#[macro_export]
+macro_rules! Protostruct {
+    ($i:item) => {
+        #[serde_as]
+        #[derive(SmartDefault, Serialize, Deserialize, Clone, Debug, Setters)]
+        #[serde(default)]
+        $i
+   }
 }
 
-chainDerives! {Protostruct => #[derive(SmartDefault, Setters, Serialize, Deserialize, Clone)]}
-chainDerives! {Protoenum   => #[derive(SmartDefault,          Serialize, Deserialize, Clone)]}
+#[macro_export]
+macro_rules! Protoenum {
+    ($i:item) => {
+        #[serde_as]
+        #[derive(SmartDefault, Serialize, Deserialize, Clone, Debug, Display)]
+        $i
+   }
+}
 
-
-// -----------------------------------------------------------------------------------------------|
+// ------------------------------------------------------------------------------------------------|
 
 // Basic logging
 pub use log::{debug, error, info, trace, warn};
@@ -138,7 +139,7 @@ pub fn setupLog() {
         .expect("Failed to set up logging");
 }
 
-// -----------------------------------------------------------------------------------------------|
+// ------------------------------------------------------------------------------------------------|
 // Protostar exports
 
 pub mod Constants;

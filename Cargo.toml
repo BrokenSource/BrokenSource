@@ -3,7 +3,7 @@
 
 [package]
 name = "BrokenSource"
-version = "2023.3.19"
+version = "2023.4.1"
 edition = "2021"
 authors = ["Tremeschin"]
 description = "Broken Source Software's Monorepo"

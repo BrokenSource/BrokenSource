@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # | (c) Tremeschin, AGPLv3-only License | Protostar Project | #
 
-import itertools
+# pyright: reportUndefinedVariable=false
+
 import os
 import shutil
 import subprocess
 import sys as system
 import tempfile
 from contextlib import contextmanager
-from enum import Enum
-from functools import partial
 from pathlib import Path
 
 import requests
