@@ -25,6 +25,8 @@ pub use std::path::Path;
 pub use std::process::exit;
 pub use std::process::Command as Subprocess;
 pub use std::process::Stdio;
+pub use std::sync::Arc;
+pub use std::sync::RwLock;
 pub use std::time::Duration;
 pub use std::time::Instant;
 

@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys as system
 import tempfile
+import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -275,8 +276,8 @@ class Nebula:
 
         return date
 
-    def release(self, project: str, platform: str, profile: str="ultra") -> None:
-        """Compile and release a project (or 'all') to a target (or 'all') platform"""
+    def release(self, project: str, platform: str, profile: str="ultra", upx=False) -> None:
+        """Compile and release a project (or 'all') to a target (or 'all') platforms"""
 
         platformsConfiguration = {
             "linux-amd64":   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
@@ -302,6 +303,10 @@ class Nebula:
                     error(f"Could not compile [{project}] for [{platform}]")
             return
 
+        # Fix Fortran compiler for Windows crosscompilation netlib
+        if (HOST_OS == "linux") and (platform == "windows-amd64"):
+            os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
+
         # # Target platform
         (targetTriple, compileSuffix, releaseSuffix) = platformsConfiguration[platform]
 
@@ -311,22 +316,63 @@ class Nebula:
         # Add target toolchain for Rust
         shell(rustup, "target", "add", targetTriple)
 
+        # Rust [(--feature, A) (--feature, B)] list
+        projectFeatures = Nebula.ProjectFeatures[project]
+
+        def isFeatureOnProject(feature):
+            return any([feature in arguments for arguments in projectFeatures])
+
         # Build the binary
         shell(cargo, "build",
             "--bin", project,
             "--target", targetTriple,
             "--profile", profile,
-            Nebula.ProjectFeatures[project]
+            projectFeatures
         )
 
         # Post-compile binary namings and release name
         compiledBinary   = self.Build/targetTriple/profile/f"{project}{compileSuffix}"
         releaseBinary    = self.Releases/f"{project.lower()}-{platform}-{date}{releaseSuffix}"
+        releaseZip       = releaseBinary.parent/(releaseBinary.stem + ".zip")
         releaseBinaryUPX = releaseBinary.parent/(releaseBinary.stem + f"-upx{releaseSuffix}")
 
         # Default release and UPX
         shutil.copy(compiledBinary, releaseBinary)
-        shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+        if upx: shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+
+        # Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
+        if (HOST_OS == "linux") and (platform == "windows-amd64") and (isFeatureOnProject("ndarray")):
+            requiredSharedLibraries = [
+                "libgfortran-5.dll",
+                "libgcc_s_seh-1.dll",
+                "libwinpthread-1.dll",
+                "libquadmath-0.dll",
+            ]
+
+            COMMON_MINGW_DLL_PATHS = [
+                Path("/usr/x86_64-w64-mingw32/bin/"),              # Arch
+                Path("/usr/lib/gcc/x86_64-w64-mingw32/10-win32/"), # Ubuntu
+            ]
+
+            # Zip the releaseBinary and all the required shared libraries
+            with zipfile.ZipFile(releaseZip, "w") as zip:
+                def addFileToZip(file: Path, remove=False):
+                    zip.write(file, file.name)
+                    if remove: file.unlink()
+
+                if upx: addFileToZip(releaseBinaryUPX, remove=True)
+                addFileToZip(releaseBinary, remove=True)
+
+                for library in requiredSharedLibraries:
+                    for path in COMMON_MINGW_DLL_PATHS:
+                        try:
+                            addFileToZip(path/library)
+                        except FileNotFoundError:
+                            pass
+
+                    # Check if library was copied to the zip
+                    if not library in zip.namelist():
+                        raise FileNotFoundError(f"Could not find [{library}] in any of the following paths: {COMMON_MINGW_DLL_PATHS}")
 
     def requirements(self):
         """Install requirements based on platform"""
@@ -341,7 +387,7 @@ class Nebula:
 
             if LINUX_DISTRO == "ubuntu":
                 self.shell(sudo, apt, "update")
-                self.shell(sudo, apt, "install", "build-essential mingw-w64 gcc upx".split())
+                self.shell(sudo, apt, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx".split())
 
         elif HOST_OS == "windows":
             raise NotImplementedError("Nebula releases on Windows not implemented")
