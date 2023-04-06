@@ -61,8 +61,17 @@ pub use smart_default::SmartDefault;
 pub use derive_new::new;
 pub use str_macro::str;
 
-#[cfg(feature = "skia")]
+#[cfg(feature="skia")]
 pub use skia_safe as skia;
+
+#[cfg(feature="ndarray")]
+pub use {
+    ndarray::Array,
+    ndarray::Dim,
+    ndarray_linalg::Inverse,
+    ndarray_linalg::Solve,
+};
+
 
 // ------------------------------------------------------------------------------------------------|
 

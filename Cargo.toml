@@ -42,7 +42,8 @@ required-features = []
 name = "PhasorFlow"
 path = "PhasorFlow/Main.rs"
 required-features = [
-    "skia"
+    "skia",
+    "ndarray"
 ]
 
 # ShaderFlow project
