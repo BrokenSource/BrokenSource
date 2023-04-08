@@ -1,5 +1,6 @@
 // | (c) Tremeschin, AGPLv3-only License | Protostar Project | //
 #![allow(non_snake_case)]
+#![allow(non_upper_case_globals)]
 
 /*
  *   Protostar is the shared code between all Rust projects.
@@ -160,6 +161,40 @@ pub fn setupLog() {
         // .chain(fern::log_file("output.log").expect("Failed to set logging file"))
         .apply()
         .expect("Failed to set up logging");
+}
+
+// ------------------------------------------------------------------------------------------------|
+// Directories
+
+pub use once_cell::sync::OnceCell;
+
+/// Access stuff with either
+/// | let dirs = setupProjectDirectories("Project Name");
+/// | dirs.cache_dir();
+/// Or with
+/// | Protostar::Directories::Project.get().unwrap().cache_dir();
+/// Or since we do use Protostar::*; you can just do
+/// | Directories::Project.get().unwrap().cache_dir();
+/// | Directories::User.home_dir()
+pub mod Directories {
+    use crate::*;
+
+    lazy_static::lazy_static! {
+        // User and Base directories, if needed (ever)
+        pub static ref User: directories::UserDirs = directories::UserDirs::new().unwrap();
+        pub static ref Base: directories::BaseDirs = directories::BaseDirs::new().unwrap();
+
+        // Per-project directories, call setupProjectDirectories("Project Name") for initialization
+        pub static ref Project: OnceCell<directories::ProjectDirs> = OnceCell::new();
+
+        // Protostar directories, for example, a single cache for FFmpeg downloads across projects
+        pub static ref Protostar: directories::ProjectDirs = directories::ProjectDirs::from("com", "BrokenSource", "Protostar").unwrap();
+    }
+}
+
+// Sets up project directories based on given project name for Directories::Project
+pub fn setupProjectDirectories(projectName: &str) -> &'static directories::ProjectDirs {
+    Directories::Project.get_or_init(|| directories::ProjectDirs::from("com", "BrokenSource", projectName).unwrap())
 }
 
 // ------------------------------------------------------------------------------------------------|

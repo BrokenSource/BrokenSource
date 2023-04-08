@@ -109,6 +109,8 @@ def download(url) -> Path:
         temp.write(requests.get(url).content)
         yield Path(temp.name)
 
+mkdir = lambda path: Path(path).mkdir(parents=True, exist_ok=True)
+
 # ------------------------------------------------------------------------------------------------|
 
 # "nightly" or "stable"
@@ -128,7 +130,6 @@ cargo = "cargo"
 chmod = "chmod"
 sudo = "sudo"
 apt = "apt"
-upx = "upx"
 
 # ------------------------------------------------------------------------------------------------|
 
@@ -155,8 +156,11 @@ class Nebula:
 
         # Directories
         self.Root     = Path(__file__).absolute().parent
+        self.Build    = Path(tempfile.gettempdir())/"Protostar"
         self.Releases = self.Root/"Releases"
-        self.Build    = self.Releases/"Build"
+
+        # Cargo environment variables
+        os.environ["CARGO_TARGET_DIR"] = str(self.Build)
 
         # Cargo dictionary
         self.cargotoml = toml.loads((self.Root/"Cargo.toml").read_text())
@@ -276,8 +280,9 @@ class Nebula:
 
         return date
 
-    def release(self, project: str, platform: str, profile: str="ultra", upx=False) -> None:
+    def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
+        mkdir(self.Releases)
 
         platformsConfiguration = {
             "linux-amd64":   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
@@ -290,7 +295,7 @@ class Nebula:
         # Acronym for all available projects
         if project == "all":
             for project in Nebula.ProjectFeatures.keys():
-                self.release(project, platform, profile)
+                self.release(project, platform, profile, upx)
 
         # Project CLI input may be lowercase
         project = Nebula.FindProjectLowercase.get(project, project)
@@ -298,7 +303,7 @@ class Nebula:
         # Acronym for all available platforms
         if platform == "all":
             for platform in platformsConfiguration.keys():
-                try: self.release(project, platform, profile)
+                try: self.release(project, platform, profile, upx)
                 except FileNotFoundError:
                     error(f"Could not compile [{project}] for [{platform}]")
             return
@@ -338,7 +343,7 @@ class Nebula:
 
         # Default release and UPX
         shutil.copy(compiledBinary, releaseBinary)
-        if upx: shell(upx, "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+        if upx: shell("upx", "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
 
         # Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
         if (HOST_OS == "linux") and (platform == "windows-amd64") and (isFeatureOnProject("ndarray")):
