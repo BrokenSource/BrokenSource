@@ -39,7 +39,7 @@
 <div align="center">
 
   ```ps
-  curl -sSL https://github.com/BrokenSource/Protostar/raw/Master/nebula | python
+  curl -sSL https://github.com/BrokenSource/BrokenSource/raw/Master/nebula | python
   ```
 </div>
 <sub><i><b>Continue</b> reading...</i></sub>
@@ -61,13 +61,11 @@
   winget install -e --id Python.Python.3.11
   ```
   ```ps
-  (Invoke-WebRequest -Uri https://github.com/BrokenSource/Protostar/raw/Master/nebula -UseBasicParsing).Content | python -
+  (Invoke-WebRequest -Uri https://github.com/BrokenSource/BrokenSource/raw/Master/nebula -UseBasicParsing).Content | python -
   ```
 </div>
 
 - **NOTE:** You'll probably need to configure yourself some C/C++/FORTRAN libraries like OpenBLAS, LAPACK and installing MinGW 64 bits compiler for projects that depends on `ndarray-linalg`.
-
-- **NOTE:** Broken Source projects are released with an without [UPX](https://upx.github.io/) (a safe executable file compressor), Windows Defender and/or antivirus most likely will trigger on those, if that is the case use the "fat" non-UPX executable.
 
 <sub><i><b>Continue</b> reading...</i></sub>
 
