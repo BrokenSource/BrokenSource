@@ -1,28 +1,28 @@
 [submodule "Assets"]
 	path = Assets
 	url = https://github.com/BrokenSource/Assets
-[submodule "HypeWord"]
+[submodule "Projects/HypeWord"]
 	path = Projects/HypeWord
 	url = https://github.com/BrokenSource/HypeWord
-[submodule "PhasorFlow"]
+[submodule "Projects/PhasorFlow"]
 	path = Projects/PhasorFlow
 	url = https://github.com/BrokenSource/PhasorFlow
-[submodule "ShaderFlow"]
+[submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url = https://github.com/BrokenSource/ShaderFlow
-[submodule "ViyLine"]
+[submodule "Projects/ViyLine"]
 	path = Projects/ViyLine
 	url = https://github.com/BrokenSource/ViyLine
-[submodule "Harper"]
+[submodule "Projects/Harper"]
 	path = Projects/Harper
 	url = https://github.com/BrokenSource/Harper
-[submodule "Ardmin"]
+[submodule "Projects/Ardmin"]
 	path = Projects/Ardmin
 	url = https://github.com/BrokenSource/Ardmin
-[submodule "Sortia"]
+[submodule "Projects/Sortia"]
 	path = Projects/Sortia
 	url = https://github.com/BrokenSource/Sortia
-[submodule "Oscillospoor"]
+[submodule "Projects/Oscillospoor"]
 	path = Projects/Oscillospoor
 	url = https://github.com/BrokenSource/Oscillospoor
 [submodule "Broken/Brakeit"]
