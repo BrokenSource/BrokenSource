@@ -46,6 +46,15 @@ required-features = [
     "ndarray"
 ]
 
+# PocketSolar project
+[[bin]]
+name = "PocketSolar"
+path = "Projects/PocketSolar/Main.rs"
+required-features = [
+    "egui",
+    "serialport"
+]
+
 # ShaderFlow project
 [[bin]]
 name = "ShaderFlow"
@@ -55,15 +64,6 @@ required-features = [
     # "ndarray",
     "midi",
     "shaders",
-]
-
-# ViyLine project
-[[bin]]
-name = "ViyLine"
-path = "Projects/ViyLine/Main.rs"
-required-features = [
-    "egui",
-    "serialport"
 ]
 
 # ------------------------------------------------------------------------------------------------|
@@ -140,7 +140,7 @@ rayon = "1.7.0"
 tempfile = "3.3.0"
 directories = "4.0.1"
 glob = "0.3.1"
-rust-embed = "6.4.1" # TODO Windows icons?
+# rust-embed = "6.4.1" # TODO Windows icons?
 
 # "Builder"-like syntax
 derive_setters = "0.1.5"

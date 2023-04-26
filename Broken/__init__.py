@@ -12,7 +12,6 @@ from pathlib import Path
 import arrow
 import distro
 import forbiddenfruit
-import iteration_utilities
 import loguru
 import pygit2
 import requests
@@ -50,13 +49,11 @@ critical = logger.critical
 
 # ------------------------------------------------------------------------------------------------|
 
-from iteration_utilities import deepflatten
-
 # ['', True, "string", None, "--a"] -> [True, "string", "--a"]
 truthyList = lambda stuff: [x for x in stuff if x]
 
-# [[a, b], c, [d, e, f], [g, h]] -> [a, b, c, d, e, f, g, h]
-flatten = lambda stuff: deepflatten(stuff, types=list)
+# [[a, b], c, [d, e, None], [g, h]] -> [a, b, c, d, e, None, g, h]
+flatten = lambda stuff: [item for sub in stuff for item in (flatten(sub) if type(sub) in (list, tuple) else [sub])]
 
 # Flatten a list, remove falsy values, convert to strings
 __shellify = lambda stuff: truthyList(map(str, flatten(stuff)))

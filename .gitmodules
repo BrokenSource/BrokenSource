@@ -10,9 +10,6 @@
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url = https://github.com/BrokenSource/ShaderFlow
-[submodule "Projects/ViyLine"]
-	path = Projects/ViyLine
-	url = https://github.com/BrokenSource/ViyLine
 [submodule "Projects/Harper"]
 	path = Projects/Harper
 	url = https://github.com/BrokenSource/Harper
@@ -28,3 +25,6 @@
 [submodule "Broken/Brakeit"]
 	path = Broken/Brakeit
 	url = https://github.com/BrokenSource/Brakeit
+[submodule "Projects/PocketSolar"]
+	path = Projects/PocketSolar
+	url = https://github.com/BrokenSource/PocketSolar

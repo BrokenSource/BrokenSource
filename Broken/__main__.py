@@ -17,7 +17,8 @@ apt = "apt"
 # ------------------------------------------------------------------------------------------------|
 
 ABOUT = """
-Broken: Broken Source Software manager script
+Broken Source Software manager script\n
+Tip: run "broken (command) --help" for options on commands
 
 (c) 2022-2023 BrokenSource, AGPLv3-only License.
 """
