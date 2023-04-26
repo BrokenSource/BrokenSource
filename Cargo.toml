@@ -142,10 +142,11 @@ directories = "4.0.1"
 glob = "0.3.1"
 # rust-embed = "6.4.1" # TODO Windows icons?
 
-# "Builder"-like syntax
+# "Builder"-like syntax, derives
 derive_setters = "0.1.5"
 derive-new = "0.5.9"
 smart-default = "0.6.0"
+derivative = "2.2.0"
 
 # String utils
 str-macro = "1.0.0"

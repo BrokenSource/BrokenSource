@@ -18,10 +18,17 @@ pub use std::path::Path;
 pub use std::process::exit;
 pub use std::process::Command as Subprocess;
 pub use std::process::Stdio;
-pub use std::sync::Arc;
-pub use std::sync::RwLock;
 pub use std::time::Duration;
 pub use std::time::Instant;
+
+// Sync, mutex, thread
+pub use std::cell::Cell;
+pub use std::cell::RefCell;
+pub use std::sync::Arc;
+pub use std::sync::Mutex;
+pub use std::sync::RwLock;
+pub use std::rc::Rc;
+pub use std::pin::Pin;
 
 // Path
 pub use std::fs::remove_dir_all as _rmdir;
@@ -50,6 +57,7 @@ pub use toml::Value;
 // Nice Set derive
 pub use derive_setters::Setters;
 pub use smart_default::SmartDefault;
+pub use derivative::Derivative;
 pub use derive_new::new;
 pub use str_macro::str;
 
@@ -71,7 +79,8 @@ pub use {
 macro_rules! BrokenStruct {
     ($i:item) => {
         #[serde_as]
-        #[derive(SmartDefault, Serialize, Deserialize, Clone, Debug, Setters)]
+        #[derive(SmartDefault, Serialize, Deserialize, Clone, Derivative, Setters)]
+        #[derivative(Debug)]
         #[serde(default)]
         $i
    }
@@ -81,7 +90,8 @@ macro_rules! BrokenStruct {
 macro_rules! BrokenEnum {
     ($i:item) => {
         #[serde_as]
-        #[derive(SmartDefault, Serialize, Deserialize, Clone, Debug, Display)]
+        #[derive(SmartDefault, Serialize, Deserialize, Clone, Derivative, Display)]
+        #[derivative(Debug)]
         $i
    }
 }
