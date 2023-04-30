@@ -4,30 +4,24 @@
 [submodule "Projects/HypeWord"]
 	path = Projects/HypeWord
 	url = https://github.com/BrokenSource/HypeWord
-	fetchRecurseSubmodules = false
 [submodule "Projects/PhasorFlow"]
 	path = Projects/PhasorFlow
 	url = https://github.com/BrokenSource/PhasorFlow
-	fetchRecurseSubmodules = false
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url = https://github.com/BrokenSource/ShaderFlow
-	fetchRecurseSubmodules = false
 [submodule "Projects/Harper"]
 	path = Projects/Harper
 	url = https://github.com/BrokenSource/Harper
-	fetchRecurseSubmodules = false
 [submodule "Projects/Ardmin"]
 	path = Projects/Ardmin
 	url = https://github.com/BrokenSource/Ardmin
 [submodule "Projects/Sortia"]
 	path = Projects/Sortia
 	url = https://github.com/BrokenSource/Sortia
-	fetchRecurseSubmodules = false
 [submodule "Projects/Oscillospoor"]
 	path = Projects/Oscillospoor
 	url = https://github.com/BrokenSource/Oscillospoor
-	fetchRecurseSubmodules = false
 [submodule "Broken/Brakeit"]
 	path = Broken/Brakeit
 	url = https://github.com/BrokenSource/Brakeit
