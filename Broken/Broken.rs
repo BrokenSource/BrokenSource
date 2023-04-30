@@ -112,7 +112,7 @@ macro_rules! import {
 // Is there a proper way to spin a thread and change self* values (safely) continuously?
 //
 // This is useful in situations where we create a small "service" like an Audio DSP struct
-// and want to offload the main thread
+// and want to offload the main thread doing heavy computation on others or "blocking" operations
 //
 // To be completely fair, this is not too far from a "proper" way to do it, since a thread
 // must share references with Arc that implemenys Sync, and we are RwLocking the Self* contents
