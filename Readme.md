@@ -56,7 +56,7 @@ Now run `broken` and see all available commands!
 
 Easiest way is using [MSYS2](https://www.msys2.org/) which provides an Unix-like environment for Windows
 
-Compiling "natively" requires installing cmake, mingw gcc, mingw gfortran, visual studio c++ build tools, not really friendly
+Compiling "natively" requires installing CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy
 
 <sub><b>Tip:</b> you can press `Shift+Insert` to paste stuff on `Ctrl+C` to MSYS2 terminal</sub>
 
