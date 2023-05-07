@@ -5,7 +5,8 @@ RUSTUP_TOOLCHAIN = "stable"
 
 # Binaries shorthands
 python = system.executable
-sh = "sh" if (HOST_OS != "windows") else None
+sh = "sh" if (not BROKEN_HOST_OS.WINDOWS) else None
+poetry = [python, "-m", "poetry"]
 pip = [python, "-m", "pip"]
 pacman = "pacman"
 rustup = "rustup"
@@ -18,7 +19,7 @@ apt = "apt"
 
 ABOUT = """
 Broken Source Software manager script\n
-Tip: run "broken (command) --help" for options on commands
+• Tip: run "broken (command) --help" for options on commands or projects
 
 (c) 2022-2023 BrokenSource, AGPLv3-only License.
 """
@@ -33,10 +34,9 @@ class Broken:
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
-        self.typerApp.command()(self.date)
         self.typerApp.command()(self.release)
         self.typerApp.command()(self.requirements)
-        self.typerApp.command()(self.hints)
+        self.typerApp.command()(self.update)
 
         # Directories
         self.Root     = Path(__file__).absolute().parent.parent
@@ -54,18 +54,15 @@ class Broken:
             if not (self.Root/project["path"]).exists(): continue
 
             # List of required features specified in Cargo.tml
-            if len(features := project.get("required-features", [])) > 0:
-                features = [["--features", f] for f in features]
-
-            Broken.ProjectFeatures[projectName] = features
+            Broken.ProjectFeatures[projectName] = ','.join(project.get("required-features", ["default"]))
             Broken.FindProjectLowercase[projectName.lower()] = projectName
 
             # This is a bit sophisticated, projectName should be kept after the callable
             # is created, so we have a method that creates a method with given string
-            def runProjectTemplate(projectName, features):
+            def runProjectTemplate(projectName):
                 def runProject(ctx: typer.Context, release: bool=False):
                     release = ["--profile", "release"] if release else []
-                    shell(cargo, "run", "--bin", projectName, features, release, "--", ctx.args)
+                    shell(cargo, "run", "--bin", projectName, "--features", Broken.ProjectFeatures[projectName], release, "--", ctx.args)
                 return runProject
 
             # Create Typer command
@@ -79,43 +76,10 @@ class Broken:
                 # Rust projects implement their own --help
                 add_help_option=False,
 
-            )(runProjectTemplate(projectName, features))
+            )(runProjectTemplate(projectName))
 
         # Execute the CLI
         self.typerApp()
-
-    # Install Rust toolchain on macOS, Linux
-    def installRust(self) -> None:
-
-        # Install rustup for toolchains
-        if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
-            info(f"Installing Rustup default profile")
-
-            # Get rustup link for each platform
-            rustInstaller = dict(
-                windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
-                linux=  "https://sh.rustup.rs",
-                macos=  "https://sh.rustup.rs"
-            ).get(HOST_OS)
-
-            # Download and install Rust
-            with download(rustInstaller) as installer:
-                shell(sh, installer, "--profile", "default", "-y")
-
-        # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
-        for line in shell(rustup, "toolchain", "list", output=True, echo=False).split("\n"):
-            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
-                info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
-                shell(rustup, "default", RUSTUP_TOOLCHAIN)
-
-    # # Commands section
-
-    def hints(self):
-        """Let Broken find Quality of Life stuff you can add to your system"""
-
-        # "$ ./broken" -> "$ broken"
-        if not "." in os.environ.get("PATH").split(os.pathsep):
-            info(f"You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -130,6 +94,39 @@ class Broken:
 
         return date
 
+    # # Commands section
+
+    # Install Rust toolchain on macOS, Linux
+    def installRust(self) -> None:
+
+        # Install rustup for toolchains
+        if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
+            info(f"Installing Rustup default profile")
+
+            # Get rustup link for each platform
+            rustInstaller = dict(
+                windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
+                linux=  "https://sh.rustup.rs",
+                macos=  "https://sh.rustup.rs"
+            ).get(BROKEN_HOST_OS)
+
+            # Download and install Rust
+            with download(rustInstaller) as installer:
+                shell(sh, installer, "--profile", "default", "-y")
+
+        # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
+        for line in shell(rustup, "toolchain", "list", output=True, echo=False).split("\n"):
+            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
+                info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
+                shell(rustup, "default", RUSTUP_TOOLCHAIN)
+
+    def update(self):
+        """Update Cargo, Python dependencies and Rust lang"""
+        self.installRust()
+        shell(cargo, "update")
+        shell(rustup, "update")
+        shell(poetry, "update")
+
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
         mkdir(self.Releases)
@@ -138,6 +135,8 @@ class Broken:
             "linux-amd64":   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
             # "linux-arm":     ("aarch64-unknown-linux-gnu", "",     ".bin"),
             "windows-amd64": ("x86_64-pc-windows-gnu",     ".exe", ".exe"),
+
+            # FIXME: Requires Xcode, can we crosscompile from Linux?
             # "macos-amd64":   ("x86_64-apple-darwin",       "",     ".bin"),
             # "macos-arm":     ("aarch64-apple-darwin",      "",     ".bin"),
         }
@@ -158,8 +157,8 @@ class Broken:
                     error(f"Could not compile [{project}] for [{platform}]")
             return
 
-        # Fix Fortran compiler for Windows crosscompilation netlib
-        if (HOST_OS == "linux") and (platform == "windows-amd64"):
+        # Fix Fortran compiler for Windows crosscompilation netlib for ndarray-linalg package
+        if (BROKEN_HOST_OS == "linux") and (platform == "windows-amd64"):
             os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
 
         # # Target platform
@@ -170,19 +169,14 @@ class Broken:
 
         # Add target toolchain for Rust
         shell(rustup, "target", "add", targetTriple)
-
-        # Rust [(--feature, A) (--feature, B)] list
-        projectFeatures = Broken.ProjectFeatures[project]
-
-        def isFeatureOnProject(feature):
-            return any([feature in arguments for arguments in projectFeatures])
+        features = Broken.ProjectFeatures[project]
 
         # Build the binary
         shell(cargo, "build",
             "--bin", project,
             "--target", targetTriple,
+            "--features", features,
             "--profile", profile,
-            projectFeatures
         )
 
         # Post-compile binary namings and release name
@@ -196,7 +190,7 @@ class Broken:
         if upx: shell("upx", "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
 
         # Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
-        if (HOST_OS == "linux") and (platform == "windows-amd64") and (isFeatureOnProject("ndarray")):
+        if (BROKEN_HOST_OS == "linux") and (platform == "windows-amd64") and ("ndarray" in features):
             requiredSharedLibraries = [
                 "libgfortran-5.dll",
                 "libgcc_s_seh-1.dll",
@@ -232,22 +226,26 @@ class Broken:
     def requirements(self):
         """Install requirements based on platform"""
 
+        # "$ ./broken" -> "$ broken"
+        if not "." in os.environ.get("PATH").split(os.pathsep):
+            info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
+
         # # Install Requirements depending on host platform
-        if HOST_OS == "linux":
-            if LINUX_DISTRO == "arch":
+        if BROKEN_HOST_OS == "linux":
+            if BROKEN_LINUX_DISTRO == "arch":
                 self.shell(sudo, pacman, "-Syu", "base-devel gcc-fortran mingw-w64-toolchain upx".split())
                 return
 
-            self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+            self.warning(f"[{BROKEN_LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
-            if LINUX_DISTRO == "ubuntu":
+            if BROKEN_LINUX_DISTRO == "ubuntu":
                 self.shell(sudo, apt, "update")
                 self.shell(sudo, apt, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx".split())
 
-        elif HOST_OS == "windows":
+        elif BROKEN_HOST_OS == "windows":
             raise NotImplementedError("Broken releases on Windows not implemented")
 
-        elif HOST_OS == "macos":
+        elif BROKEN_HOST_OS == "macos":
             raise NotImplementedError("Broken releases on macOS not tested / implemented")
 
             # Install Homebrew

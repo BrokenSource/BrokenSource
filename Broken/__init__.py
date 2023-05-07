@@ -8,6 +8,7 @@ import tempfile
 import zipfile
 from contextlib import contextmanager
 from pathlib import Path
+from os import PathLike
 
 import arrow
 import distro
@@ -22,8 +23,12 @@ from dotmap import DotMap
 # ------------------------------------------------------------------------------------------------|
 
 # Distros IDs: https://distro.readthedocs.io/en/latest/
-LINUX_DISTRO = distro.id()
-HOST_OS = platform.system().lower()
+BROKEN_LINUX_DISTRO = distro.id()
+
+class BROKEN_HOST_OS:
+    LINUX   = platform.system() == "Linux"
+    WINDOWS = platform.system() == "Windows"
+    MACOS   = platform.system() == "Darwin"
 
 # ------------------------------------------------------------------------------------------------|
 

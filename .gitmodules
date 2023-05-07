@@ -28,3 +28,6 @@
 [submodule "Projects/PocketSolar"]
 	path = Projects/PocketSolar
 	url = https://github.com/BrokenSource/PocketSolar
+[submodule ".github/.github"]
+	path = .github/.github
+	url = https://github.com/BrokenSource/.github
