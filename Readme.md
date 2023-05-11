@@ -13,10 +13,6 @@
 
 # ● Running From the Source Code
 
-The `brakeit` script will automatically install dependencies and enter the developer environment, you can do that manually in the future with:
-- `python -m poetry install`
-- `python -m poetry shell`
-
 <br>
 
 <div align="center">

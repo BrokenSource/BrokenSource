@@ -5,7 +5,7 @@ BrokenEnum! {
     pub enum SpinMode {
         #[default]
         /// Calls `.main()` as fast as possible (spins)
-        Free,
+        Freewheel,
         /// Spins at a target frequency ("vsync")
         Frequency(f64),
         /// Calls `.main()` when Some(())
@@ -18,14 +18,15 @@ BrokenEnum! {
 pub trait SpinWise: Sized + Sync + Send + 'static {
 
     /// Default implementation on how to spin, override for custom behavior
-    fn freewheelMode(&self) -> SpinMode {
-        SpinMode::Free
+    fn spinMode(&self) -> SpinMode {
+        SpinMode::Freewheel
     }
 
     /// None means to stop the spin
     fn main(self: &Arc<Self>) -> Option<()>;
 
     /// Creates a thread that calls FreewheelWise::main() on self
+    /// according to `Spin::Spinmode`
     fn spin(self: Self) -> Arc<Self> {
         let ownerSelf = Arc::new(self);
         let threadSelf = ownerSelf.clone();
@@ -35,8 +36,8 @@ pub trait SpinWise: Sized + Sync + Send + 'static {
             let mut nextCall = Instant::now();
 
             loop {
-                match threadSelf.freewheelMode() {
-                    SpinMode::Free => {},
+                match threadSelf.spinMode() {
+                    SpinMode::Freewheel => {},
 
                     SpinMode::Frequency(f) => {
                         Thread::sleep(nextCall - Instant::now());

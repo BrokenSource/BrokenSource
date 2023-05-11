@@ -40,7 +40,7 @@ impl SpinWise for Scene {
         Some(())
     }
 
-    fn freewheelMode(&self) -> SpinMode {
+    fn spinMode(&self) -> SpinMode {
         let mut input = String::with_capacity(100);
 
         // Proof of concept: (1: "vsynced") (2: press enter to run) (3: free)
@@ -50,7 +50,7 @@ impl SpinWise for Scene {
                 std::io::stdin().read_line(&mut input).unwrap();
                 SpinMode::Ondemand(Some(()))
             },
-            _ => {SpinMode::Free}
+            _ => {SpinMode::Freewheel}
         }
     }
 }
