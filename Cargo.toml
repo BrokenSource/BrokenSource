@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------------------------------------|
 
 [package]
-name = "BrokenSourceProjects"
+name = "Broken-Source-Projects"
 version = "2023.5.10"
 edition = "2021"
 authors = ["Tremeschin"]
@@ -17,12 +17,14 @@ path = "Broken/Broken.rs"
 
 # ------------------------------------------------------------------------------------------------|
 
-# Ardmin project
 [[bin]]
 name = "Ardmin"
 path = "Projects/Ardmin/Ardmin.rs"
 
-# Harper project
+[[bin]]
+name = "AudioSight"
+path = "Projects/AudioSight/Main.rs"
+
 [[bin]]
 name = "Harper"
 path = "Projects/Harper/Main.rs"
@@ -31,21 +33,18 @@ required-features = [
     "midi",
 ]
 
-# HypeWord project
 [[bin]]
 name = "HypeWord"
 path = "Projects/HypeWord/Main.rs"
 required-features = []
 
-# Mock "testing" / staging
 [[bin]]
-name = "Mock"
+name = "Mock" #"testing" / staging
 path = "Projects/Mock/Main.rs"
 required-features = [
     "ffmpeg"
 ]
 
-# PhasorFlow project
 [[bin]]
 name = "PhasorFlow"
 path = "Projects/PhasorFlow/Main.rs"
@@ -54,7 +53,6 @@ required-features = [
     "ndarray"
 ]
 
-# PocketSolar project
 [[bin]]
 name = "PocketSolar"
 path = "Projects/PocketSolar/Main.rs"
@@ -63,7 +61,6 @@ required-features = [
     "serialport"
 ]
 
-# ShaderFlow project
 [[bin]]
 name = "ShaderFlow"
 path = "Projects/ShaderFlow/Main.rs"
@@ -93,7 +90,6 @@ ytdlp  = []
 # ------------------------------------------------------------------------------------------------|
 
 [dependencies]
-
 
 # Math / time / iterables
 libm = "0.2.5"

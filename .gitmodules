@@ -31,3 +31,9 @@
 [submodule ".github/.github"]
 	path = .github/.github
 	url = https://github.com/BrokenSource/.github
+[submodule "Projects/AudioSight"]
+	path = Projects/AudioSight
+	url = https://github.com/BrokenSource/AudioSight
+[submodule "Papers"]
+	path = Papers
+	url = https://github.com/BrokenSource/Papers

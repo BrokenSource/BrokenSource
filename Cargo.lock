@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "BrokenSourceProjects"
+name = "Broken-Source-Projects"
 version = "2023.5.10"
 dependencies = [
  "bincode",

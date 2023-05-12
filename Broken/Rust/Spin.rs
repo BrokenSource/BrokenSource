@@ -3,8 +3,8 @@ use crate::*;
 BrokenEnum! {
     #[derive(Clone)]
     pub enum SpinMode {
-        #[default]
         /// Calls `.main()` as fast as possible (spins)
+        #[default]
         Freewheel,
         /// Spins at a target frequency ("vsync")
         Frequency(f64),
@@ -13,7 +13,7 @@ BrokenEnum! {
     }
 }
 
-/// Syncronization primitive for callables with a few modes
+/// Syncronization primitive for callables with a few different modes
 /// Optimized for structs that has RwLock<F> fields with
 pub trait SpinWise: Sized + Sync + Send + 'static {
 
@@ -28,6 +28,8 @@ pub trait SpinWise: Sized + Sync + Send + 'static {
     /// Creates a thread that calls FreewheelWise::main() on self
     /// according to `Spin::Spinmode`
     fn spin(self: Self) -> Arc<Self> {
+        // Create an Arc reference from self that will
+        // be returned and one that will be moved to the thread
         let ownerSelf = Arc::new(self);
         let threadSelf = ownerSelf.clone();
 
