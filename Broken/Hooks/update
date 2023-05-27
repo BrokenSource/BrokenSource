@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Sync the submodule references to the latest commit
+# on the main repository (BrokenSource)
+
+# Change to the root of BrokenSource
+cd "$(dirname "$0")/../.."
+
+# Unstage everything for not committing unwanted changes
+git reset HEAD --quiet
+
+# Update all submodules to the latest commit
+git add $(git submodule --quiet foreach --recursive 'echo $path')
+
+# Commit changes
+git commit -m "[auto] Update submodules references"
+
+# Exit successfully
+exit 0
