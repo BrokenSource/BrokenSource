@@ -105,7 +105,7 @@ class Broken:
             shell(chmod, "+x", file)
 
         # Set git hooks path to Broken/Hooks
-        shell("git", "config", "core.hooksPath", "Broken/Hooks")
+        shell("git", "config", "core.hooksPath", "./Broken/Hooks")
 
     # Install Rust toolchain on macOS, Linux
     def installRust(self) -> None:
