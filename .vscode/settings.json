@@ -1,7 +1,11 @@
 {
-    // Annoying __pycache__, cleaned with pyclean
+    // Configure files and folders visibility
     "files.exclude": {
-        "**/__pycache__": true
+        // Annoying __pycache__, cleaned with pyclean
+        "**/__pycache__": true,
+
+        // Don't hide .git, it might be useful
+        "**/.git": false,
     },
 
     // Better comments colors

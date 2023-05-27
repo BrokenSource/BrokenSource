@@ -34,6 +34,7 @@ class Broken:
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
+        self.typerApp.command()(self.hooks)
         self.typerApp.command()(self.release)
         self.typerApp.command()(self.requirements)
         self.typerApp.command()(self.update)
@@ -95,6 +96,16 @@ class Broken:
         return date
 
     # # Commands section
+
+    def hooks(self) -> None:
+        """Uses Git hooks under the folder Broken/Hooks"""
+
+        # Make all hooks executable
+        for file in (self.Root/"Broken/Hooks").iterdir():
+            shell(chmod, "+x", file)
+
+        # Set git hooks path to Broken/Hooks
+        shell("git", "config", "core.hooksPath", "Broken/Hooks")
 
     # Install Rust toolchain on macOS, Linux
     def installRust(self) -> None:
