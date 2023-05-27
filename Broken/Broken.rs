@@ -20,6 +20,7 @@ pub use std::process::Command as Subprocess;
 pub use std::process::Stdio;
 pub use std::time::Duration;
 pub use std::time::Instant;
+pub use std::error::Error;
 
 // Sync, mutex, thread
 pub use std::thread as Thread;

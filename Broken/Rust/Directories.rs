@@ -9,7 +9,18 @@ lazy_static::lazy_static! {
     pub static ref Project: OnceCell<directories::ProjectDirs> = OnceCell::new();
 
     // Broken directories, for example, a single cache for FFmpeg downloads across projects
-    pub static ref Broken: directories::ProjectDirs = directories::ProjectDirs::from("com", "BrokenSource", "BrokenSource").unwrap();
+    pub static ref Common: directories::ProjectDirs = directories::ProjectDirs::from("com", "BrokenSource", "BrokenSource").unwrap();
+}
+
+// mkdir(exist_ok=True, parents=True)
+pub fn makeCommonDirectories() -> Result<(), Box<dyn Error>> {
+    info!("[Common Cache]      {:?}", Common.cache_dir());
+    info!("[Common Config]     {:?}", Common.config_dir());
+    info!("[Common Data]       {:?}", Common.data_dir());
+    std::fs::create_dir_all(Common.cache_dir())?;
+    std::fs::create_dir_all(Common.config_dir())?;
+    std::fs::create_dir_all(Common.data_dir())?;
+    return Ok(());
 }
 
 /// Sets up project directories based on given project name for Directories::Project

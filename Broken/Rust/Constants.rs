@@ -1,3 +1,4 @@
+pub use std::f64::consts::PI as pi;
 
 pub const AUTHOR: &str = "Tremeschin";
 pub mod About {

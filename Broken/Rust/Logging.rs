@@ -24,7 +24,6 @@ pub fn setupLog() {
             out.finish(format_args!(
                 "[{green}{:<4} ms{reset}]─[{level}{:<5}{reset}] ▸ {}",
                 start.elapsed().as_millis(),
-                // start.elapsed().as_micros(),
                 record.level(),
                 message,
                 level = format_args!("\x1B[{}m", logColors.get_color(&record.level()).to_fg_str()),

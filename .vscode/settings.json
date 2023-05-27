@@ -1,5 +1,23 @@
 {
+    // Annoying __pycache__, cleaned with pyclean
     "files.exclude": {
         "**/__pycache__": true
     },
+
+    // Better comments colors
+    "better-comments.tags": [
+        {"tag": "error",  "color": "#FF2D00"},
+        {"tag": "fixme",  "color": "#3498DB"},
+        {"tag": "warn",   "color": "#FCC203"},
+        {"tag": "todo",   "color": "#FF8C00"},
+        {"tag": "note",   "color": "#584576"},
+        {"tag": "//",     "color": "#98C379"}
+    ],
+
+    // Awesome font ligatures
+    "editor.fontLigatures": true,
+
+    // Better minimap
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.maxColumn": 100,
 }

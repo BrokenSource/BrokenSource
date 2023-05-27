@@ -1,0 +1,30 @@
+{
+    "recommendations": [
+        // Well, better toml!
+        "bungcip.better-toml",
+
+        // Inline errors
+        "usernamehw.errorlens",
+
+        // Lovely icons, better visibility
+        "PKief.material-icon-theme",
+
+        // Yeah, I know, but it's useful
+        "ms-python.python",
+
+        // Blazingly fast Rust analyzer
+        "rust-lang.rust-analyzer",
+
+        // Alt+B and you're good to go
+        "silesky.toggle-boolean",
+
+        // Save bytes, save the world
+        "shardulm94.trailing-spaces",
+
+        // Why this isn't default
+        "MarkosTh09.color-picker",
+
+        // Actually see special notes on the code
+        "aaron-bond.better-comments",
+    ]
+}

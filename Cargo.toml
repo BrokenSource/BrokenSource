@@ -1,21 +1,21 @@
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [package]
 name = "Broken-Source-Projects"
-version = "2023.5.10"
+version = "2023.5.27"
 edition = "2021"
 authors = ["Tremeschin"]
 description = "Broken Source Software Monorepo"
 repository = "https://github.com/BrokenSource/BrokenSource"
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [lib]
 name = "Broken"
 path = "Broken/Broken.rs"
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [[bin]]
 name = "Ardmin"
@@ -24,6 +24,9 @@ path = "Projects/Ardmin/Ardmin.rs"
 [[bin]]
 name = "AudioSight"
 path = "Projects/AudioSight/Main.rs"
+required-features = [
+    "cpal",
+]
 
 [[bin]]
 name = "Harper"
@@ -42,7 +45,8 @@ required-features = []
 name = "Mock" #"testing" / staging
 path = "Projects/Mock/Main.rs"
 required-features = [
-    "ffmpeg"
+    "ffmpeg",
+    "bevy",
 ]
 
 [[bin]]
@@ -50,7 +54,7 @@ name = "PhasorFlow"
 path = "Projects/PhasorFlow/Main.rs"
 required-features = [
     "skia",
-    "ndarray"
+    "ndarray",
 ]
 
 [[bin]]
@@ -58,7 +62,7 @@ name = "PocketSolar"
 path = "Projects/PocketSolar/Main.rs"
 required-features = [
     "egui",
-    "serialport"
+    "serialport",
 ]
 
 [[bin]]
@@ -71,12 +75,13 @@ required-features = [
     "shaders",
 ]
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [features]
 default = []
 audio   = ["dep:rodio"]
 cairo   = ["dep:cairo-rs"]
+cpal    = ["dep:cpal"]
 egui    = ["dep:egui", "dep:eframe"]
 midi    = ["dep:midly", "dep:bincode"]
 ndarray = ["dep:ndarray", "dep:ndarray-linalg"]
@@ -87,7 +92,7 @@ skia    = ["dep:skia-safe"]
 ffmpeg = []
 ytdlp  = []
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [dependencies]
 
@@ -112,8 +117,10 @@ clap = {version="4.0.10", features=["derive", "color", "error-context", "suggest
 fern = {version="0.6.1", features=["chrono", "colored", "date-based"]}
 log = "0.4.17"
 
-# # Others
+# Others
 lru-cache = "0.1.2"
+
+# Threading
 num_cpus = "1.15.0"
 rayon = "1.7.0"
 
@@ -142,10 +149,16 @@ once_cell = "1.17.1"
 serde_with = "2.3.1"
 rand = "0.8.5"
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
+
+# Feature: [bevy]
+bevy = {version="0.10.1", optional=true}
 
 # Feature: [cairo]
 cairo-rs = {version="0.17.0", optional=true, features=["pdf", "png", "svg"]}
+
+# Feature: [cpal] Audio capture, playback
+cpal = {version="0.15.2", optional=true}
 
 # Feature: [egui]
 eframe = {version="0.21.0", optional=true, features=["persistence"]}
@@ -154,6 +167,9 @@ egui = {version="0.21.0", optional=true, features=["persistence"]}
 # Feature: [midi]
 midly = {version="0.5.3", optional=true}
 bincode = {version="1.3.3", optional=true}
+
+# Feature: [reqwest] Requests, web, downloads
+reqwest = {version="0.11.17", optional=true, features=["blocking"]}
 
 # Feature: [serialport]
 serialport = {version="4.2.0", optional=true}
@@ -165,8 +181,11 @@ winit = {version="0.28.1", optional=true}
 # Feature: [skia]
 skia-safe = {version="0.60.0", optional=true}
 
-# Feature: [ndarray]
+# Feature: [ndarray] NumPy-like arrays, linear algebra
 ndarray = {version="0.15.6", optional=true}
+
+# FIXME: Packages above / below may be wrongly places by cargo add
+
 [target.'cfg(windows)'.dependencies]
 ndarray-linalg = {version="0.16.0", optional=true, features=["netlib-static"]}
 [target.'cfg(not(windows))'.dependencies]
@@ -176,7 +195,7 @@ ndarray-linalg = {version="0.16.0", optional=true, features=["intel-mkl-static"]
 # Feature: [audio]
 rodio = {version="0.17.1", optional=true}
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 [profile.ultra]
 inherits = "release"
@@ -185,4 +204,4 @@ opt-level = 3
 strip = true
 lto = true
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|

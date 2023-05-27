@@ -29,7 +29,7 @@
 	path = Projects/PocketSolar
 	url = https://github.com/BrokenSource/PocketSolar
 [submodule ".github/.github"]
-	path = .github/.github
+	path = .github/Special
 	url = https://github.com/BrokenSource/.github
 [submodule "Projects/AudioSight"]
 	path = Projects/AudioSight
@@ -37,3 +37,6 @@
 [submodule "Papers"]
 	path = Papers
 	url = https://github.com/BrokenSource/Papers
+[submodule "Website"]
+	path = Website
+	url = https://github.com/BrokenSource/Website

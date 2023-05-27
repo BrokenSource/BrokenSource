@@ -3,12 +3,12 @@ use crate::*;
 BrokenEnum! {
     #[derive(Clone)]
     pub enum SpinMode {
-        /// Calls `.main()` as fast as possible (spins)
+        /// Calls `.main()` as fast as possible
         #[default]
         Freewheel,
-        /// Spins at a target frequency ("vsync")
+        /// Calls `.main()` at a target frequency ("vsync"), guaranteed if enough CPU resources
         Frequency(f64),
-        /// Calls `.main()` when Some(())
+        /// Calls `.main()` when internal value is Some
         Ondemand(Option<()>),
     }
 }
@@ -18,7 +18,7 @@ BrokenEnum! {
 pub trait SpinWise: Sized + Sync + Send + 'static {
 
     /// Default implementation on how to spin, override for custom behavior
-    fn spinMode(&self) -> SpinMode {
+    fn spin_mode(&self) -> SpinMode {
         SpinMode::Freewheel
     }
 
@@ -27,23 +27,22 @@ pub trait SpinWise: Sized + Sync + Send + 'static {
 
     /// Creates a thread that calls FreewheelWise::main() on self
     /// according to `Spin::Spinmode`
-    fn spin(self: Self) -> Arc<Self> {
+    fn spin(self) -> Arc<Self> {
         // Create an Arc reference from self that will
         // be returned and one that will be moved to the thread
-        let ownerSelf = Arc::new(self);
-        let threadSelf = ownerSelf.clone();
+        let owned_self = Arc::new(self);
+        let thread_self = owned_self.clone();
 
         Thread::spawn(move || {
-            let main = || SpinWise::main(&threadSelf);
-            let mut nextCall = Instant::now();
+            let mut next_call = Instant::now();
 
             loop {
-                match threadSelf.spinMode() {
+                match thread_self.spin_mode() {
                     SpinMode::Freewheel => {},
 
                     SpinMode::Frequency(f) => {
-                        Thread::sleep(nextCall - Instant::now());
-                        nextCall += Duration::from_secs_f64(1.0 / f);
+                        Thread::sleep(next_call - Instant::now());
+                        next_call += Duration::from_secs_f64(1.0 / f);
                     },
 
                     SpinMode::Ondemand(mut _value) => {
@@ -55,11 +54,11 @@ pub trait SpinWise: Sized + Sync + Send + 'static {
                 };
 
                 // Call main, exit when told so
-                if main().is_none() {break}
+                if SpinWise::main(&thread_self).is_none() {break}
             }
         });
 
-        return ownerSelf;
+        return owned_self;
     }
 }
 

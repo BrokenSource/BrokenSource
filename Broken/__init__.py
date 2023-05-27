@@ -20,7 +20,7 @@ import toml
 import typer
 from dotmap import DotMap
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 # Distros IDs: https://distro.readthedocs.io/en/latest/
 BROKEN_LINUX_DISTRO = distro.id()
@@ -30,7 +30,7 @@ class BROKEN_HOST_OS:
     WINDOWS = platform.system() == "Windows"
     MACOS   = platform.system() == "Darwin"
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 # Add milliseconds to timedelta for logging
 forbiddenfruit.curse(datetime.timedelta, "milliseconds", property(lambda self: f"{self.microseconds/1000:5.0f}"))
@@ -52,7 +52,7 @@ trace    = logger.trace
 success  = logger.success
 critical = logger.critical
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|
 
 # ['', True, "string", None, "--a"] -> [True, "string", "--a"]
 truthyList = lambda stuff: [x for x in stuff if x]
@@ -93,4 +93,4 @@ def download(url) -> Path:
 
 mkdir = lambda path: Path(path).mkdir(parents=True, exist_ok=True)
 
-# ------------------------------------------------------------------------------------------------|
+# -------------------------------------------------------------------------------------------------|

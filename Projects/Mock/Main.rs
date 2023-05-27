@@ -40,7 +40,7 @@ impl SpinWise for Scene {
         Some(())
     }
 
-    fn spinMode(&self) -> SpinMode {
+    fn spin_mode(&self) -> SpinMode {
         let mut input = String::with_capacity(100);
 
         // Proof of concept: (1: "vsynced") (2: press enter to run) (3: free)
