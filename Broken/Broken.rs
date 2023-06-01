@@ -2,9 +2,10 @@
 #![allow(non_upper_case_globals)]
 
 // Mostly std
-pub use std::collections::HashMap;
-pub use std::collections::HashSet;
 pub use std::collections::BTreeMap;
+pub use hashbrown::HashMap;
+pub use hashbrown::HashSet;
+pub use std::collections::VecDeque;
 pub use std::fs::File;
 pub use std::io::BufReader;
 pub use std::io::BufRead;
