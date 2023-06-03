@@ -5,7 +5,7 @@ RUSTUP_TOOLCHAIN = "stable"
 
 # Binaries shorthands
 python = system.executable
-sh = "sh" if (not BROKEN_HOST_OS.WINDOWS) else None
+sh = "sh" if (not BrokenPlatform.Windows) else None
 poetry = [python, "-m", "poetry"]
 pip = [python, "-m", "pip"]
 pacman = "pacman"
@@ -111,7 +111,7 @@ class Broken:
     def installRust(self) -> None:
 
         # Install rustup for toolchains
-        if not all([binaryExists(b) for b in ["rustup", "rustc", "cargo"]]):
+        if not all([binary_exists(b) for b in ["rustup", "rustc", "cargo"]]):
             info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
@@ -119,7 +119,7 @@ class Broken:
                 windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
                 linux=  "https://sh.rustup.rs",
                 macos=  "https://sh.rustup.rs"
-            ).get(BROKEN_HOST_OS)
+            ).get(BrokenPlatform)
 
             # Download and install Rust
             with download(rustInstaller) as installer:
@@ -169,7 +169,7 @@ class Broken:
             return
 
         # Fix Fortran compiler for Windows crosscompilation netlib for ndarray-linalg package
-        if (BROKEN_HOST_OS == "linux") and (platform == "windows-amd64"):
+        if (BrokenPlatform == "linux") and (platform == "windows-amd64"):
             os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
 
         # # Target platform
@@ -201,7 +201,7 @@ class Broken:
         if upx: shell("upx", "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
 
         # Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
-        if (BROKEN_HOST_OS == "linux") and (platform == "windows-amd64") and ("ndarray" in features):
+        if (BrokenPlatform == "linux") and (platform == "windows-amd64") and ("ndarray" in features):
             requiredSharedLibraries = [
                 "libgfortran-5.dll",
                 "libgcc_s_seh-1.dll",
@@ -242,21 +242,21 @@ class Broken:
             info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
 
         # # Install Requirements depending on host platform
-        if BROKEN_HOST_OS == "linux":
-            if BROKEN_LINUX_DISTRO == "arch":
+        if BrokenPlatform == "linux":
+            if LINUX_DISTRO == "arch":
                 self.shell(sudo, pacman, "-Syu", "base-devel gcc-fortran mingw-w64-toolchain upx".split())
                 return
 
-            self.warning(f"[{BROKEN_LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+            self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
-            if BROKEN_LINUX_DISTRO == "ubuntu":
+            if LINUX_DISTRO == "ubuntu":
                 self.shell(sudo, apt, "update")
                 self.shell(sudo, apt, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx".split())
 
-        elif BROKEN_HOST_OS == "windows":
+        elif BrokenPlatform == "windows":
             raise NotImplementedError("Broken releases on Windows not implemented")
 
-        elif BROKEN_HOST_OS == "macos":
+        elif BrokenPlatform == "macos":
             raise NotImplementedError("Broken releases on macOS not tested / implemented")
 
             # Install Homebrew

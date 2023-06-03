@@ -23,6 +23,8 @@ toml = "^0.10.2"
 typer = "^0.7.0"
 brakeit = {path="./Broken/Brakeit", develop=true}
 gitpython = "^3.1.31"
+halo = "^0.0.31"
+appdirs = "^1.4.4"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"
