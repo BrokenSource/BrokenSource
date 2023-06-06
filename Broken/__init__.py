@@ -1,4 +1,6 @@
 import datetime
+import importlib
+import inspect
 import os
 import platform
 import shutil
@@ -6,6 +8,7 @@ import subprocess
 import sys as system
 import tempfile
 import zipfile
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from os import PathLike
 from os import environ as env
@@ -162,17 +165,5 @@ def make_executable(path) -> None:
     if BrokenPlatform.Linux or BrokenPlatform.MacOS:
         info(f"Make Executable [{path}]")
         shell("chmod", "+x", path)
-
-def need_sudo() -> None:
-    if BrokenPlatform.Linux or BrokenPlatform.MacOS:
-        info("Requesting sudo")
-        shell("sudo", "-v")
-
-        # Keep sudo alive
-        def keepSudoAlive():
-            while True:
-                shell("sudo", "-v", echo=False)
-                sleep(1)
-        Thread(target=keepSudoAlive, daemon=True).start()
 
 # -------------------------------------------------------------------------------------------------|
