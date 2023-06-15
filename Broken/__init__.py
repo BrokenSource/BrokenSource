@@ -28,6 +28,7 @@ import halo
 import loguru
 import pygit2
 import requests
+import rich
 import toml
 import typer
 from appdirs import AppDirs
@@ -89,6 +90,7 @@ def shell(*args, output=False, Popen=False, echo=True, **kwargs):
 # # Unix-like Python ported functions
 
 def mkdir(path: PathLike):
+    path = Path(path)
     if path.exists(): return
     info(f"Creating directory {path}")
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -98,8 +100,21 @@ def cp(source: PathLike, destination: PathLike):
     shutil.copy2(source, destination)
 
 # Path may be a file or directory
-def rm(path):
-    info(f"Removing Path [{path}]")
+def rmdir(path: PathLike, confirm=False):
+    path = Path(path)
+    info(f"Removing Path [{path}] ({confirm=})")
+
+    # Symlinks are safe to remove
+    if path.is_symlink():
+        info("Path is a symlink, is safe to remove")
+        path.unlink()
+        return
+
+    # Confirm removal: directory contains data
+    if confirm and not rich.prompt.Confirm.ask(f"Confirm removing path ({path})"):
+        return
+
+    # Remove directory
     shutil.rmtree(path)
 
 @contextmanager
@@ -123,17 +138,27 @@ class BrokenPlatform:
 
 def make_project_directories(app_name: str="Broken", app_author: str="BrokenSource") -> DotMap:
     """Make directories for a project, returns a DotMap of directories
-    .shared is the root, have .cache, .config, .data, .externals"""
+    .SHARED, have .CACHE, .CONFIG, .DATA, .EXTERNALS"""
     directories = DotMap()
-    directories.shared    = Path(AppDirs(app_name, app_author).user_data_dir)
-    directories.cache     = directories.shared/"Cache"
-    directories.config    = directories.shared/"Config"
-    directories.data      = directories.shared/"Data"
-    directories.externals = directories.shared/"Externals"
+    directories.ROOT    = Path(AppDirs(app_name, app_author).user_data_dir)
+    directories.CACHE     = directories.ROOT/"Cache"
+    directories.CONFIG    = directories.ROOT/"Config"
+    directories.DATA      = directories.ROOT/"Data"
+    directories.EXTERNALS = directories.ROOT/"Externals"
     for directory in directories.values(): mkdir(directory)
 
-# Constants
+# Root of BrokenSource Monorepo
+BROKEN_ROOT = Path(__file__).parent.parent.absolute().resolve()
+SYSTEM_ROOT = Path("/").absolute().resolve()
+
+# Where Broken shall be placed as a symlink to be shared
+# (on other pyproject.toml have it as broken = {path="/Broken", develop=true})
+SHARED_BROKEN_DIRECTORY = SYSTEM_ROOT/"Broken"
+
+# Shared directories of Broken package
 BROKEN_DIRECTORIES = make_project_directories()
+
+# Constants
 USERNAME = env.get("USER") or env.get("USERNAME")
 HOME_DIR = Path.home()
 

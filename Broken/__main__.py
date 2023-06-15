@@ -29,30 +29,30 @@ class Broken:
     FindProjectLowercase = {}
 
     def __init__(self) -> None:
-        self.installRust()
+        self.install_rust()
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
         self.typerApp.command()(self.hooks)
+        self.typerApp.command()(self.symlink)
         self.typerApp.command()(self.release)
         self.typerApp.command()(self.requirements)
         self.typerApp.command()(self.update)
 
         # Directories
-        self.Root     = Path(__file__).absolute().parent.parent
-        self.Releases = self.Root/"Release"
+        self.Releases = BROKEN_ROOT/"Release"
         self.Build    = self.Releases/"Build"
 
         # Cargo dictionary
-        self.cargotoml = DotMap(toml.loads((self.Root/"Cargo.toml").read_text()))
+        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT/"Cargo.toml").read_text()))
 
         # Add Typer commands for all projects
         for project in self.cargotoml["bin"]:
             projectName = project["name"]
 
             # Don't add non existing projects (private repos)
-            if not (self.Root/project["path"]).exists(): continue
+            if not (BROKEN_ROOT/project["path"]).exists(): continue
 
             # List of required features specified in Cargo.tml
             Broken.ProjectFeatures[projectName] = ','.join(project.get("required-features", ["default"]))
@@ -69,7 +69,8 @@ class Broken:
             # Create Typer command
             self.typerApp.command(
                 name=projectName.lower(),
-                help=f"Project: {projectName}",
+                help=f"Run {projectName} project",
+                rich_help_panel="Projects",
 
                 # Catch extra (unknown to typer) arguments that are sent to Rust
                 context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -88,9 +89,9 @@ class Broken:
         date = arrow.utcnow().format("YYYY.M.D")
 
         # Find "version=" line and set it to "version={date}"", write back to file
-        (self.Root/"Cargo.toml").write_text('\n'.join(
+        (BROKEN_ROOT/"Cargo.toml").write_text('\n'.join(
             [line if not line.startswith("version") else f'version = "{date}"'
-            for line in (self.Root/"Cargo.toml").read_text().split("\n")]
+            for line in (BROKEN_ROOT/"Cargo.toml").read_text().split("\n")]
         ))
 
         return date
@@ -101,14 +102,14 @@ class Broken:
         """Uses Git hooks under the folder Broken/Hooks"""
 
         # Make all hooks executable
-        for file in (self.Root/"Broken/Hooks").iterdir():
+        for file in (BROKEN_ROOT/"Broken/Hooks").iterdir():
             shell(chmod, "+x", file)
 
         # Set git hooks path to Broken/Hooks
         shell("git", "config", "core.hooksPath", "./Broken/Hooks")
 
     # Install Rust toolchain on macOS, Linux
-    def installRust(self) -> None:
+    def install_rust(self) -> None:
 
         # Install rustup for toolchains
         if not all([binary_exists(b) for b in ["rustup", "rustc", "cargo"]]):
@@ -131,9 +132,23 @@ class Broken:
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
+    def symlink(self) -> None:
+        """Symlinks current directory to SHARED_BROKEN_DIRECTORY for sharing code in External projects"""
+        if BrokenPlatform.Linux or BrokenPlatform.MacOS:
+            shell("sudo", "ln", "-snf", BROKEN_ROOT, SHARED_BROKEN_DIRECTORY)
+        elif BrokenPlatform.Windows:
+            warning("Windows symlink requires admin privileges on current shell")
+            rmdir(SHARED_BROKEN_DIRECTORY, confirm=True)
+            Path(SHARED_BROKEN_DIRECTORY).symlink_to(BROKEN_ROOT, target_is_directory=True)
+        else:
+            error("Unknown platform to symlink")
+            return
+
+        success(f"Symlink created [{SHARED_BROKEN_DIRECTORY}] -> [{BROKEN_ROOT}]")
+
     def update(self):
         """Update Cargo, Python dependencies and Rust lang"""
-        self.installRust()
+        self.install_rust()
         shell(cargo, "update")
         shell(rustup, "update")
         shell(poetry, "update")
