@@ -33,43 +33,43 @@ class Broken:
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
-        self.typerApp = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
-        self.typerApp.command()(self.hooks)
-        self.typerApp.command()(self.symlink)
-        self.typerApp.command()(self.release)
-        self.typerApp.command()(self.requirements)
-        self.typerApp.command()(self.update)
+        self.typer_app = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
+        self.typer_app.command()(self.hooks)
+        self.typer_app.command()(self.install)
+        self.typer_app.command()(self.release)
+        self.typer_app.command()(self.requirements)
+        self.typer_app.command()(self.update)
 
         # Directories
-        self.Releases = BROKEN_ROOT/"Release"
-        self.Build    = self.Releases/"Build"
+        self.RELEASES_DIR = BROKEN_ROOT/"Release"
+        self.BUILD_DIR    = self.RELEASES_DIR/"Build"
 
         # Cargo dictionary
         self.cargotoml = DotMap(toml.loads((BROKEN_ROOT/"Cargo.toml").read_text()))
 
         # Add Typer commands for all projects
         for project in self.cargotoml["bin"]:
-            projectName = project["name"]
+            project_name = project["name"]
 
             # Don't add non existing projects (private repos)
             if not (BROKEN_ROOT/project["path"]).exists(): continue
 
             # List of required features specified in Cargo.tml
-            Broken.ProjectFeatures[projectName] = ','.join(project.get("required-features", ["default"]))
-            Broken.FindProjectLowercase[projectName.lower()] = projectName
+            Broken.ProjectFeatures[project_name] = ','.join(project.get("required-features", ["default"]))
+            Broken.FindProjectLowercase[project_name.lower()] = project_name
 
             # This is a bit sophisticated, projectName should be kept after the callable
             # is created, so we have a method that creates a method with given string
-            def runProjectTemplate(projectName):
-                def runProject(ctx: typer.Context, release: bool=False):
-                    release = ["--profile", "release"] if release else []
-                    shell(cargo, "run", "--bin", projectName, "--features", Broken.ProjectFeatures[projectName], release, "--", ctx.args)
+            def run_project_template(project_name):
+                def runProject(ctx: typer.Context, debug: bool=False):
+                    release = ["--profile", "release"] if not debug else []
+                    shell(cargo, "run", "--bin", project_name, "--features", Broken.ProjectFeatures[project_name], release, "--", ctx.args)
                 return runProject
 
             # Create Typer command
-            self.typerApp.command(
-                name=projectName.lower(),
-                help=f"Run {projectName} project",
+            self.typer_app.command(
+                name=project_name.lower(),
+                help=f"Run {project_name} project",
                 rich_help_panel="Projects",
 
                 # Catch extra (unknown to typer) arguments that are sent to Rust
@@ -78,10 +78,10 @@ class Broken:
                 # Rust projects implement their own --help
                 add_help_option=False,
 
-            )(runProjectTemplate(projectName))
+            )(run_project_template(project_name))
 
         # Execute the CLI
-        self.typerApp()
+        self.typer_app()
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -116,14 +116,14 @@ class Broken:
             info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
-            rustInstaller = dict(
+            rust_installer = dict(
                 windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
                 linux=  "https://sh.rustup.rs",
                 macos=  "https://sh.rustup.rs"
             ).get(BrokenPlatform)
 
             # Download and install Rust
-            with download(rustInstaller) as installer:
+            with download(rust_installer) as installer:
                 shell(sh, installer, "--profile", "default", "-y")
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
@@ -132,19 +132,29 @@ class Broken:
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
-    def symlink(self) -> None:
-        """Symlinks current directory to SHARED_BROKEN_DIRECTORY for sharing code in External projects"""
-        if BrokenPlatform.Linux or BrokenPlatform.MacOS:
-            shell("sudo", "ln", "-snf", BROKEN_ROOT, SHARED_BROKEN_DIRECTORY)
-        elif BrokenPlatform.Windows:
-            warning("Windows symlink requires admin privileges on current shell")
-            rmdir(SHARED_BROKEN_DIRECTORY, confirm=True)
-            Path(SHARED_BROKEN_DIRECTORY).symlink_to(BROKEN_ROOT, target_is_directory=True)
-        else:
-            error("Unknown platform to symlink")
-            return
+    def install(self) -> None:
+        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `broken` command available globally by adding it to PATH"""
+        # FIXME: How to handle multiple users (not common)? pyproject.toml shall point to /Broken as the shared directory, but it can't source env vars, that would be the ideal case
 
-        success(f"Symlink created [{SHARED_BROKEN_DIRECTORY}] -> [{BROKEN_ROOT}]")
+        if BrokenPlatform.Unix:
+            # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
+            if not Path(BROKEN_SHARED_DIRECTORY).resolve() == BROKEN_ROOT:
+                info(f"Creating symlink [{BROKEN_SHARED_DIRECTORY}] -> [{BROKEN_ROOT}]")
+                shell("sudo", "ln", "-snf", BROKEN_ROOT, BROKEN_SHARED_DIRECTORY)
+
+        # FIXME: Does this work?
+        elif BrokenPlatform.Windows:
+            if not ctypes.windll.shell32.IsUserAnAdmin():
+                warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
+                return
+            rmdir(BROKEN_SHARED_DIRECTORY, confirm=True)
+            Path(BROKEN_SHARED_DIRECTORY).symlink_to(BROKEN_ROOT, target_is_directory=True)
+
+        else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
+
+        # Symlink created, add to PATH the shared directory
+        success(f"Symlink created [{BROKEN_SHARED_DIRECTORY}] -> [{BROKEN_ROOT}]")
+        ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIRECTORY)
 
     def update(self):
         """Update Cargo, Python dependencies and Rust lang"""
@@ -155,9 +165,10 @@ class Broken:
 
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
-        mkdir(self.Releases)
+        mkdir(self.RELEASES_DIR)
 
-        platformsConfiguration = {
+        # Target triple, compiled extension, release extension
+        platforms_configuration = {
             "linux-amd64":   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
             # "linux-arm":     ("aarch64-unknown-linux-gnu", "",     ".bin"),
             "windows-amd64": ("x86_64-pc-windows-gnu",     ".exe", ".exe"),
@@ -177,7 +188,7 @@ class Broken:
 
         # Acronym for all available platforms
         if platform == "all":
-            for platform in platformsConfiguration.keys():
+            for platform in platforms_configuration.keys():
                 try: self.release(project, platform, profile, upx)
                 except FileNotFoundError:
                     error(f"Could not compile [{project}] for [{platform}]")
@@ -188,36 +199,36 @@ class Broken:
             os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
 
         # # Target platform
-        (targetTriple, compileSuffix, releaseSuffix) = platformsConfiguration[platform]
+        (target_triple, compiled_extension, release_extension) = platforms_configuration[platform]
 
         # Update dates
         date = self.date()
 
         # Add target toolchain for Rust
-        shell(rustup, "target", "add", targetTriple)
+        shell(rustup, "target", "add", target_triple)
         features = Broken.ProjectFeatures[project]
 
         # Build the binary
         shell(cargo, "build",
             "--bin", project,
-            "--target", targetTriple,
+            "--target", target_triple,
             "--features", features,
             "--profile", profile,
         )
 
         # Post-compile binary namings and release name
-        compiledBinary   = self.Build/targetTriple/profile/f"{project}{compileSuffix}"
-        releaseBinary    = self.Releases/f"{project.lower()}-{platform}-{date}{releaseSuffix}"
-        releaseZip       = releaseBinary.parent/(releaseBinary.stem + ".zip")
-        releaseBinaryUPX = releaseBinary.parent/(releaseBinary.stem + f"-upx{releaseSuffix}")
+        compiled_binary    = self.BUILD_DIR/target_triple/profile/f"{project}{compiled_extension}"
+        release_binary     = self.RELEASES_DIR/f"{project.lower()}-{platform}-{date}{release_extension}"
+        release_zip        = release_binary.parent/(release_binary.stem + ".zip")
+        release_binary_UPX = release_binary.parent/(release_binary.stem + f"-upx{release_extension}")
 
         # Default release and UPX
-        shutil.copy(compiledBinary, releaseBinary)
-        if upx: shell("upx", "-q", "-9", "--lzma", releaseBinary, "-o", releaseBinaryUPX)
+        shutil.copy(compiled_binary, release_binary)
+        if upx: shell("upx", "-q", "-9", "--lzma", release_binary, "-o", release_binary_UPX)
 
         # Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
         if (BrokenPlatform == "linux") and (platform == "windows-amd64") and ("ndarray" in features):
-            requiredSharedLibraries = [
+            required_shared_libraries = [
                 "libgfortran-5.dll",
                 "libgcc_s_seh-1.dll",
                 "libwinpthread-1.dll",
@@ -230,15 +241,15 @@ class Broken:
             ]
 
             # Zip the releaseBinary and all the required shared libraries
-            with zipfile.ZipFile(releaseZip, "w") as zip:
+            with zipfile.ZipFile(release_zip, "w") as zip:
                 def addFileToZip(file: Path, remove=False):
                     zip.write(file, file.name)
                     if remove: file.unlink()
 
-                if upx: addFileToZip(releaseBinaryUPX, remove=True)
-                addFileToZip(releaseBinary, remove=True)
+                if upx: addFileToZip(release_binary_UPX, remove=True)
+                addFileToZip(release_binary, remove=True)
 
-                for library in requiredSharedLibraries:
+                for library in required_shared_libraries:
                     for path in COMMON_MINGW_DLL_PATHS:
                         try:
                             addFileToZip(path/library)

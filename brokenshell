@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# cd where the script is, make self executable
+cd "$(dirname "$0")"
+chmod +x brokenshell
+
+# If poetry is not installed, install it
+if ! hash poetry 2> /dev/null; then
+    curl -sSL https://install.python-poetry.org | python3 -
+fi
+
+# Create virtualenv if it doesn't exist
+if [ -z "$(poetry env info --path)" ]; then
+    poetry install
+fi
+
+# Enter poetry shell and virtualenv
+poetry shell
