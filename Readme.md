@@ -6,9 +6,15 @@
     :: Broken Source Software ::
 </div>
 
-<sub><i><b>Note:</b> This is a "Developer Mode" repository, not all projects are Open Source yet, and this will not be the best Rust code you ever read, I'm still learning</i></sub>
+This _mono_-repository hosts the **shared library** called **Broken** (Rust and Python), a convenience script of the same name,`broken`, and **submodules** of **all projects**.
+
+- **Broken** is intended to be a _Framework_ for all other projects, a solution to manage them all in a single place.
+
+**Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus.
 
 
+
+<br>
 <br>
 
 # ● Running From the Source Code
@@ -30,21 +36,48 @@ Please read all instructions before executing them for tips and notes
 
 - Open a Terminal on some directory you want to clone the repository and run:
 
-<div align="center">
 
-  ```ps
-  # Installs "brakeit", our convenience script
-  python3 -m pip install git+https://github.com/brokensource/brakeit
-  ```
-  ```ps
-  # Clones the monorepo and public submodules
-  python3 -m brakeit
-  ```
-</div>
+```ps
+# Clone the bare monorepository
+$ git clone https://github.com/BrokenSource/BrokenSource
+```
+```ps
+# Enter the repository folder
+$ cd BrokenSource
+```
+```ps
+# Download poetry, setup virtualenv and enter poetry shell
+# > "bash" is only required for the first run
+$ bash ./brokenshell
+```
+```ps
+# Clone public submodules of projects
+$ broken clone
+```
 
-Now run `broken` and see all available commands!
+And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
 
-<sub><b>Note:</b> On subsequent runs, open the terminal inside `BrokenSource` folder and run `poetry shell` then you'll have `broken` available</sub>
+<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and run `./brokenshell` then you'll have `broken` available again</sub>
+
+For projects that requires external packages to be installed, you _can_ run the following command:
+
+```ps
+# Attempts to install all needed dependencies for your platform
+$ broken requirements
+```
+
+I can't exaustively test all platforms, feel free to pull request any missing package, dependency and fixes.
+
+As a bonus, you can _"install"_ `broken` with:
+
+```ps
+# Symlinks Broken to /Broken and adds it to PATH
+$ broken install
+```
+
+- After restarting the shell you can just type `brokenshell` anywhere to get access to `broken`
+
+- External Python projects that depends on `broken` will be able to import it from anywhere, point the dependency to `/Broken`
 
 
 
@@ -77,6 +110,41 @@ Now run `broken` and see all available commands!
 
 
 <br>
+<br>
 
-# ● License
-- All projects have their own license, unless otherwise specified in the file or `Readme.md`, all files are subject to the `License.md` on their respective repository
+# ● Contributing
+Thanks for taking your time to contribute to Broken Source Software projects!!
+
+- Apart from the usual "be nice", "be respectful" and "don't be a jerk", we have some guidelines to help you get started.
+
+## ▸ Help Needed
+- Designer needed for the logos and consistent art
+- Packaging binaries on Linux and MacOS package managers
+
+## ▸ Reporting Issues
+- **We do not** test enough or at all the code on Windows or MacOS
+- Always give **minimal steps** to reproduce the error (instructions or code)
+- Most projects deal with Audio or Video, issues may be file-specific
+- **We only support the latest versions of any given project**, we are rolling-release
+  - <sub>We'll still help troubleshooting older code or releases, just don't except back-porting</sub>
+
+## ▸ Suggesting Enhancements
+- Rejection of ideas on Free and Open Source Software is a common and intimidating problem to newcomers, so we want to reduce the fear and cooperate with you
+- Not all suggestions matches the project original idea
+- No commentaries are criticizing your person, rather your *work*
+- **Stuff needs time and effort to be implemented**
+- Feel absolutely free to debate on choices and ideas for the projects
+
+
+
+<br>
+<br>
+
+# ● License and Fair Use
+- All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository.
+
+- We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse.
+
+- We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow.
+
+<sub>These are not legal advice, just our thoughts and intentions.</sub>

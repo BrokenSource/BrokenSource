@@ -1,48 +1,116 @@
-import ctypes
-import datetime
-import importlib
-import inspect
-import os
-import platform
-import random
-import re
-import shutil
-import subprocess
 import sys as system
-import tempfile
-import zipfile
-from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import dataclass
-from io import BytesIO
-from os import PathLike
-from os import environ as env
-from os import getcwd as working_directory
-from pathlib import Path
-from shutil import which as find_binary
-from subprocess import Popen, check_output, run
-from sys import argv
-from threading import Thread
-from time import sleep
-from typing import Any, Dict, List, Tuple, Union
-from uuid import uuid4 as uuid
-
-import arrow
-import distro
-import forbiddenfruit
-import halo
-import loguru
-import pygit2
-import requests
-import rich
-import rich.prompt
-import toml
-import typer
-from appdirs import AppDirs
-from dotmap import DotMap
+from functools import wraps
 
 # -------------------------------------------------------------------------------------------------|
+# Ignore import errors inside BrokenImports context, by patching the __import__ function temporarily
+# All that for a consistent import names across all projects that depends on Broken
+
+# Get the previous N call stack scope (.f_globals for the globals() of it)
+get_previous_scope = lambda n: system._getframe(n)
+
+# Copy the builtin __import__ function
+__import__ = deepcopy(__builtins__["__import__"])
+
+# The original __import__ function and its behaviour
+@wraps(__import__)
+def import_builtin(*args, **kwargs):
+    return __import__(*args, **kwargs)
+
+class BrokenImportError:
+
+    """This class is returned when an import fails inside BrokenImports() context"""
+    def __getattribute__(self, _): return self
+    def __getitem__(self, _): return []
+    def __name__(self): return "H"
+
+class BrokenImports:
+
+    @wraps(import_builtin)
+    def import_ignore_errors(self, *args, **kwargs):
+        """The new __import__ function that ignores errors, a "copy" of __import__"""
+        try:
+            return import_builtin(*args, **kwargs)
+        except (ModuleNotFoundError, ImportError, TypeError) as Error:
+            # Do raise errors on imports inside *other* modules
+            if (get_previous_scope(2) != self.scope):
+                raise Error
+        except Exception as Error:
+            raise Error
+
+        # Return import error class
+        return BrokenImportError()
+
+    def __set_import_method(self, import_callable):
+        """Change the BrokenImports context's import method (previous stacks)"""
+        get_previous_scope(2).f_globals["__builtins__"]["__import__"] = import_callable
+
+    def __enter__(self) -> None:
+        """Patch the __import__ function to ignore errors on current scope only"""
+        self.__set_import_method(self.import_ignore_errors)
+        self.scope = get_previous_scope(2)
+
+    def __exit__(self, *_) -> None:
+        """Restore the __import__ function for original behaviour"""
+        self.__set_import_method(import_builtin)
+
+# -------------------------------------------------------------------------------------------------|
+
+with BrokenImports():
+    import ctypes
+    import datetime
+    import hashlib
+    import importlib
+    import inspect
+    import os
+    import platform
+    import random
+    import re
+    import shutil
+    import subprocess
+    import tempfile
+    import zipfile
+    from abc import ABC, abstractmethod
+    from contextlib import suppress
+    from dataclasses import dataclass
+    from io import BytesIO
+    from math import *
+    from os import PathLike
+    from os import environ as env
+    from os import getcwd as working_directory
+    from pathlib import Path
+    from shutil import which as find_binary
+    from subprocess import PIPE, Popen, check_output, run
+    from sys import argv
+    from threading import Thread
+    from time import sleep
+    from time import time as now
+    from typing import Any, Dict, Iterable, List, Tuple, Union
+    from uuid import uuid4 as uuid
+
+    import arrow
+    import distro
+    import forbiddenfruit
+    import halo
+    import loguru
+    import moderngl
+    import numpy
+    import openai
+    import PIL
+    import pygit2
+    import requests
+    import requests_cache
+    import rich
+    import rich.prompt
+    import toml
+    import transformers
+    import typer
+    from appdirs import AppDirs
+    from dotmap import DotMap
+    # from numpy import *
+    from PIL import Image
+    from tqdm import tqdm
 
 # Add milliseconds to timedelta for logging
 forbiddenfruit.curse(
@@ -74,14 +142,22 @@ def add_logging_file(path: PathLike):
         )
     )
 
-# self.* functions logging
-info     = logger.info
-warning  = logger.warning
-error    = logger.error
-debug    = logger.debug
-trace    = logger.trace
-success  = logger.success
-critical = logger.critical
+def _custom_loglevel(name: str, no: int, color: str):
+    loguru.logger.level(name, no, color)
+    loguru.logger.name = lambda message, **kwargs: logger.log(name, message, **kwargs)
+    return loguru.logger.name
+
+# Logging functions
+info      = logger.info
+warning   = logger.warning
+error     = logger.error
+debug     = logger.debug
+trace     = logger.trace
+success   = logger.success
+critical  = logger.critical
+exception = logger.exception
+fixme     = _custom_loglevel("FIXME", 35, "<cyan><bold>")
+todo      = _custom_loglevel("TODO",  35, "<blue><bold>")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -106,13 +182,19 @@ def shell(*args, output=False, Popen=False, echo=True, **kwargs):
     else:      return subprocess.run(command, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
-# # Unix-like Python ported functions
+# # Unix-like Python "ported" functions
+
+true_path = lambda path: Path(path).expanduser().resolve().absolute()
 
 def mkdir(path: PathLike, echo=True):
     """Creates a directory and its parents, fail safe™"""
     path = Path(path)
+
+    if path.exists():
+        if echo: success(f"Path [{path}] already exists")
+        return
+
     if echo: info(f"Creating directory {path}")
-    if path.exists(): return
     path.mkdir(parents=True, exist_ok=True)
 
 def cp(source: PathLike, destination: PathLike, echo=True):
@@ -163,24 +245,44 @@ class BrokenPlatform:
     # Family of platforms
     Unix    = Linux or MacOS or BSD
 
+# -------------------------------------------------------------------------------------------------|
+# # Directories
+
 def make_project_directories(app_name: str="Broken", app_author: str="BrokenSource", echo=True) -> DotMap:
     """Make directories for a project, returns a DotMap of directories (.ROOT, .CACHE, .CONFIG, .DATA, .EXTERNALS)"""
+    if echo: info(f"Making project directories for [AppName: {app_name}] by [AppAuthor: {app_author}]")
     directories = DotMap()
-    directories.ROOT    = Path(AppDirs(app_name, app_author).user_data_dir)
+
+    # Root of the project directories
+    directories.ROOT      = Path(AppDirs(app_name, app_author).user_data_dir)
     directories.CACHE     = directories.ROOT/"Cache"
     directories.CONFIG    = directories.ROOT/"Config"
     directories.DATA      = directories.ROOT/"Data"
     directories.EXTERNALS = directories.ROOT/"Externals"
-    for directory in directories.values(): mkdir(directory, echo=echo)
+
+    # The directory of the file that called this function itself, think of BROKEN_ROOT but for the caller
+    directories.EXECUTABLE = Path(inspect.stack()[1].filename).parent.absolute().resolve()
+
+    # If pyinstaller or nuitka is used, respectively, get the original exercutable binary
+    # not the ont on the temp directory that got extracted
+    if getattr(system, "frozen", False):
+        directories.EXECUTABLE = Path(system.executable).parent.absolute().resolve()
+    if getattr(__builtins__, "__compiled__", False):
+        directories.EXECUTABLE = Path(__builtins__.__compiled__).parent.absolute().resolve()
+
+    # Make all project directories
+    for name, directory in directories.items():
+        if echo: info(f"• ({name.ljust(9)}): [{directory}]")
+        mkdir(directory, echo=False)
     return directories
 
 # Root of BrokenSource Monorepo
-BROKEN_ROOT = Path(__file__).parent.parent.absolute().resolve()
-SYSTEM_ROOT = Path("/").absolute().resolve()
+BROKEN_ROOT_DIR = Path(__file__).parent.parent.absolute().resolve()
+SYSTEM_ROOT_DIR = Path("/").absolute().resolve()
 
 # Where Broken shall be placed as a symlink to be shared
 # (on other pyproject.toml have it as broken = {path="/Broken", develop=true})
-BROKEN_SHARED_DIRECTORY = SYSTEM_ROOT/"Broken"
+BROKEN_SHARED_DIR = SYSTEM_ROOT_DIR/"Broken"
 
 # Shared directories of Broken package
 BROKEN_DIRECTORIES = make_project_directories(echo=False)
@@ -195,12 +297,32 @@ HOME_DIR = Path.home()
 def binary_exists(binary_name: str) -> bool:
     return find_binary(binary_name) is not None
 
-def get_binary(binary_name: str) -> Path:
-    if not binary_exists(binary_name):
-        raise FileNotFoundError(f"Binary {binary_name} not found in PATH")
-    binary_name = Path(find_binary(binary_name))
-    info(f"Found binary {binary_name}")
-    return binary_name
+def get_binary(binary_name: Union[str, List[str]], echo=True) -> Path:
+
+    # Recurse if a list of binaries is given (for all)
+    if type(binary_name) is list:
+        for binary in binary_name:
+            binary = get_binary(binary, echo=echo)
+            if binary is not None: return binary
+        return None
+
+    # Attempt to find the binary
+    if (binary := find_binary(binary_name)) is not None:
+        if echo: success(f"Found binary [{binary_name}] at path [{binary}]")
+        return binary
+    else:
+        if echo: warning(f"Binary {binary_name} not found in PATH")
+        return None
+
+# Endless war of how to get a FFmpeg binary available
+try:
+    import imageio_ffmpeg
+    BROKEN_FFMPEG_BINARY = imageio_ffmpeg.get_ffmpeg_exe()
+except ImportError:
+    try:
+        BROKEN_FFMPEG_BINARY = get_binary("ffmpeg", echo=False)
+    except FileNotFoundError:
+        BROKEN_FFMPEG_BINARY = None
 
 @contextmanager
 def download(url) -> Path:
@@ -279,8 +401,9 @@ class ShellCraft:
             # Need to restart the shell or source it
             warning(f"Please restart your shell for the changes to take effect or run [source {shellrc}] or [. {shellrc}] on current one, this must be done since a children process (Python) can't change the parent process (your shell) environment variables plus the [source] or [.] not binaries but shell builtins")
 
-        # No clue if this works. FIXME: Feel free to PR
+        # No clue if this works.
         elif BrokenPlatform.Windows:
+            fixme("I don't know if the following reg command works for adding a PATH to PATH on Windows")
             shell("reg", "add", r"HKCU\Environment", "/v", "PATH", "/t", "REG_SZ", "/d", f"{path};%PATH%", "/f")
             shell("refreshenv")
 

@@ -3,17 +3,22 @@ from Broken import *
 # "nightly" or "stable"
 RUSTUP_TOOLCHAIN = "stable"
 
-# Binaries shorthands
+# -------------------------------------------------------------------------------------------------|
+
+find = lambda name: get_binary(name, echo=False)
+
+# Find binaries absolute path
 python = system.executable
-sh = "sh" if (not BrokenPlatform.Windows) else None
+bash = find("bash") if (not BrokenPlatform.Windows) else None
 poetry = [python, "-m", "poetry"]
 pip = [python, "-m", "pip"]
-pacman = "pacman"
-rustup = "rustup"
-cargo = "cargo"
-chmod = "chmod"
-sudo = "sudo"
-apt = "apt"
+pacman = find("pacman")
+rustup = find("rustup")
+cargo = find("cargo")
+chmod = find("chmod")
+sudo = find("sudo")
+apt = find("apt")
+git = find("git")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -25,37 +30,101 @@ Broken Source Software manager script\n
 """
 
 class Broken:
-    ProjectFeatures = {}
+    RustProjectFeatures = {}
     FindProjectLowercase = {}
 
     def __init__(self) -> None:
         self.install_rust()
 
+        # Directories
+        self.RELEASES_DIR = BROKEN_ROOT_DIR/"Release"
+        self.BUILD_DIR    = self.RELEASES_DIR/"Build"
+        self.PROJECTS_DIR = BROKEN_ROOT_DIR/"Projects"
+
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
-        self.typer_app = typer.Typer(help=ABOUT, no_args_is_help=True, add_completion=False)
-        self.typer_app.command()(self.hooks)
-        self.typer_app.command()(self.install)
-        self.typer_app.command()(self.release)
-        self.typer_app.command()(self.requirements)
-        self.typer_app.command()(self.update)
+        self.typer_app = typer.Typer(
+            help=ABOUT,
+            no_args_is_help=True,
+            add_completion=False,
+        )
 
-        # Directories
-        self.RELEASES_DIR = BROKEN_ROOT/"Release"
-        self.BUILD_DIR    = self.RELEASES_DIR/"Build"
+        # Section: Installation
+        self.typer_app.command(rich_help_panel="Installation")(self.install)
+        self.typer_app.command(rich_help_panel="Installation")(self.clone)
+        self.typer_app.command(rich_help_panel="Installation")(self.requirements)
 
+        # Section: Releases
+        self.typer_app.command(rich_help_panel="Releases")(self.release)
+        self.typer_app.command(rich_help_panel="Releases")(self.mock_release_python)
+
+        # Section: Miscellanous
+        self.typer_app.command(rich_help_panel="Miscellaneous")(self.date)
+        self.typer_app.command(rich_help_panel="Miscellaneous")(self.hooks)
+        self.typer_app.command(rich_help_panel="Miscellaneous")(self.update)
+
+        # Add projects commands
+        self.add_rust_projects_commands()
+        self.add_python_projects_commands()
+
+        # Execute the CLI
+        self.typer_app()
+
+    def python_projects(self) -> Iterable[Path]:
+        """Generator that yields all Python projects paths"""
+        for path in self.PROJECTS_DIR.iterdir():
+            if (path/"pyproject.toml").exists():
+                yield path
+
+    def add_python_projects_commands(self) -> None:
+        for project_path in self.python_projects():
+            project_name = project_path.name
+
+            def run_project_template(project_name: str, project_path: PathLike):
+                def runProject(ctx: typer.Context):
+                    # Unset virtualenv else the nested poetry will use it
+                    del os.environ["VIRTUAL_ENV"]
+
+                    # Change directory to project's directory
+                    os.chdir(project_path)
+
+                    # Install Poetry dependencies
+                    # if shell(poetry, "env", "info", "--path", output=True) == "":
+                    fixme("Only run poetry install if the virtualenvironment is not found, shell(output=True) exits due error code")
+                    shell(poetry, "install")
+
+                    # Run project
+                    shell(poetry, "run", project_name.lower(), ctx.args, cwd=project_path)
+
+                return runProject
+
+            # Create Typer command
+            self.typer_app.command(
+                name=project_name.lower(),
+                help=f"Run {project_name} project",
+                rich_help_panel="Python Projects",
+
+                # Catch extra (unknown to typer) arguments that are sent to Python
+                context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
+
+                # Projects implement their own --help
+                add_help_option=False,
+
+            )(run_project_template(project_name, project_path))
+
+    def add_rust_projects_commands(self) -> None:
         # Cargo dictionary
-        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT/"Cargo.toml").read_text()))
+        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT_DIR/"Cargo.toml").read_text()))
 
         # Add Typer commands for all projects
         for project in self.cargotoml["bin"]:
             project_name = project["name"]
 
             # Don't add non existing projects (private repos)
-            if not (BROKEN_ROOT/project["path"]).exists(): continue
+            if not (BROKEN_ROOT_DIR/project["path"]).exists(): continue
 
             # List of required features specified in Cargo.tml
-            Broken.ProjectFeatures[project_name] = ','.join(project.get("required-features", ["default"]))
+            Broken.RustProjectFeatures[project_name] = ','.join(project.get("required-features", ["default"]))
             Broken.FindProjectLowercase[project_name.lower()] = project_name
 
             # This is a bit sophisticated, projectName should be kept after the callable
@@ -63,14 +132,14 @@ class Broken:
             def run_project_template(project_name):
                 def runProject(ctx: typer.Context, debug: bool=False):
                     release = ["--profile", "release"] if not debug else []
-                    shell(cargo, "run", "--bin", project_name, "--features", Broken.ProjectFeatures[project_name], release, "--", ctx.args)
+                    shell(cargo, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
                 return runProject
 
             # Create Typer command
             self.typer_app.command(
                 name=project_name.lower(),
                 help=f"Run {project_name} project",
-                rich_help_panel="Projects",
+                rich_help_panel="Rust Projects",
 
                 # Catch extra (unknown to typer) arguments that are sent to Rust
                 context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -80,33 +149,40 @@ class Broken:
 
             )(run_project_template(project_name))
 
-        # Execute the CLI
-        self.typer_app()
-
     # NOTE: Also returns date string
     def date(self) -> str:
-        """Set current UTC dates on Cargo.toml"""
+        """Set current UTC dates on Cargo.toml and all Python project's pyproject.toml"""
         date = arrow.utcnow().format("YYYY.M.D")
 
-        # Find "version=" line and set it to "version={date}"", write back to file
-        (BROKEN_ROOT/"Cargo.toml").write_text('\n'.join(
-            [line if not line.startswith("version") else f'version = "{date}"'
-            for line in (BROKEN_ROOT/"Cargo.toml").read_text().split("\n")]
-        ))
+        # Find "version=" line and set it to "version = {date}"", write back to file
+        def update_date(file: Path) -> None:
+            if not file.exists(): return
+            info(f"Updating date on file [{file}] to [{date}]")
+            file.write_text('\n'.join(
+                [line if not line.startswith("version") else f'version = "{date}"'
+                for line in file.read_text().split("\n")]
+            ))
+
+        # Python projects
+        for project in self.python_projects():
+            update_date(project/"pyproject.toml")
+
+        # Rust projects
+        update_date(BROKEN_ROOT_DIR/"Cargo.toml")
 
         return date
 
     # # Commands section
 
     def hooks(self) -> None:
-        """Uses Git hooks under the folder Broken/Hooks"""
+        """Use all Git hooks under the folder Broken/Hooks"""
 
         # Make all hooks executable
-        for file in (BROKEN_ROOT/"Broken/Hooks").iterdir():
+        for file in (BROKEN_ROOT_DIR/"Broken/Hooks").iterdir():
             shell(chmod, "+x", file)
 
         # Set git hooks path to Broken/Hooks
-        shell("git", "config", "core.hooksPath", "./Broken/Hooks")
+        shell(git, "config", "core.hooksPath", "./Broken/Hooks")
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
@@ -124,7 +200,7 @@ class Broken:
 
             # Download and install Rust
             with download(rust_installer) as installer:
-                shell(sh, installer, "--profile", "default", "-y")
+                shell(bash, installer, "--profile", "default", "-y")
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
         for line in shell(rustup, "toolchain", "list", output=True, echo=False).split("\n"):
@@ -132,36 +208,158 @@ class Broken:
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
+    def clone(self) -> None:
+        """Clones and initializes to default branch all public submodules"""
+
+        # Cached requests session since GitHub API is rate limited to 60 requests per hour
+        session = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'GitHubApiCache')
+
+        def needed_repo_data(owner: str, name: str) -> Tuple[bool, str]:
+            """Returns: (is_private, default_branch)"""
+            private, branch = True, "Unknown"
+
+            # Uses GitHub API to get status on a repo, might return content if credentials are set
+            data = session.get(f"https://api.github.com/repos/{owner}/{name}").json()
+
+            # Check for GitHub API rate limit
+            if "rate limit" in data.get("message", "").lower():
+                error(f"GitHub API rate limit reached, maybe authenticate or wait a few minutes")
+                fixme("Rewrite this code for something that doesn't rely on GitHub API")
+                exit(1)
+
+            # No credentials given it'll simply return Not Found message
+            if data.get("message") != "Not Found":
+                private, branch = data.get("private"), data.get("default_branch")
+
+            return private, branch
+
+        # Read .gitmodules file to a dictionary (.ini file)
+        import configparser
+
+        gitmodules = configparser.ConfigParser()
+        gitmodules.read(".gitmodules")
+
+        # Iterate over each submodule
+        for section in gitmodules.sections():
+
+            # Get path and url, split on owner and name, find private and branch
+            path = BROKEN_ROOT_DIR/gitmodules.get(section, "path", fallback=None)
+            url  = gitmodules.get(section, "url",  fallback=None)
+            owner, name = url.split("/")[-2:]
+            private, branch = needed_repo_data(owner, name)
+
+            # Log info on screen
+            (warning if private else success)(f"Repository [{f'{owner}/{name}'.ljust(25)}] [Private: {str(private).ljust(5)}] [Default Branch: {branch}]")
+
+            # Skip private repos
+            if private: continue
+
+            # Clone repo
+            shell(git, "submodule", "update", "--init", "--recursive", path)
+
+            # Checkout to default branch
+            if branch: shell(git, "checkout", branch, "-q", cwd=path)
+            else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
+
     def install(self) -> None:
         """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `broken` command available globally by adding it to PATH"""
-        # FIXME: How to handle multiple users (not common)? pyproject.toml shall point to /Broken as the shared directory, but it can't source env vars, that would be the ideal case
+        fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
+        # Symlink Broken Shared Directory to Broken Root
         if BrokenPlatform.Unix:
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
-            if not Path(BROKEN_SHARED_DIRECTORY).resolve() == BROKEN_ROOT:
-                info(f"Creating symlink [{BROKEN_SHARED_DIRECTORY}] -> [{BROKEN_ROOT}]")
-                shell("sudo", "ln", "-snf", BROKEN_ROOT, BROKEN_SHARED_DIRECTORY)
-
-        # FIXME: Does this work?
+            if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_ROOT_DIR:
+                info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_ROOT_DIR}]")
+                shell("sudo", "ln", "-snf", BROKEN_ROOT_DIR, BROKEN_SHARED_DIR)
         elif BrokenPlatform.Windows:
             if not ctypes.windll.shell32.IsUserAnAdmin():
                 warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
                 return
-            rmdir(BROKEN_SHARED_DIRECTORY, confirm=True)
-            Path(BROKEN_SHARED_DIRECTORY).symlink_to(BROKEN_ROOT, target_is_directory=True)
-
+            # FIXME: Does this work?
+            fixme("I'm not sure if the symlink command on Windows works and links to C:\\Broken")
+            rmdir(BROKEN_SHARED_DIR, confirm=True)
+            Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_ROOT_DIR, target_is_directory=True)
         else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
 
-        # Symlink created, add to PATH the shared directory
-        success(f"Symlink created [{BROKEN_SHARED_DIRECTORY}] -> [{BROKEN_ROOT}]")
-        ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIRECTORY)
+        success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_ROOT_DIR}]")
+
+        # Add Broken Shared Directory to PATH
+        ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
 
     def update(self):
-        """Update Cargo, Python dependencies and Rust lang"""
+        """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
         self.install_rust()
         shell(cargo, "update")
         shell(rustup, "update")
         shell(poetry, "update")
+
+    def mock_release_python(self) -> None:
+        mkdir(self.RELEASES_DIR)
+
+        pyinstaller = get_binary("pyinstaller")
+        nuitka = get_binary("nuitka3")
+        project = "DepthFlow"
+
+        # Compile Projects/DepthFlow/DepthFlow/__main__.py
+
+        # Nuitka
+        if False:
+            shell(
+                nuitka,
+
+                # One file dependency-less
+                "--standalone",
+                "--onefile",
+
+                # Plugins
+                "--follow-imports",
+
+                # FFmpeg Binaries
+                "--include-package-data=imageio_ffmpeg",
+
+                # Misc
+                "--assume-yes-for-downloads",
+                "--remove-output",
+
+                f"--output-dir={self.RELEASES_DIR}",
+
+                self.PROJECTS_DIR/project/project/"__init__.py",
+                "-o", project
+            )
+
+        BUILD_DIR = self.RELEASES_DIR/"Build"
+
+        # With pyinstaller
+        if True:
+            shell(
+                pyinstaller,
+
+                # One file dependency-less
+                "--onefile",
+
+                # Misc
+                "--clean",
+                "--noconfirm",
+
+                f"--distpath={self.RELEASES_DIR}",
+
+                self.PROJECTS_DIR/project/project/"__init__.py",
+
+                "--hidden-import", "imageio_ffmpeg",
+                "--hidden-import", "glcontext",
+
+                # Binary name
+                "-n", project,
+
+                # "--specpath", BUILD_DIR,
+                "--workpath", BUILD_DIR,
+                # "--distpath", BUILD_DIR,
+            )
+
+
+        #
+        compiled_binary = self.RELEASES_DIR/project
+
 
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
@@ -180,7 +378,7 @@ class Broken:
 
         # Acronym for all available projects
         if project == "all":
-            for project in Broken.ProjectFeatures.keys():
+            for project in Broken.RustProjectFeatures.keys():
                 self.release(project, platform, profile, upx)
 
         # Project CLI input may be lowercase
@@ -206,7 +404,7 @@ class Broken:
 
         # Add target toolchain for Rust
         shell(rustup, "target", "add", target_triple)
-        features = Broken.ProjectFeatures[project]
+        features = Broken.RustProjectFeatures[project]
 
         # Build the binary
         shell(cargo, "build",
@@ -270,7 +468,16 @@ class Broken:
         # # Install Requirements depending on host platform
         if BrokenPlatform == "linux":
             if LINUX_DISTRO == "arch":
-                self.shell(sudo, pacman, "-Syu", "base-devel gcc-fortran mingw-w64-toolchain upx".split())
+                self.shell(sudo, pacman, "-Syu", [
+                    "base-devel",
+                    "gcc-fortran",
+                    "mingw-w64-toolchain",
+                    "upx",
+
+                    # Python Nuitka
+                    "ccache",
+                    "patchelf"
+                ])
                 return
 
             self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")

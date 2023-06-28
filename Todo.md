@@ -1,4 +1,0 @@
-- [ ] Functions to download third party binaries like FFmpeg, yt-dlp (maybe bundle on binary per platform?)
-- [ ] Make stable audio capture and audio processing working together
-- [ ] Find a great rendering engine for 2D stuff
-- [ ] Make own render loop for egui? Could help in threading and sharing resources

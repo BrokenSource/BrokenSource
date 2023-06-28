@@ -22,9 +22,6 @@
 [submodule "Projects/Oscillospoor"]
 	path = Projects/Oscillospoor
 	url = https://github.com/BrokenSource/Oscillospoor
-[submodule "Broken/Brakeit"]
-	path = Broken/Brakeit
-	url = https://github.com/BrokenSource/Brakeit
 [submodule "Projects/PocketSolar"]
 	path = Projects/PocketSolar
 	url = https://github.com/BrokenSource/PocketSolar
@@ -40,3 +37,6 @@
 [submodule "Website"]
 	path = Website
 	url = https://github.com/BrokenSource/Website
+[submodule "Projects/DepthFlow"]
+	path = Projects/DepthFlow
+	url = https://github.com/BrokenSource/DepthFlow
