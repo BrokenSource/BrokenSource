@@ -34,7 +34,6 @@ class Broken:
     FindProjectLowercase = {}
 
     def __init__(self) -> None:
-        self.install_rust()
 
         # Directories
         self.RELEASES_DIR = BROKEN_ROOT_DIR/"Release"
@@ -131,6 +130,7 @@ class Broken:
             # is created, so we have a method that creates a method with given string
             def run_project_template(project_name):
                 def runProject(ctx: typer.Context, debug: bool=False):
+                    self.install_rust()
                     release = ["--profile", "release"] if not debug else []
                     shell(cargo, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
                 return runProject
@@ -209,7 +209,7 @@ class Broken:
                 shell(rustup, "default", RUSTUP_TOOLCHAIN)
 
     def clone(self) -> None:
-        """Clones and initializes to default branch all public submodules"""
+        """Clones and initializes to default branch for all public submodules"""
 
         # Cached requests session since GitHub API is rate limited to 60 requests per hour
         session = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'GitHubApiCache')
@@ -262,7 +262,7 @@ class Broken:
             else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
     def install(self) -> None:
-        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `broken` command available globally by adding it to PATH"""
+        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `brokenshell` command available anywhere by adding current folder to PATH"""
         fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Symlink Broken Shared Directory to Broken Root
@@ -363,6 +363,7 @@ class Broken:
 
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
+        self.install_rust()
         mkdir(self.RELEASES_DIR)
 
         # Target triple, compiled extension, release extension
@@ -459,7 +460,7 @@ class Broken:
                         raise FileNotFoundError(f"Could not find [{library}] in any of the following paths: {COMMON_MINGW_DLL_PATHS}")
 
     def requirements(self):
-        """Install requirements based on platform"""
+        """Install external dependencies based on your platform for Python releases or compiling Rust projects"""
 
         # "$ ./broken" -> "$ broken"
         if not "." in os.environ.get("PATH").split(os.pathsep):

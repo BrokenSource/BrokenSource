@@ -6,11 +6,11 @@
     :: Broken Source Software ::
 </div>
 
-This _mono_-repository hosts the **shared library** called **Broken** (Rust and Python), a convenience script of the same name,`broken`, and **submodules** of **all projects**.
+This _mono_-repository hosts the **shared library** called **Broken** (Rust and Python), a convenience script of the same name - `broken` - and **submodules** of **all our projects**
 
-- **Broken** is intended to be a _Framework_ for all other projects, a solution to manage them all in a single place.
+- **Broken** is intended to be a _Framework_ for all other projects, a solution to manage them all in a single place
 
-**Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus.
+**Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus
 
 
 
@@ -20,6 +20,12 @@ This _mono_-repository hosts the **shared library** called **Broken** (Rust and 
 # ● Running From the Source Code
 
 Please read all instructions before executing them for tips and notes
+
+**Common stuff** for all platforms:
+
+- The pre-requirements are having [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
+
+- Commands don't include the `$` character, it indicates the start of it
 
 <br>
 
@@ -32,54 +38,23 @@ Please read all instructions before executing them for tips and notes
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed</i></sub>
 
-- Install the latest `python` and `git` for your platform<sup>(it's probably already installed)</sub>
-
-- Open a Terminal on some directory you want to clone the repository and run:
-
+- Open a Terminal on some directory and run:
 
 ```ps
-# Clone the bare monorepository
+# Clone and enter the repository directory
 $ git clone https://github.com/BrokenSource/BrokenSource
-```
-```ps
-# Enter the repository folder
 $ cd BrokenSource
-```
-```ps
-# Download poetry, setup virtualenv and enter poetry shell
-# > "bash" is only required for the first run
-$ bash ./brokenshell
-```
-```ps
-# Clone public submodules of projects
+
+# Install dependencies, activates virtual environment
+$ python3 ./brokenshell
+
+# Clone submodules
 $ broken clone
 ```
 
 And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
 
-<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and run `./brokenshell` then you'll have `broken` available again</sub>
-
-For projects that requires external packages to be installed, you _can_ run the following command:
-
-```ps
-# Attempts to install all needed dependencies for your platform
-$ broken requirements
-```
-
-I can't exaustively test all platforms, feel free to pull request any missing package, dependency and fixes.
-
-As a bonus, you can _"install"_ `broken` with:
-
-```ps
-# Symlinks Broken to /Broken and adds it to PATH
-$ broken install
-```
-
-- After restarting the shell you can just type `brokenshell` anywhere to get access to `broken`
-
-- External Python projects that depends on `broken` will be able to import it from anywhere, point the dependency to `/Broken`
-
-
+<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `brokenshell` script again</sub>
 
 
 <br>
@@ -90,22 +65,47 @@ $ broken install
   **Windows 10+**
 </div>
 
-Easiest way is using [MSYS2](https://www.msys2.org/) which provides an Unix-like environment for Windows, please install it
+<details open>
+  <summary style="font-size: 1.2em; font-weight: bold">
+    Python Projects
+  </summary>
 
-Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy
+  Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
 
-- Open a MSYS2 terminal
-- Install dependencies: `pacman -S git python python-pip python-wheel mingw-w64-x86_64-gcc-fortran`
-- Run the Linux and MacOS command above
+  <sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
 
-**Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
+  - **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer, select `Open PowerShell window here`:
 
-**Tip:** You can press `Shift+Insert` to paste stuff on `Ctrl+C` to MSYS2 terminal
+  - **Windows 11**: `Right Click` some empty space in Windows Explorer, select `Open in Terminal`:
 
+  Now run the same Linux and MacOS commands above
+</details>
 
-Now run `broken` and see all available commands!
+<details open>
+  <summary style="font-size: 1.2em; font-weight: bold">
+    Rust Projects
+  </summary>
 
-<sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
+  Rust requires quite some dependencies to be installed for a Windows release
+
+  Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but doable if you want to try
+
+  Easiest way is using [MSYS2](https://www.msys2.org/) which provides an Unix-like environment for Windows, please install it
+
+  - Open a MSYS2 terminal and install dependencies:
+
+  ```ps
+  $ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
+  ```
+
+  - Now follow the same Linux and MacOS instructions above
+
+  **Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
+
+  **Tip:** You can press `Shift+Insert` to paste stuff on the clipboard to MSYS2 terminal
+
+  <sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
+</details>
 
 
 
@@ -115,7 +115,7 @@ Now run `broken` and see all available commands!
 # ● Contributing
 Thanks for taking your time to contribute to Broken Source Software projects!!
 
-- Apart from the usual "be nice", "be respectful" and "don't be a jerk", we have some guidelines to help you get started.
+- Apart from the usual "be nice", "be respectful" and "don't be a jerk", we have some guidelines to help you get started
 
 ## ▸ Help Needed
 - Designer needed for the logos and consistent art
@@ -141,10 +141,10 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 <br>
 
 # ● License and Fair Use
-- All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository.
+- All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository
 
-- We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse.
+- We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse
 
-- We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow.
+- We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow
 
-<sub>These are not legal advice, just our thoughts and intentions.</sub>
+<sub>These are not legal advice, just our thoughts and intentions</sub>

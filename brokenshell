@@ -1,18 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env python3
+import os
+import sys
+from itertools import count
+from pathlib import Path
+from subprocess import run as command
 
-# cd where the script is, make self executable
-cd "$(dirname "$0")"
-chmod +x brokenshell
+# Constants
+INSTALL_POETRY_MAX_ATTEMPTS = 3
 
-# If poetry is not installed, install it
-if ! hash poetry 2> /dev/null; then
-    curl -sSL https://install.python-poetry.org | python3 -
-fi
+# --user no longer works, thanks
+os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 
-# Create virtualenv if it doesn't exist
-if [ -z "$(poetry env info --path)" ]; then
-    poetry install
-fi
+# Current Python executable
+PYTHON = sys.executable
+POETRY = [PYTHON, "-m", "poetry"]
+PIP    = [PYTHON, "-m", "pip"]
 
-# Enter poetry shell and virtualenv
-poetry shell
+# Directories
+SCRIPT = Path(__file__).absolute()
+ROOT   = SCRIPT.parent.absolute()
+
+# Change directory to where the script is
+os.chdir(ROOT)
+
+# Make the script executable
+if os.name in ["posix", "mac"]:
+    os.chmod(SCRIPT, 0o755)
+
+# Install poetry
+for attempt in count(0):
+
+    # Installation is hanging
+    if attempt == INSTALL_POETRY_MAX_ATTEMPTS:
+        print(f"Attempted {INSTALL_POETRY_MAX_ATTEMPTS} times to install poetry, but failed")
+        print( "· Please install it at (https://python-poetry.org/docs/#installation)")
+        exit(1)
+
+    # Call poetry --version, command might exit status 1 if it's not installed
+    status = command(POETRY + ["--version"], capture_output=True)
+
+    # Install poetry if it's not installed
+    if status.returncode == 0:
+        break
+
+    # Install poetry and try again
+    command(PIP + ["install", "--user", "poetry"])
+
+# Find Broken's virtualenv
+venv = command(POETRY + ["env", "info", "--path"], capture_output=True)
+
+# Command failed or no virtualenv exists, install it
+if (venv.returncode == 1) or (not venv.stdout.strip()):
+    command(POETRY + ["install"])
+
+# Enter the poetry shell and activate virtualenv
+command(POETRY + ["shell"])
