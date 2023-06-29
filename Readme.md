@@ -73,6 +73,8 @@ And done, you can now run `broken` and see all available commands: compile, rele
 
 Depending on the **project language** you want to run, follow the **instructions below**:
 
+<hr/>
+
 <details>
   <summary>
     Python Projects
@@ -89,6 +91,8 @@ Depending on the **project language** you want to run, follow the **instructions
 
   Now run the same **Linux** and **MacOS** commands above
 </details>
+
+<hr/>
 
 <details>
   <summary>
@@ -118,6 +122,7 @@ Depending on the **project language** you want to run, follow the **instructions
   <sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
 </details>
 
+<hr/>
 
 
 <br>
