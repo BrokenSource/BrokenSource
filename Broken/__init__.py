@@ -1,116 +1,98 @@
 import sys as system
 from contextlib import contextmanager
-from copy import deepcopy
-from functools import wraps
 
 # -------------------------------------------------------------------------------------------------|
-# Ignore import errors inside BrokenImports context, by patching the __import__ function temporarily
-# All that for a consistent import names across all projects that depends on Broken
-
-# Get the previous N call stack scope (.f_globals for the globals() of it)
-get_previous_scope = lambda n: system._getframe(n)
-
-# Copy the builtin __import__ function
-__import__ = deepcopy(__builtins__["__import__"])
-
-# The original __import__ function and its behaviour
-@wraps(__import__)
-def import_builtin(*args, **kwargs):
-    return __import__(*args, **kwargs)
+# Ignore import errors inside BrokenImports context, replace the module with BrokenImportError class
+#
+# Usage:
+# | while True:
+# |     with BrokenImports():
+# |         import A
+# |         import B
+# |         import C
+# |         break
 
 class BrokenImportError:
+    ...
 
-    """This class is returned when an import fails inside BrokenImports() context"""
-    def __getattribute__(self, _): return self
-    def __getitem__(self, _): return []
-    def __name__(self): return "H"
+@contextmanager
+def BrokenImports():
+    try:
+        yield
+    except (ModuleNotFoundError, ImportError) as error:
+        # Module and its spec import error class
+        import_error = BrokenImportError()
 
-class BrokenImports:
+        # Patch system.modules for no re-importing
+        system.modules[error.name]          = import_error
 
-    @wraps(import_builtin)
-    def import_ignore_errors(self, *args, **kwargs):
-        """The new __import__ function that ignores errors, a "copy" of __import__"""
-        try:
-            return import_builtin(*args, **kwargs)
-        except (ModuleNotFoundError, ImportError, TypeError) as Error:
-            # Do raise errors on imports inside *other* modules
-            if (get_previous_scope(2) != self.scope):
-                raise Error
-        except Exception as Error:
-            raise Error
+        # "spec is not None" -> make it something, might break stuff
+        system.modules[error.name].__spec__ = import_error
 
-        # Return import error class
-        return BrokenImportError()
-
-    def __set_import_method(self, import_callable):
-        """Change the BrokenImports context's import method (previous stacks)"""
-        get_previous_scope(2).f_globals["__builtins__"]["__import__"] = import_callable
-
-    def __enter__(self) -> None:
-        """Patch the __import__ function to ignore errors on current scope only"""
-        self.__set_import_method(self.import_ignore_errors)
-        self.scope = get_previous_scope(2)
-
-    def __exit__(self, *_) -> None:
-        """Restore the __import__ function for original behaviour"""
-        self.__set_import_method(import_builtin)
+        # Make it available on local globals() else name not found
+        globals()[error.name]               = import_error
 
 # -------------------------------------------------------------------------------------------------|
 
-with BrokenImports():
-    import ctypes
-    import datetime
-    import hashlib
-    import importlib
-    import inspect
-    import os
-    import platform
-    import random
-    import re
-    import shutil
-    import subprocess
-    import tempfile
-    import zipfile
-    from abc import ABC, abstractmethod
-    from contextlib import suppress
-    from dataclasses import dataclass
-    from io import BytesIO
-    from math import *
-    from os import PathLike
-    from os import environ as env
-    from os import getcwd as working_directory
-    from pathlib import Path
-    from shutil import which as find_binary
-    from subprocess import PIPE, Popen, check_output, run
-    from sys import argv
-    from threading import Thread
-    from time import sleep
-    from time import time as now
-    from typing import Any, Dict, Iterable, List, Tuple, Union
-    from uuid import uuid4 as uuid
+while True:
+    with BrokenImports():
+        import ctypes
+        import datetime
+        import hashlib
+        import importlib
+        import inspect
+        import os
+        import platform
+        import random
+        import re
+        import shutil
+        import subprocess
+        import tempfile
+        import zipfile
+        from abc import ABC, abstractmethod
+        from contextlib import suppress
+        from copy import deepcopy
+        from dataclasses import dataclass
+        from functools import wraps
+        from io import BytesIO
+        from math import *
+        from os import PathLike
+        from os import environ as env
+        from os import getcwd as working_directory
+        from pathlib import Path
+        from shutil import which as find_binary
+        from subprocess import PIPE, Popen, check_output, run
+        from sys import argv
+        from threading import Thread
+        from time import sleep
+        from time import time as now
+        from typing import Any, Dict, Iterable, List, Tuple, Union
+        from uuid import uuid4 as uuid
 
-    import arrow
-    import distro
-    import forbiddenfruit
-    import halo
-    import loguru
-    import moderngl
-    import numpy
-    import openai
-    import PIL
-    import pygit2
-    import requests
-    import requests_cache
-    import rich
-    import rich.prompt
-    import toml
-    import transformers
-    import typer
-    from appdirs import AppDirs
-    from dotmap import DotMap
-    # from numpy import *
-    from PIL import Image
-    from tqdm import tqdm
+        import arrow
+        import distro
+        import forbiddenfruit
+        import halo
+        import loguru
+        import moderngl
+        import PIL.Image
+        import numpy
+        import openai
+        import PIL
+        import pygit2
+        import requests
+        import requests_cache
+        import rich
+        import rich.prompt
+        import toml
+        import transformers
+        import typer
+        from appdirs import AppDirs
+        from dotmap import DotMap
+        from numpy import *
+        from tqdm import tqdm
+
+        break
 
 # Add milliseconds to timedelta for logging
 forbiddenfruit.curse(
