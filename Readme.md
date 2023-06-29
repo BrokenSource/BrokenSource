@@ -40,7 +40,7 @@ Please read all instructions before executing them for tips and notes
 
 - Open a Terminal on some directory and run:
 
-```ps
+```bash
 # Clone and enter the repository directory
 $ git clone https://github.com/BrokenSource/BrokenSource
 
@@ -102,9 +102,10 @@ Depending on the **project language** you want to run, follow the **instructions
 
   Easiest way is using [MSYS2](https://www.msys2.org/) which provides an **Unix-like** environment for Windows, please install it
 
-  - Open a MSYS2 terminal and install dependencies:
+  - Open a MSYS2 terminal and run:
 
-  ```ps
+  ```bash
+  # Install all required dependencies
   $ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
   ```
 
