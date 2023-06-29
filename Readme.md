@@ -43,6 +43,8 @@ Please read all instructions before executing them for tips and notes
 ```ps
 # Clone and enter the repository directory
 $ git clone https://github.com/BrokenSource/BrokenSource
+
+# "Open" the repository folder
 $ cd BrokenSource
 
 # Install dependencies, activates virtual environment
@@ -65,10 +67,17 @@ And done, you can now run `broken` and see all available commands: compile, rele
   **Windows 10+**
 </div>
 
-<details open>
-  <summary style="font-size: 1.2em; font-weight: bold">
+- Running the Python projects is **easy**, while Rust requires **extra steps**
+
+- **Rust** is split in its own instructions to reduce micro-management and complexity
+
+Depending on the **project language** you want to run, follow the **instructions below**:
+
+<details>
+  <summary>
     Python Projects
   </summary>
+  <br>
 
   Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
 
@@ -78,19 +87,20 @@ And done, you can now run `broken` and see all available commands: compile, rele
 
   - **Windows 11**: `Right Click` some empty space in Windows Explorer, select `Open in Terminal`:
 
-  Now run the same Linux and MacOS commands above
+  Now run the same **Linux** and **MacOS** commands above
 </details>
 
-<details open>
-  <summary style="font-size: 1.2em; font-weight: bold">
+<details>
+  <summary>
     Rust Projects
   </summary>
+  <br>
 
-  Rust requires quite some dependencies to be installed for a Windows release
+  **Rust** requires quite some **dependencies** to be **installed** for a Windows release
 
-  Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but doable if you want to try
+  Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but **doable if you want to try**
 
-  Easiest way is using [MSYS2](https://www.msys2.org/) which provides an Unix-like environment for Windows, please install it
+  Easiest way is using [MSYS2](https://www.msys2.org/) which provides an **Unix-like** environment for Windows, please install it
 
   - Open a MSYS2 terminal and install dependencies:
 
@@ -98,7 +108,7 @@ And done, you can now run `broken` and see all available commands: compile, rele
   $ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
   ```
 
-  - Now follow the same Linux and MacOS instructions above
+  - Now follow the same **Linux** and **MacOS** instructions above
 
   **Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
 
