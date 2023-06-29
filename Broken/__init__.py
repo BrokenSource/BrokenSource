@@ -49,7 +49,8 @@ while True:
         import subprocess
         import tempfile
         import zipfile
-        from abc import ABC, abstractmethod
+        from abc import ABC
+        from abc import abstractmethod
         from contextlib import suppress
         from copy import deepcopy
         from dataclasses import dataclass
@@ -61,12 +62,20 @@ while True:
         from os import getcwd as working_directory
         from pathlib import Path
         from shutil import which as find_binary
-        from subprocess import PIPE, Popen, check_output, run
+        from subprocess import PIPE
+        from subprocess import Popen
+        from subprocess import check_output
+        from subprocess import run
         from sys import argv
         from threading import Thread
         from time import sleep
         from time import time as now
-        from typing import Any, Dict, Iterable, List, Tuple, Union
+        from typing import Any
+        from typing import Dict
+        from typing import Iterable
+        from typing import List
+        from typing import Tuple
+        from typing import Union
         from uuid import uuid4 as uuid
 
         import arrow
@@ -75,10 +84,10 @@ while True:
         import halo
         import loguru
         import moderngl
-        import PIL.Image
         import numpy
         import openai
         import PIL
+        import PIL.Image
         import pygit2
         import requests
         import requests_cache
@@ -254,7 +263,7 @@ def make_project_directories(app_name: str="Broken", app_author: str="BrokenSour
 
     # Make all project directories
     for name, directory in directories.items():
-        if echo: info(f"• ({name.ljust(9)}): [{directory}]")
+        if echo: info(f"• ({name.ljust(10)}): [{directory}]")
         mkdir(directory, echo=False)
     return directories
 

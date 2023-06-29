@@ -8,17 +8,21 @@ RUSTUP_TOOLCHAIN = "stable"
 find = lambda name: get_binary(name, echo=False)
 
 # Find binaries absolute path
-PYTHON = system.executable
-POETRY = [PYTHON, "-m", "poetry"]
-PIP    = [PYTHON, "-m", "pip"]
-BASH   = find("bash") if (not BrokenPlatform.Windows) else None
-PACMAN = find("pacman")
-RUSTUP = find("rustup")
-CARGO  = find("cargo")
-CHMOD  = find("chmod")
-SUDO   = find("sudo")
-APT    = find("apt")
-GIT    = find("git")
+PYTHON  = system.executable
+POETRY  = [PYTHON, "-m", "poetry"]
+PIP     = [PYTHON, "-m", "pip"]
+BASH    = find("bash") if (not BrokenPlatform.Windows) else None
+PACMAN  = find("pacman")
+RUSTUP  = find("rustup")
+CARGO   = find("cargo")
+CHMOD   = find("chmod")
+SUDO    = find("sudo")
+APT     = find("apt")
+GIT     = find("git")
+
+# Development tools
+ISORT   = find("isort")
+PYCLEAN = find("pyclean")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -61,6 +65,7 @@ class Broken:
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.date)
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.hooks)
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.update)
+        self.typer_app.command(rich_help_panel="Miscellaneous")(self.clean)
 
         # Add projects commands
         self.add_rust_projects_commands()
@@ -185,6 +190,18 @@ class Broken:
 
         # Set git hooks path to Broken/Hooks
         shell(GIT, "config", "core.hooksPath", "./Broken/Hooks")
+
+    def clean(self) -> None:
+        """Sorts imports, cleans .pyc files"""
+
+        # Sort imports, ignore "Releases" folder
+        shell(ISORT, BROKEN_ROOT_DIR,
+            "--force-single-line-imports",
+            "--skip", self.RELEASES_DIR
+        )
+
+        # Clean pycache with pycclean
+        shell(PYCLEAN, "-v", BROKEN_ROOT_DIR)
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
