@@ -50,6 +50,7 @@ class Broken:
     def cli(self) -> None:
         self.typer_app = typer.Typer(
             help=ABOUT,
+            add_help_option=False,
             no_args_is_help=True,
             add_completion=False,
             rich_markup_mode="rich",
