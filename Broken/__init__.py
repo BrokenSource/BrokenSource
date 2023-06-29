@@ -306,12 +306,15 @@ def get_binary(binary_name: Union[str, List[str]], echo=True) -> Path:
             if binary is not None: return binary
         return None
 
+    # Enforce string
+    binary_name = str(binary_name)
+
     # Attempt to find the binary
     if (binary := find_binary(binary_name)) is not None:
-        if echo: success(f"Found binary [{binary_name}] at path [{binary}]")
+        if echo: success(f"Binary [{binary_name.ljust(8)}] is on PATH at [{binary}]")
         return binary
     else:
-        if echo: warning(f"Binary {binary_name} not found in PATH")
+        if echo: warning(f"Binary [{binary_name.ljust(8)}] it not on PATH")
         return None
 
 # Endless war of how to get a FFmpeg binary available

@@ -8,17 +8,17 @@ RUSTUP_TOOLCHAIN = "stable"
 find = lambda name: get_binary(name, echo=False)
 
 # Find binaries absolute path
-python = system.executable
-bash = find("bash") if (not BrokenPlatform.Windows) else None
-poetry = [python, "-m", "poetry"]
-pip = [python, "-m", "pip"]
-pacman = find("pacman")
-rustup = find("rustup")
-cargo = find("cargo")
-chmod = find("chmod")
-sudo = find("sudo")
-apt = find("apt")
-git = find("git")
+PYTHON = system.executable
+POETRY = [PYTHON, "-m", "poetry"]
+PIP    = [PYTHON, "-m", "pip"]
+BASH   = find("bash") if (not BrokenPlatform.Windows) else None
+PACMAN = find("pacman")
+RUSTUP = find("rustup")
+CARGO  = find("cargo")
+CHMOD  = find("chmod")
+SUDO   = find("sudo")
+APT    = find("apt")
+GIT    = find("git")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -88,12 +88,14 @@ class Broken:
                     os.chdir(project_path)
 
                     # Install Poetry dependencies
-                    # if shell(poetry, "env", "info", "--path", output=True) == "":
-                    fixme("Only run poetry install if the virtualenvironment is not found, shell(output=True) exits due error code")
-                    shell(poetry, "install")
+                    venv = shell(POETRY + ["env", "info", "--path"], capture_output=True)
+
+                    # Virtualenv is not created if command errors or if it's empty
+                    if (venv.returncode == 1) or (not venv.stdout.strip()):
+                        shell(POETRY, "install")
 
                     # Run project
-                    shell(poetry, "run", project_name.lower(), ctx.args, cwd=project_path)
+                    shell(POETRY, "run", project_name.lower(), ctx.args, cwd=project_path)
 
                 return runProject
 
@@ -132,7 +134,7 @@ class Broken:
                 def runProject(ctx: typer.Context, debug: bool=False):
                     self.install_rust()
                     release = ["--profile", "release"] if not debug else []
-                    shell(cargo, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
+                    shell(CARGO, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
                 return runProject
 
             # Create Typer command
@@ -179,10 +181,10 @@ class Broken:
 
         # Make all hooks executable
         for file in (BROKEN_ROOT_DIR/"Broken/Hooks").iterdir():
-            shell(chmod, "+x", file)
+            shell(CHMOD, "+x", file)
 
         # Set git hooks path to Broken/Hooks
-        shell(git, "config", "core.hooksPath", "./Broken/Hooks")
+        shell(GIT, "config", "core.hooksPath", "./Broken/Hooks")
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
@@ -200,13 +202,13 @@ class Broken:
 
             # Download and install Rust
             with download(rust_installer) as installer:
-                shell(bash, installer, "--profile", "default", "-y")
+                shell(BASH, installer, "--profile", "default", "-y")
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
-        for line in shell(rustup, "toolchain", "list", output=True, echo=False).split("\n"):
+        for line in shell(RUSTUP, "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
-                shell(rustup, "default", RUSTUP_TOOLCHAIN)
+                shell(RUSTUP, "default", RUSTUP_TOOLCHAIN)
 
     def clone(self) -> None:
         """Clones and initializes to default branch for all public submodules"""
@@ -255,10 +257,10 @@ class Broken:
             if private: continue
 
             # Clone repo
-            shell(git, "submodule", "update", "--init", "--recursive", path)
+            shell(GIT, "submodule", "update", "--init", "--recursive", path)
 
             # Checkout to default branch
-            if branch: shell(git, "checkout", branch, "-q", cwd=path)
+            if branch: shell(GIT, "checkout", branch, "-q", cwd=path)
             else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
     def install(self) -> None:
@@ -289,9 +291,9 @@ class Broken:
     def update(self):
         """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
         self.install_rust()
-        shell(cargo, "update")
-        shell(rustup, "update")
-        shell(poetry, "update")
+        shell(CARGO, "update")
+        shell(RUSTUP, "update")
+        shell(POETRY, "update")
 
     def mock_release_python(self) -> None:
         mkdir(self.RELEASES_DIR)
@@ -404,11 +406,11 @@ class Broken:
         date = self.date()
 
         # Add target toolchain for Rust
-        shell(rustup, "target", "add", target_triple)
+        shell(RUSTUP, "target", "add", target_triple)
         features = Broken.RustProjectFeatures[project]
 
         # Build the binary
-        shell(cargo, "build",
+        shell(CARGO, "build",
             "--bin", project,
             "--target", target_triple,
             "--features", features,
@@ -469,7 +471,7 @@ class Broken:
         # # Install Requirements depending on host platform
         if BrokenPlatform == "linux":
             if LINUX_DISTRO == "arch":
-                self.shell(sudo, pacman, "-Syu", [
+                self.shell(SUDO, PACMAN, "-Syu", [
                     "base-devel",
                     "gcc-fortran",
                     "mingw-w64-toolchain",
@@ -484,8 +486,8 @@ class Broken:
             self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
             if LINUX_DISTRO == "ubuntu":
-                self.shell(sudo, apt, "update")
-                self.shell(sudo, apt, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx".split())
+                self.shell(SUDO, APT, "update")
+                self.shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx".split())
 
         elif BrokenPlatform == "windows":
             raise NotImplementedError("Broken releases on Windows not implemented")
@@ -495,7 +497,7 @@ class Broken:
 
             # Install Homebrew
             with download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
-                self.shell(bash, installer)
+                self.shell(BASH, installer)
 
             # Install make dependencies
             self.shell(brew, "install", "mingw-w64", "upx")
