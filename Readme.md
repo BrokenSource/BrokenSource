@@ -48,7 +48,7 @@ $ git clone https://github.com/BrokenSource/BrokenSource
 $ cd BrokenSource
 
 # Install dependencies, activates virtual environment
-$ python3 ./brokenshell
+$ python ./brokenshell
 
 # Clone submodules
 $ broken clone

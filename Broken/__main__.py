@@ -8,17 +8,18 @@ RUSTUP_TOOLCHAIN = "stable"
 find = lambda name: get_binary(name, echo=False)
 
 # Find binaries absolute path
-PYTHON  = system.executable
-POETRY  = [PYTHON, "-m", "poetry"]
-PIP     = [PYTHON, "-m", "pip"]
-BASH    = find("bash") if (not BrokenPlatform.Windows) else None
-PACMAN  = find("pacman")
-RUSTUP  = find("rustup")
-CARGO   = find("cargo")
-CHMOD   = find("chmod")
-SUDO    = find("sudo")
-APT     = find("apt")
-GIT     = find("git")
+PYTHON      = system.executable
+POETRY      = [PYTHON, "-m", "poetry"]
+PIP         = [PYTHON, "-m", "pip"]
+PYINSTALLER = find("pyinstaller")
+BASH        = find("bash") if (not BrokenPlatform.Windows) else None
+PACMAN      = find("pacman")
+RUSTUP      = find("rustup")
+CARGO       = find("cargo")
+CHMOD       = find("chmod")
+SUDO        = find("sudo")
+APT         = find("apt")
+GIT         = find("git")
 
 # Development tools
 ISORT   = find("isort")
@@ -34,12 +35,13 @@ Broken Source Software manager script\n
 """
 
 class Broken:
+    # Cargo.toml's required-features as ["--features", "default" ? "feature1,feature2"]
     RustProjectFeatures = {}
-    FindProjectLowercase = {}
+
+    # dict["depthflow"] -> "DepthFlow"
+    ProjectNameLowercaseToReal = {}
 
     def __init__(self) -> None:
-
-        # Directories
         self.RELEASES_DIR = BROKEN_ROOT_DIR/"Release"
         self.BUILD_DIR    = self.RELEASES_DIR/"Build"
         self.PROJECTS_DIR = BROKEN_ROOT_DIR/"Projects"
@@ -50,6 +52,8 @@ class Broken:
             help=ABOUT,
             no_args_is_help=True,
             add_completion=False,
+            rich_markup_mode="rich",
+            epilog="• Made with [red]:heart:[/red] by [green]Broken Source Software[/green]"
         )
 
         # Section: Installation
@@ -68,8 +72,7 @@ class Broken:
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.clean)
 
         # Add projects commands
-        self.add_rust_projects_commands()
-        self.add_python_projects_commands()
+        self.add_run_projects_commands()
 
         # Execute the CLI
         self.typer_app()
@@ -80,35 +83,94 @@ class Broken:
             if (path/"pyproject.toml").exists():
                 yield path
 
-    def add_python_projects_commands(self) -> None:
-        for project_path in self.python_projects():
+    def __get_install_python_virtualenvironment(self,
+        project_name: str,
+        project_path: PathLike,
+        unset_current_virtualenv: bool=False
+    ) -> Path:
+        """Get the virtual environment path for a Python project"""
+        info(f"Installing virtual environment for {project_name} project")
+
+        with pushd(project_path):
+
+            # Unset virtualenv else the nested poetry will use it
+            if unset_current_virtualenv:
+                del os.environ["VIRTUAL_ENV"]
+
+            while True:
+                venv = shell(POETRY + ["env", "info", "--path"], capture_output=True, cwd=project_path)
+
+                # Virtualenv is not created if command errors or if it's empty
+                if (venv.returncode == 1) or (not venv.stdout.strip()):
+                    shell(POETRY, "install", cwd=project_path)
+                    continue
+
+                # Get and return virtualenv path
+                venv_path = Path(venv.stdout.decode("utf-8").strip())
+                success(f"Virtual environment for Project [{project_name}] is [{venv_path}]")
+                return venv_path
+
+    # FIXME: Will I ever have projects in other languages?
+    def add_run_projects_commands(self, echo=False) -> None:
+        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT_DIR/"Cargo.toml").read_text()))
+
+        # Build Rust required features
+        for rust_project in self.cargotoml["bin"]:
+            Broken.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
+
+        # Iterate on all directories
+        for project_path in self.PROJECTS_DIR.iterdir():
+
+            # Might have non-project files
+            if not project_path.is_dir():
+                continue
+
+            # Empty dir might be a bare submodule
+            if not list(project_path.iterdir()):
+                if echo: warning(f"Project [{project_path.name}] is empty")
+                continue
+
+            # Get project name and translate lowercase to real name
             project_name = project_path.name
+            Broken.ProjectNameLowercaseToReal[project_name.lower()] = project_name
 
-            def run_project_template(project_name: str, project_path: PathLike):
-                def runProject(ctx: typer.Context):
-                    # Unset virtualenv else the nested poetry will use it
-                    del os.environ["VIRTUAL_ENV"]
+            project_language = "python" if (project_path/"pyproject.toml").exists() else "rust"
 
-                    # Change directory to project's directory
-                    os.chdir(project_path)
+            if (project_path/"pyproject.toml").exists():
+                project_language = "python"
+            elif project_name in Broken.RustProjectFeatures:
+                project_language = "rust"
+            else:
+                if echo: error(f"Unknown Project [{project_name}]")
+                continue
 
-                    # Install Poetry dependencies
-                    venv = shell(POETRY + ["env", "info", "--path"], capture_output=True)
+            # A very weird @wraps() decorator to keep local strings and return a function that runs the project
+            def run_project_template(project_name: str, project_path: PathLike, project_language: str):
+                def run_project(
+                    ctx: typer.Context,
+                    debug=typer.Option(False, "--debug", "-d", help="Debug mode for Rust projects"),
+                ):
+                    # Route for Python projects
+                    if project_language == "python":
+                        self.__get_install_python_virtualenvironment(
+                            project_name, project_path,
+                            unset_current_virtualenv=True
+                        )
+                        shell(POETRY, "run", project_name.lower(), ctx.args, cwd=project_path)
 
-                    # Virtualenv is not created if command errors or if it's empty
-                    if (venv.returncode == 1) or (not venv.stdout.strip()):
-                        shell(POETRY, "install")
+                    # Route for Rust projects
+                    elif project_language == "rust":
+                        self.install_rust()
+                        release = ["--profile", "release"] if not debug else []
+                        shell(CARGO, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
 
-                    # Run project
-                    shell(POETRY, "run", project_name.lower(), ctx.args, cwd=project_path)
-
-                return runProject
+                return run_project
 
             # Create Typer command
             self.typer_app.command(
                 name=project_name.lower(),
                 help=f"Run {project_name} project",
-                rich_help_panel="Python Projects",
+                rich_help_panel=f"{project_language.capitalize()} Projects",
 
                 # Catch extra (unknown to typer) arguments that are sent to Python
                 context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -116,45 +178,7 @@ class Broken:
                 # Projects implement their own --help
                 add_help_option=False,
 
-            )(run_project_template(project_name, project_path))
-
-    def add_rust_projects_commands(self) -> None:
-        # Cargo dictionary
-        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT_DIR/"Cargo.toml").read_text()))
-
-        # Add Typer commands for all projects
-        for project in self.cargotoml["bin"]:
-            project_name = project["name"]
-
-            # Don't add non existing projects (private repos)
-            if not (BROKEN_ROOT_DIR/project["path"]).exists(): continue
-
-            # List of required features specified in Cargo.tml
-            Broken.RustProjectFeatures[project_name] = ','.join(project.get("required-features", ["default"]))
-            Broken.FindProjectLowercase[project_name.lower()] = project_name
-
-            # This is a bit sophisticated, projectName should be kept after the callable
-            # is created, so we have a method that creates a method with given string
-            def run_project_template(project_name):
-                def runProject(ctx: typer.Context, debug: bool=False):
-                    self.install_rust()
-                    release = ["--profile", "release"] if not debug else []
-                    shell(CARGO, "run", "--bin", project_name, "--features", Broken.RustProjectFeatures[project_name], release, "--", ctx.args)
-                return runProject
-
-            # Create Typer command
-            self.typer_app.command(
-                name=project_name.lower(),
-                help=f"Run {project_name} project",
-                rich_help_panel="Rust Projects",
-
-                # Catch extra (unknown to typer) arguments that are sent to Rust
-                context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
-
-                # Rust projects implement their own --help
-                add_help_option=False,
-
-            )(run_project_template(project_name))
+            )(run_project_template(project_name, project_path, project_language))
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -227,7 +251,7 @@ class Broken:
                 info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(RUSTUP, "default", RUSTUP_TOOLCHAIN)
 
-    def clone(self) -> None:
+    def clone(self, private: bool=False) -> None:
         """Clones and initializes to default branch for all public submodules"""
 
         # Cached requests session since GitHub API is rate limited to 60 requests per hour
@@ -315,69 +339,44 @@ class Broken:
     def mock_release_python(self) -> None:
         mkdir(self.RELEASES_DIR)
 
-        pyinstaller = get_binary("pyinstaller")
-        nuitka = get_binary("nuitka3")
-        project = "DepthFlow"
+        # Simulate eventual function arguments
+        project_name = "DepthFlow"
+        project_path = self.PROJECTS_DIR/project_name
 
-        # Compile Projects/DepthFlow/DepthFlow/__main__.py
+        # Create install virtualenv dependencies
+        project_venv = self.__get_install_python_virtualenvironment(
+            project_name, project_path,
+            unset_current_virtualenv=False
+        )
 
-        # Nuitka
-        if False:
-            shell(
-                nuitka,
+        # Find site_packages of the project's virtualenv
+        python_version = f"python{system.version_info.major}.{system.version_info.minor}"
+        site_packages = project_venv/"lib"/python_version/"site-packages"
 
-                # One file dependency-less
-                "--standalone",
-                "--onefile",
+        # Use the project's virtualenv site-packages
+        os.environ["PYTHONPATH"] = str(site_packages)
+        info(f"Using site-packages [{site_packages}]")
 
-                # Plugins
-                "--follow-imports",
+        # Compile project
+        shell(PYINSTALLER,
 
-                # FFmpeg Binaries
-                "--include-package-data=imageio_ffmpeg",
+            # Where and how to build
+            "--workpath", self.BUILD_DIR,
+            "--onefile",
+            "--clean",
+            "--noconfirm",
 
-                # Misc
-                "--assume-yes-for-downloads",
-                "--remove-output",
+            # Hidden imports that may contain binaries
+            "--hidden-import", "imageio_ffmpeg",
+            "--hidden-import", "glcontext",
 
-                f"--output-dir={self.RELEASES_DIR}",
+            # Where to put the binary and its name
+            f"--distpath={self.RELEASES_DIR}",
+            "-n", project_name,
 
-                self.PROJECTS_DIR/project/project/"__init__.py",
-                "-o", project
-            )
-
-        BUILD_DIR = self.RELEASES_DIR/"Build"
-
-        # With pyinstaller
-        if True:
-            shell(
-                pyinstaller,
-
-                # One file dependency-less
-                "--onefile",
-
-                # Misc
-                "--clean",
-                "--noconfirm",
-
-                f"--distpath={self.RELEASES_DIR}",
-
-                self.PROJECTS_DIR/project/project/"__init__.py",
-
-                "--hidden-import", "imageio_ffmpeg",
-                "--hidden-import", "glcontext",
-
-                # Binary name
-                "-n", project,
-
-                # "--specpath", BUILD_DIR,
-                "--workpath", BUILD_DIR,
-                # "--distpath", BUILD_DIR,
-            )
-
-
-        #
-        compiled_binary = self.RELEASES_DIR/project
+            # Target file to compile
+            self.PROJECTS_DIR/project_name/project_name/"__init__.py",
+        )
 
 
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
@@ -402,7 +401,7 @@ class Broken:
                 self.release(project, platform, profile, upx)
 
         # Project CLI input may be lowercase
-        project = Broken.FindProjectLowercase.get(project, project)
+        project = Broken.ProjectNameLowercaseToReal.get(project, project)
 
         # Acronym for all available platforms
         if platform == "all":
