@@ -65,11 +65,23 @@ And done, you can now run `broken` and see all available commands: compile, rele
   **Windows 10+**
 </div>
 
+Depending on the **project language** you want to run, follow the **instructions below**
+
 - Running the Python projects is **easy**, while Rust requires **extra steps**
 
 - **Rust** is split in its own instructions to reduce micro-management and complexity
 
-Depending on the **project language** you want to run, follow the **instructions below**:
+<details>
+  <summary>
+    Getting the error <i>"execution of scripts is disabled on this system"</i> ?
+  </summary>
+
+  Open a PowerShell terminal as Administrator and run:
+
+  ```powershell
+  Set-ExecutionPolicy RemoteSigned
+  ```
+</details>
 
 <hr/>
 
@@ -84,10 +96,10 @@ Depending on the **project language** you want to run, follow the **instructions
   <sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
 
   - **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer
-    - Select `Open PowerShell window here`:
+    - Select `Open PowerShell window here`
 
   - **Windows 11**: `Right Click` some empty space in Windows Explorer
-    - Select `Open in Terminal`:
+    - Select `Open in Terminal`
 
   Now run the same **Linux** and **MacOS** commands above
 </details>
