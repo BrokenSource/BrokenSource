@@ -25,8 +25,6 @@ Please read all instructions before executing them for tips and notes
 
 - The pre-requirements are having [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
 
-- Commands don't include the `$` character, it indicates the start of it
-
 <br>
 
 <div align="center">
@@ -42,16 +40,16 @@ Please read all instructions before executing them for tips and notes
 
 ```bash
 # Clone and enter the repository directory
-$ git clone https://github.com/BrokenSource/BrokenSource
+git clone https://github.com/BrokenSource/BrokenSource
 
 # "Open" the repository folder
-$ cd BrokenSource
+cd BrokenSource
 
 # Install dependencies, activates virtual environment
-$ python ./brokenshell
+python ./brokenshell
 
 # Clone submodules
-$ broken clone
+broken clone
 ```
 
 And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
@@ -85,9 +83,11 @@ Depending on the **project language** you want to run, follow the **instructions
 
   <sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
 
-  - **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer, select `Open PowerShell window here`:
+  - **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer
+    - Select `Open PowerShell window here`:
 
-  - **Windows 11**: `Right Click` some empty space in Windows Explorer, select `Open in Terminal`:
+  - **Windows 11**: `Right Click` some empty space in Windows Explorer
+    - Select `Open in Terminal`:
 
   Now run the same **Linux** and **MacOS** commands above
 </details>
@@ -110,7 +110,7 @@ Depending on the **project language** you want to run, follow the **instructions
 
   ```bash
   # Install all required dependencies
-  $ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
+  pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
   ```
 
   - Now follow the same **Linux** and **MacOS** instructions above
