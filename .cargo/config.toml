@@ -1,5 +1,5 @@
 [build]
-target-dir = "Release/Build"
+target-dir = "Build"
 
 [registries.crates-io]
 protocol = "sparse"

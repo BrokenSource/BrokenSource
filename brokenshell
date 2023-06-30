@@ -46,12 +46,12 @@ for attempt in count(0):
     # Install poetry and try again
     command(PIP + ["install", "--user", "poetry"])
 
-# Find Broken's virtualenv
-venv = command(POETRY + ["env", "info", "--path"], capture_output=True)
+# Create, install dependencies on virtual environment
+command(POETRY + ["install"])
 
-# Command failed or no virtualenv exists, install it
-if (venv.returncode == 1) or (not venv.stdout.strip()):
-    command(POETRY + ["install"])
+# Broken might call brokenshell for setting up dependencies for a release
+if os.environ.get("BROKENSHELL_DO_NOT_ACTIVATE_VENV", False):
+    exit(0)
 
-# Enter the poetry shell and activate virtualenv
+# Enter shell
 command(POETRY + ["shell"])

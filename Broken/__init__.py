@@ -36,6 +36,7 @@ def BrokenImports():
 
 while True:
     with BrokenImports():
+        import configparser
         import ctypes
         import datetime
         import hashlib
@@ -54,6 +55,7 @@ while True:
         from contextlib import suppress
         from copy import deepcopy
         from dataclasses import dataclass
+        from enum import Enum
         from functools import wraps
         from io import BytesIO
         from math import *
@@ -167,14 +169,15 @@ critical  = logger.critical
 exception = logger.exception
 fixme     = _custom_loglevel("FIXME", 35, "<cyan><bold>")
 todo      = _custom_loglevel("TODO",  35, "<blue><bold>")
+note      = _custom_loglevel("NOTE",  35, "<magenta><bold>")
 
 # -------------------------------------------------------------------------------------------------|
 
 # Flatten nested lists and tuples to a single list
 # [[a, b], c, [d, e, None], [g, h]] -> [a, b, c, d, e, None, g, h]
-flatten = lambda stuff: [
+flatten_list = lambda stuff: [
     item for sub in stuff for item in
-    (flatten(sub) if type(sub) in (list, tuple) else [sub])
+    (flatten_list(sub) if type(sub) in (list, tuple) else [sub])
 ]
 
 # shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True)
@@ -183,7 +186,7 @@ def shell(*args, output=False, Popen=False, echo=True, **kwargs):
         raise ValueError("Cannot use output=True and Popen=True at the same time")
 
     # Flatten a list, remove falsy values, convert to strings
-    command = [item for item in map(str, flatten(args)) if item]
+    command = [item for item in map(str, flatten_list(args)) if item]
 
     if echo:   info(f"Running command {command}")
     if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
@@ -257,27 +260,39 @@ class BrokenPlatform:
 # -------------------------------------------------------------------------------------------------|
 # # Directories
 
+# Is the current Python some "compiler" release?
+IS_RELEASE_PYINSTALLER = getattr(system, "frozen", False)
+IS_RELEASE_NUITKA      = getattr(__builtins__, "__compiled__", False)
+
+# pyproject.toml's version date
+BROKEN_VERSION = ""
+
+# FIXME: How to, do we need version on releases?
+if not (IS_RELEASE_PYINSTALLER or IS_RELEASE_NUITKA):
+    import pkg_resources
+    BROKEN_VERSION = f'v{pkg_resources.get_distribution("Broken").version}'
+
+def get_executable_directory() -> Path:
+    """Smartly gets the current "executable" of the current scope, or the release binary's path"""
+    if IS_RELEASE_PYINSTALLER:
+        return Path(system.executable).parent.absolute().resolve()
+    elif IS_RELEASE_NUITKA:
+        return Path(__builtins__.__compiled__).parent.absolute().resolve()
+    else:
+        return Path(inspect.stack()[1].filename).parent.absolute().resolve()
+
 def make_project_directories(app_name: str="Broken", app_author: str="BrokenSource", echo=True) -> DotMap:
     """Make directories for a project, returns a DotMap of directories (.ROOT, .CACHE, .CONFIG, .DATA, .EXTERNALS)"""
     if echo: info(f"Making project directories for [AppName: {app_name}] by [AppAuthor: {app_author}]")
     directories = DotMap()
 
     # Root of the project directories
-    directories.ROOT      = Path(AppDirs(app_name, app_author).user_data_dir)
-    directories.CACHE     = directories.ROOT/"Cache"
-    directories.CONFIG    = directories.ROOT/"Config"
-    directories.DATA      = directories.ROOT/"Data"
-    directories.EXTERNALS = directories.ROOT/"Externals"
-
-    # The directory of the file that called this function itself, think of BROKEN_ROOT but for the caller
-    directories.EXECUTABLE = Path(inspect.stack()[1].filename).parent.absolute().resolve()
-
-    # If pyinstaller or nuitka is used, respectively, get the original exercutable binary
-    # not the ont on the temp directory that got extracted
-    if getattr(system, "frozen", False):
-        directories.EXECUTABLE = Path(system.executable).parent.absolute().resolve()
-    if getattr(__builtins__, "__compiled__", False):
-        directories.EXECUTABLE = Path(__builtins__.__compiled__).parent.absolute().resolve()
+    directories.ROOT       = Path(AppDirs(app_name, app_author).user_data_dir)
+    directories.CACHE      = directories.ROOT/"Cache"
+    directories.CONFIG     = directories.ROOT/"Config"
+    directories.DATA       = directories.ROOT/"Data"
+    directories.EXTERNALS  = directories.ROOT/"Externals"
+    directories.EXECUTABLE = get_executable_directory()
 
     # Make all project directories
     for name, directory in directories.items():
@@ -361,8 +376,7 @@ def download(url) -> Path:
         download_file = Path(tempdir) / Path(url).name
         with halo.Halo(text=f"Downloading {url}", spinner="dots") as spinner:
             with open(download_file, "wb") as file:
-                file.write(requests.get(url).content)
-            spinner.succeed()
+                file.write(BROKEN_REQUESTS_CACHE.get(url).content)
         yield download_file
 
 def make_executable(path: PathLike) -> None:
@@ -455,7 +469,7 @@ class BrokenBase:
             no_args_is_help=True,
             add_completion=False,
             rich_markup_mode="rich",
-            epilog="• Made with [red]:heart:[/red] by [green]Broken Source Software[/green]"
+            epilog=f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]",
         )
 
 class BrokenSmart:

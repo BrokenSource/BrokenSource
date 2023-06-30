@@ -17,6 +17,19 @@ This _mono_-repository hosts the **shared library** called **Broken** (Rust and 
 <br>
 <br>
 
+# ● Pre-compiled binaries
+
+Head over to each project's **Releases** page and download the latest version for your platform if any available
+
+Otherwise, you'll have to run from the source code, see below
+
+- **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
+
+<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - bur are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
+
+
+<br>
+
 # ● Running From the Source Code
 
 Please read all instructions before executing them for tips and notes
