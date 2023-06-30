@@ -89,6 +89,7 @@ while True:
         import PIL
         import PIL.Image
         import pygit2
+        import pyperclip
         import requests
         import requests_cache
         import rich
@@ -102,6 +103,23 @@ while True:
         from tqdm import tqdm
 
         break
+
+# # Custom types, some Rust inspiration
+
+# PIL.Image is a module, PIL.Image.Image is the class
+PilImage  = PIL.Image.Image
+
+# Stuff that accepts "anything that can be converted to X"
+URL       = str
+
+# def divide(a, b) -> Option[float, ZeroDivisionError]:
+Option = Union
+Ok     = True
+Error  = False
+Result = Union[Ok, Error]
+
+# -------------------------------------------------------------------------------------------------|
+# Logging
 
 # Add milliseconds to timedelta for logging
 forbiddenfruit.curse(
@@ -285,6 +303,25 @@ HOME_DIR = Path.home()
 # -------------------------------------------------------------------------------------------------|
 # # Utility functions
 
+BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')
+
+def print_centered(text: str, width: int="auto", function=print):
+    """Prints text centered on the terminal"""
+    if width == "auto":
+        width = shutil.get_terminal_size().columns
+    for line in text.splitlines():
+        function(line.center(width))
+
+def open_in_file_explorer(path: PathLike):
+    """Opens a path in the file explorer"""
+    path = Path(path)
+    if BrokenPlatform.Windows:
+        os.startfile(str(path))
+    elif BrokenPlatform.Linux:
+        shell("xdg-open", path)
+    elif BrokenPlatform.MacOS:
+        shell("open", path)
+
 def binary_exists(binary_name: str) -> bool:
     return find_binary(binary_name) is not None
 
@@ -407,3 +444,50 @@ class ShellCraft:
 
         return True
 
+# -------------------------------------------------------------------------------------------------|
+# Base classes
+
+class BrokenBase:
+    def typer_app(description: str="No help provided") -> typer.Typer:
+        return typer.Typer(
+            help=description,
+            add_help_option=False,
+            no_args_is_help=True,
+            add_completion=False,
+            rich_markup_mode="rich",
+            epilog="• Made with [red]:heart:[/red] by [green]Broken Source Software[/green]"
+        )
+
+class BrokenSmart:
+    def load_image(image: Union[PilImage, PathLike, URL], pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
+        """Smartly load 'SomeImage', a path, url or PIL Image"""
+
+        # Nothing to do if already a PIL Image
+        if isinstance(image, PilImage):
+            return image
+
+        try:
+            # Load image if a path or url is supplied
+            if any([isinstance(image, T) for T in (PathLike, str)]):
+                if (path := true_path(image)).exists():
+                    if echo: info(f"Loading image from path [{path}]")
+                    return PIL.Image.open(path).convert(pixel)
+                else:
+                    if echo: info(f"Loading image from (maybe) url [{image}]")
+                    try:
+                        requests = BROKEN_REQUESTS_CACHE if cache else requests
+                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
+                    except Exception as e:
+                        if echo: error(f"Failed to load image from url [{image}]: {e}")
+                        return None
+            else:
+                if echo: error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL")
+                return None
+
+        # Can't open file
+        except PIL.UnidentifiedImageError as e:
+            if echo: error(f"Failed to load image [{image}]: {e}")
+            return None
+
+        except Exception:
+            return None

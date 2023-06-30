@@ -40,3 +40,6 @@
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow
 	url = https://github.com/BrokenSource/DepthFlow
+[submodule "Projects/QuadSnap"]
+	path = Projects/QuadSnap
+	url = https://github.com/BrokenSource/QuadSnap

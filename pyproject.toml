@@ -25,6 +25,7 @@ appdirs = "^1.4.4"
 poetry = "^1.5.1"
 tqdm = "^4.65.0"
 requests-cache = "^1.0.1"
+pillow = "^9.5.0"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"

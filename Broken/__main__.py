@@ -43,19 +43,13 @@ class Broken:
 
     def __init__(self) -> None:
         self.RELEASES_DIR = BROKEN_ROOT_DIR/"Release"
-        self.BUILD_DIR    = self.RELEASES_DIR/"Build"
         self.PROJECTS_DIR = BROKEN_ROOT_DIR/"Projects"
+        self.ASSETS_DIR   = BROKEN_ROOT_DIR/"Assets"
+        self.BUILD_DIR    = self.RELEASES_DIR/"Build"
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
-        self.typer_app = typer.Typer(
-            help=ABOUT,
-            add_help_option=False,
-            no_args_is_help=True,
-            add_completion=False,
-            rich_markup_mode="rich",
-            epilog="• Made with [red]:heart:[/red] by [green]Broken Source Software[/green]"
-        )
+        self.typer_app = BrokenBase.typer_app(description=ABOUT)
 
         # Section: Installation
         self.typer_app.command(rich_help_panel="Installation")(self.install)
@@ -87,28 +81,26 @@ class Broken:
     def __get_install_python_virtualenvironment(self,
         project_name: str,
         project_path: PathLike,
-        unset_current_virtualenv: bool=False
     ) -> Path:
         """Get the virtual environment path for a Python project"""
-        info(f"Installing virtual environment for {project_name} project")
 
         with pushd(project_path):
 
             # Unset virtualenv else the nested poetry will use it
-            if unset_current_virtualenv:
-                del os.environ["VIRTUAL_ENV"]
+            del os.environ["VIRTUAL_ENV"]
 
             while True:
-                venv = shell(POETRY + ["env", "info", "--path"], capture_output=True, cwd=project_path)
+                venv = shell(POETRY + ["env", "info", "--path"], echo=False, capture_output=True, cwd=project_path)
 
                 # Virtualenv is not created if command errors or if it's empty
                 if (venv.returncode == 1) or (not venv.stdout.strip()):
+                    info(f"Installing virtual environment for {project_name} project")
                     shell(POETRY, "install", cwd=project_path)
                     continue
 
                 # Get and return virtualenv path
                 venv_path = Path(venv.stdout.decode("utf-8").strip())
-                success(f"Virtual environment for Project [{project_name}] is [{venv_path}]")
+
                 return venv_path
 
     # FIXME: Will I ever have projects in other languages?
@@ -153,10 +145,7 @@ class Broken:
                 ):
                     # Route for Python projects
                     if project_language == "python":
-                        self.__get_install_python_virtualenvironment(
-                            project_name, project_path,
-                            unset_current_virtualenv=True
-                        )
+                        self.__get_install_python_virtualenvironment(project_name, project_path)
                         shell(POETRY, "run", project_name.lower(), ctx.args, cwd=project_path)
 
                     # Route for Rust projects
@@ -337,18 +326,15 @@ class Broken:
         shell(RUSTUP, "update")
         shell(POETRY, "update")
 
-    def mock_release_python(self) -> None:
+    def mock_release_python(self, project_name="QuadSnap") -> None:
         mkdir(self.RELEASES_DIR)
+        date = self.date()
 
         # Simulate eventual function arguments
-        project_name = "DepthFlow"
         project_path = self.PROJECTS_DIR/project_name
 
         # Create install virtualenv dependencies
-        project_venv = self.__get_install_python_virtualenvironment(
-            project_name, project_path,
-            unset_current_virtualenv=False
-        )
+        project_venv = self.__get_install_python_virtualenvironment(project_name, project_path)
 
         # Find site_packages of the project's virtualenv
         python_version = f"python{system.version_info.major}.{system.version_info.minor}"
@@ -358,14 +344,21 @@ class Broken:
         os.environ["PYTHONPATH"] = str(site_packages)
         info(f"Using site-packages [{site_packages}]")
 
+        if not (icon_file := project_path/"Icon.ico").exists():
+            warning(f"Icon file [{icon_file}] not found, using default icon")
+            # icon_file = self.ASSETS_DIR/"DefaultIcon.ico"
+
+        compiled_binary = self.RELEASES_DIR/f"{project_name.lower()}"
+
         # Compile project
         shell(PYINSTALLER,
 
             # Where and how to build
             "--workpath", self.BUILD_DIR,
             "--onefile",
-            "--clean",
+            # "--clean",
             "--noconfirm",
+            # "--strip",
 
             # Hidden imports that may contain binaries
             "--hidden-import", "imageio_ffmpeg",
@@ -373,16 +366,20 @@ class Broken:
 
             # Where to put the binary and its name
             f"--distpath={self.RELEASES_DIR}",
-            "-n", project_name,
+            f"--specpath={self.BUILD_DIR}",
+            "-n", project_name.lower(),
+
+            # Icon file if any
+            "--icon", icon_file,
 
             # Target file to compile
-            self.PROJECTS_DIR/project_name/project_name/"__init__.py",
+            self.PROJECTS_DIR/project_name/project_name/"__main__.py",
         )
-
 
     def release(self, project: str, platform: str, profile: str="ultra", upx: bool=False) -> None:
         """Compile and release a project (or 'all') to a target (or 'all') platforms"""
         self.install_rust()
+        date = self.date()
         mkdir(self.RELEASES_DIR)
 
         # Target triple, compiled extension, release extension
@@ -418,9 +415,6 @@ class Broken:
 
         # # Target platform
         (target_triple, compiled_extension, release_extension) = platforms_configuration[platform]
-
-        # Update dates
-        date = self.date()
 
         # Add target toolchain for Rust
         shell(RUSTUP, "target", "add", target_triple)
