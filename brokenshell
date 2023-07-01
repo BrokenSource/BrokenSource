@@ -49,9 +49,5 @@ for attempt in count(0):
 # Create, install dependencies on virtual environment
 command(POETRY + ["install"])
 
-# Broken might call brokenshell for setting up dependencies for a release
-if os.environ.get("BROKENSHELL_DO_NOT_ACTIVATE_VENV", False):
-    exit(0)
-
-# Enter shell
+# Enter virtual environment
 command(POETRY + ["shell"])

@@ -56,6 +56,7 @@ while True:
         from copy import deepcopy
         from dataclasses import dataclass
         from enum import Enum
+        from functools import lru_cache
         from functools import wraps
         from io import BytesIO
         from math import *
@@ -90,8 +91,6 @@ while True:
         import openai
         import PIL
         import PIL.Image
-        import pygit2
-        import pyperclip
         import requests
         import requests_cache
         import rich
@@ -215,20 +214,26 @@ def cp(source: PathLike, destination: PathLike, echo=True):
     shutil.copy2(source, destination)
 
 # Path may be a file or directory
-def rmdir(path: PathLike, confirm=False, echo=True):
+def rmdir(path: PathLike, confirm=False, echo=True) -> bool:
     path = Path(path)
     if echo: info(f"Removing Path [{path}] ({confirm=})")
 
     # Symlinks are safe to remove
-    if path.is_symlink(): path.unlink(); return
+    if path.is_symlink():
+        path.unlink()
+        return True
 
     # Confirm removal: directory contains data
     if confirm and (not rich.prompt.Confirm.ask(f"Confirm removing path ({path})")):
-        return
+        return False
 
     # Remove the path
-    if path.is_dir(): shutil.rmtree(path, ignore_errors=True)
-    else:             path.unlink()
+    if path.is_dir():
+        shutil.rmtree(path, ignore_errors=True)
+    else:
+        path.unlink()
+
+    return True
 
 @contextmanager
 def pushd(directory):
@@ -275,11 +280,13 @@ if not (IS_RELEASE_PYINSTALLER or IS_RELEASE_NUITKA):
 def get_executable_directory() -> Path:
     """Smartly gets the current "executable" of the current scope, or the release binary's path"""
     if IS_RELEASE_PYINSTALLER:
+        info("Running from Pyinstaller release")
         return Path(system.executable).parent.absolute().resolve()
     elif IS_RELEASE_NUITKA:
+        info("Running from Nuitka release")
         return Path(__builtins__.__compiled__).parent.absolute().resolve()
     else:
-        return Path(inspect.stack()[1].filename).parent.absolute().resolve()
+        return Path(inspect.stack()[2].filename).parent.absolute().resolve()
 
 def make_project_directories(app_name: str="Broken", app_author: str="BrokenSource", echo=True) -> DotMap:
     """Make directories for a project, returns a DotMap of directories (.ROOT, .CACHE, .CONFIG, .DATA, .EXTERNALS)"""
@@ -359,6 +366,10 @@ def get_binary(binary_name: Union[str, List[str]], echo=True) -> Path:
     else:
         if echo: warning(f"Binary [{binary_name.ljust(8)}] it not on PATH")
         return None
+
+@lru_cache
+def get_binary_cached(binary_name: Union[str, List[str]], echo=True) -> Path:
+    return get_binary(binary_name, echo=echo)
 
 # Endless war of how to get a FFmpeg binary available
 try:

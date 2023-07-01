@@ -65,6 +65,7 @@ class BrokenCLI:
         self.PROJECTS_DIR = BROKEN_ROOT_DIR/"Projects"
         self.ASSETS_DIR   = BROKEN_ROOT_DIR/"Assets"
         self.BUILD_DIR    = BROKEN_ROOT_DIR/"Build"
+        self.WINEPREFIX   = self.BUILD_DIR/"Wineprefix"
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
@@ -238,11 +239,15 @@ class BrokenCLI:
         # Sort imports, ignore "Releases" folder
         shell(ISORT, BROKEN_ROOT_DIR,
             "--force-single-line-imports",
-            "--skip", self.RELEASES_DIR
+            "--skip", self.RELEASES_DIR,
+            "--skip", self.BUILD_DIR,
         )
 
-        # Clean pycache with pycclean
-        shell(PYCLEAN, "-v", BROKEN_ROOT_DIR)
+        # Remove all .pyc files and __pycache__ folders
+        for path in BROKEN_ROOT_DIR.glob("**/*.pyc"):
+            fixme(f"Is it right to remove .pyc file [{path}] ?")
+        for path in BROKEN_ROOT_DIR.glob("**/__pycache__"):
+            fixme(f"Is it right to remove __pycache__ folder [{path}] ?")
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
@@ -403,7 +408,7 @@ class BrokenCLI:
                 WINE_POETRY = [WINE_PYTHON, "-m", "poetry"]
 
                 # Set Wineprefix
-                os.environ["WINEPREFIX"] = str(self.BUILD_DIR/"Wineprefix")
+                os.environ["WINEPREFIX"] = str(self.WINEPREFIX)
                 os.environ["WINEARCH"]   = "win64"
                 os.environ["WINEDEBUG"]  = "-all"
 
@@ -418,8 +423,9 @@ class BrokenCLI:
                     shell(WINE, python_installer, "/quiet", "InstallAllUsers=1", "PrependPath=1")
 
                 # Install Broken dependencies and create virtualenv
-                os.environ["BROKENSHELL_DO_NOT_ACTIVATE_VENV"] = "1"
-                shell(WINE, BROKEN_ROOT_DIR/"brokenshell")
+                shell(WINE_PIP, "install", "--upgrade", "pip", "wheel")
+                shell(WINE_PIP, "install", "--upgrade", "poetry")
+                shell(WINE_POETRY, "install")
 
                 # Inception: Run this function but from Wine Python
                 del os.environ["VIRTUAL_ENV"]

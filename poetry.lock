@@ -1146,17 +1146,6 @@ files = [
 ]
 
 [[package]]
-name = "pyclean"
-version = "2.7.3"
-description = "Pure Python cross-platform pyclean. Clean up your Python bytecode."
-optional = false
-python-versions = "*"
-files = [
-    {file = "pyclean-2.7.3-py3-none-any.whl", hash = "sha256:e0b824d76820ed12f8b3e39e9964dc16df0b4d00027fef59160f7500080aef3f"},
-    {file = "pyclean-2.7.3.tar.gz", hash = "sha256:000d37ca483eb8db10c7c996fd141fa76feafdd4cffd3abe47158d2006a0e986"},
-]
-
-[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -1953,4 +1942,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "84c0e2396e62a4f9f1b6ee914fae8dc748c6e45b2a9e4ad743f1382335c919d5"
+content-hash = "516d148566aedfcf3a6e9cd1c9ec6eed0a43611aa79fcf70974dee031bf42ddb"
