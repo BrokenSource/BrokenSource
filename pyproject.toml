@@ -32,7 +32,6 @@ broken = "Broken.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
-pyclean = "^2.7.0"
 nuitka = "^1.6.5"
 pyinstaller = "^5.13.0"
 

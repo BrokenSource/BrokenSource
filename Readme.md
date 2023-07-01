@@ -27,6 +27,32 @@ Otherwise, you'll have to run from the source code, see below
 
 <sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - bur are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
 
+<br/>
+
+Our **release binaries** follows the **naming convention** below:
+
+- `<project_name>-<operating_system>-<cpu_architecture>-<version>.<extension>`
+
+where
+
+<div align="center">
+
+| **Variable**         | **Possible Values**         | **Notes**     |
+|:--------------------:|:---------------------------:|:-------------:|
+| `<project_name>`     | Many                        | -             |
+| `<operating_system>` | `linux`, `macos`, `windows` | _*1_          |
+| `<cpu_architecture>` | `amd64`, `arm`              | _*1_          |
+| `<version>`          | `YYYY.MM.DD`                | _*2_          |
+| `<extension>`        | `.bin`, `.exe`              | Depends on OS |
+
+</div>
+
+We also provide a `.sha256` file for checksum for each binary for integrity verification
+
+<sub><i>*1: We don't have the hardware to test on ARM or MacOS, so we can't provide binaries for those platforms. You likely can run from the source code</i></sub>
+
+<sub><i>*2: Our versioning is based on a date format since most code is rolling release; we don't plan to have that many releases; they encode the rough timespan where the project was at and gets neatly sorted by name on file explorers</i></sub>
+
 
 <br>
 
