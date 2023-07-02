@@ -30,6 +30,9 @@ PYCLEAN = find("pyclean")
 
 # # Releases related
 
+class ProjectsEnumerator(Enum):
+    ...
+
 class ProjectLanguage:
     Python  = "python"
     Rust    = "rust"
@@ -71,6 +74,9 @@ class BrokenCLI:
     def cli(self) -> None:
         self.typer_app = BrokenBase.typer_app(description=ABOUT)
 
+        # Add projects commands
+        self.add_run_projects_commands()
+
         # Section: Installation
         self.typer_app.command(rich_help_panel="Installation")(self.install)
         self.typer_app.command(rich_help_panel="Installation")(self.clone)
@@ -84,9 +90,6 @@ class BrokenCLI:
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.hooks)
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.update)
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.clean)
-
-        # Add projects commands
-        self.add_run_projects_commands()
 
         # Execute the CLI
         self.typer_app()
@@ -193,6 +196,9 @@ class BrokenCLI:
 
             # Add command
             self.add_project_command(project_name, project_path, project_language)
+
+            # Add attribute to the enumerator ProjectsEnumerator
+            extend_enum(ProjectsEnumerator, project_name.lower(), project_name.lower())
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -359,11 +365,12 @@ class BrokenCLI:
         shell(POETRY, "update")
 
     def release(self,
-        project_name: str,
+        project_name: ProjectsEnumerator,
         platform: ReleasePlatform,
     ):
         """Builds and releases a project for a specific platform"""
         # Get "real" project name
+        project_name = project_name.value
         project_name = BrokenCLI.ProjectNameLowercaseToReal.get(project_name.lower())
 
         # Find project's programming language

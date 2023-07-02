@@ -101,6 +101,7 @@ while True:
         import toml
         import transformers
         import typer
+        from aenum import extend_enum
         from appdirs import AppDirs
         from dotmap import DotMap
         from numpy import *

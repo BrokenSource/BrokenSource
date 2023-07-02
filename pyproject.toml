@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Broken"
-version = "2023.7.1"
+version = "2023.7.2"
 description = "Broken Source Software Python Shared Code"
 authors = ["Tremeschin"]
 license = "AGPLv3-only"
@@ -26,6 +26,7 @@ poetry = "^1.5.1"
 tqdm = "^4.65.0"
 requests-cache = "^1.0.1"
 pillow = "^9.5.0"
+aenum = "^3.1.15"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"
