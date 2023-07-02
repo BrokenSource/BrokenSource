@@ -119,13 +119,13 @@ class BrokenCLI:
     def get_project_language(self, project_name: str, echo=True) -> ProjectLanguage:
         """Get the language of a project"""
         if (self.PROJECTS_DIR/project_name/"pyproject.toml").exists():
-            if echo: info(f"Project [{project_name}] is a Python project")
+            info(f"Project [{project_name}] is a Python project", echo=echo)
             return ProjectLanguage.Python
         elif project_name in BrokenCLI.RustProjectFeatures:
-            if echo: info(f"Project [{project_name}] is a Rust project")
+            info(f"Project [{project_name}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
         else:
-            if echo: error(f"Unknown project language for [{project_name}]")
+            error(f"Unknown project language for [{project_name}]", echo=echo)
             return ProjectLanguage.Unknown
 
     def add_project_command(self, name: str, path: PathLike, language: ProjectLanguage) -> None:
@@ -181,7 +181,7 @@ class BrokenCLI:
 
             # Empty dir might be a bare submodule
             if not list(project_path.iterdir()):
-                if echo: warning(f"Project [{project_path.name}] is empty")
+                warning(f"Project [{project_path.name}] is empty", echo=echo)
                 continue
 
             # Get project name and translate lowercase to real name
@@ -244,10 +244,10 @@ class BrokenCLI:
         )
 
         # Remove all .pyc files and __pycache__ folders
-        for path in BROKEN_ROOT_DIR.glob("**/*.pyc"):
-            fixme(f"Is it right to remove .pyc file [{path}] ?")
-        for path in BROKEN_ROOT_DIR.glob("**/__pycache__"):
-            fixme(f"Is it right to remove __pycache__ folder [{path}] ?")
+        for path in list(BROKEN_ROOT_DIR.glob("**/*.pyc")) + list(BROKEN_ROOT_DIR.glob("**/__pycache__")):
+            if any([ignore in path.parents for ignore in (self.RELEASES_DIR, self.BUILD_DIR)]):
+                continue
+            remove_path(path)
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
@@ -342,7 +342,7 @@ class BrokenCLI:
                 return
             # FIXME: Does this work?
             fixme("I'm not sure if the symlink command on Windows works and links to C:\\Broken")
-            rmdir(BROKEN_SHARED_DIR, confirm=True)
+            remove_path(BROKEN_SHARED_DIR, confirm=True)
             Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_ROOT_DIR, target_is_directory=True)
         else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
 

@@ -25,13 +25,13 @@ Otherwise, you'll have to run from the source code, see below
 
 - **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
-<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - bur are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
+<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
 
 <br/>
 
 Our **release binaries** follows the **naming convention** below:
 
-- `<project_name>-<operating_system>-<cpu_architecture>-<version>.<extension>`
+- `$project_name-$operating_system-$cpu_architecture-$version.$extension`
 
 where
 
@@ -39,11 +39,11 @@ where
 
 | **Variable**         | **Possible Values**         | **Notes**     |
 |:--------------------:|:---------------------------:|:-------------:|
-| `<project_name>`     | Many                        | -             |
-| `<operating_system>` | `linux`, `macos`, `windows` | _*1_          |
-| `<cpu_architecture>` | `amd64`, `arm`              | _*1_          |
-| `<version>`          | `YYYY.MM.DD`                | _*2_          |
-| `<extension>`        | `.bin`, `.exe`              | Depends on OS |
+| `$project_name`     | Many                        | -             |
+| `$operating_system` | `linux`, `macos`, `windows` | _*1_          |
+| `$cpu_architecture` | `amd64`, `arm`              | _*1_          |
+| `$version`          | `YYYY.MM.DD`                | _*2_          |
+| `$extension`        | `.bin`, `.exe`              | Depends on OS |
 
 </div>
 
