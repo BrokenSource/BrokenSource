@@ -484,6 +484,12 @@ class BrokenCLI:
 
             fixme("Set icon file for Windows releases")
 
+            # Find common project assets
+            def get_project_asset_file_or_default(relative_path: Path) -> Path:
+                if (target := self.ASSETS_DIR/project_name/relative_path).exists():
+                    return target
+                return self.ASSETS_DIR/"Default"/relative_path
+
             # Compile project
             shell(PYINSTALLER,
 
@@ -503,6 +509,10 @@ class BrokenCLI:
                 f"--distpath={self.RELEASES_DIR}",
                 f"--specpath={self.BUILD_DIR}",
                 "-n", project_name,
+
+                # Branding: Icon and splash screen
+                "--splash", get_project_asset_file_or_default("Splash.png"),
+                "--icon", get_project_asset_file_or_default("Icon.ico"),
 
                 # Target file to compile
                 self.PROJECTS_DIR/project_name/project_name/"__main__.py",
