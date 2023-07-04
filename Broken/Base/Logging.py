@@ -13,9 +13,9 @@ logger = loguru.logger.bind()
 # Add stdout logging
 logger.add(system.stdout, colorize=True, level="TRACE",
     format=(
-        "[<green>{elapsed.milliseconds}ms</green>]─"
-        "[<level>{level:7}</level>]"
-        "<level> ▸ {message}</level>"
+        "│<green>{elapsed.milliseconds}ms</green>├"
+        "┤<level>{level:7}</level>"
+        "│ ▸ <level>{message}</level>"
     )
 )
 

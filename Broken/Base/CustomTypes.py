@@ -13,3 +13,4 @@ Option = Union
 Ok     = True
 Error  = False
 Result = Union[Ok, Error]
+Self   = Any

@@ -15,6 +15,7 @@ from . import *
 # |         break
 
 class BrokenImportError:
+    LAST_ERROR = None
     ...
 
 @contextmanager
@@ -22,6 +23,14 @@ def BrokenImports():
     try:
         yield
     except (ModuleNotFoundError, ImportError) as error:
+
+        # ERROR: Same error as last time, raise it (import loop?)
+        if BrokenImportError.LAST_ERROR == str(error):
+            raise error
+
+        # Save last error (see above)
+        BrokenImportError.LAST_ERROR = str(error)
+
         # Module and its spec import error class
         import_error = BrokenImportError()
 
@@ -52,6 +61,7 @@ while True:
         import shutil
         import subprocess
         import tempfile
+        import warnings
         import zipfile
         from abc import ABC
         from abc import abstractmethod
@@ -64,8 +74,6 @@ while True:
         from io import BytesIO
         from math import *
         from os import PathLike
-        from os import environ as env
-        from os import getcwd as working_directory
         from pathlib import Path
         from shutil import which as find_binary
         from subprocess import PIPE
@@ -84,6 +92,7 @@ while True:
         from typing import Union
         from uuid import uuid4 as uuid
 
+        import aenum
         import arrow
         import distro
         import forbiddenfruit
@@ -101,7 +110,6 @@ while True:
         import toml
         import transformers
         import typer
-        from aenum import extend_enum
         from appdirs import AppDirs
         from dotmap import DotMap
         from numpy import *

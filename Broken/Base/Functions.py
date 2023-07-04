@@ -27,7 +27,7 @@ def shell(*args, output=False, Popen=False, echo=True, **kwargs):
 
 # # Unix-like Python "ported" functions
 
-def mkdir(path: PathLike, echo=True):
+def mkdir(path: PathLike, echo=True) -> Path:
     """Creates a directory and its parents, fail safe™"""
     path = Path(path)
     if path.exists():
@@ -35,6 +35,7 @@ def mkdir(path: PathLike, echo=True):
         return
     info(f"Creating directory {path}", echo=echo)
     path.mkdir(parents=True, exist_ok=True)
+    return path
 
 def touch(path: PathLike, echo=True):
     """Creates a file, fail safe™"""
@@ -53,11 +54,16 @@ def copy_path(source: PathLike, destination: PathLike, echo=True):
 # Path may be a file or directory
 def remove_path(path: PathLike, confirm=False, echo=True) -> bool:
     path = Path(path)
-    info(f"Removing Path ({confirm=}) [{path}]", echo=echo)
+    info(f"• Removing Path ({confirm=}) [{path}]", echo=echo)
+
+    if not path.exists():
+        success(f"└─ Does not exist", echo=echo)
+        return False
 
     # Symlinks are safe to remove
     if path.is_symlink():
         path.unlink()
+        success(f"└─ Removed Symlink", echo=echo)
         return True
 
     # Confirm removal: directory contains data
@@ -67,27 +73,22 @@ def remove_path(path: PathLike, confirm=False, echo=True) -> bool:
     # Remove the path
     if path.is_dir():
         shutil.rmtree(path, ignore_errors=True)
+        success(f"└─ Removed Directory", echo=echo)
     else:
         path.unlink()
+        success(f"└─ Removed File", echo=echo)
 
     return True
 
 @contextmanager
 def pushd(directory):
     """Change directory, then change back when done"""
-    cwd = working_directory()
+    cwd = os.getcwd()
     os.chdir(directory)
     yield directory
     os.chdir(cwd)
 
 # -------------------------------------------------------------------------------------------------|
-
-def print_centered(text: str, width: int="auto", function=print):
-    """Prints text centered on the terminal"""
-    if width == "auto":
-        width = shutil.get_terminal_size().columns
-    for line in text.splitlines():
-        function(line.center(width))
 
 def open_in_file_explorer(path: PathLike):
     """Opens a path in the file explorer"""
@@ -129,10 +130,6 @@ def get_binary(binary_name: Union[str, List[str]], echo=True) -> Path:
 def get_binary_cached(binary_name: Union[str, List[str]], echo=True) -> Path:
     return get_binary(binary_name, echo=echo)
 
-class BrokenDependencies:
-    def update_path(self, path: PathLike, recursive: bool=True) -> None:
-        ...
-
 # Endless war of how to get a FFmpeg binary available
 try:
     import imageio_ffmpeg
@@ -144,11 +141,19 @@ except ImportError:
         BROKEN_FFMPEG_BINARY = None
 
 @contextmanager
-def download(url) -> Path:
-    BROKEN_DIRECTORIES.DOWNLOADS
-    download_file = BROKEN_DIRECTORIES.DOWNLOADS / Path(url).name
-    with halo.Halo(f"Downloading ({url}) -> [{download_file}]"):
+def download(url: str, file_name: str="auto") -> Path:
+    download_file = BROKEN_DIRECTORIES.DOWNLOADS / (Path(url).name if (file_name=="auto") else file_name)
+
+    # Already exists
+    if download_file.exists():
+        success(f"Download [{download_file}] already exists")
+        yield download_file
+        return
+
+    info(f"Downloading ({url}) -> [{download_file}]")
+    with halo.Halo(f"Downloading [{download_file.name}]"):
         download_file.write_bytes(BROKEN_REQUESTS_CACHE.get(url).content)
+
     yield download_file
 
 def make_executable(path: PathLike) -> None:

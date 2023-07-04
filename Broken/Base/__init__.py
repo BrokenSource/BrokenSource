@@ -5,10 +5,16 @@ from .Logging import *
 from .Platform import *
 from .Directories import *
 from .Functions import *
+from .Dependencies import *
 from .ShellCraft import *
 # isort: on
 
-# Generic non-file-worthy implementations
+try:
+    import pkg_resources
+    BROKEN_VERSION = f'v{pkg_resources.get_distribution("Broken").version}'
+except:
+    # FIXME: How to, do we need version on releases?
+    BROKEN_VERSION = ""
 
 class BrokenBase:
     def typer_app(description: str="No help provided") -> typer.Typer:

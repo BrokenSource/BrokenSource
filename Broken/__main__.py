@@ -1,8 +1,5 @@
 from Broken import *
 
-# "nightly" or "stable"
-RUSTUP_TOOLCHAIN = "stable"
-
 # -------------------------------------------------------------------------------------------------|
 
 find = lambda name: get_binary(name, echo=False)
@@ -28,18 +25,25 @@ UPX         = find("upx")
 ISORT   = find("isort")
 PYCLEAN = find("pyclean")
 
-# # Releases related
+# -------------------------------------------------------------------------------------------------|
+# Releases related
+
+# Rust toolchain ("nightly" or "stable")
+RUSTUP_TOOLCHAIN = os.environ.get("RUSTUP_TOOLCHAIN", "stable")
 
 class ProjectsEnumerator(Enum):
+    """List of runnable projects Broken finds. Is dynamically extended"""
     ...
 
 class ProjectLanguage:
+    """The programming language of a project"""
     Python  = "python"
     Rust    = "rust"
     Unknown = "unknown"
 
 # FIXME: How to merge with BrokenPlatform?
 class ReleasePlatform(Enum):
+    """List of common platforms targets for releases"""
     LinuxAMD64   = "linux-amd64"
     LinuxARM     = "linux-arm"
     WindowsAMD64 = "windows-amd64"
@@ -53,7 +57,7 @@ ABOUT = f"""
 Broken Source Software manager script\n
 • Tip: run "broken (command) --help" for options on commands or projects
 
-(c) 2022-2023 BrokenSource, AGPLv3-only License.
+(c) 2022-2023 Broken Source Software and its authors, AGPLv3-only License.
 """
 
 class BrokenCLI:
@@ -64,10 +68,11 @@ class BrokenCLI:
     ProjectNameLowercaseToReal = {}
 
     def __init__(self) -> None:
-        self.RELEASES_DIR = BROKEN_ROOT_DIR/"Release"
-        self.PROJECTS_DIR = BROKEN_ROOT_DIR/"Projects"
-        self.ASSETS_DIR   = BROKEN_ROOT_DIR/"Assets"
-        self.BUILD_DIR    = BROKEN_ROOT_DIR/"Build"
+        # Monorepository directories for Broken CLI script
+        self.RELEASES_DIR = BROKEN_MONOREPO_DIR/"Release"
+        self.PROJECTS_DIR = BROKEN_MONOREPO_DIR/"Projects"
+        self.ASSETS_DIR   = BROKEN_MONOREPO_DIR/"Assets"
+        self.BUILD_DIR    = BROKEN_MONOREPO_DIR/"Build"
         self.WINEPREFIX   = self.BUILD_DIR/"Wineprefix"
 
     # Builds CLI commands and starts Typer
@@ -97,6 +102,7 @@ class BrokenCLI:
     def __get_install_python_virtualenvironment(self,
         project_name: str,
         project_path: PathLike,
+        reinstall: bool=False,
     ) -> Path:
         """Get the virtual environment path for a Python project"""
 
@@ -116,6 +122,13 @@ class BrokenCLI:
 
                 # Get and return virtualenv path
                 venv_path = Path(venv.stdout.decode("utf-8").strip())
+
+                # Reinstall virtualenv if requested
+                if reinstall:
+                    reinstall = False
+                    remove_path(venv_path)
+                    remove_path(project_path/"poetry.lock")
+                    continue
 
                 return venv_path
 
@@ -138,11 +151,12 @@ class BrokenCLI:
         def run_project_template(name, path, language):
             def run_project(
                 ctx: typer.Context,
+                reinstall: bool=typer.Option(False, "--reinstall", "-r", help="Delete and reinstall Poetry dependencies"),
                 debug=typer.Option(False, "--debug", "-d", help="Debug mode for Rust projects"),
             ):
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
-                    self.__get_install_python_virtualenvironment(name, path)
+                    self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
                     shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
                 # Route for Rust projects
@@ -169,7 +183,7 @@ class BrokenCLI:
 
     # FIXME: Will I ever have projects in other languages?
     def add_run_projects_commands(self, echo=False) -> None:
-        self.cargotoml = DotMap(toml.loads((BROKEN_ROOT_DIR/"Cargo.toml").read_text()))
+        self.cargotoml = DotMap(toml.loads((BROKEN_MONOREPO_DIR/"Cargo.toml").read_text()))
 
         # Build Rust required features
         for rust_project in self.cargotoml["bin"]:
@@ -198,17 +212,18 @@ class BrokenCLI:
             self.add_project_command(project_name, project_path, project_language)
 
             # Add attribute to the enumerator ProjectsEnumerator
-            extend_enum(ProjectsEnumerator, project_name.lower(), project_name.lower())
+            aenum.extend_enum(ProjectsEnumerator, project_name.lower(), project_name.lower())
 
     # NOTE: Also returns date string
     def date(self) -> str:
         """Set current UTC dates on Cargo.toml and all Python project's pyproject.toml"""
         date = arrow.utcnow().format("YYYY.M.D")
+        info(f"Current UTC date is [{date}]")
 
         # Find "version=" line and set it to "version = {date}"", write back to file
         def update_date(file: Path) -> None:
             if not file.exists(): return
-            info(f"Updating date on file [{file}] to [{date}]")
+            info(f"Updating date of file [{file}]")
             file.write_text('\n'.join(
                 [line if not line.startswith("version") else f'version = "{date}"'
                 for line in file.read_text().split("\n")]
@@ -219,11 +234,11 @@ class BrokenCLI:
             update_date(project/"pyproject.toml")
 
         # Broken
-        update_date(BROKEN_ROOT_DIR/"pyproject.toml")
+        update_date(BROKEN_MONOREPO_DIR/"pyproject.toml")
         shell(POETRY, "install")
 
         # # Rust projects
-        update_date(BROKEN_ROOT_DIR/"Cargo.toml")
+        update_date(BROKEN_MONOREPO_DIR/"Cargo.toml")
 
         return date
 
@@ -233,27 +248,33 @@ class BrokenCLI:
         """Use all Git hooks under the folder Broken/Hooks"""
 
         # Make all hooks executable
-        for file in (BROKEN_ROOT_DIR/"Broken/Hooks").iterdir():
+        for file in (BROKEN_MONOREPO_DIR/"Broken/Hooks").iterdir():
             shell(CHMOD, "+x", file)
 
         # Set git hooks path to Broken/Hooks
         shell(GIT, "config", "core.hooksPath", "./Broken/Hooks")
 
-    def clean(self) -> None:
+    def clean(self, isort: bool=True, pycache: bool=True, build: bool=False, releases: bool=False) -> None:
         """Sorts imports, cleans .pyc files"""
 
         # Sort imports, ignore "Releases" folder
-        shell(ISORT, BROKEN_ROOT_DIR,
-            "--force-single-line-imports",
-            "--skip", self.RELEASES_DIR,
-            "--skip", self.BUILD_DIR,
-        )
+        if isort:
+            shell(ISORT, BROKEN_MONOREPO_DIR,
+                "--force-single-line-imports",
+                "--skip", self.RELEASES_DIR,
+                "--skip", self.BUILD_DIR,
+            )
 
         # Remove all .pyc files and __pycache__ folders
-        for path in list(BROKEN_ROOT_DIR.glob("**/*.pyc")) + list(BROKEN_ROOT_DIR.glob("**/__pycache__")):
-            if any([ignore in path.parents for ignore in (self.RELEASES_DIR, self.BUILD_DIR)]):
-                continue
-            remove_path(path)
+        if pycache:
+            for path in list(BROKEN_MONOREPO_DIR.glob("**/*.pyc")) + list(BROKEN_MONOREPO_DIR.glob("**/__pycache__")):
+                if any([ignore in path.parents for ignore in (self.RELEASES_DIR, self.BUILD_DIR)]):
+                    continue
+                remove_path(path)
+
+        # Remove build and releases folders if requested
+        if build:    remove_path(self.BUILD_DIR)
+        if releases: remove_path(self.RELEASES_DIR)
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
@@ -263,15 +284,14 @@ class BrokenCLI:
             info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
-            rust_installer = dict(
-                windows="https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe",
-                linux=  "https://sh.rustup.rs",
-                macos=  "https://sh.rustup.rs"
-            ).get(BrokenPlatform)
+            if BrokenPlatform.Windows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
+            elif BrokenPlatform.Unix:  rust_installer = "https://sh.rustup.rs"
 
             # Download and install Rust
-            with download(rust_installer) as installer:
+            with BrokenDownloads.download(rust_installer) as installer:
                 shell(BASH, installer, "--profile", "default", "-y")
+                fixme(f"Please run the last command again or restar terminal or Rust binaries won't be found")
+                exit(0)
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
         for line in shell(RUSTUP, "toolchain", "list", output=True, echo=False).split("\n"):
@@ -314,7 +334,7 @@ class BrokenCLI:
         for section in gitmodules.sections():
 
             # Get path and url, split on owner and name, find private and branch
-            path = BROKEN_ROOT_DIR/gitmodules.get(section, "path", fallback=None)
+            path = BROKEN_MONOREPO_DIR/gitmodules.get(section, "path", fallback=None)
             url  = gitmodules.get(section, "url",  fallback=None)
             owner, name = url.split("/")[-2:]
             private, branch = needed_repo_data(owner, name)
@@ -339,9 +359,9 @@ class BrokenCLI:
         # Symlink Broken Shared Directory to Broken Root
         if BrokenPlatform.Unix:
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
-            if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_ROOT_DIR:
-                info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_ROOT_DIR}]")
-                shell("sudo", "ln", "-snf", BROKEN_ROOT_DIR, BROKEN_SHARED_DIR)
+            if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_MONOREPO_DIR:
+                info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
+                shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
         elif BrokenPlatform.Windows:
             if not ctypes.windll.shell32.IsUserAnAdmin():
                 warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
@@ -349,10 +369,10 @@ class BrokenCLI:
             # FIXME: Does this work?
             fixme("I'm not sure if the symlink command on Windows works and links to C:\\Broken")
             remove_path(BROKEN_SHARED_DIR, confirm=True)
-            Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_ROOT_DIR, target_is_directory=True)
+            Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
         else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
 
-        success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_ROOT_DIR}]")
+        success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
 
         # Add Broken Shared Directory to PATH
         ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
@@ -360,9 +380,22 @@ class BrokenCLI:
     def update(self):
         """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
         self.install_rust()
+
+        # Rust
+        info("Updating Rust dependencies")
         shell(CARGO, "update")
+        info("Updating Rust toolchain")
         shell(RUSTUP, "update")
+
+        # Python
+        info("Updating Python dependencies")
         shell(POETRY, "update")
+
+        for project in self.PROJECTS_DIR.iterdir():
+            if (project/"pyproject.toml").exists():
+                info(f"Updating Python dependencies for Project [{project.name}]")
+                shell(POETRY, "update", cwd=project)
+
 
     def release(self,
         project_name: ProjectsEnumerator,
@@ -375,7 +408,6 @@ class BrokenCLI:
 
         # Find project's programming language
         language = self.get_project_language(project_name=project_name)
-        info(f"Project [{project_name}] is written in [{language}]")
 
         # Update dates and create releases directory
         date = self.date()
@@ -426,7 +458,7 @@ class BrokenCLI:
                 shell(WINETRICKS, "win10", "-q")
 
                 # Install Python, add to path
-                with download(python_installer_url) as python_installer:
+                with BrokenDownloads.download(python_installer_url) as python_installer:
                     shell(WINE, python_installer, "/quiet", "InstallAllUsers=1", "PrependPath=1")
 
                 # Install Broken dependencies and create virtualenv
@@ -596,7 +628,7 @@ class BrokenCLI:
             raise NotImplementedError("Broken releases on macOS not tested / implemented")
 
             # Install Homebrew
-            with download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
+            with BrokenDownloads.download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
                 self.shell(BASH, installer)
 
             # Install make dependencies
