@@ -352,8 +352,8 @@ class BrokenCLI:
             if branch: shell(GIT, "checkout", branch, "-q", cwd=path)
             else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
-    def install(self) -> None:
-        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `brokenshell` command available anywhere by adding current folder to PATH"""
+    def install(self, linux_desktop_file=True) -> None:
+        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `brokenshell` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
         fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Symlink Broken Shared Directory to Broken Root
@@ -362,6 +362,22 @@ class BrokenCLI:
             if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_MONOREPO_DIR:
                 info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
                 shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
+
+            # Create .desktop file
+            if linux_desktop_file:
+                desktop = HOME_DIR/".local/share/applications/Broken.desktop"
+                desktop.write_text('\n'.join([
+                    "[Desktop Entry]",
+                    "Type=Application",
+                    "Name=Broken",
+                    f"Exec={BROKEN_SHARED_DIR/'brokenshell'}",
+                    f"Icon={self.ASSETS_DIR/'Default'/'Icon.png'}",
+                    "Comment=Broken Shell Development Environment",
+                    "Terminal=true",
+                    "Categories=Development",
+                ]))
+                success(f"Created .desktop file [{desktop}]")
+
         elif BrokenPlatform.Windows:
             if not ctypes.windll.shell32.IsUserAnAdmin():
                 warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
@@ -377,25 +393,38 @@ class BrokenCLI:
         # Add Broken Shared Directory to PATH
         ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
 
-    def update(self):
+    def update(self,
+        rust: bool=False,
+        python: bool=False,
+        repos: bool=False,
+        all: bool=False,
+    ):
         """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
-        self.install_rust()
+        if not any([rust, python, repos, all]):
+            error("Please specify what to update see [broken update --help]")
+            return
 
-        # Rust
-        info("Updating Rust dependencies")
-        shell(CARGO, "update")
-        info("Updating Rust toolchain")
-        shell(RUSTUP, "update")
+        # Update Rust
+        if all or rust:
+            self.install_rust()
+            shell(CARGO, "update")
+            shell(RUSTUP, "update")
 
-        # Python
-        info("Updating Python dependencies")
-        shell(POETRY, "update")
+        # Update Python
+        if all or python:
 
-        for project in self.PROJECTS_DIR.iterdir():
-            if (project/"pyproject.toml").exists():
-                info(f"Updating Python dependencies for Project [{project.name}]")
-                shell(POETRY, "update", cwd=project)
+            # Main repository dependencies
+            shell(POETRY, "update")
 
+            # All Python projects dependencies
+            for project in self.PROJECTS_DIR.iterdir():
+                if (project/"pyproject.toml").exists():
+                    info(f"Updating Python dependencies for Project [{project.name}]")
+                    shell(POETRY, "update", cwd=project)
+
+        # Update Git Repositories
+        if all or repos:
+            shell(GIT, "submodule", "update", "--init", "--recursive")
 
     def release(self,
         project_name: ProjectsEnumerator,
@@ -490,6 +519,13 @@ class BrokenCLI:
                     return target
                 return self.ASSETS_DIR/"Default"/relative_path
 
+            # Torch fixes not including metadata
+            torch_fixes = [
+                ("--copy-metadata", package)
+                for package in "tqdm torch regex sacremoses requests packaging filelock numpy tokenizers importlib_metadata".split()
+                if (target := site_packages/package).exists()
+            ]
+
             # Compile project
             shell(PYINSTALLER,
 
@@ -504,6 +540,9 @@ class BrokenCLI:
                 # Hidden imports that may contain binaries
                 "--hidden-import", "imageio_ffmpeg",
                 "--hidden-import", "glcontext",
+
+                # Torch fixes
+                torch_fixes,
 
                 # Where to put the binary and its name
                 f"--distpath={self.RELEASES_DIR}",

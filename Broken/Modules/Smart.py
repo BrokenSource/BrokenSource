@@ -1,4 +1,4 @@
-from Broken import *
+from . import *
 
 
 class BrokenSmart:
@@ -13,15 +13,15 @@ class BrokenSmart:
             # Load image if a path or url is supplied
             if any([isinstance(image, T) for T in (PathLike, str)]):
                 if (path := true_path(image)).exists():
-                    info(f"Loading image from path [{path}]", echo=echo)
+                    info(f"Loading image from Path [{path}]", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
-                    info(f"Loading image from (maybe) url [{image}]", echo=echo)
+                    info(f"Loading image from (maybe) URL [{image}]", echo=echo)
                     try:
                         requests = BROKEN_REQUESTS_CACHE if cache else requests
                         return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
                     except Exception as e:
-                        error(f"Failed to load image from url [{image}]: {e}", echo=echo)
+                        error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
                         return None
             else:
                 error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)

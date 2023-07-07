@@ -39,7 +39,7 @@ for attempt in count(0):
     # Call poetry --version, command might exit status 1 if it's not installed
     status = command(POETRY + ["--version"], capture_output=True)
 
-    # Install poetry if it's not installed
+    # Poetry is installed, break
     if status.returncode == 0:
         break
 

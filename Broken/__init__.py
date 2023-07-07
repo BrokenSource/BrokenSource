@@ -1,5 +1,6 @@
+# isort: skip
 from Broken.Base import *
-from Broken.Smart import *
+from Broken.Modules import *
 
 # Close Pyinstaller splash screen
 try:

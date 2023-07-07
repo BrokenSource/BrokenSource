@@ -44,10 +44,8 @@ class BrokenDirectories:
     def get_system_executable_directory() -> Path:
         """Smartly gets the current "executable" of the current scope, or the release binary's path"""
         if IS_RELEASE_PYINSTALLER:
-            info("Running from Pyinstaller release")
             return Path(system.executable).parent.absolute().resolve()
         elif IS_RELEASE_NUITKA:
-            info("Running from Nuitka release")
             return Path(__builtins__.__compiled__).parent.absolute().resolve()
         else:
             return Path(inspect.stack()[2].filename).parent.absolute().resolve()
