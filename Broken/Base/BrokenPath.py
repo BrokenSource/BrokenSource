@@ -135,7 +135,7 @@ class BrokenPath:
             return True
 
         # Confirm removal: directory contains data
-        if confirm and (not rich.prompt.Confirm.ask(f"Confirm removing path ({path})")):
+        if confirm and (not rich.prompt.Confirm.ask(f"• Confirm removing path ({path})")):
             return False
 
         # Remove the path

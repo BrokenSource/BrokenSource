@@ -162,9 +162,9 @@ class BrokenCLI:
 
                     # Detect bad returnstatus, reinstall virtualenv and retry once
                     if (status.returncode != 0) and (not reinstall):
-                        warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment?")
-                        warning(f"Attempting reinstalling virtual environment once and auto retrying...")
-                        BrokenEasyRecurse(run_project, reinstall=True)
+                        warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
+                        if rich.prompt.Confirm.ask("• Do you want to reinstall the virtual environment?"):
+                            BrokenEasyRecurse(run_project, reinstall=True)
 
                 # Route for Rust projects
                 elif language == ProjectLanguage.Rust:
