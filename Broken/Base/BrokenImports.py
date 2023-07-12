@@ -1,4 +1,4 @@
-import sys as system
+import sys
 from contextlib import contextmanager
 
 from . import *
@@ -35,10 +35,10 @@ def BrokenImports():
         import_error = BrokenImportError()
 
         # Patch system.modules for no re-importing
-        system.modules[error.name] = import_error
+        sys.modules[error.name] = import_error
 
         # "spec is not None" -> make it something, might break stuff
-        system.modules[error.name].__spec__ = import_error
+        sys.modules[error.name].__spec__ = import_error
 
         # Make it available on local globals() else name not found
         globals()[error.name] = import_error
@@ -55,6 +55,7 @@ while True:
         import inspect
         import itertools
         import json
+        import operator
         import os
         import platform
         import random
@@ -93,6 +94,7 @@ while True:
         from typing import Tuple
         from typing import Union
         from uuid import uuid4 as uuid
+        from zipfile import ZipFile
 
         import aenum
         import arrow
@@ -120,3 +122,15 @@ while True:
         from tqdm import tqdm
 
         break
+
+# # Custom types, some Rust inspiration
+
+# PIL.Image is a module, PIL.Image.Image is the class
+PilImage  = PIL.Image.Image
+
+# Stuff that accepts "anything that can be converted to X"
+URL       = str
+
+# def divide(a, b) -> Option[float, ZeroDivisionError]:
+Option = Union
+Self   = Any

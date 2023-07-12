@@ -1,7 +1,8 @@
+"""See BrokenDict class documentation"""
 from . import *
 
 
-class BrokenDict(dict):
+class BrokenDotmap(dict):
     """
     Trivia
     • Tremeschin 🐙 🎲 🌿 🔱 🪶, [7/7/23 1:29 AM]
@@ -52,7 +53,7 @@ class BrokenDict(dict):
 
         # This instance is the root instance
         if super is None:
-            self.__path__   = true_path(path)
+            self.__path__   = BrokenPath.true_path(path)
             self.__sorted__ = sorted
             self.__sync__   = True
 
@@ -73,14 +74,14 @@ class BrokenDict(dict):
                 sorted(self.items(), key=lambda x: x[0])
                 if self.__super__.__sorted__ else self.items()
             )
-            if not BrokenDict.is_dunder(k)
+            if not BrokenDotmap.is_dunder(k)
         }
 
     # # Loading and saving
 
     def from_file(self, path: Path):
         """Load a file into this nested instance"""
-        path = true_path(path)
+        path = BrokenPath.true_path(path)
         format = path.suffix
 
         # Load data from file
@@ -168,7 +169,7 @@ class BrokenDict(dict):
         """Handle attribute assignment using dot notation"""
 
         # Do not "recurse" on dunder attributes, they are self!
-        if BrokenDict.is_dunder(key):
+        if BrokenDotmap.is_dunder(key):
             self.__dict__[key] = value
             return
 

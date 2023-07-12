@@ -2,12 +2,13 @@ from Broken import *
 
 # -------------------------------------------------------------------------------------------------|
 
-find = lambda name: get_binary(name, echo=False)
+find = lambda name: BrokenPath.get_binary(name, echo=False)
 
 # Find binaries absolute path
-PYTHON      = system.executable
+PYTHON      = sys.executable
 POETRY      = [PYTHON, "-m", "poetry"]
 PIP         = [PYTHON, "-m", "pip"]
+NUITKA      = [PYTHON, "-m", "nuitka"]
 PYINSTALLER = find("pyinstaller")
 BASH        = find("bash") if (not BrokenPlatform.Windows) else None
 WINETRICKS  = find("winetricks")
@@ -106,7 +107,7 @@ class BrokenCLI:
     ) -> Path:
         """Get the virtual environment path for a Python project"""
 
-        with pushd(project_path):
+        with BrokenPath.pushd(project_path):
 
             # Unset virtualenv else the nested poetry will use it
             del os.environ["VIRTUAL_ENV"]
@@ -126,8 +127,8 @@ class BrokenCLI:
                 # Reinstall virtualenv if requested
                 if reinstall:
                     reinstall = False
-                    remove_path(venv_path)
-                    remove_path(project_path/"poetry.lock")
+                    BrokenPath.remove(venv_path)
+                    BrokenPath.remove(project_path/"poetry.lock")
                     continue
 
                 return venv_path
@@ -254,11 +255,17 @@ class BrokenCLI:
         # Set git hooks path to Broken/Hooks
         shell(GIT, "config", "core.hooksPath", "./Broken/Hooks")
 
-    def clean(self, isort: bool=True, pycache: bool=True, build: bool=False, releases: bool=False) -> None:
+    def clean(self,
+        isort: bool=True,
+        pycache: bool=True,
+        build: bool=False,
+        releases: bool=False,
+        all: bool=False
+    ) -> None:
         """Sorts imports, cleans .pyc files"""
 
         # Sort imports, ignore "Releases" folder
-        if isort:
+        if all or isort:
             shell(ISORT, BROKEN_MONOREPO_DIR,
                 "--force-single-line-imports",
                 "--skip", self.RELEASES_DIR,
@@ -266,21 +273,21 @@ class BrokenCLI:
             )
 
         # Remove all .pyc files and __pycache__ folders
-        if pycache:
+        if all or pycache:
             for path in list(BROKEN_MONOREPO_DIR.glob("**/*.pyc")) + list(BROKEN_MONOREPO_DIR.glob("**/__pycache__")):
                 if any([ignore in path.parents for ignore in (self.RELEASES_DIR, self.BUILD_DIR)]):
                     continue
-                remove_path(path)
+                BrokenPath.remove(path)
 
         # Remove build and releases folders if requested
-        if build:    remove_path(self.BUILD_DIR)
-        if releases: remove_path(self.RELEASES_DIR)
+        if all or build:    BrokenPath.remove(self.BUILD_DIR)
+        if all or releases: BrokenPath.remove(self.RELEASES_DIR)
 
     # Install Rust toolchain on macOS, Linux
     def install_rust(self) -> None:
 
         # Install rustup for toolchains
-        if not all([binary_exists(b) for b in ["rustup", "rustc", "cargo"]]):
+        if not all([BrokenPath.get_binary(binary) is not None for binary in ["rustup", "rustc", "cargo"]]):
             info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
@@ -384,7 +391,7 @@ class BrokenCLI:
                 return
             # FIXME: Does this work?
             fixme("I'm not sure if the symlink command on Windows works and links to C:\\Broken")
-            remove_path(BROKEN_SHARED_DIR, confirm=True)
+            BrokenPath.remove(BROKEN_SHARED_DIR, confirm=True)
             Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
         else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
 
@@ -429,6 +436,7 @@ class BrokenCLI:
     def release(self,
         project_name: ProjectsEnumerator,
         platform: ReleasePlatform,
+        nuitka: bool=typer.Option(False, "--nuitka", "-n", help="(Python) Use Nuitka than Pyinstaller for builds - experimental"),
     ):
         """Builds and releases a project for a specific platform"""
         # Get "real" project name
@@ -440,8 +448,8 @@ class BrokenCLI:
 
         # Update dates and create releases directory
         date = self.date()
-        mkdir(self.RELEASES_DIR)
-        mkdir(self.BUILD_DIR)
+        BrokenPath.mkdir(self.RELEASES_DIR)
+        BrokenPath.mkdir(self.BUILD_DIR)
 
         # Get info based on target platform
         (rust_target_triple, compiled_extension, release_extension) = {
@@ -462,7 +470,7 @@ class BrokenCLI:
         if language == ProjectLanguage.Python:
 
             # "python3.11.4", "python3.11", for example
-            vi = system.version_info
+            vi = sys.version_info
             python_version_installer_url = f"{vi.major}.{vi.minor}.{vi.micro}"
             python_version_site_packages = f"{vi.major}.{vi.minor}"
 
@@ -497,7 +505,7 @@ class BrokenCLI:
 
                 # Inception: Run this function but from Wine Python
                 del os.environ["VIRTUAL_ENV"]
-                shell(WINE_POETRY, "run", "broken", "release", project_name.lower(), platform.value)
+                shell(WINE_POETRY, "run", "broken", "release", project_name.lower(), platform.value, "--nuitka" if nuitka else "")
                 return
 
             # Create install virtualenv dependencies
@@ -510,8 +518,6 @@ class BrokenCLI:
             # Use the project's virtualenv site-packages
             os.environ["PYTHONPATH"] = str(site_packages)
             info(f"Using site-packages at [{site_packages}]")
-
-            fixme("Set icon file for Windows releases")
 
             # Find common project assets
             def get_project_asset_file_or_default(relative_path: Path) -> Path:
@@ -526,39 +532,81 @@ class BrokenCLI:
                 if (target := site_packages/package).exists()
             ]
 
-            # Compile project
-            shell(PYINSTALLER,
+            # Use the project's virtualenv site-packages
+            os.environ["PYTHONPATH"] = str(site_packages)
 
-                # Where and how to build
-                "--workpath", self.BUILD_DIR,
-                "--onefile",
-                # "--clean",
-                "--noconfirm",
-                # "--strip",
-                "--console",
+            # Compile the Python project with Pyinstaller
+            if not nuitka:
+                shell(PYINSTALLER,
 
-                # Hidden imports that may contain binaries
-                "--hidden-import", "imageio_ffmpeg",
-                "--hidden-import", "glcontext",
+                    # Where and how to build
+                    "--workpath", self.BUILD_DIR,
+                    "--onefile",
+                    # "--clean",
+                    "--noconfirm",
+                    # "--strip",
+                    "--console",
 
-                # Torch fixes
-                torch_fixes,
+                    # Hidden imports that may contain binaries
+                    "--hidden-import", "imageio_ffmpeg",
+                    "--hidden-import", "glcontext",
+                    "--hidden-import", "torch",
 
-                # Where to put the binary and its name
-                f"--distpath={self.RELEASES_DIR}",
-                f"--specpath={self.BUILD_DIR}",
-                "-n", project_name,
+                    # Torch fixes
+                    torch_fixes,
 
-                # Branding: Icon and splash screen
-                "--splash", get_project_asset_file_or_default("Splash.png"),
-                "--icon", get_project_asset_file_or_default("Icon.ico"),
+                    # Where to put the binary and its name
+                    f"--distpath={self.RELEASES_DIR}",
+                    f"--specpath={self.BUILD_DIR}",
+                    "-n", project_name,
 
-                # Target file to compile
-                self.PROJECTS_DIR/project_name/project_name/"__main__.py",
-            )
+                    # Use the project's virtualenv site-packages just in case
+                    "--paths", site_packages,
 
-            # Path of the compiled binary
-            compiled_binary = self.RELEASES_DIR/f"{project_name}{compiled_extension}"
+                    # Branding: Icon and splash screen
+                    "--splash", get_project_asset_file_or_default("Splash.png"),
+                    "--icon", get_project_asset_file_or_default("Icon.ico"),
+
+                    # Target file to compile
+                    self.PROJECTS_DIR/project_name/project_name/"__main__.py",
+                )
+
+                # Path of the compiled binary
+                compiled_binary = self.RELEASES_DIR/f"{project_name}{compiled_extension}"
+
+
+            # Compile the Python project with Nuitka
+            if nuitka:
+                shell(NUITKA,
+                    # Basic options
+                    "--standalone",
+                    "--onefile",
+                    "--lto=yes",
+                    "--assume-yes-for-downloads",
+
+                    # Include Broken (dunno why it doesn't include it)
+                    "--include-package=Broken",
+
+                    # FFmpeg Binaries
+                    "--include-package-data=imageio_ffmpeg",
+
+                    # "--onefile-tempdir-spec=%CACHE_DIR%/%COMPANY%/%PRODUCT%/%VERSION%"
+
+                    # Binary metadata
+                    f"--company-name='Broken Source Software'",
+                    f"--product-name='{project_name}'",
+                    f"--file-version={date}",
+                    f"--product-version={date}",
+
+                    # Output options
+                    f"--output-filename={project_name}",
+                    f"--output-dir={self.RELEASES_DIR}",
+
+                    self.PROJECTS_DIR/project_name/project_name/"__main__.py",
+                )
+
+                # Path of the compiled binary
+                compiled_binary = self.RELEASES_DIR/f"{project_name}"
 
         # -----------------------------------------------------------------------------------------|
 

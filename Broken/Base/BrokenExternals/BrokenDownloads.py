@@ -4,7 +4,14 @@ from . import *
 class BrokenDownloads:
 
     @contextmanager
-    def download(url: str, cache=True, redownload=False, delete=False) -> Path:
+    def download(
+        url: str,
+        cache=True,
+        redownload=False,
+        delete=False,
+        output_directory: PathLike=BROKEN_DIRECTORIES.DOWNLOADS,
+        file_name: str=None,
+    ) -> Path:
         """Downloads a file from a url, saves to Broken directories"""
         if cache: requests = BROKEN_REQUESTS_CACHE
 
@@ -12,7 +19,7 @@ class BrokenDownloads:
         url = url.split("?")[0]
 
         # Auto name the download file -> get the file name as if the url was a path
-        download_file = BROKEN_DIRECTORIES.DOWNLOADS / Path(url).name
+        download_file = output_directory / (file_name or Path(url).name)
 
         # Get steam information
         download_size = int(requests.get(url, stream=True).headers.get("content-length", 0))
@@ -22,16 +29,17 @@ class BrokenDownloads:
         info(f"├─ File:   [{download_file}]")
         info(f"├─ Size:   [{download_size/1e6:.2f} MB]")
 
-        # If a file exists it must be the same size as the download
+        # Don't check for sizes or files if redownload is requested
         if redownload:
             pass
 
+        # If a file exists it must be the same size as the download
         elif download_file.exists():
             current_size = download_file.stat().st_size
 
             # Redownload if not same size
             if current_size != download_size:
-                warning(f"└─ Status: [Invalid size ({current_size/1e6:.2f} MB != {download_size/1e6:.2f} MB)]")
+                warning(f"├─ Status: [Invalid size ({current_size/1e6:.2f} MB != {download_size/1e6:.2f} MB)]")
                 remove_path(download_file)
             else:
                 success(f"└─ Status: [Download exists and is ok]")
@@ -50,9 +58,7 @@ class BrokenDownloads:
             remove_path(download_file)
 
     def extract_archive(archive: PathLike, destination: PathLike=BROKEN_DIRECTORIES.EXTERNALS, echo=True) -> Path:
-        """
-        Extracts the contents of a compressed archive to a destination directory.
-        """
+        """Extracts the contents of a compressed archive to a destination directory."""
         archive, destination = Path(archive), Path(destination)
 
         # Define destination directory automatically and add archive's stem (file name without extension)
@@ -77,30 +83,3 @@ class BrokenDownloads:
         """Download and extract a zip file"""
         with BrokenDownloads.download(url) as zip_file:
             return extract_archive(zip_file, destination)
-
-
-
-
-
-class BrokenDependency(Enum):
-    FFmpeg = "ffmpeg"
-
-
-class BrokenDependencies:
-    def install(self, name: str):
-        """Install a dependency"""
-        ...
-
-    def get_binary(self, what):
-        ...
-
-    def append_to_path(self, path: PathLike):
-        """Adds a path to the PATH environment variable"""
-        os.environ["PATH"] += os.pathsep + str(path)
-
-    def update_path(self, path: PathLike, recursive: bool=True) -> None:
-        """Adds a path to the PATH environment variable"""
-        for path in true_path(path).glob("**"):
-            if path.is_dir() and (not path in os.environ.get("PATH")):
-                os.environ["PATH"] += os.pathsep + str(path)
-

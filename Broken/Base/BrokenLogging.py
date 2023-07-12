@@ -11,7 +11,7 @@ loguru.logger.remove()
 logger = loguru.logger.bind()
 
 # Add stdout logging
-logger.add(system.stdout, colorize=True, level="TRACE",
+logger.add(sys.stdout, colorize=True, level="TRACE",
     format=(
         "│<green>{elapsed.milliseconds}ms</green>├"
         "┤<level>{level:7}</level>"

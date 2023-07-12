@@ -1,5 +1,6 @@
 from . import *
 
+# FIXME: I really don't know how to name this file and what other "smart" functions there might be
 
 class BrokenSmart:
     def load_image(image: Union[PilImage, PathLike, URL], pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
@@ -12,7 +13,7 @@ class BrokenSmart:
         try:
             # Load image if a path or url is supplied
             if any([isinstance(image, T) for T in (PathLike, str)]):
-                if (path := true_path(image)).exists():
+                if (path := BrokenPath.true_path(image)).exists():
                     info(f"Loading image from Path [{path}]", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
