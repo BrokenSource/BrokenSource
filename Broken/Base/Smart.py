@@ -35,3 +35,31 @@ class BrokenSmart:
 
         except Exception:
             return None
+
+def BrokenEasyRecurse(function: callable, **variables) -> Any:
+    """
+    Calls some function with the previous scope locals() updated by variables
+
+    Use case are functions that are called recursively and need to be called with the same arguments
+
+    ```python
+    def function(with, many, arguments, and, only=3, one=True, modification="Nice"):
+        ...
+        if recurse_condition:
+            BrokenEasyRecurse(function, many=True)
+    ```
+    """
+
+    # Get the previous scope locals() and update it with the variables
+    previous_locals = inspect.currentframe().f_back.f_locals
+    previous_locals.update(variables)
+
+    # Filter out variables that are not in the function arguments
+    previous_locals = {
+        k: v for k, v in previous_locals.items()
+        if k in inspect.getfullargspec(function).args
+    }
+
+    # Call and return the same function
+    return function(**previous_locals)
+

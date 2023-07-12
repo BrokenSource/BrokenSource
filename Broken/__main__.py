@@ -110,7 +110,7 @@ class BrokenCLI:
         with BrokenPath.pushd(project_path):
 
             # Unset virtualenv else the nested poetry will use it
-            del os.environ["VIRTUAL_ENV"]
+            os.environ.pop("VIRTUAL_ENV", None)
 
             while True:
                 venv = shell(POETRY + ["env", "info", "--path"], echo=False, capture_output=True, cwd=project_path)
@@ -158,7 +158,13 @@ class BrokenCLI:
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
                     self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
-                    shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
+                    status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
+
+                    # Detect bad returnstatus, reinstall virtualenv and retry once
+                    if (status.returncode != 0) and (not reinstall):
+                        warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment?")
+                        warning(f"Attempting reinstalling virtual environment once and auto retrying...")
+                        BrokenEasyRecurse(run_project, reinstall=True)
 
                 # Route for Rust projects
                 elif language == ProjectLanguage.Rust:
@@ -504,7 +510,7 @@ class BrokenCLI:
                 shell(WINE_POETRY, "install")
 
                 # Inception: Run this function but from Wine Python
-                del os.environ["VIRTUAL_ENV"]
+                os.environ.pop("VIRTUAL_ENV", None)
                 shell(WINE_POETRY, "run", "broken", "release", project_name.lower(), platform.value, "--nuitka" if nuitka else "")
                 return
 
