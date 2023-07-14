@@ -97,8 +97,31 @@ class BrokenCLI:
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.update)
         self.typer_app.command(rich_help_panel="Miscellaneous")(self.clean)
 
+        # Section: Experimental
+        self.typer_app.command(rich_help_panel="Experimental")(self.daemon)
+        self.typer_app.command(rich_help_panel="Experimental")(self.pillow_smid)
+
         # Execute the CLI
         self.typer_app()
+
+    # # Experimental
+
+    def daemon(self):
+        """Test Broken daemon mode"""
+        schedule.every(1).minute().do(self.clean)
+
+        while True:
+            schedule.run_pending()
+            sleep(1)
+
+    def pillow_smid(self):
+        """
+        Installs Pillow-SIMD, a way faster Pillow fork, does not change poetry dependencies.
+        - Requires AVX2 CPU, and dependencies installed
+        """
+        shell(PIP, "uninstall", "pillow-simd", "-y")
+        os.environ["CC"] = "cc -mavx2"
+        shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")
 
     def __get_install_python_virtualenvironment(self,
         project_name: str,
@@ -299,7 +322,7 @@ class BrokenCLI:
 
             # Get rustup link for each platform
             if BrokenPlatform.OnWindows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
-            elif BrokenPlatform.Unix:  rust_installer = "https://sh.rustup.rs"
+            elif BrokenPlatform.OnUnix:  rust_installer = "https://sh.rustup.rs"
 
             # Download and install Rust
             with BrokenDownloads.download(rust_installer) as installer:
@@ -371,7 +394,7 @@ class BrokenCLI:
         fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Symlink Broken Shared Directory to Broken Root
-        if BrokenPlatform.Unix:
+        if BrokenPlatform.OnUnix:
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
             if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_MONOREPO_DIR:
                 info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")

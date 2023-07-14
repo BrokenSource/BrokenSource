@@ -4,8 +4,36 @@
         // Annoying __pycache__, cleaned with pyclean
         "**/__pycache__": true,
 
-        // Don't hide .git, it might be useful
-        "**/.git": false,
+        // Don't hide .git, it might be useful ?
+        "**/.git": true,
+
+        // Syncthing
+        ".stignore": true,
+
+        //// Hide non "focusing now" repositories
+
+        // "Projects" folder
+        "Projects/Ardmin":       true,
+        "Projects/AudioSight":   false,
+        "Projects/DepthFlow":    false,
+        "Projects/Harper":       true,
+        "Projects/HypeWord":     true,
+        "Projects/Oscillospoor": true,
+        "Projects/PhasorFlow":   true,
+        "Projects/PocketSolar":  true,
+        "Projects/QuadSnap":     false,
+        "Projects/ShaderFlow":   false,
+        "Projects/Sortia":       true,
+
+        // "Work" folder
+        "Papers":                true,
+        "Website":               true,
+
+        // Rust stuff (for now, focusing on Python)
+        "Broken/Rust":           true,
+        "Broken/Broken.rs":      true,
+        "Cargo.lock":            true,
+        "Cargo.toml":            true,
     },
 
     // Better comments colors

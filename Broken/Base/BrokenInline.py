@@ -26,6 +26,13 @@ def shell(*args, output=False, Popen=False, echo=True, **kwargs):
 def enforce_list(item: Union[Any, List[Any]]) -> List[Any]:
     return item if (type(item) is list) else [item]
 
+def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
+    """Get an environment variable, cast it to a type, or return a default value"""
+    value = os.environ.get(name, default)
+    if cast:
+        return cast(value)
+    return value
+
 # # Weird classes
 
 class Singleton:

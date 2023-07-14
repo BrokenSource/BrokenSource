@@ -45,7 +45,7 @@ required-features = [
 
 [[bin]]
 name = "Mock" #"testing" / staging
-path = "Projects/Mock/Main.rs"
+path = "Broken/Rust/Mock/Main.rs"
 required-features = [
     "ffmpeg",
     "bevy",

@@ -43,6 +43,9 @@ def BrokenImports():
         # Make it available on local globals() else name not found
         globals()[error.name] = import_error
 
+    except Exception as error:
+        raise error
+
 # -------------------------------------------------------------------------------------------------|
 
 while True:
@@ -65,6 +68,7 @@ while True:
         import tempfile
         import warnings
         import zipfile
+        import gradio
         from abc import ABC
         from abc import abstractmethod
         from contextlib import suppress
@@ -99,6 +103,7 @@ while True:
         import arrow
         import distro
         import forbiddenfruit
+        import schedule
         import halo
         import intervaltree
         import loguru

@@ -6,9 +6,9 @@
     :: Broken Source Software ::
 </div>
 
-This _mono_-repository hosts the **shared library** called **Broken** (Rust and Python), a convenience script of the same name - `broken` - and **submodules** of **all our projects**
+This _mono_-repository hosts the **shared library** called **Broken** ❤️‍🩹 (Rust and Python), a convenience script of the same name - `broken` - and **submodules** of **all our projects**
 
-- **Broken** is intended to be a _Framework_ for all other projects, a solution to manage them all in a single place
+- **Broken** is a _Framework_ for all other projects, a solution to manage them all in a single place 🌟
 
 **Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus
 
@@ -16,8 +16,9 @@ This _mono_-repository hosts the **shared library** called **Broken** (Rust and 
 
 <br>
 <br>
+<br>
 
-# ● Pre-compiled binaries
+# 📦 Pre-compiled binaries
 
 Head over to each project's **Releases** page and download the latest version for your platform if any available
 
@@ -27,7 +28,7 @@ Otherwise, you'll have to run from the source code, see below
 
 <sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
 
-<br/>
+<br>
 
 Our **release binaries** follows the **naming convention** below:
 
@@ -55,8 +56,10 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 
 
 <br>
+<br>
+<br>
 
-# ● Running From the Source Code
+# 🔥 Running From the Source Code
 
 Please read all instructions before executing them for tips and notes
 
@@ -70,7 +73,7 @@ Please read all instructions before executing them for tips and notes
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
 
-  **Linux**, **MacOS**
+  **Linux** 💎 **MacOS**
 </div>
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed</i></sub>
@@ -104,15 +107,16 @@ And done, you can now run `broken` and see all available commands: compile, rele
   **Windows 10+**
 </div>
 
-Depending on the **project language** you want to run, follow the **instructions below**
+A quick note based on the project language:
 
 - Running the Python projects is **easy**, while Rust requires **extra steps**
 
 - **Rust** is split in its own instructions to reduce micro-management and complexity
 
+
 <details>
   <summary>
-    Getting the error <i>"execution of scripts is disabled on this system"</i> ?
+    ⚠️ Getting the error <i>"execution of scripts is disabled on this system"</i> ❓
   </summary>
 
   Open a PowerShell terminal as Administrator and run:
@@ -122,64 +126,63 @@ Depending on the **project language** you want to run, follow the **instructions
   ```
 </details>
 
+<br>
+<br>
+
+Depending on the **project language** you want to run, follow the **instructions below**
+
+
+<br>
 <hr/>
 
-<details>
-  <summary>
-    Python Projects
-  </summary>
-  <br>
+## • Python Projects
 
-  Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
+Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
 
-  <sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
+<sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
 
-  - **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer
-    - Select `Open PowerShell window here`
+- **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer
+  - Select `Open PowerShell window here`
 
-  - **Windows 11**: `Right Click` some empty space in Windows Explorer
-    - Select `Open in Terminal`
+- **Windows 11**: `Right Click` some empty space in Windows Explorer
+  - Select `Open in Terminal`
 
-  Now run the same **Linux** and **MacOS** commands above
-</details>
+Now run the same **Linux** and **MacOS** commands above
 
 <hr/>
+<br>
+<hr/>
 
-<details>
-  <summary>
-    Rust Projects
-  </summary>
-  <br>
+## • Rust Projects
 
-  **Rust** requires quite some **dependencies** to be **installed** for a Windows release
+**Rust** requires quite some **dependencies** to be **installed** for a Windows release
 
-  Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but **doable if you want to try**
+Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but **doable if you want to try**
 
-  Easiest way is using [MSYS2](https://www.msys2.org/) which provides an **Unix-like** environment for Windows, please install it
+Easiest way is using [MSYS2](https://www.msys2.org/) which provides an **Unix-like** environment for Windows, please install it
 
-  - Open a MSYS2 terminal and run:
+- Open a MSYS2 terminal and run:
 
-  ```bash
-  # Install all required dependencies
-  pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
-  ```
+```bash
+# Install all required dependencies
+pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
+```
 
-  - Now follow the same **Linux** and **MacOS** instructions above
+- Now follow the same **Linux** and **MacOS** instructions above
 
-  **Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
+**Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
 
-  **Tip:** You can press `Shift+Insert` to paste stuff on the clipboard to MSYS2 terminal
+**Tip:** You can press `Shift+Insert` to paste stuff on the clipboard to MSYS2 terminal
 
-  <sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
-</details>
-
+<sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
 <hr/>
 
 
 <br>
 <br>
+<br>
 
-# ● Contributing
+# ❤️‍🩹 Contributing
 Thanks for taking your time to contribute to Broken Source Software projects!!
 
 - Apart from the usual "be nice", "be respectful" and "don't be a jerk", we have some guidelines to help you get started
@@ -206,12 +209,26 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 
 <br>
 <br>
+<br>
 
-# ● License and Fair Use
-- All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository
+# ⚖️ License and Fair Use
 
-- We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse
+**Basics**
+- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository
 
-- We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow
+- 📈 We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse
+
+
+**Legal Responsibilities**
+- 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly
+
+- 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are made by user inputs
+
+
+**Fair Use**
+- 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
+
+- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow
+
 
 <sub>These are not legal advice, just our thoughts and intentions</sub>

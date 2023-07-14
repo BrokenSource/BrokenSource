@@ -77,6 +77,10 @@ class BrokenDotmap(dict):
             if not BrokenDotmap.is_dunder(k)
         }
 
+    def inverse(self, value: Any) -> Any:
+        """Search by value"""
+        return next((k for k, v in self.items() if v == value), None)
+
     # # Loading and saving
 
     def from_file(self, path: Path):

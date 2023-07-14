@@ -88,7 +88,7 @@ class BrokenPath:
     def make_executable(path: PathLike) -> None:
         """Make a file executable"""
         path = Path(path)
-        if BrokenPlatform.Unix:
+        if BrokenPlatform.OnUnix:
             shell("chmod", "+x", path)
 
     # # File or directory creation
@@ -182,7 +182,7 @@ class ShellCraft:
 
         # Unix is complicated, ideally one would put on /etc/profile but it's only reloaded on logins
         # The user shell varies a lot, but most are in BASH, ZSH or FISH apparently, but need sourcing or restarting
-        if BrokenPlatform.Unix:
+        if BrokenPlatform.OnUnix:
 
             # The export line adding to PATH the wanted path
             export = f"export PATH={path}:$PATH"
