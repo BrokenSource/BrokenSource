@@ -19,7 +19,7 @@ forbiddenfruit = "^0.1.4"
 loguru = "^0.7.0"
 requests = "^2.28.2"
 toml = "^0.10.2"
-typer = "^0.7.0"
+typer = {git = "https://github.com/tiangolo/typer", rev = "refs/pull/567/merge"}
 halo = "^0.0.31"
 appdirs = "^1.4.4"
 poetry = "^1.5.1"

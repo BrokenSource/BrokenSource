@@ -50,6 +50,7 @@ class BrokenBase:
             no_args_is_help=True,
             add_completion=False,
             rich_markup_mode="rich",
+            chain=True,
             epilog=(
                 f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
                 "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
