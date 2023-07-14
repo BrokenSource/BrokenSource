@@ -94,7 +94,6 @@ while True:
         from typing import Tuple
         from typing import Union
         from uuid import uuid4 as uuid
-        from zipfile import ZipFile
 
         import aenum
         import arrow
@@ -118,7 +117,7 @@ while True:
         import yaml
         from appdirs import AppDirs
         from dotmap import DotMap
-        from numpy import *
+        import numpy
         from tqdm import tqdm
 
         break

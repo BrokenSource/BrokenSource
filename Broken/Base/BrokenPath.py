@@ -151,11 +151,11 @@ class BrokenPath:
     def open_in_file_explorer(path: PathLike):
         """Opens a path in the file explorer"""
         path = Path(path)
-        if BrokenPlatform.Windows:
+        if BrokenPlatform.OnWindows:
             os.startfile(str(path))
-        elif BrokenPlatform.Linux:
+        elif BrokenPlatform.OnLinux:
             shell("xdg-open", path)
-        elif BrokenPlatform.MacOS:
+        elif BrokenPlatform.OnMacOS:
             shell("open", path)
 
 
@@ -211,7 +211,7 @@ class ShellCraft:
             warning(f"Please restart your shell for the changes to take effect or run [source {shellrc}] or [. {shellrc}] on current one, this must be done since a children process (Python) can't change the parent process (your shell) environment variables plus the [source] or [.] not binaries but shell builtins")
 
         # No clue if this works.
-        elif BrokenPlatform.Windows:
+        elif BrokenPlatform.OnWindows:
             fixme("I don't know if the following reg command works for adding a PATH to PATH on Windows")
             shell("reg", "add", r"HKCU\Environment", "/v", "PATH", "/t", "REG_SZ", "/d", f"{path};%PATH%", "/f")
             shell("refreshenv")

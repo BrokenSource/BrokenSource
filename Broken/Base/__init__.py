@@ -5,6 +5,28 @@ try:
 except:
     BROKEN_VERSION = ""
 
+import sys
+
+# Is the current Python some "compiler" release?
+IS_RELEASE_NUITKA      = ("__compiled__" in globals())
+IS_RELEASE_PYINSTALLER = getattr(sys, "frozen", False)
+
+# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
+# Patch torch.jit requiring inspect.getsource
+if IS_RELEASE_PYINSTALLER:
+    import torch.jit
+    patch = lambda object, **kwargs: object
+    torch.jit.script_method = patch
+    torch.jit.script = patch
+
+# Close Pyinstaller splash screen
+if IS_RELEASE_PYINSTALLER:
+    try:
+        import pyi_splash
+        pyi_splash.close()
+    except:
+        pass
+
 # isort: off
 from .BrokenImports import *
 from .BrokenLogging import *
@@ -33,10 +55,3 @@ class BrokenBase:
                 "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
             ),
         )
-
-# Close Pyinstaller splash screen
-try:
-    import pyi_splash
-    pyi_splash.close()
-except:
-    pass

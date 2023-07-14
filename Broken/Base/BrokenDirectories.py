@@ -1,17 +1,5 @@
 from . import *
 
-# Is the current Python some "compiler" release?
-IS_RELEASE_PYINSTALLER = getattr(sys, "frozen", False)
-IS_RELEASE_NUITKA      = getattr(__builtins__, "__compiled__", False)
-
-# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
-# Patch torch.jit requiring inspect.getsource
-if IS_RELEASE_PYINSTALLER:
-    import torch.jit
-    patch = lambda object, **kwargs: object
-    torch.jit.script_method = patch
-    torch.jit.script = patch
-
 class BrokenDirectories:
     """
     Class that handles creating directories for Broken projects for consistency.
@@ -54,7 +42,7 @@ class BrokenDirectories:
         if IS_RELEASE_PYINSTALLER:
             return Path(sys.executable).parent.absolute().resolve()
         elif IS_RELEASE_NUITKA:
-            return Path(__builtins__.__compiled__).parent.absolute().resolve()
+            return Path(sys.argv[0]).parent.absolute().resolve()
         else:
             return Path(inspect.stack()[2].filename).parent.absolute().resolve()
 

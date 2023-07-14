@@ -10,7 +10,7 @@ POETRY      = [PYTHON, "-m", "poetry"]
 PIP         = [PYTHON, "-m", "pip"]
 NUITKA      = [PYTHON, "-m", "nuitka"]
 PYINSTALLER = find("pyinstaller")
-BASH        = find("bash") if (not BrokenPlatform.Windows) else None
+BASH        = find("bash") if (not BrokenPlatform.OnWindows) else None
 WINETRICKS  = find("winetricks")
 PACMAN      = find("pacman")
 RUSTUP      = find("rustup")
@@ -157,13 +157,14 @@ class BrokenCLI:
             ):
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
-                    self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
+                    project_venv = self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
                     status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
                     # Detect bad returnstatus, reinstall virtualenv and retry once
                     if (status.returncode != 0) and (not reinstall):
                         warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
-                        if rich.prompt.Confirm.ask("• Do you want to reinstall the virtual environment?"):
+                        warning(f"- Virtual environment path: [{project_venv}]")
+                        if rich.prompt.Confirm.ask(f"• Do you want to reinstall the virtual environment?"):
                             BrokenEasyRecurse(run_project, reinstall=True)
 
                 # Route for Rust projects
@@ -297,7 +298,7 @@ class BrokenCLI:
             info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
-            if BrokenPlatform.Windows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
+            if BrokenPlatform.OnWindows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
             elif BrokenPlatform.Unix:  rust_installer = "https://sh.rustup.rs"
 
             # Download and install Rust
@@ -391,7 +392,7 @@ class BrokenCLI:
                 ]))
                 success(f"Created .desktop file [{desktop}]")
 
-        elif BrokenPlatform.Windows:
+        elif BrokenPlatform.OnWindows:
             if not ctypes.windll.shell32.IsUserAnAdmin():
                 warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
                 return
@@ -433,6 +434,7 @@ class BrokenCLI:
             for project in self.PROJECTS_DIR.iterdir():
                 if (project/"pyproject.toml").exists():
                     info(f"Updating Python dependencies for Project [{project.name}]")
+                    os.environ.pop("VIRTUAL_ENV", None)
                     shell(POETRY, "update", cwd=project)
 
         # Update Git Repositories
@@ -481,7 +483,7 @@ class BrokenCLI:
             python_version_site_packages = f"{vi.major}.{vi.minor}"
 
             # Cross compilation bootstrap for Windows from Linux
-            if (BrokenPlatform.Linux) and (platform == ReleasePlatform.WindowsAMD64):
+            if (BrokenPlatform.OnLinux) and (platform == ReleasePlatform.WindowsAMD64):
                 warning("wine-staging as of version 8.11 fails creating and installing the virtualenvironments in poetry")
 
                 # Wine called binaries
@@ -590,13 +592,11 @@ class BrokenCLI:
                     "--lto=yes",
                     "--assume-yes-for-downloads",
 
-                    # Include Broken (dunno why it doesn't include it)
-                    "--include-package=Broken",
-
                     # FFmpeg Binaries
                     "--include-package-data=imageio_ffmpeg",
 
                     # "--onefile-tempdir-spec=%CACHE_DIR%/%COMPANY%/%PRODUCT%/%VERSION%"
+                    f"--onefile-tempdir-spec=%CACHE_DIR%/BrokenSource/{project_name}-{date}",
 
                     # Binary metadata
                     f"--company-name='Broken Source Software'",
@@ -608,7 +608,8 @@ class BrokenCLI:
                     f"--output-filename={project_name}",
                     f"--output-dir={self.RELEASES_DIR}",
 
-                    self.PROJECTS_DIR/project_name/project_name/"__main__.py",
+                    # Note: We don't target __main__ else nuitka won't "find the __init__ and as a package"
+                    self.PROJECTS_DIR/project_name/project_name,
                 )
 
                 # Path of the compiled binary
@@ -647,15 +648,15 @@ class BrokenCLI:
             return
 
         # Standard naming for all projects
-        release_binary     = self.RELEASES_DIR/f"{project_name.lower()}-{platform.value}-{date}{release_extension}"
-        release_zip        = release_binary.parent/(release_binary.stem + ".zip")
+        release_binary = self.RELEASES_DIR/f"{project_name.lower()}-{platform.value}-{date}{release_extension}"
+        release_zip    = release_binary.parent/(release_binary.stem + ".zip")
 
         # Default release
         shutil.copy(compiled_binary, release_binary)
         os.remove(compiled_binary)
 
         # Rust: Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
-        if (language == ProjectLanguage.Rust) and (BrokenPlatform.Linux) and (platform == "windows-amd64") and ("ndarray" in rust_required_features):
+        if (language == ProjectLanguage.Rust) and (BrokenPlatform.OnLinux) and (platform == "windows-amd64") and ("ndarray" in rust_required_features):
             required_shared_libraries = [
                 "libgfortran-5.dll",
                 "libgcc_s_seh-1.dll",
@@ -700,7 +701,7 @@ class BrokenCLI:
 
         # # Install Requirements depending on host platform
         if BrokenPlatform == "linux":
-            if LINUX_DISTRO == "arch":
+            if BrokenPlatform.OnLinuxDistro == "arch":
                 self.shell(SUDO, PACMAN, "-Syu", [
                     "base-devel",
                     "gcc-fortran",
@@ -718,9 +719,9 @@ class BrokenCLI:
                 ])
                 return
 
-            self.warning(f"[{LINUX_DISTRO}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+            self.warning(f"[{BrokenPlatform.OnLinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
-            if LINUX_DISTRO == "ubuntu":
+            if BrokenPlatform.OnLinuxDistro == "ubuntu":
                 self.shell(SUDO, APT, "update")
                 self.shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx wine".split())
 
