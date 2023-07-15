@@ -1,5 +1,7 @@
 👆【☰】Table of Contents
 
+<div align="justify">
+
 <div align="center">
   <img src="https://avatars.githubusercontent.com/u/110147748" style="vertical-align: middle; border-radius: 10%" width="140">
 
@@ -232,3 +234,5 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 
 
 <sub>These are not legal advice, just our thoughts and intentions</sub>
+
+</div>
