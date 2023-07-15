@@ -12,8 +12,11 @@ This _mono_-repository hosts the **shared library** called **Broken** ❤️‍�
 
 - **Broken** is a _Framework_ for all other projects, a solution to manage them all in a single place 🌟
 
+- **Broken** does a lot of things automatically for you, spend more time **using** the projects 🚀
+
 **Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus
 
+<sub>❤️‍🔥 We are Linux-first support 🐧</sub>
 
 
 <br>
@@ -42,11 +45,11 @@ where
 
 | **Variable**         | **Possible Values**         | **Notes**     |
 |:--------------------:|:---------------------------:|:-------------:|
-| `$project_name`     | Many                        | -             |
-| `$operating_system` | `linux`, `macos`, `windows` | _*1_          |
-| `$cpu_architecture` | `amd64`, `arm`              | _*1_          |
-| `$version`          | `YYYY.MM.DD`                | _*2_          |
-| `$extension`        | `.bin`, `.exe`              | Depends on OS |
+| `$project_name`      | Many                        | -             |
+| `$operating_system`  | `linux`, `macos`, `windows` | _*1_          |
+| `$cpu_architecture`  | `amd64`, `arm`              | _*1_          |
+| `$version`           | `YYYY.MM.DD`                | _*2_          |
+| `$extension`         | `.bin`, `.exe`              | Depends on OS |
 
 </div>
 
@@ -76,6 +79,12 @@ Please read all instructions before executing them for tips and notes
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
 
   **Linux** 💎 **MacOS**
+</div>
+
+<!-- Table of Contents -->
+<div style="display: none">
+
+# Linux 🐧 and MacOS 🍎
 </div>
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed</i></sub>
@@ -109,6 +118,12 @@ And done, you can now run `broken` and see all available commands: compile, rele
   **Windows 10+**
 </div>
 
+<!-- Table of Contents -->
+<div style="display: none">
+
+# Windows 🪟
+</div>
+
 A quick note based on the project language:
 
 - Running the Python projects is **easy**, while Rust requires **extra steps**
@@ -135,7 +150,6 @@ Depending on the **project language** you want to run, follow the **instructions
 
 
 <br>
-<hr/>
 
 ## • Python Projects
 
@@ -151,9 +165,7 @@ Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/do
 
 Now run the same **Linux** and **MacOS** commands above
 
-<hr/>
 <br>
-<hr/>
 
 ## • Rust Projects
 
@@ -177,7 +189,6 @@ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-d
 **Tip:** You can press `Shift+Insert` to paste stuff on the clipboard to MSYS2 terminal
 
 <sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
-<hr/>
 
 
 <br>
@@ -187,20 +198,20 @@ pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-d
 # ❤️‍🩹 Contributing
 Thanks for taking your time to contribute to Broken Source Software projects!!
 
-- Apart from the usual "be nice", "be respectful" and "don't be a jerk", we have some guidelines to help you get started
+- Apart from the usual "be nice", "be respectful", we have some guidelines to help you get started
 
-## ▸ Help Needed
+## • Help Needed
 - Designer needed for the logos and consistent art
 - Packaging binaries on Linux and MacOS package managers
 
-## ▸ Reporting Issues
+## • Reporting Issues
 - **We do not** test enough or at all the code on Windows or MacOS
 - Always give **minimal steps** to reproduce the error (instructions or code)
 - Most projects deal with Audio or Video, issues may be file-specific
 - **We only support the latest versions of any given project**, we are rolling-release
   - <sub>We'll still help troubleshooting older code or releases, just don't except back-porting</sub>
 
-## ▸ Suggesting Enhancements
+## • Suggesting Enhancements
 - Rejection of ideas on Free and Open Source Software is a common and intimidating problem to newcomers, so we want to reduce the fear and cooperate with you
 - Not all suggestions matches the project original idea
 - No commentaries are criticizing your person, rather your *work*
@@ -216,10 +227,12 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 # ⚖️ License and Fair Use
 
 **Basics**
-- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md`, all files are subject to the `License.md` on their respective repository
+- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or some other directory, all files are subject to the `License.md` on their respective repository
 
-- 📈 We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse
+- 📈 We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse. This being said, smaller projects tends to be MIT licensed since the effort is considerably lower
 
+
+<br/>
 
 **Legal Responsibilities**
 - 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly
@@ -227,11 +240,15 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 - 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are made by user inputs
 
 
+<br/>
+
 **Fair Use**
 - 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
 
 - 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow
 
+
+<br/>
 
 <sub>These are not legal advice, just our thoughts and intentions</sub>
 
