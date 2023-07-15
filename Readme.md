@@ -74,17 +74,13 @@ Please read all instructions before executing them for tips and notes
 
 <br>
 
+## Linux and MacOS
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
 
   **Linux** 💎 **MacOS**
-</div>
-
-<!-- Table of Contents -->
-<div style="display: none">
-
-# Linux 🐧 and MacOS 🍎
 </div>
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed</i></sub>
@@ -112,16 +108,12 @@ And done, you can now run `broken` and see all available commands: compile, rele
 
 <br>
 
+## Windows
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;" width="82">
 
   **Windows 10+**
-</div>
-
-<!-- Table of Contents -->
-<div style="display: none">
-
-# Windows 🪟
 </div>
 
 A quick note based on the project language:
