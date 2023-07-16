@@ -35,8 +35,8 @@ from .BrokenDirectories import *
 from .BrokenInline import *
 from .BrokenPath import *
 from .BrokenDotmap import *
+from .BrokenDownloads import *
 from .BrokenExternals import *
-from .BrokenWrappers import *
 
 # How to better name those ↓ ?
 from .Smart import *

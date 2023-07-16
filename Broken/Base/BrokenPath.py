@@ -64,11 +64,12 @@ class BrokenPath:
         # • Attempt finding directory/name for every directory in PATH
         if (binary is None) and file_not_tagged_executable_workaround :
             for directory in os.environ["PATH"].split(os.pathsep):
-                if (binary := Path(directory)/name).is_file():
+                if (maybe_the_binary := Path(directory)/name).is_file():
+                    binary = maybe_the_binary
                     break
 
         # Print information about the binary
-        (warning if (binary is None) else success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
+        if echo: (warning if (binary is None) else success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
 
         return binary
 

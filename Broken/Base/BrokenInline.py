@@ -45,3 +45,11 @@ class EmptyCallable:
     """Well, an empty callable both initialization and __call__, eats up args and kwargs as well"""
     def __init__(self,*a,**b): ...
     def __call__(self,*a,**b): ...
+
+def BrokenNeedImport(*packages: Union[str, List[str]]):
+    """Check if a package is imported (required for project), else exit with error"""
+    for name in packages:
+        module = sys.modules.get(name, None)
+        if (module is None) or isinstance(module, BrokenImportError):
+            error(f"• Dependency {name} is required, maybe it's not installed on this virtual environment, not listed in BrokenImports or not imported")
+            exit(1)

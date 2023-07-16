@@ -13,7 +13,7 @@ class BrokenStableDiffusion:
             self.config.defaults("model", "stabilityai/stable-diffusion-xl-base-0.9"),
             torch_dtype=torch.float16 if (self.precision == "fp16") else torch.float32,
             variant=self.precision,
-            use_auth_token="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",
+            use_auth_token=os.environ.get("HF_TOKEN", None),
             use_safetensors=True,
             resume_download=True,
         )

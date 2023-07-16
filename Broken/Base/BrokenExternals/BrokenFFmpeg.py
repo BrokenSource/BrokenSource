@@ -2,9 +2,20 @@ from . import *
 
 # FIXME: This file is not ported yet from old Protostar
 
-class BrokenFFmpeg:
-    def __init__(self):
-        self.__base_command__ = [FFmpegBinary, "-hwaccel", "auto", "-hide_banner"]
+
+class BrokenFFmpeg(BrokenExternalABC):
+
+    @property
+    def binary_name(self) -> str: return "ffmpeg"
+
+    def install(self, directories: BrokenDirectories) -> Union[Path, None]:
+        ...
+
+    def get_binary(self, directories: BrokenDirectories):
+        BrokenNeedImport("imageio_ffmpeg")
+        return imageio_ffmpeg.get_ffmpeg_exe()
+
+    # ---------------------------------------------------------------------------------------------|
 
     def get_total_frames(self, path: PathLike) -> int:
         command = self.__base_command__ + ["-vsync", "1", "-i", str(path), "-f", "null", "-"]

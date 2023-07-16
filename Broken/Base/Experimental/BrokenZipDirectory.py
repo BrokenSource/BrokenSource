@@ -1,9 +1,10 @@
 from . import *
 
 # FIXME: File partially ported and tested from old Protostar
+# FIXME: ZipFile import in pyinstaller hangs?
 # Needs testing and simplification
 
-class BrokenZip(PathLike):
+class BrokenZipDirectory(PathLike):
     """Portable Path-Like directory that is a .zip file
 
     Z = ZipDir(Path)
@@ -31,7 +32,7 @@ class BrokenZip(PathLike):
     # # Recursivity
 
     def _recurse(self, other):
-        return BrokenZip(self.file_path, _write_path=self.write_path/other)
+        return BrokenZipDirectory(self.file_path, _write_path=self.write_path/other)
 
     def __floordiv__(self, Other): return self._recurse(Other)
     def __truediv__ (self, Other): return self._recurse(Other)

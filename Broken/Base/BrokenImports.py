@@ -105,6 +105,7 @@ while True:
         import distro
         import forbiddenfruit
         import gradio
+        import imageio_ffmpeg
         import halo
         import intervaltree
         import loguru
@@ -128,15 +129,6 @@ while True:
         from tqdm import tqdm
 
         break
-
-# -------------------------------------------------------------------------------------------------|
-
-def BrokenNeedImport(*packages: Union[str, List[str]]):
-    """Check if a package is imported (required for project), else exit with error"""
-    for name in packages:
-        if isinstance(sys.modules[name], BrokenImportError):
-            error(f"• Dependency {name} is required for this project")
-            exit(1)
 
 # -------------------------------------------------------------------------------------------------|
 

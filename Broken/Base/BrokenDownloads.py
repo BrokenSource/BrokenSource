@@ -79,7 +79,7 @@ class BrokenDownloads:
         shutil.unpack_archive(archive, destination)
         return destination
 
-    def download_extract_zip_to_externals(url: str, destination: PathLike=BROKEN_DIRECTORIES.EXTERNALS) -> Path:
+    def download_extract_zip(url: str, destination: PathLike=BROKEN_DIRECTORIES.EXTERNALS) -> Path:
         """Download and extract a zip file"""
         with BrokenDownloads.download(url) as zip_file:
-            return extract_archive(zip_file, destination)
+            return BrokenDownloads.extract_archive(zip_file, destination)
