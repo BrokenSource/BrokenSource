@@ -14,6 +14,7 @@ from . import *
 # |         import C
 # |         break
 
+
 class BrokenImportError:
     LAST_ERROR = None
     ...
@@ -68,7 +69,6 @@ while True:
         import tempfile
         import warnings
         import zipfile
-        import gradio
         from abc import ABC
         from abc import abstractmethod
         from contextlib import suppress
@@ -101,9 +101,10 @@ while True:
 
         import aenum
         import arrow
+        import diffusers
         import distro
         import forbiddenfruit
-        import schedule
+        import gradio
         import halo
         import intervaltree
         import loguru
@@ -116,16 +117,28 @@ while True:
         import requests_cache
         import rich
         import rich.prompt
+        import schedule
         import toml
+        import torch
         import transformers
         import typer
         import yaml
         from appdirs import AppDirs
         from dotmap import DotMap
-        import numpy
         from tqdm import tqdm
 
         break
+
+# -------------------------------------------------------------------------------------------------|
+
+def BrokenNeedImport(*packages: Union[str, List[str]]):
+    """Check if a package is imported (required for project), else exit with error"""
+    for name in packages:
+        if isinstance(sys.modules[name], BrokenImportError):
+            error(f"• Dependency {name} is required for this project")
+            exit(1)
+
+# -------------------------------------------------------------------------------------------------|
 
 # # Custom types, some Rust inspiration
 

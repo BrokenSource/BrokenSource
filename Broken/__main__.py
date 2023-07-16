@@ -187,8 +187,16 @@ class BrokenCLI:
                     if (status.returncode != 0) and (not reinstall):
                         warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
                         warning(f"- Virtual environment path: [{project_venv}]")
-                        if rich.prompt.Confirm.ask(f"• Do you want to reinstall the virtual environment?"):
+
+                        answer = rich.prompt.Prompt.ask(
+                            f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
+                            choices=["r", "e", ""],
+                            default="retry"
+                        )
+                        if answer == "r":
                             BrokenEasyRecurse(run_project, reinstall=True)
+                        elif answer == "retry":
+                            BrokenEasyRecurse(run_project)
 
                 # Route for Rust projects
                 elif language == ProjectLanguage.Rust:

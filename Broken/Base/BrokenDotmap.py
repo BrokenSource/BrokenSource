@@ -128,7 +128,7 @@ class BrokenDotmap(dict):
         if sync_after:
             self._sync()
 
-    def _default(self, key: str, value: Any) -> Any:
+    def defaults(self, key: str, value: Any) -> Any:
         """Set a default value for a key else don't change, returns it"""
         if key not in self:
             self[key] = value
