@@ -66,7 +66,7 @@ class BrokenCLI:
     RustProjectFeatures = {}
 
     # dict["depthflow"] -> "DepthFlow"
-    ProjectNameLowercaseToReal = {}
+    ProjectsInfo = {}
 
     def __init__(self) -> None:
         # Monorepository directories for Broken CLI script
@@ -88,14 +88,13 @@ class BrokenCLI:
         self.typer_app.command(rich_help_panel="Installation")(self.clone)
         self.typer_app.command(rich_help_panel="Installation")(self.requirements)
 
-        # Section: Releases
-        self.typer_app.command(rich_help_panel="Releases")(self.release)
 
         # Section: Miscellanous
-        self.typer_app.command(rich_help_panel="Miscellaneous")(self.date)
-        self.typer_app.command(rich_help_panel="Miscellaneous")(self.hooks)
-        self.typer_app.command(rich_help_panel="Miscellaneous")(self.update)
-        self.typer_app.command(rich_help_panel="Miscellaneous")(self.clean)
+        self.typer_app.command(rich_help_panel="Core")(self.date)
+        self.typer_app.command(rich_help_panel="Core")(self.hooks)
+        self.typer_app.command(rich_help_panel="Core")(self.update)
+        self.typer_app.command(rich_help_panel="Core")(self.clean)
+        self.typer_app.command(rich_help_panel="Core")(self.release)
 
         # Section: Experimental
         self.typer_app.command(rich_help_panel="Experimental")(self.daemon)
@@ -156,16 +155,16 @@ class BrokenCLI:
 
                 return venv_path
 
-    def get_project_language(self, project_name: str, echo=True) -> ProjectLanguage:
+    def get_project_language(self, path: Path, echo=True) -> ProjectLanguage:
         """Get the language of a project"""
-        if (self.PROJECTS_DIR/project_name/"pyproject.toml").exists():
-            info(f"Project [{project_name}] is a Python project", echo=echo)
+        if (path/"pyproject.toml").exists():
+            info(f"Project [{path}] is a Python project", echo=echo)
             return ProjectLanguage.Python
-        elif project_name in BrokenCLI.RustProjectFeatures:
-            info(f"Project [{project_name}] is a Rust project", echo=echo)
+        elif (path/"Main.rs").exists():
+            info(f"Project [{path}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
         else:
-            error(f"Unknown project language for [{project_name}]", echo=echo)
+            error(f"Unknown project language for [{path}]", echo=echo)
             return ProjectLanguage.Unknown
 
     def add_project_command(self, name: str, path: PathLike, language: ProjectLanguage) -> None:
@@ -209,8 +208,8 @@ class BrokenCLI:
         # Create Typer command
         self.typer_app.command(
             name=name.lower(),
-            help=f"Run {name} project",
-            rich_help_panel=f"{language.capitalize()} Projects",
+            help=f"{language.capitalize()}",
+            rich_help_panel=f"Projects at [bold]{path.parent}[/bold]",
 
             # Catch extra (unknown to typer) arguments that are sent to Python
             context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -228,30 +227,37 @@ class BrokenCLI:
         for rust_project in self.cargotoml["bin"]:
             BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
 
-        # Iterate on all directories
-        for project_path in self.PROJECTS_DIR.iterdir():
+        # Search every subdirectories for pyproject.toml or Main.rs
+        for path in self.PROJECTS_DIR.glob("**"):
 
             # Might have non-project files
-            if not project_path.is_dir():
+            if not path.is_dir():
                 continue
 
             # Empty dir might be a bare submodule
-            if not list(project_path.iterdir()):
-                warning(f"Project [{project_path.name}] is empty", echo=echo)
+            if not list(path.iterdir()):
+                continue
+
+            # Project programming language
+            language = self.get_project_language(path, echo=False)
+
+            # Skip unknown projects
+            if language == ProjectLanguage.Unknown:
                 continue
 
             # Get project name and translate lowercase to real name
-            project_name = project_path.name
-            BrokenCLI.ProjectNameLowercaseToReal[project_name.lower()] = project_name
-
-            # Project programming language
-            project_language = self.get_project_language(project_name, echo=False)
+            name = path.name
+            BrokenCLI.ProjectsInfo[name.lower()] = DotMap(
+                name=name,
+                path=path,
+                language=language,
+            )
 
             # Add command
-            self.add_project_command(project_name, project_path, project_language)
+            self.add_project_command(name, path, language)
 
             # Add attribute to the enumerator ProjectsEnumerator
-            aenum.extend_enum(ProjectsEnumerator, project_name.lower(), project_name.lower())
+            aenum.extend_enum(ProjectsEnumerator, name.lower(), name.lower())
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -269,15 +275,16 @@ class BrokenCLI:
             ))
 
         # # Python projects
-        for project in self.PROJECTS_DIR.iterdir():
-            update_date(project/"pyproject.toml")
+        for project in BrokenCLI.ProjectsInfo.values():
+            update_date(project.path/"pyproject.toml")
+            update_date(project.path/"Cargo.toml")
 
         # Broken
         update_date(BROKEN_MONOREPO_DIR/"pyproject.toml")
-        shell(POETRY, "install")
-
-        # # Rust projects
         update_date(BROKEN_MONOREPO_DIR/"Cargo.toml")
+
+        # Update poetry.lock
+        shell(POETRY, "install")
 
         return date
 
@@ -471,17 +478,17 @@ class BrokenCLI:
             shell(GIT, "submodule", "update", "--init", "--recursive")
 
     def release(self,
-        project_name: ProjectsEnumerator,
+        project: ProjectsEnumerator,
         platform: ReleasePlatform,
         nuitka: bool=typer.Option(False, "--nuitka", "-n", help="(Python) Use Nuitka than Pyinstaller for builds - experimental"),
     ):
         """Builds and releases a project for a specific platform"""
-        # Get "real" project name
-        project_name = project_name.value
-        project_name = BrokenCLI.ProjectNameLowercaseToReal.get(project_name.lower())
+
+        # Get info on the project
+        project = BrokenCLI.ProjectsInfo.get(project.value.lower())
 
         # Find project's programming language
-        language = self.get_project_language(project_name=project_name)
+        language = self.get_project_language(path=project.path)
 
         # Update dates and create releases directory
         date = self.date()
@@ -542,23 +549,23 @@ class BrokenCLI:
 
                 # Inception: Run this function but from Wine Python
                 os.environ.pop("VIRTUAL_ENV", None)
-                shell(WINE_POETRY, "run", "broken", "release", project_name.lower(), platform.value, "--nuitka" if nuitka else "")
+                shell(WINE_POETRY, "run", "broken", "release", project.name.lower(), platform.value, "--nuitka" if nuitka else "")
                 return
 
             # Create install virtualenv dependencies
-            project_path = self.PROJECTS_DIR/project_name
-            project_venv = self.__get_install_python_virtualenvironment(project_name, project_path)
+            project.path = self.PROJECTS_DIR/project.name
+            project.venv = self.__get_install_python_virtualenvironment(project.name, project.path)
 
             # Find site_packages of the project's virtualenv
-            site_packages = project_venv/"lib"/f"python{python_version_site_packages}"/"site-packages"
+            project.site_packages = project.venv/"lib"/f"python{python_version_site_packages}"/"site-packages"
 
             # Use the project's virtualenv site-packages
-            os.environ["PYTHONPATH"] = str(site_packages)
-            info(f"Using site-packages at [{site_packages}]")
+            os.environ["PYTHONPATH"] = str(project.site_packages)
+            info(f"Using site-packages at [{project.site_packages}]")
 
             # Find common project assets
             def get_project_asset_file_or_default(relative_path: Path) -> Path:
-                if (target := self.ASSETS_DIR/project_name/relative_path).exists():
+                if (target := self.ASSETS_DIR/project.name/relative_path).exists():
                     return target
                 return self.ASSETS_DIR/"Default"/relative_path
 
@@ -566,11 +573,11 @@ class BrokenCLI:
             torch_fixes = [
                 ("--copy-metadata", package)
                 for package in "tqdm torch regex sacremoses requests packaging filelock numpy tokenizers importlib_metadata".split()
-                if (target := site_packages/package).exists()
+                if (target := project.site_packages/package).exists()
             ]
 
             # Use the project's virtualenv site-packages
-            os.environ["PYTHONPATH"] = str(site_packages)
+            os.environ["PYTHONPATH"] = str(project.site_packages)
 
             # Compile the Python project with Pyinstaller
             if not nuitka:
@@ -587,7 +594,7 @@ class BrokenCLI:
                     # Hidden imports that may contain binaries
                     "--hidden-import", "imageio_ffmpeg",
                     "--hidden-import", "glcontext",
-                    "--hidden-import", "torch",
+                    # "--hidden-import", "torch",
 
                     # Torch fixes
                     torch_fixes,
@@ -595,21 +602,21 @@ class BrokenCLI:
                     # Where to put the binary and its name
                     f"--distpath={self.RELEASES_DIR}",
                     f"--specpath={self.BUILD_DIR}",
-                    "-n", project_name,
+                    "-n", project.name,
 
                     # Use the project's virtualenv site-packages just in case
-                    "--paths", site_packages,
+                    "--paths", project.site_packages,
 
                     # Branding: Icon and splash screen
                     "--splash", get_project_asset_file_or_default("Splash.png"),
                     "--icon", get_project_asset_file_or_default("Icon.ico"),
 
                     # Target file to compile
-                    self.PROJECTS_DIR/project_name/project_name/"__main__.py",
+                    self.PROJECTS_DIR/project.name/project.name/"__main__.py",
                 )
 
                 # Path of the compiled binary
-                compiled_binary = self.RELEASES_DIR/f"{project_name}{compiled_extension}"
+                compiled_binary = self.RELEASES_DIR/f"{project.name}{compiled_extension}"
 
 
             # Compile the Python project with Nuitka
@@ -625,24 +632,24 @@ class BrokenCLI:
                     "--include-package-data=imageio_ffmpeg",
 
                     # "--onefile-tempdir-spec=%CACHE_DIR%/%COMPANY%/%PRODUCT%/%VERSION%"
-                    f"--onefile-tempdir-spec=%CACHE_DIR%/BrokenSource/{project_name}-{date}",
+                    f"--onefile-tempdir-spec=%CACHE_DIR%/BrokenSource/{project.name}-{date}",
 
                     # Binary metadata
                     f"--company-name='Broken Source Software'",
-                    f"--product-name='{project_name}'",
+                    f"--product-name='{project.name}'",
                     f"--file-version={date}",
                     f"--product-version={date}",
 
                     # Output options
-                    f"--output-filename={project_name}",
+                    f"--output-filename={project.name}",
                     f"--output-dir={self.RELEASES_DIR}",
 
                     # Note: We don't target __main__ else nuitka won't "find the __init__ and as a package"
-                    self.PROJECTS_DIR/project_name/project_name,
+                    self.PROJECTS_DIR/project.name/project.name,
                 )
 
                 # Path of the compiled binary
-                compiled_binary = self.RELEASES_DIR/f"{project_name}"
+                compiled_binary = self.RELEASES_DIR/f"{project.name}"
 
         # -----------------------------------------------------------------------------------------|
 
@@ -657,27 +664,27 @@ class BrokenCLI:
 
             # Add target toolchain for Rust
             shell(RUSTUP, "target", "add", rust_target_triple)
-            rust_required_features = BrokenCLI.RustProjectFeatures[project_name]
+            rust_required_features = BrokenCLI.RustProjectFeatures[project.name]
 
             # Build the binary
             shell(CARGO, "build",
-                "--bin", project_name,
+                "--bin", project.name,
                 "--target", rust_target_triple,
                 "--features", rust_required_features,
                 "--profile", rust_profile,
             )
 
             # Path of the compiled binary
-            compiled_binary = self.BUILD_DIR/rust_target_triple/rust_profile/f"{project_name}{compiled_extension}"
+            compiled_binary = self.BUILD_DIR/rust_target_triple/rust_profile/f"{project.name}{compiled_extension}"
 
         # -----------------------------------------------------------------------------------------|
         # # Deal with bundling
         else:
-            error(f"Unknown Project [{project_name}] Language")
+            error(f"Unknown Project [{project.name}] Language")
             return
 
         # Standard naming for all projects
-        release_binary = self.RELEASES_DIR/f"{project_name.lower()}-{platform.value}-{date}{release_extension}"
+        release_binary = self.RELEASES_DIR/f"{project.name.lower()}-{platform.value}-{date}{release_extension}"
         release_zip    = release_binary.parent/(release_binary.stem + ".zip")
 
         # Default release

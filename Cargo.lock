@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "Broken-Source-Projects"
-version = "2023.7.14"
+version = "2023.7.17"
 dependencies = [
  "bevy",
  "bincode",

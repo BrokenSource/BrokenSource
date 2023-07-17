@@ -3,7 +3,7 @@
 
 [package]
 name = "Broken-Source-Projects"
-version = "2023.7.14"
+version = "2023.7.17"
 edition = "2021"
 authors = ["Tremeschin"]
 description = "Broken Source Software Monorepo"
@@ -19,7 +19,7 @@ path = "Broken/Broken.rs"
 
 [[bin]]
 name = "Ardmin"
-path = "Projects/Ardmin/Ardmin.rs"
+path = "Projects/Ardmin/Main.rs"
 
 [[bin]]
 name = "AudioSight"
