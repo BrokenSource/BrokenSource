@@ -43,7 +43,11 @@
         {"tag": "warn",   "color": "#FCC203"},
         {"tag": "todo",   "color": "#FF8C00"},
         {"tag": "note",   "color": "#584576"},
-        {"tag": "//",     "color": "#98C379"}
+        {"tag": "//",     "color": "#98C379"},
+        {"tag": "idea",   "color": "#B10DC9"},
+        {"tag": "hack",   "color": "#FF2D00"},
+        {"tag": "info",   "color": "#3498DB"},
+        {"tag": "debug",  "color": "#FCC203"},
     ],
 
     // Awesome font ligatures

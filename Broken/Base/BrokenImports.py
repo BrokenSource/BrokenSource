@@ -97,7 +97,7 @@ while True:
         from typing import List
         from typing import Tuple
         from typing import Union
-        from uuid import uuid4 as uuid
+        import uuid
 
         import aenum
         import arrow

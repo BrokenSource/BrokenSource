@@ -1,5 +1,5 @@
-# FIXME: How to, do we need version on releases?
 try:
+    # FIXME: How to, do we need version on bundled releases?
     import pkg_resources
     BROKEN_VERSION = f'v{pkg_resources.get_distribution("Broken").version}'
 except:

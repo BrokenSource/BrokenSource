@@ -220,7 +220,7 @@ class BrokenCLI:
 
         )(run_project_template(name, path, language))
 
-    # FIXME: Will I ever have projects in other languages?
+    # TODO: Will I ever have projects in other languages?
     def add_run_projects_commands(self, echo=False) -> None:
         self.cargotoml = DotMap(toml.loads((BROKEN_MONOREPO_DIR/"Cargo.toml").read_text()))
 
@@ -427,8 +427,6 @@ class BrokenCLI:
             if not ctypes.windll.shell32.IsUserAnAdmin():
                 warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
                 return
-            # FIXME: Does this work?
-            fixme("I'm not sure if the symlink command on Windows works and links to C:\\Broken")
             BrokenPath.remove(BROKEN_SHARED_DIR, confirm=True)
             Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
         else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return

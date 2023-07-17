@@ -9,13 +9,14 @@ class BrokenDotmap(dict):
     • I just made the most cursed user friendly lazy dictionary you'll ever see
 
     # Description
-    BrokenDict is a file-synced dictionary similar to DotMap with some extra utilities
+    BrokenDict is a file-synced or not dictionary similar to DotMap with some extra utilities
     - Any dictionary modification outside .no_sync() context will be synced to the file
     - Utility function ._default(key, value) to set a default value for a key
     - Support for TOML, JSON, YAML file formats, just specify the file extension of path on creation
 
     # Usage
     ```python
+    # Any file format or None for file-less operation
     broken_dict = BrokenDict("path/to/file.{toml,json,yaml}")
 
     # Assignment
@@ -37,12 +38,21 @@ class BrokenDotmap(dict):
 
     # Load dictionary from also any TOML, JSON, YAML file
     broken_dict.inner_loaded.from_file("path/to/file.{toml,json,yaml}")
+
+    # Do some heavy operations without syncing
+    with broken_dict.no_sync():
+        for i in range(100):
+            broken_dict.primes[i] = is_prime(i)
+
+    # Also do heavy operations but don't sync after finishing
+    with broken_dict.no_sync(sync_after=False):
+        ...
     ```
     """
 
     is_dunder = lambda key: key.startswith("__") and key.endswith("__")
 
-    def __init__(self, path: Path, sorted=True, super: Self=None):
+    def __init__(self, path: Path=None, sorted=True, super: Self=None):
         """
         Initializes BrokenDict, reads from file or creates it if it doesn't exist
         - **Do not send `super` argument unless you know what you're doing**
@@ -53,17 +63,21 @@ class BrokenDotmap(dict):
 
         # This instance is the root instance
         if super is None:
-            self.__path__   = BrokenPath.true_path(path)
             self.__sorted__ = sorted
             self.__sync__   = True
 
-            # Information on screen
-            info(f"• New BrokenDict instance created")
-            if self.__path__.exists():
-                info(f"└─ Loading from File: [{self.__path__}]")
-                self.from_file(self.__path__)
+            if path is None:
+                self.__path__ = None
             else:
-                info(f"└─ Creating new File: [{self.__path__}]")
+                self.__path__   = BrokenPath.true_path(path)
+
+                # Information on screen
+                info(f"• New BrokenDict instance created")
+                if self.__path__.exists():
+                    info(f"└─ Loading from File: [{self.__path__}]")
+                    self.from_file(self.__path__)
+                else:
+                    info(f"└─ Creating new File: [{self.__path__}]")
 
     @property
     def dict(self):
@@ -183,6 +197,10 @@ class BrokenDotmap(dict):
 
     def _sync(self) -> None:
         """Save dictionary data to the specified file"""
+
+        # Non file mode
+        if self.__super__.__path__ is None:
+            return
 
         # Don't sync mode
         if not self.__super__.__sync__:

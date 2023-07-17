@@ -37,7 +37,7 @@ class BrokenPath:
             if not recursive:
                 continue
 
-            # FIXME: This could be slow on too many directories (wrong input?)
+            # WARN: This could be slow on too many directories (wrong input?)
             # Find all subdirectories of a path
             for path in directory.rglob("*"):
                 if path.is_dir():
