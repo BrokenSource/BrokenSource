@@ -14,10 +14,13 @@ IS_RELEASE_PYINSTALLER = getattr(sys, "frozen", False)
 # https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
 # Patch torch.jit requiring inspect.getsource
 if IS_RELEASE_PYINSTALLER:
-    import torch.jit
-    patch = lambda object, **kwargs: object
-    torch.jit.script_method = patch
-    torch.jit.script = patch
+    try:
+        import torch.jit
+        patch = lambda object, **kwargs: object
+        torch.jit.script_method = patch
+        torch.jit.script = patch
+    except (ModuleNotFoundError, ImportError):
+        pass
 
 # Close Pyinstaller splash screen
 if IS_RELEASE_PYINSTALLER:
