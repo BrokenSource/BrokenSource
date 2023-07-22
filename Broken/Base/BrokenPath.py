@@ -86,11 +86,11 @@ class BrokenPath:
     def true_path(path: PathLike) -> Path:
         return Path(path).expanduser().resolve().absolute()
 
-    def make_executable(path: PathLike) -> None:
+    def make_executable(path: PathLike, echo=False) -> None:
         """Make a file executable"""
         path = Path(path)
         if BrokenPlatform.OnUnix:
-            shell("chmod", "+x", path)
+            shell("chmod", "+x", path, echo=echo)
 
     # # File or directory creation
 

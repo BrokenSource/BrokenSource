@@ -5,8 +5,15 @@
 <div align="center">
   <img src="https://avatars.githubusercontent.com/u/110147748" style="vertical-align: middle; border-radius: 10%" width="140">
 
-    :: Broken Source Software ::
+  <h2>Broken Source Software</h2>
+
+  <i>Readme available in:</i>
+
+  <!-- <a href="Readme pt-BR.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a> -->
+  <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a>
 </div>
+
+<br/>
 
 This _mono_-repository hosts the **shared library** called **Broken** ❤️‍🩹 (Rust and Python), a convenience script of the same name - `broken` - and **submodules** of **all our projects**
 

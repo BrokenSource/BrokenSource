@@ -27,6 +27,21 @@ os.chdir(ROOT)
 if os.name in ["posix", "mac"]:
     os.chmod(SCRIPT, 0o755)
 
+# Install pip
+for attempt in count(1):
+    try:
+        import pip
+        break
+    except Exception:
+        if attempt == 3:
+            print("Failed to install pip with [python -m ensurepip], please have it available")
+            exit(1)
+
+    if attempt == 1:
+        command([sys.executable, "-m", "ensurepip"])
+
+    # FIXME: Do we need any more complex solutions?
+
 # Install poetry
 for attempt in count(0):
 
@@ -48,6 +63,15 @@ for attempt in count(0):
 
 # Create, install dependencies on virtual environment
 command(POETRY + ["install"])
+
+# Clear screen
+try:
+    if os.name == "nt":
+        command("cls")
+    else:
+        command("clear")
+except Exception:
+    pass
 
 # Enter virtual environment
 command(POETRY + ["shell"])
