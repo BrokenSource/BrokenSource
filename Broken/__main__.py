@@ -55,10 +55,10 @@ class ReleasePlatform(Enum):
 # -------------------------------------------------------------------------------------------------|
 
 ABOUT = f"""
-Broken Source Software manager script\n
-• Tip: run "broken (command) --help" for options on commands or projects
+🚀 Broken Source Software manager script\n
+• Tip: run "broken (command) --help" for options on commands or projects ✨
 
-(c) 2022-2023 Broken Source Software and its authors, AGPLv3-only License.
+©️  2022-2023 Broken Source Software and its authors, AGPLv3-only License.
 """
 
 class BrokenCLI:
@@ -87,22 +87,22 @@ class BrokenCLI:
         self.add_run_projects_commands()
 
         # Section: Installation
-        self.typer_app.command(rich_help_panel="Installation")(self.install)
-        self.typer_app.command(rich_help_panel="Installation")(self.clone)
-        self.typer_app.command(rich_help_panel="Installation")(self.requirements)
+        self.typer_app.command(rich_help_panel="📦 Installation")(self.install)
+        self.typer_app.command(rich_help_panel="📦 Installation")(self.clone)
+        self.typer_app.command(rich_help_panel="📦 Installation")(self.requirements)
 
         # Section: Miscellanous
-        self.typer_app.command(rich_help_panel="Core")(self.date)
-        # self.typer_app.command(rich_help_panel="Core")(self.hooks)
-        self.typer_app.command(rich_help_panel="Core")(self.update)
-        self.typer_app.command(rich_help_panel="Core")(self.clean)
-        self.typer_app.command(rich_help_panel="Core")(self.release)
+        self.typer_app.command(rich_help_panel="⚙️  Core")(self.date)
+        # self.typer_app.command(rich_help_panel="⚙️  Core")(self.hooks)
+        self.typer_app.command(rich_help_panel="⚙️  Core")(self.update)
+        self.typer_app.command(rich_help_panel="⚙️  Core")(self.clean)
+        self.typer_app.command(rich_help_panel="⚙️  Core")(self.release)
 
         # Section: Experimental
-        self.typer_app.command(rich_help_panel="Experimental")(self.scripts)
-        self.typer_app.command(rich_help_panel="Experimental")(self.daemon)
-        self.typer_app.command(rich_help_panel="Experimental")(self.pillow_smid)
-        self.typer_app.command(rich_help_panel="Experimental")(self.link)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.scripts)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.daemon)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.pillow_smid)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.link)
 
         # Execute the CLI
         self.typer_app()
@@ -166,8 +166,7 @@ class BrokenCLI:
 
     def pillow_smid(self):
         """
-        Installs Pillow-SIMD, a way faster Pillow fork, does not change poetry dependencies.
-        - Requires AVX2 CPU, and dependencies installed
+        Installs Pillow-SIMD, a way faster Pillow fork, does not change poetry dependencies. Requires AVX2 CPU, and dependencies installed
         """
         shell(PIP, "uninstall", "pillow-simd", "-y")
         os.environ["CC"] = "cc -mavx2"
@@ -264,7 +263,7 @@ class BrokenCLI:
         self.typer_app.command(
             name=name.lower(),
             # help=f"{language.capitalize()}",
-            rich_help_panel=f"Projects at [bold]({base_path})[/bold]",
+            rich_help_panel=f"🔥 Projects at [bold]({base_path})[/bold]",
 
             # Catch extra (unknown to typer) arguments that are sent to Python
             context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -320,7 +319,7 @@ class BrokenCLI:
 
     # NOTE: Also returns date string
     def date(self) -> str:
-        """Set current UTC dates on Cargo.toml and all Python project's pyproject.toml"""
+        """Set current UTC dates on all Cargo.toml and pyproject.toml for known projects"""
         date = arrow.utcnow().format("YYYY.M.D")
         info(f"Current UTC date is [{date}]")
 
@@ -371,7 +370,7 @@ class BrokenCLI:
         releases: bool=False,
         all: bool=False
     ) -> None:
-        """Sorts imports, cleans .pyc files"""
+        """Sorts imports, cleans .pyc files and __pycache__ directories"""
 
         # Sort imports, ignore "Releases" folder
         if all or isort:
@@ -416,7 +415,7 @@ class BrokenCLI:
                 shell(RUSTUP, "default", RUSTUP_TOOLCHAIN)
 
     def clone(self, private: bool=False) -> None:
-        """Clones and initializes to default branch for all public submodules"""
+        """Clones and initializes to default branch for all public submodules (first step first time)"""
 
         # Cached requests session since GitHub API is rate limited to 60 requests per hour
         session = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'GitHubApiCache')
@@ -469,7 +468,7 @@ class BrokenCLI:
             else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
     def install(self, linux_desktop_file=True) -> None:
-        """Symlinks current directory to BROKEN_SHARED_DIRECTORY for sharing code in External projects, makes `brokenshell` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
+        """Symlinks current directory to Broken Shared Directory for sharing code in External projects, makes `broken` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
         fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Create direct project scripts
