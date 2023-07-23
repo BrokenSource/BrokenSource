@@ -285,6 +285,9 @@ class BrokenCLI:
         # Search every subdirectories for pyproject.toml or Main.rs
         for path in self.PROJECTS_DIR.glob("**/*"):
 
+            # Resolve symlinks
+            path = path.resolve().absolute()
+
             # Might have non-project files
             if not path.is_dir():
                 continue
@@ -617,7 +620,6 @@ class BrokenCLI:
                 return
 
             # Create install virtualenv dependencies
-            project.path = self.PROJECTS_DIR/project.name
             project.venv = self.__get_install_python_virtualenvironment(project.name, project.path)
 
             # Find site_packages of the project's virtualenv
@@ -676,7 +678,7 @@ class BrokenCLI:
                     "--icon", get_project_asset_file_or_default("Icon.ico"),
 
                     # Target file to compile
-                    self.PROJECTS_DIR/project.name/project.name/"__main__.py",
+                    project.path/project.name/"__main__.py",
                 )
 
                 # Path of the compiled binary
