@@ -3,28 +3,48 @@ from . import *
 
 BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')
 
-# Flatten nested lists and tuples to a single list
-# [[a, b], c, [d, e, None], [g, h]] -> [a, b, c, d, e, None, g, h]
-flatten_list = lambda stuff: [
-    item for sub in stuff for item in
-    (flatten_list(sub) if type(sub) in (list, tuple) else [sub])
-]
+def shell(*args, output=False, Popen=False, echo=True, confirm=False, **kwargs):
+    """
+    Better subprocess.* commands, all in one, yeet whatever you think it works
 
-# shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True)
-def shell(*args, output=False, Popen=False, echo=True, **kwargs):
+    # Usage:
+    - shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
+    """
     if output and Popen:
         raise ValueError("Cannot use output=True and Popen=True at the same time")
 
     # Flatten a list, remove falsy values, convert to strings
-    command = [item for item in map(str, flatten_list(args)) if item]
+    command = [item for item in map(str, BrokenUtils.flatten(args)) if item]
+
     info(f"Running command {command}", echo=echo)
+
+    # Confirm running command or not
+    if confirm and not rich.prompt.Confirm.ask(f"• Confirm running the command above"):
+        return
 
     if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
     if Popen:  return subprocess.Popen(command, **kwargs)
     else:      return subprocess.run(command, **kwargs)
 
-def enforce_list(item: Union[Any, List[Any]]) -> List[Any]:
-    return item if (type(item) is list) else [item]
+class BrokenUtils:
+    def force_list(item: Union[Any, List[Any]]) -> List[Any]:
+        """Force an item to be a list, if it's not already"""
+        return item if (type(item) is list) else [item]
+
+    def truthy(items: List[Any]) -> List[Any]:
+        """Transforms a list into a truthy-only values list, removing all falsy values"""
+        return [item for item in BrokenUtils.force_list(items) if item]
+
+    def flatten(*stuff: Union[Any, List[Any]]) -> List[Any]:
+        """
+        Flatten nested lists and tuples to a single list
+        [[a, b], c, [d, e, None], [g, h]] -> [a, b, c, d, e, None, g, h]
+        """
+        flatten = lambda stuff: [
+            item for subitem in stuff for item in
+            (flatten(subitem) if isinstance(subitem, (list, tuple)) else [subitem])
+        ]
+        return flatten(stuff)
 
 def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
     """Get an environment variable, cast it to a type, or return a default value"""

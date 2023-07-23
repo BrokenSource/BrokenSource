@@ -70,11 +70,14 @@ class BrokenCLI:
 
     def __init__(self) -> None:
         # Monorepository directories for Broken CLI script
-        self.RELEASES_DIR = BROKEN_MONOREPO_DIR/"Release"
-        self.PROJECTS_DIR = BROKEN_MONOREPO_DIR/"Projects"
-        self.ASSETS_DIR   = BROKEN_MONOREPO_DIR/"Assets"
-        self.BUILD_DIR    = BROKEN_MONOREPO_DIR/"Build"
-        self.WINEPREFIX   = self.BUILD_DIR/"Wineprefix"
+        self.RELEASES_DIR       = BROKEN_MONOREPO_DIR/"Release"
+        self.PROJECTS_DIR       = BROKEN_MONOREPO_DIR/"Projects"
+        self.ASSETS_DIR         = BROKEN_MONOREPO_DIR/"Assets"
+        self.BUILD_DIR          = BROKEN_MONOREPO_DIR/"Build"
+
+        # Nested directories
+        self.OTHER_PROJECTS_DIR = self.PROJECTS_DIR/"Others"
+        self.WINEPREFIX         = self.BUILD_DIR/"Wineprefix"
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
@@ -84,26 +87,31 @@ class BrokenCLI:
         self.add_run_projects_commands()
 
         # Section: Installation
-        self.typer_app.command(rich_help_panel="Installation", name="install")(self.install)
-        self.typer_app.command(rich_help_panel="Installation", name="clone")(self.clone)
-        self.typer_app.command(rich_help_panel="Installation", name="requirements")(self.requirements)
+        self.typer_app.command(rich_help_panel="Installation")(self.install)
+        self.typer_app.command(rich_help_panel="Installation")(self.clone)
+        self.typer_app.command(rich_help_panel="Installation")(self.requirements)
 
         # Section: Miscellanous
-        self.typer_app.command(rich_help_panel="Core", name="date")(self.date)
-        self.typer_app.command(rich_help_panel="Core", name="hooks")(self.hooks)
-        self.typer_app.command(rich_help_panel="Core", name="update")(self.update)
-        self.typer_app.command(rich_help_panel="Core", name="clean")(self.clean)
-        self.typer_app.command(rich_help_panel="Core", name="release")(self.release)
+        self.typer_app.command(rich_help_panel="Core")(self.date)
+        # self.typer_app.command(rich_help_panel="Core")(self.hooks)
+        self.typer_app.command(rich_help_panel="Core")(self.update)
+        self.typer_app.command(rich_help_panel="Core")(self.clean)
+        self.typer_app.command(rich_help_panel="Core")(self.release)
 
         # Section: Experimental
-        self.typer_app.command(rich_help_panel="Experimental", name="scripts")(self.direct)
-        self.typer_app.command(rich_help_panel="Experimental", name="daemon")(self.daemon)
-        self.typer_app.command(rich_help_panel="Experimental", name="pillow_smid")(self.pillow_smid)
+        self.typer_app.command(rich_help_panel="Experimental")(self.scripts)
+        self.typer_app.command(rich_help_panel="Experimental")(self.daemon)
+        self.typer_app.command(rich_help_panel="Experimental")(self.pillow_smid)
+        self.typer_app.command(rich_help_panel="Experimental")(self.link)
 
         # Execute the CLI
         self.typer_app()
 
     # # Experimental
+
+    def link(self, path: Path):
+        """Links some Project Path or Folder of Projects to also be managed by Broken"""
+        BrokenPath.symlink(self.OTHER_PROJECTS_DIR/path.name, path)
 
     def daemon(self):
         """Test Broken daemon mode"""
@@ -113,7 +121,7 @@ class BrokenCLI:
             schedule.run_pending()
             sleep(1)
 
-    def direct(self):
+    def scripts(self):
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
 
         # Get Broken virtualenv path
@@ -134,6 +142,11 @@ class BrokenCLI:
 
         # For each internal command
         for command in self.typer_app.registered_commands:
+
+            # No typer.command(name=str)(...) given
+            if command.name is None:
+                continue
+
             info(f"Creating script for command [{command.name}]")
             script = bin_path/command.name
 
@@ -159,6 +172,8 @@ class BrokenCLI:
         shell(PIP, "uninstall", "pillow-simd", "-y")
         os.environ["CC"] = "cc -mavx2"
         shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")
+
+    ## Adding Commands
 
     def __get_install_python_virtualenvironment(self,
         project_name: str,
@@ -197,7 +212,7 @@ class BrokenCLI:
         if (path/"pyproject.toml").exists():
             info(f"Project [{path}] is a Python project", echo=echo)
             return ProjectLanguage.Python
-        elif (path/"Main.rs").exists():
+        elif (path/"Main.rs").exists() and (path.name in BrokenCLI.RustProjectFeatures):
             info(f"Project [{path}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
         else:
@@ -242,11 +257,14 @@ class BrokenCLI:
 
             return run_project
 
+        # Get the base parent path of the project (might be folder of projects), resolve symlinks
+        base_path = path.resolve().parent.absolute()
+
         # Create Typer command
         self.typer_app.command(
             name=name.lower(),
             # help=f"{language.capitalize()}",
-            rich_help_panel=f"Projects at [bold]({path.parent.resolve().absolute()})[/bold]",
+            rich_help_panel=f"Projects at [bold]({base_path})[/bold]",
 
             # Catch extra (unknown to typer) arguments that are sent to Python
             context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
@@ -265,7 +283,7 @@ class BrokenCLI:
             BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
 
         # Search every subdirectories for pyproject.toml or Main.rs
-        for path in self.PROJECTS_DIR.glob("**"):
+        for path in self.PROJECTS_DIR.glob("**/*"):
 
             # Might have non-project files
             if not path.is_dir():
@@ -312,10 +330,15 @@ class BrokenCLI:
                 for line in file.read_text().split("\n")]
             ))
 
-        # # Python projects
-        for project in BrokenCLI.ProjectsInfo.values():
-            update_date(project.path/"pyproject.toml")
-            update_date(project.path/"Cargo.toml")
+        for path in self.PROJECTS_DIR.glob("**/*"):
+
+            # Might have non-project files
+            if not path.is_dir():
+                continue
+
+            # Update common files
+            update_date(path/"pyproject.toml")
+            update_date(path/"Cargo.toml")
 
         # Broken
         update_date(BROKEN_MONOREPO_DIR/"pyproject.toml")

@@ -21,7 +21,7 @@ class BrokenPath:
         """
 
         # Make Path objects
-        directories = [Path(x) for x in enforce_list(directories)]
+        directories = [Path(x) for x in BrokenUtils.force_list(directories)]
 
         # Get current PATH
         old = os.environ["PATH"]
@@ -72,6 +72,10 @@ class BrokenPath:
         if echo: (warning if (binary is None) else success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
 
         return binary
+
+    def binary_exists(name: str, echo=True) -> bool:
+        """Check if a binary exists on PATH"""
+        return BrokenPath.get_binary(name, echo=echo) is not None
 
     # # Specific / "Utils"
 
@@ -159,7 +163,11 @@ class BrokenPath:
         elif BrokenPlatform.OnMacOS:
             shell("open", path)
 
-
+    def symlink(where: Path, to: Path, echo=True):
+        """Symlink a path to another path"""
+        info(f"Symlinking [{where}] -> [{to}]", echo=echo)
+        BrokenPath.mkdir(where.parent, echo=False)
+        where.symlink_to(to)
 
 class ShellCraft:
 

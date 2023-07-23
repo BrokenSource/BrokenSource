@@ -6,7 +6,7 @@ from pathlib import Path
 from subprocess import run as command
 
 # Constants
-INSTALL_POETRY_MAX_ATTEMPTS = 3
+INSTALL_MAX_ATTEMPTS = 3
 
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
@@ -17,15 +17,15 @@ POETRY = [PYTHON, "-m", "poetry"]
 PIP    = [PYTHON, "-m", "pip"]
 
 # Directories
-SCRIPT = Path(__file__).absolute()
-ROOT   = SCRIPT.parent.absolute()
+THIS_FILE = Path(__file__).absolute()
+ROOT      = THIS_FILE.parent.absolute()
 
 # Change directory to where the script is
 os.chdir(ROOT)
 
 # Make the script executable
 if os.name in ["posix", "mac"]:
-    os.chmod(SCRIPT, 0o755)
+    os.chmod(THIS_FILE, 0o755)
 
 # Install pip
 for attempt in count(1):
@@ -33,21 +33,19 @@ for attempt in count(1):
         import pip
         break
     except Exception:
-        if attempt == 3:
+        if attempt == INSTALL_MAX_ATTEMPTS:
             print("Failed to install pip with [python -m ensurepip], please have it available")
             exit(1)
 
-    if attempt == 1:
-        command([sys.executable, "-m", "ensurepip"])
-
     # FIXME: Do we need any more complex solutions?
+    command([sys.executable, "-m", "ensurepip"])
 
 # Install poetry
 for attempt in count(0):
 
     # Installation is hanging
-    if attempt == INSTALL_POETRY_MAX_ATTEMPTS:
-        print(f"Attempted {INSTALL_POETRY_MAX_ATTEMPTS} times to install poetry, but failed")
+    if attempt == INSTALL_MAX_ATTEMPTS:
+        print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but failed")
         print( "· Please install it at (https://python-poetry.org/docs/#installation)")
         exit(1)
 

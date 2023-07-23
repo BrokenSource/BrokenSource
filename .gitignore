@@ -1,6 +1,17 @@
+# Big data
 Build
 Release
+
+# Temp unwanted files
 ___*
+
+# Python
+**__pycache__*
 *.pyc
+
+# Syncthing
 .stfolder
 .stversions
+
+# Symlinks
+Projects/Others
