@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import tempfile
 from itertools import count
 from pathlib import Path
 from subprocess import run as command
@@ -10,6 +11,10 @@ INSTALL_MAX_ATTEMPTS = 3
 
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
+
+# Write annoying __pycache__ and .pyc on temporary directory
+# On Linux it's /tmp under System RAM, so it's brutally fast
+os.environ["PYTHONPYCACHEPREFIX"] = str(Path(tempfile.gettempdir())/"pycache")
 
 # Current Python executable
 PYTHON = sys.executable

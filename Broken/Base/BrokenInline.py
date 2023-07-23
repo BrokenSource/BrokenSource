@@ -26,6 +26,10 @@ def shell(*args, output=False, Popen=False, echo=True, confirm=False, **kwargs):
     if Popen:  return subprocess.Popen(command, **kwargs)
     else:      return subprocess.run(command, **kwargs)
 
+def BetterThread(callable, *args, start=True, **kwargs):
+    """Create a thread on a callable, yeet whatever you think it works"""
+    return Thread(target=callable, args=args, kwargs=kwargs)
+
 class BrokenUtils:
     def force_list(item: Union[Any, List[Any]]) -> List[Any]:
         """Force an item to be a list, if it's not already"""

@@ -102,7 +102,7 @@ git clone https://github.com/BrokenSource/BrokenSource
 cd BrokenSource
 
 # Install dependencies, activates virtual environment
-python ./broken
+python ./brakeit
 
 # Clone submodules
 broken clone
@@ -110,9 +110,7 @@ broken clone
 
 And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
 
-<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `python ./broken` script again</sub>
-
-<sub><b>Note:</b> `./broken` is the developer mode script, when inside it `broken` is the Framework manager</sub>
+<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `python ./brakeit` script again</sub>
 
 
 <br>

@@ -263,6 +263,7 @@ class BrokenCLI:
         self.typer_app.command(
             name=name.lower(),
             # help=f"{language.capitalize()}",
+            help="···",
             rich_help_panel=f"🔥 Projects at [bold]({base_path})[/bold]",
 
             # Catch extra (unknown to typer) arguments that are sent to Python
@@ -472,7 +473,7 @@ class BrokenCLI:
         fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Create direct project scripts
-        self.add_run_projects_commands(create_script=True)
+        self.add_run_projects_commands()
 
         # Symlink Broken Shared Directory to Broken Root
         if BrokenPlatform.OnUnix:
@@ -488,7 +489,7 @@ class BrokenCLI:
                     "[Desktop Entry]",
                     "Type=Application",
                     "Name=Broken",
-                    f"Exec={BROKEN_SHARED_DIR/'brokenshell'}",
+                    f"Exec={BROKEN_SHARED_DIR/'brakeit'}",
                     f"Icon={self.ASSETS_DIR/'Default'/'Icon.png'}",
                     "Comment=Broken Shell Development Environment",
                     "Terminal=true",
