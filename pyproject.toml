@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Broken"
-version = "2023.7.23"
+version = "2023.7.24"
 description = "Broken Source Software Python Shared Code"
 authors = ["Tremeschin"]
 license = "AGPLv3-only"
@@ -30,7 +30,7 @@ aenum = "^3.1.15"
 pyyaml = "^6.0"
 watchdog = "^3.0.0"
 schedule = "^1.2.0"
-imageio-ffmpeg = "^0.4.8"
+attrs = "^23.1.0"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"

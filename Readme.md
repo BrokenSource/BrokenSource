@@ -218,6 +218,66 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 - Feel absolutely free to debate on choices and ideas for the projects
 
 
+<br>
+<br>
+<br>
+
+# 💎 Acknowledgements
+
+All the infrastructure in **Broken Source Software's Framework** and **Projects** wouldn't be possible without many programming language packages, softwares we use and exponentially more **Open Source Contributors** that made it possible. **To all of you**, an **uncountable list of direct and indirect contributors**, we thank you for your time and effort to make the world a better place ❤️‍🩹
+
+Below a list, **not ordered by importance or relevance**, of the most notable software and people.
+
+### General
+- [**FFmpeg**](https://ffmpeg.org): _"A complete, cross-platform solution to record, convert and stream audio and video."_ - and they are not lying!!
+- [**Linux**](https://www.linux.org): Father of Open Source and all the things
+- [**Visual Studio Code**](https://code.visualstudio.com): _"Code editing. Redefined."_
+- [**Stability AI**](https://stability.ai): AI by the people for the people. Many products
+- [**Huggingface 🤗**](https://huggingface.co): Central repository for AI models made easy with Diffusers, Gradio, Transformers
+- [**Khronos Group**](https://www.khronos.org): For OpenGL, GLSL, Vulkan
+- [**NVIDIA**](https://www.nvidia.com): Bittersweet one, but CUDA and the GPU's technology are undeniably amazing
+
+
+### Python
+- [**Python**](https://www.python.org): The programming language
+- [**Poetry**](https://python-poetry.org): Package manager and virtual environments
+- [**PyInstaller**](https://www.pyinstaller.org): A complete Python bundler for end user binaries
+- [**Nuitka**](https://nuitka.net): A Python compiler to a redistributable portable binary
+- [**ModernGL**](https://github.com/moderngl/moderngl): OpenGL made-easy wrapper
+- [**GLFW**](https://www.glfw.org): Easy OpenGL window and input manager
+- [**NumPy**](https://numpy.org): Numerical Python, the math behind the scenes
+- [**Quaternion**](https://github.com/moble/quaternion): Built-in NumPy support for [Quaternions](https://www.youtube.com/watch?v=d4EgbgTm0Bg)<sup>Ew <a href="https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible">Euler Angles</a></sup>
+- [**DotMap**](https://github.com/drgrib/dotmap): Great and simple dot notation for dynamic dictionaries
+- [**tqdm**](https://github.com/tqdm/tqdm): Progress bar for the terminal
+- [**Rich**](https://github.com/Textualize/rich): Beautiful formatting in Python
+- [**Loguru**](https://github.com/Delgan/loguru): Python logging made stupidly simple
+- [**Forbiddenfruit**](https://github.com/clarete/forbiddenfruit): Monkey patching for builtins in Python
+- [**Typer**](https://github.com/tiangolo/typer): Great Command Line Interfaces made easy
+- [**Halo**](https://github.com/manrajgrover/halo): Beautiful spinners on the terminal
+- [**Appdirs**](https://github.com/ActiveState/appdirs): Platform specific user directories
+- [**Pillow**](https://github.com/python-pillow/Pillow): Complete Imaging Library for Python
+- [**Aenum**](https://github.com/ethanfurman/aenum): Advanced enums in python
+- [**TOML**](https://github.com/uiri/toml): Python [TOML](https://toml.io/en/) file support
+- [**Schedule**](https://github.com/dbader/schedule): Python job scheduling for humans
+- [**attrs**](https://github.com/python-attrs/attrs): Python classes without boilerplate
+- [**intervaltree**](https://github.com/chaimleib/intervaltree): Timeline-like intervals made easy
+- [**PyTorch**](https://pytorch.org): General AI and Machine Learning
+- [**isort**](https://github.com/PyCQA/isort): _isort_ your imports, so you don't have to
+- [**imgui**](https://github.com/ocornut/imgui): Bloat-free hacky-vibes user interface
+- [**DearPyGui**](https://github.com/hoffstadt/DearPyGui): Awesome User Interfaces for Python
+- [**SoundCard**](https://github.com/bastibe/SoundCard): A Pure-Python Real-Time Audio Library
+- [**Imageio-FFmpeg**](https://github.com/imageio/imageio-ffmpeg): Bundling FFmpeg binaries so I don't have to
+- [**mido**](https://pypi.org/project/mido): MIDI Files manipulation in Python
+
+### Rust
+- [**Rust**](https://www.rust-lang.org): The programming language
+- _Incomplete list_
+
+### Package Maintainers
+Package managers for Linux and MacOS are welcome, you'll be credited ❤️
+
+<br>
+<sub><i><b>Note:</b> It is very likely that I've missed someone, contact me if you feel something should be here!</i></sub>
 
 <br>
 <br>

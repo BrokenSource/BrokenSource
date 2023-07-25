@@ -101,7 +101,7 @@ class BrokenCLI:
         # Section: Experimental
         self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.scripts)
         self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.daemon)
-        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.pillow_smid)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.pillow_simd)
         self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.link)
 
         # Execute the CLI
@@ -119,7 +119,7 @@ class BrokenCLI:
 
         while True:
             schedule.run_pending()
-            sleep(1)
+            time.sleep(1)
 
     def scripts(self):
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
@@ -164,7 +164,7 @@ class BrokenCLI:
                     f"broken {command.name} %*",
                 ]))
 
-    def pillow_smid(self):
+    def pillow_simd(self):
         """
         Installs Pillow-SIMD, a way faster Pillow fork, does not change poetry dependencies. Requires AVX2 CPU, and dependencies installed
         """
@@ -643,7 +643,15 @@ class BrokenCLI:
             ]
 
             # Use the project's virtualenv site-packages
-            os.environ["PYTHONPATH"] = str(project.site_packages)
+            if (BrokenPlatform.OnLinux):
+                libname = "libglfw.so"
+                fixme(f"Applying [{libname}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
+                try:
+                    lib = next(Path("/usr/lib").glob(f"**/{libname}"))
+                    success(f"Found [{libname}] at [{lib}]")
+                    os.environ["PYGLFW_LIBRARY"] = str(lib)
+                except StopIteration:
+                    error(f"[{libname}] not found on /usr/lib, ModernGL projects might fail")
 
             # Compile the Python project with Pyinstaller
             if not nuitka:
@@ -660,6 +668,7 @@ class BrokenCLI:
                     # Hidden imports that may contain binaries
                     "--hidden-import", "imageio_ffmpeg",
                     "--hidden-import", "glcontext",
+                    "--hidden-import", "glfw",
                     # "--hidden-import", "torch",
 
                     # Torch fixes
@@ -802,9 +811,9 @@ class BrokenCLI:
             info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
 
         # # Install Requirements depending on host platform
-        if BrokenPlatform == "linux":
-            if BrokenPlatform.OnLinuxDistro == "arch":
-                self.shell(SUDO, PACMAN, "-Syu", [
+        if BrokenPlatform.OnLinux:
+            if BrokenPlatform.LinuxDistro == "arch":
+                shell(SUDO, PACMAN, "-Syu", [
                     "base-devel",
                     "gcc-fortran",
                     "mingw-w64-toolchain",
@@ -821,11 +830,11 @@ class BrokenCLI:
                 ])
                 return
 
-            self.warning(f"[{BrokenPlatform.OnLinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+            warning(f"[{BrokenPlatform.LinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
-            if BrokenPlatform.OnLinuxDistro == "ubuntu":
-                self.shell(SUDO, APT, "update")
-                self.shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx wine".split())
+            if BrokenPlatform.LinuxDistro == "ubuntu":
+                shell(SUDO, APT, "update")
+                shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx wine".split())
 
         elif BrokenPlatform == "windows":
             raise NotImplementedError("Broken releases on Windows not implemented")
@@ -835,10 +844,10 @@ class BrokenCLI:
 
             # Install Homebrew
             with BrokenDownloads.download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
-                self.shell(BASH, installer)
+                shell(BASH, installer)
 
             # Install make dependencies
-            self.shell(brew, "install", "mingw-w64", "upx")
+            shell(brew, "install", "mingw-w64", "upx")
 
 
 # -------------------------------------------------------------------------------------------------|
