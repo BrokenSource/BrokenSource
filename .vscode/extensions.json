@@ -1,7 +1,7 @@
 {
     "recommendations": [
         // Well, better toml!
-        "bungcip.better-toml",
+        "tamasfe.even-better-toml",
 
         // Inline errors
         "usernamehw.errorlens",

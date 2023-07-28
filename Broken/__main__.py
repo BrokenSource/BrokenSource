@@ -259,11 +259,38 @@ class BrokenCLI:
         # Get the base parent path of the project (might be folder of projects), resolve symlinks
         base_path = path.resolve().parent.absolute()
 
+        # Start with unknown project description
+        description = "···"
+
+        # Get project description from config files based on language
+        if language == ProjectLanguage.Python:
+            if (config := path/"pyproject.toml").exists():
+                description = (
+                    toml.loads(config.read_text())
+                    .get("tool", {})
+                    .get("poetry", {})
+                    .get("description", description)
+                )
+
+        elif language == ProjectLanguage.Rust:
+            if (config := path/"Cargo.toml").exists():
+                description = (
+                    toml.loads(config.read_text())
+                    .get("package", {})
+                    .get("description", description)
+                )
+        else:
+            # TODO: Any standard on what Broken.toml might contain?
+            if (config := path/"Broken.toml").exists():
+                description = (
+                    toml.loads(config.read_text())
+                    .get("description", description)
+                )
+
         # Create Typer command
         self.typer_app.command(
             name=name.lower(),
-            # help=f"{language.capitalize()}",
-            help="···",
+            help=description,
             rich_help_panel=f"🔥 Projects at [bold]({base_path})[/bold]",
 
             # Catch extra (unknown to typer) arguments that are sent to Python
