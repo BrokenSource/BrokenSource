@@ -4,7 +4,9 @@ from . import *
 class BrokenDirectories:
     """
     Class that handles creating directories for Broken projects for consistency.
-    - Directories are created as needed. Suggestions:
+    # Default directories:
+        - Root:      Root directory for the project (data directory)
+    # Directories are created as needed. Suggestions:
         - Cache:     Cache files
         - Config:    Configuration files
         - Data:      Data files
@@ -22,7 +24,7 @@ class BrokenDirectories:
         self.APPDIRS    = AppDirs(app_author, app_author)
 
         # Special directories
-        self.ROOT       = Path(self.APPDIRS.user_data_dir)
+        self.ROOT = Path(self.APPDIRS.user_data_dir)
         self.ROOT.mkdir(parents=True, exist_ok=True)
         self.EXECUTABLE = BrokenDirectories.get_system_executable_directory()
 

@@ -225,11 +225,17 @@ class BrokenCLI:
         def run_project_template(name, path, language):
             def run_project(
                 ctx: typer.Context,
-                reinstall: bool=typer.Option(False, "--reinstall", "-r", help="Delete and reinstall Poetry dependencies"),
-                debug=typer.Option(False, "--debug", "-d", help="Debug mode for Rust projects"),
+                reinstall: bool=typer.Option(False, "--reinstall", help="Delete and reinstall Poetry dependencies"),
+                infinite: bool=typer.Option(False, "--infinite", help="Press Enter after each run to run again"),
+                debug=typer.Option(False, "--debug", help="Debug mode for Rust projects"),
             ):
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
+
+                    # Set env vars for Broken
+                    os.environ["BROKEN_CURRENT_PROJECT_NAME"] = name
+
+                    # Maybe install or reinstall virtualenv, run project, get status
                     project_venv = self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
                     status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
@@ -244,9 +250,14 @@ class BrokenCLI:
                             default="retry"
                         )
                         if answer == "r":
-                            BrokenEasyRecurse(run_project, reinstall=True)
+                            BrokenEasy.Recurse(run_project, reinstall=True)
                         elif answer == "retry":
-                            BrokenEasyRecurse(run_project)
+                            BrokenEasy.Recurse(run_project)
+
+                    elif infinite:
+                        success(f"Detect Project [{name}] finished running successfully")
+                        rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
+                        BrokenEasy.Recurse(run_project)
 
                 # Route for Rust projects
                 elif language == ProjectLanguage.Rust:
@@ -515,7 +526,7 @@ class BrokenCLI:
                 desktop.write_text('\n'.join([
                     "[Desktop Entry]",
                     "Type=Application",
-                    "Name=Broken",
+                    "Name=Broken Shell",
                     f"Exec={BROKEN_SHARED_DIR/'brakeit'}",
                     f"Icon={self.ASSETS_DIR/'Default'/'Icon.png'}",
                     "Comment=Broken Shell Development Environment",
