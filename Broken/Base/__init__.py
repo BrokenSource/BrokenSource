@@ -40,9 +40,7 @@ from .BrokenPath import *
 from .BrokenDotmap import *
 from .BrokenDownloads import *
 from .BrokenExternals import *
-
-# How to better name those ↓ ?
-from .Smart import *
+from .BrokenEasy import *
 # isort: on
 
 class BrokenBase:

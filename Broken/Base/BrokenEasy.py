@@ -59,6 +59,7 @@ class BrokenEasy:
         previous_locals = {
             k: v for k, v in previous_locals.items()
             if k in inspect.getfullargspec(function).args
+            if k != "self"
         }
 
         # Call and return the same function
@@ -160,7 +161,7 @@ def BrokenNullContext():
     yield Dummy()
 
 @attrs.define
-class BrokenVsync:
+class BrokenVsyncClient:
     """
     Client configuration for BrokenVsyncManager
 
@@ -184,17 +185,17 @@ class BrokenVsync:
     next_call:  float    = 0
 
 @attrs.define
-class BrokenVsyncManager:
-    clients: List[BrokenVsync] = []
+class BrokenVsync:
+    clients: List[BrokenVsyncClient] = []
 
-    def add_client(self, client: BrokenVsync) -> BrokenVsync:
+    def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
         client.next_call += now()
         self.clients.append(client)
         return client
 
-    def new(self, *args, **kwargs) -> BrokenVsync:
+    def new(self, *args, **kwargs) -> BrokenVsyncClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenVsync(*args, **kwargs))
+        return self.add_client(BrokenVsyncClient(*args, **kwargs))
 
     def next(self, block=True) -> Option[None, Any]:
         client = sorted(self.clients, key=lambda item: item.next_call*(item.enabled))[0]
