@@ -14,23 +14,23 @@ class BrokenSmart:
             # Load image if a path or url is supplied
             if any([isinstance(image, T) for T in (PathLike, str)]):
                 if (path := BrokenPath.true_path(image)).exists():
-                    info(f"Loading image from Path [{path}]", echo=echo)
+                    log.info(f"Loading image from Path [{path}]", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
-                    info(f"Loading image from (maybe) URL [{image}]", echo=echo)
+                    log.info(f"Loading image from (maybe) URL [{image}]", echo=echo)
                     try:
                         requests = BROKEN_REQUESTS_CACHE if cache else requests
                         return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
                     except Exception as e:
-                        error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
+                        log.error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
                         return None
             else:
-                error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)
+                log.error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)
                 return None
 
         # Can't open file
         except PIL.UnidentifiedImageError as e:
-            error(f"Failed to load image [{image}]: {e}", echo=echo)
+            log.error(f"Failed to load image [{image}]: {e}", echo=echo)
             return None
 
         except Exception:
@@ -104,8 +104,8 @@ class BrokenEasy:
         frametimes = []
 
         with tqdm(
-            total=benchmark_duration if benchmark_method == "duration" else benchmark_executions,
-            unit="s" if benchmark_method == "duration" else "it",
+            total=benchmark_duration if (benchmark_method == "duration") else benchmark_executions,
+            unit="s" if (benchmark_method == "duration") else "it",
             unit_scale=True,
             leave=False,
         ) as progress_bar:
@@ -136,5 +136,86 @@ class BrokenEasy:
         frametimes = numpy.array(frametimes)
 
         f = lambda x: f"{x:.3f} it/s"
-        info(f"• Benchmark Results for {benchmark_name or function.__name__}: [Average {f(1.0/frametimes.mean())}] [Max {f(1.0/frametimes.min())}] [Min {f(1.0/frametimes.max())}] [Std {f((1/frametimes).std())}]")
+        log.info(f"• Benchmark Results for [{str(benchmark_name or function.__name__).ljust(20)}]: [Average {f(1.0/frametimes.mean())}] [Max {f(1.0/frametimes.min())}] [Min {f(1.0/frametimes.max())}] [Std {f((1/frametimes).std())}]")
 
+def BrokenNeedImport(*packages: Union[str, List[str]]):
+    """Check if a package is imported (required for project), else exit with error"""
+    for name in packages:
+        module = sys.modules.get(name, None)
+        if (module is None) or isinstance(module, BrokenImportError):
+            log.error(f"• Dependency {name} is required, maybe it's not installed on this virtual environment, not listed in BrokenImports or not imported")
+            exit(1)
+
+@contextmanager
+def BrokenExitOnKeyboardInterrupt():
+    """A context that exits the program on KeyboardInterrupt"""
+    try:
+        yield
+    except KeyboardInterrupt:
+        exit(0)
+
+@contextmanager
+def BrokenNullContext():
+    """A context that does nothing"""
+    yield Dummy()
+
+@attrs.define
+class BrokenVsync:
+    """
+    Client configuration for BrokenVsyncManager
+
+    # Function:
+    - callback:   Function callable to call every syncronization
+    - args:       Arguments to pass to callback
+    - kwargs:     Keyword arguments to pass to callback
+    - context:    Context to use when calling callback (with statement)
+
+    # Timing:
+    - frequency:  Frequency of callback calls
+    - enabled:    Whether to enable this client or not
+    - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
+    """
+    callback:   callable = None
+    args:       List[Any] = []
+    kwargs:     Dict[str, Any] = {}
+    frequency:  float    = 60
+    context:    Any      = None
+    enabled:    bool     = False
+    next_call:  float    = 0
+
+@attrs.define
+class BrokenVsyncManager:
+    clients: List[BrokenVsync] = []
+
+    def add_client(self, client: BrokenVsync) -> BrokenVsync:
+        client.next_call += now()
+        self.clients.append(client)
+        return client
+
+    def new(self, *args, **kwargs) -> BrokenVsync:
+        """Wraps around BrokenVsync for convenience"""
+        return self.add_client(BrokenVsync(*args, **kwargs))
+
+    def next(self, block=True) -> Option[None, Any]:
+        client = sorted(self.clients, key=lambda item: item.next_call*(item.enabled))[0]
+
+        # Time to wait for next call if block
+        # - Next call at 110 seconds, now=100, wait=10
+        # - Positive means to wait, negative we are behind
+        wait = client.next_call - now()
+
+        # Wait for next call time if blocking
+        if block:
+            time.sleep(max(0, wait))
+
+        # Non blocking mode, if we are not behind do nothing
+        elif not (wait < 0):
+            return None
+
+        # Keep adding periods until next call is on the future
+        while client.next_call < now():
+            client.next_call += 1/client.frequency
+
+        # Enter or not the given context, call callback with args and kwargs
+        with (client.context or BrokenNullContext()):
+            return client.callback(*client.args, **client.kwargs)

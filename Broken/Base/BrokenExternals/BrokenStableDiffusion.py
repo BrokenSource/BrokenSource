@@ -41,12 +41,12 @@ class BrokenStableDiffusion:
 
         # If torch version < 2.0
         if (torch.__version__ < "2.0.0"):
-            info("Optimizing PyTorch < 2.0 Reduce-overhead")
+            log.info("Optimizing PyTorch < 2.0 Reduce-overhead")
             optimize = lambda item: torch.compile(item, mode="reduce-overhead", fullgraph=True)
             self.pipe.unet = optimize(self.pipe.unet)
             self.refiner.unet = optimize(self.refiner.unet)
         else:
-            info("Optimizing PyTorch >= 2.0 xformers memory efficient attention")
+            log.info("Optimizing PyTorch >= 2.0 xformers memory efficient attention")
             self.pipe.enable_xformers_memory_efficient_attention()
             self.refiner.enable_xformers_memory_efficient_attention()
 

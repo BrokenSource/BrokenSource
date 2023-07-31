@@ -69,7 +69,7 @@ class BrokenPath:
                     break
 
         # Print information about the binary
-        if echo: (warning if (binary is None) else success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
+        if echo: (log.warning if (binary is None) else log.success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
 
         return binary
 
@@ -102,9 +102,9 @@ class BrokenPath:
         """Creates a directory and its parents, fail safe™"""
         path = Path(path)
         if path.exists():
-            success(f"Directory [{path}] already exists", echo=echo)
+            log.success(f"Directory [{path}] already exists", echo=echo)
             return
-        info(f"Creating directory {path}", echo=echo)
+        log.info(f"Creating directory {path}", echo=echo)
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -112,31 +112,31 @@ class BrokenPath:
         """Creates a file, fail safe™"""
         path = Path(path)
         if path.exists():
-            success(f"File [{path}] already exists", echo=echo)
+            log.success(f"File [{path}] already exists", echo=echo)
             return
-        info(f"Creating file {path}", echo=echo)
+        log.info(f"Creating file {path}", echo=echo)
         path.touch()
 
     # # Data moving
 
     def copy(source: PathLike, destination: PathLike, echo=True):
         source, destination = Path(source), Path(destination)
-        info(f"Copying [{source}] -> [{destination}]", echo=echo)
+        log.info(f"Copying [{source}] -> [{destination}]", echo=echo)
         shutil.copy2(source, destination)
 
     # Path may be a file or directory
     def remove(path: PathLike, confirm=False, echo=True) -> bool:
         path = Path(path)
-        info(f"• Removing Path ({confirm=}) [{path}]", echo=echo)
+        log.info(f"• Removing Path ({confirm=}) [{path}]", echo=echo)
 
         if not path.exists():
-            success(f"└─ Does not exist", echo=echo)
+            log.success(f"└─ Does not exist", echo=echo)
             return False
 
         # Symlinks are safe to remove
         if path.is_symlink():
             path.unlink()
-            success(f"└─ Removed Symlink", echo=echo)
+            log.success(f"└─ Removed Symlink", echo=echo)
             return True
 
         # Confirm removal: directory contains data
@@ -146,10 +146,10 @@ class BrokenPath:
         # Remove the path
         if path.is_dir():
             shutil.rmtree(path, ignore_errors=True)
-            success(f"└─ Removed Directory", echo=echo)
+            log.success(f"└─ Removed Directory", echo=echo)
         else:
             path.unlink()
-            success(f"└─ Removed File", echo=echo)
+            log.success(f"└─ Removed File", echo=echo)
 
         return True
 
@@ -165,7 +165,7 @@ class BrokenPath:
 
     def symlink(where: Path, to: Path, echo=True):
         """Symlink a path to another path"""
-        info(f"Symlinking [{where}] -> [{to}]", echo=echo)
+        log.info(f"Symlinking [{where}] -> [{to}]", echo=echo)
         BrokenPath.mkdir(where.parent, echo=False)
         where.symlink_to(to)
 
@@ -186,7 +186,7 @@ class ShellCraft:
 
         # If the path is already in the system path, no work to do
         if str(path) in os.environ.get("PATH", "").split(os.pathsep):
-            success(f"Path [{path}] already in PATH", echo=echo)
+            log.success(f"Path [{path}] already in PATH", echo=echo)
             return True
 
         # Unix is complicated, ideally one would put on /etc/profile but it's only reloaded on logins
@@ -208,25 +208,25 @@ class ShellCraft:
 
                 # Info on what's going on
                 if ShellCraft.Unknown:
-                    error(f"Your shell is unknown and PATH will be re-exported in [{shellrc}], you need to log out and log in for changes to take effect, go touch some grass..   (PRs are welcome!)", echo=echo)
+                    log.error(f"Your shell is unknown and PATH will be re-exported in [{shellrc}], you need to log out and log in for changes to take effect, go touch some grass..   (PRs are welcome!)", echo=echo)
 
-                info(f"Your current shell is [{ShellCraft.SHELL_BINARY}], adding the directory [{path}] to PATH in the shell rc file [{shellrc}] as [{export}]", echo=echo)
+                log.info(f"Your current shell is [{ShellCraft.SHELL_BINARY}], adding the directory [{path}] to PATH in the shell rc file [{shellrc}] as [{export}]", echo=echo)
 
                 # Add the export line to the shell rc file
                 with open(shellrc, "a") as file:
                     file.write(f"{export}\n")
 
             # Need to restart the shell or source it
-            warning(f"Please restart your shell for the changes to take effect or run [source {shellrc}] or [. {shellrc}] on current one, this must be done since a children process (Python) can't change the parent process (your shell) environment variables plus the [source] or [.] not binaries but shell builtins")
+            log.warning(f"Please restart your shell for the changes to take effect or run [source {shellrc}] or [. {shellrc}] on current one, this must be done since a children process (Python) can't change the parent process (your shell) environment variables plus the [source] or [.] not binaries but shell builtins")
 
         # No clue if this works.
         elif BrokenPlatform.OnWindows:
-            fixme("I don't know if the following reg command works for adding a PATH to PATH on Windows")
+            log.fixme("I don't know if the following reg command works for adding a PATH to PATH on Windows")
             shell("reg", "add", r"HKCU\Environment", "/v", "PATH", "/t", "REG_SZ", "/d", f"{path};%PATH%", "/f")
             shell("refreshenv")
 
         else:
-            error(f"Unknown Platform [{BrokenPlatform.Name}]")
+            log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return False
 
         return True

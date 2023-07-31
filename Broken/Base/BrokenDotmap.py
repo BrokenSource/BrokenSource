@@ -72,12 +72,12 @@ class BrokenDotmap(dict):
                 self.__path__   = BrokenPath.true_path(path)
 
                 # Information on screen
-                info(f"• New BrokenDict instance created")
+                log.info(f"• New BrokenDict instance created")
                 if self.__path__.exists():
-                    info(f"└─ Loading from File: [{self.__path__}]")
+                    log.info(f"└─ Loading from File: [{self.__path__}]")
                     self.from_file(self.__path__)
                 else:
-                    info(f"└─ Creating new File: [{self.__path__}]")
+                    log.info(f"└─ Creating new File: [{self.__path__}]")
 
     @property
     def dict(self):
@@ -111,13 +111,13 @@ class BrokenDotmap(dict):
             elif format == ".yaml":
                 data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
             else:
-                error(f"• BrokenDict: Unknown file format")
-                error(f"└─ File: [{path}]")
+                log.error(f"• BrokenDict: Unknown file format")
+                log.error(f"└─ File: [{path}]")
                 return
 
         except Exception as e:
-            error(f"• BrokenDict: Failed to load file [{path}]")
-            error(f"└─ {e}")
+            log.error(f"• BrokenDict: Failed to load file [{path}]")
+            log.error(f"└─ {e}")
             exit(1)
 
         self.from_dict(data)
@@ -218,7 +218,7 @@ class BrokenDotmap(dict):
         elif format == ".yaml":
             data = yaml.dump(dict)
         else:
-            error(f"BrokenDict: Unknown file format [{format}], cannot save to file")
+            log.error(f"BrokenDict: Unknown file format [{format}], cannot save to file")
             return
 
         # Write to file the full dictionary data

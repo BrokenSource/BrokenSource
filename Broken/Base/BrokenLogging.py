@@ -13,7 +13,7 @@ logger = loguru.logger.bind()
 # Get the current project name that imported Broken, on the logging format a
 # lambda is needed to inject the current project name into the format string
 BROKEN_CURRENT_PROJECT_NAME = os.environ.get("BROKEN_CURRENT_PROJECT_NAME", "Broken")
-BROKEN_LOG_LEVEL = os.environ.get("LOG_LEVEL", "TRACE")
+BROKEN_LOG_LEVEL = os.environ.get("LOG_LEVEL", "TRACE").upper()
 
 def _make_logging_format(type: Option["stdout", "file"]="stdout") -> str:
 
@@ -38,7 +38,7 @@ def _make_logging_format(type: Option["stdout", "file"]="stdout") -> str:
             " ▸ {message}"
         )
     else:
-        error(f"Unknown logging type: {type}")
+        log.error(f"Unknown logging type: {type}")
         raise ValueError(f"Unknown logging type: {type}")
 
 # Add stdout logging
@@ -50,7 +50,7 @@ logger.add(sys.stdout, colorize=True, level=BROKEN_LOG_LEVEL,
 def add_logging_file(path: PathLike):
     logger.add(path, level=BROKEN_LOG_LEVEL, format=_make_logging_format(type="file"))
 
-def _new_logging_function(name: str, loglevel: int=0, color: str=None):
+def add_log_option(name: str, loglevel: int=0, color: str=None):
 
     def log(*args, echo=True, **kwargs):
         if not echo: return
@@ -66,18 +66,19 @@ def _new_logging_function(name: str, loglevel: int=0, color: str=None):
     loguru.logger.name = log
     return loguru.logger.name
 
-# Default logging functions
-_new      = _new_logging_function
-info      = _new("INFO")
-warning   = _new("WARNING")
-error     = _new("ERROR")
-debug     = _new("DEBUG")
-trace     = _new("TRACE")
-success   = _new("SUCCESS")
-critical  = _new("CRITICAL")
-exception = _new("EXCEPTION")
+log = logger
+
+log.info      = add_log_option("INFO")
+log.warning   = add_log_option("WARNING")
+log.error     = add_log_option("ERROR")
+log.debug     = add_log_option("DEBUG")
+log.trace     = add_log_option("TRACE")
+log.success   = add_log_option("SUCCESS")
+log.critical  = add_log_option("CRITICAL")
+log.exception = add_log_option("EXCEPTION")
 
 # Custom logging functions
-fixme     = _new("FIXME", 35, "cyan")
-todo      = _new("TODO",  35, "blue")
-note      = _new("NOTE",  35, "magenta")
+log.fixme = add_log_option("FIXME", 35, "cyan")
+log.todo  = add_log_option("TODO",  35, "blue")
+log.note  = add_log_option("NOTE",  35, "magenta")
+log.minor = add_log_option("MINOR", 35, "fg #777")

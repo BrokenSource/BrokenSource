@@ -16,7 +16,7 @@ class BrokenDirectories:
         - Downloads: Downloaded files
     """
     def __init__(self, app_name: str="Broken", app_author: str="BrokenSource", echo=True):
-        info(f"New Project Directories for [AppName: {app_name}] by [AppAuthor: {app_author}]", echo=echo)
+        log.info(f"New Project Directories for [AppName: {app_name}] by [AppAuthor: {app_author}]", echo=echo)
 
         # App information
         self.app_name   = app_name

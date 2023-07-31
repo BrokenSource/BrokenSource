@@ -147,7 +147,7 @@ class BrokenCLI:
             if command.name is None:
                 continue
 
-            info(f"Creating script for command [{command.name}]")
+            log.info(f"Creating script for command [{command.name}]")
             script = bin_path/command.name
 
             if BrokenPlatform.OnUnix:
@@ -191,7 +191,7 @@ class BrokenCLI:
 
                 # Virtualenv is not created if command errors or if it's empty
                 if (venv.returncode == 1) or (not venv.stdout.strip()):
-                    info(f"Installing virtual environment for {project_name} project")
+                    log.info(f"Installing virtual environment for {project_name} project")
                     shell(POETRY, "install", cwd=project_path)
                     continue
 
@@ -209,13 +209,13 @@ class BrokenCLI:
     def get_project_language(self, path: Path, echo=True) -> ProjectLanguage:
         """Get the language of a project"""
         if (path/"pyproject.toml").exists():
-            info(f"Project [{path}] is a Python project", echo=echo)
+            log.info(f"Project [{path}] is a Python project", echo=echo)
             return ProjectLanguage.Python
         elif (path/"Main.rs").exists() and (path.name in BrokenCLI.RustProjectFeatures):
-            info(f"Project [{path}] is a Rust project", echo=echo)
+            log.info(f"Project [{path}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
         else:
-            error(f"Unknown project language for [{path}]", echo=echo)
+            log.error(f"Unknown project language for [{path}]", echo=echo)
             return ProjectLanguage.Unknown
 
     def add_project_command(self, name: str, path: PathLike, language: ProjectLanguage) -> None:
@@ -227,7 +227,8 @@ class BrokenCLI:
                 ctx: typer.Context,
                 reinstall: bool=typer.Option(False, "--reinstall", help="Delete and reinstall Poetry dependencies"),
                 infinite: bool=typer.Option(False, "--infinite", help="Press Enter after each run to run again"),
-                debug=typer.Option(False, "--debug", help="Debug mode for Rust projects"),
+                clear: bool=typer.Option(False, "--clear", help="Clear terminal before running"),
+                debug: bool=typer.Option(False, "--debug", help="Debug mode for Rust projects"),
             ):
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
@@ -235,14 +236,17 @@ class BrokenCLI:
                     # Set env vars for Broken
                     os.environ["BROKEN_CURRENT_PROJECT_NAME"] = name
 
+                    # Optionally clear terminal
+                    shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
+
                     # Maybe install or reinstall virtualenv, run project, get status
                     project_venv = self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
                     status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
                     # Detect bad returnstatus, reinstall virtualenv and retry once
                     if (status.returncode != 0) and (not reinstall):
-                        warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
-                        warning(f"- Virtual environment path: [{project_venv}]")
+                        log.warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
+                        log.warning(f"- Virtual environment path: [{project_venv}]")
 
                         answer = rich.prompt.Prompt.ask(
                             f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
@@ -255,7 +259,7 @@ class BrokenCLI:
                             BrokenEasy.Recurse(run_project)
 
                     elif infinite:
-                        success(f"Detect Project [{name}] finished running successfully")
+                        log.success(f"Detect Project [{name}] finished running successfully")
                         rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
                         BrokenEasy.Recurse(run_project)
 
@@ -360,12 +364,12 @@ class BrokenCLI:
     def date(self) -> str:
         """Set current UTC dates on all Cargo.toml and pyproject.toml for known projects"""
         date = arrow.utcnow().format("YYYY.M.D")
-        info(f"Current UTC date is [{date}]")
+        log.info(f"Current UTC date is [{date}]")
 
         # Find "version=" line and set it to "version = {date}"", write back to file
         def update_date(file: Path) -> None:
             if not file.exists(): return
-            info(f"Updating date of file [{file}]")
+            log.info(f"Updating date of file [{file}]")
             file.write_text('\n'.join(
                 [line if not line.startswith("version") else f'version = "{date}"'
                 for line in file.read_text().split("\n")]
@@ -435,7 +439,7 @@ class BrokenCLI:
 
         # Install rustup for toolchains
         if not all([BrokenPath.get_binary(binary) is not None for binary in ["rustup", "rustc", "cargo"]]):
-            info(f"Installing Rustup default profile")
+            log.info(f"Installing Rustup default profile")
 
             # Get rustup link for each platform
             if BrokenPlatform.OnWindows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
@@ -444,13 +448,13 @@ class BrokenCLI:
             # Download and install Rust
             with BrokenDownloads.download(rust_installer) as installer:
                 shell(BASH, installer, "--profile", "default", "-y")
-                fixme(f"Please run the last command again or restar terminal or Rust binaries won't be found")
+                log.fixme(f"Please run the last command again or restar terminal or Rust binaries won't be found")
                 exit(0)
 
         # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
         for line in shell(RUSTUP, "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
-                info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
+                log.info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
                 shell(RUSTUP, "default", RUSTUP_TOOLCHAIN)
 
     def clone(self, private: bool=False) -> None:
@@ -468,8 +472,8 @@ class BrokenCLI:
 
             # Check for GitHub API rate limit
             if "rate limit" in data.get("message", "").lower():
-                error(f"GitHub API rate limit reached, maybe authenticate or wait a few minutes")
-                fixme("Rewrite this code for something that doesn't rely on GitHub API")
+                log.error(f"GitHub API rate limit reached, maybe authenticate or wait a few minutes")
+                log.fixme("Rewrite this code for something that doesn't rely on GitHub API")
                 exit(1)
 
             # No credentials given it'll simply return Not Found message
@@ -494,7 +498,7 @@ class BrokenCLI:
             private, branch = needed_repo_data(owner, name)
 
             # Log info on screen
-            (warning if private else success)(f"Repository [{f'{owner}/{name}'.ljust(25)}] [Private: {str(private).ljust(5)}] [Default Branch: {branch}]")
+            (log.warning if private else log.success)(f"Repository [{f'{owner}/{name}'.ljust(25)}] [Private: {str(private).ljust(5)}] [Default Branch: {branch}]")
 
             # Skip private repos
             if private: continue
@@ -504,11 +508,11 @@ class BrokenCLI:
 
             # Checkout to default branch
             if branch: shell(GIT, "checkout", branch, "-q", cwd=path)
-            else: warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
+            else: log.warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
     def install(self, linux_desktop_file=True) -> None:
         """Symlinks current directory to Broken Shared Directory for sharing code in External projects, makes `broken` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
-        fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
+        log.fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
         # Create direct project scripts
         self.add_run_projects_commands()
@@ -517,7 +521,7 @@ class BrokenCLI:
         if BrokenPlatform.OnUnix:
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
             if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_MONOREPO_DIR:
-                info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
+                log.info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
                 shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
 
             # Create .desktop file
@@ -533,17 +537,17 @@ class BrokenCLI:
                     "Terminal=true",
                     "Categories=Development",
                 ]))
-                success(f"Created .desktop file [{desktop}]")
+                log.success(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
             if not ctypes.windll.shell32.IsUserAnAdmin():
-                warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
+                log.warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
                 return
             BrokenPath.remove(BROKEN_SHARED_DIR, confirm=True)
             Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
-        else: error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
+        else: log.error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
 
-        success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
+        log.success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
 
         # Add Broken Shared Directory to PATH
         ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
@@ -556,7 +560,7 @@ class BrokenCLI:
     ):
         """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
         if not any([rust, python, repos, all]):
-            error("Please specify what to update see [broken update --help]")
+            log.error("Please specify what to update see [broken update --help]")
             return
 
         # Update Rust
@@ -574,7 +578,7 @@ class BrokenCLI:
             # All Python projects dependencies
             for project in self.PROJECTS_DIR.iterdir():
                 if (project/"pyproject.toml").exists():
-                    info(f"Updating Python dependencies for Project [{project.name}]")
+                    log.info(f"Updating Python dependencies for Project [{project.name}]")
                     os.environ.pop("VIRTUAL_ENV", None)
                     shell(POETRY, "update", cwd=project)
 
@@ -625,7 +629,7 @@ class BrokenCLI:
 
             # Cross compilation bootstrap for Windows from Linux
             if (BrokenPlatform.OnLinux) and (platform == ReleasePlatform.WindowsAMD64):
-                warning("wine-staging as of version 8.11 fails creating and installing the virtualenvironments in poetry")
+                log.warning("wine-staging as of version 8.11 fails creating and installing the virtualenvironments in poetry")
 
                 # Wine called binaries
                 WINE_PYTHON = [WINE, "python.exe"]
@@ -665,7 +669,7 @@ class BrokenCLI:
 
             # Use the project's virtualenv site-packages
             os.environ["PYTHONPATH"] = str(project.site_packages)
-            info(f"Using site-packages at [{project.site_packages}]")
+            log.info(f"Using site-packages at [{project.site_packages}]")
 
             # Find common project assets
             def get_project_asset_file_or_default(relative_path: Path) -> Path:
@@ -683,13 +687,13 @@ class BrokenCLI:
             # Use the project's virtualenv site-packages
             if (BrokenPlatform.OnLinux):
                 libname = "libglfw.so"
-                fixme(f"Applying [{libname}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
+                log.fixme(f"Applying [{libname}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
                 try:
                     lib = next(Path("/usr/lib").glob(f"**/{libname}"))
-                    success(f"Found [{libname}] at [{lib}]")
+                    log.success(f"Found [{libname}] at [{lib}]")
                     os.environ["PYGLFW_LIBRARY"] = str(lib)
                 except StopIteration:
-                    error(f"[{libname}] not found on /usr/lib, ModernGL projects might fail")
+                    log.error(f"[{libname}] not found on /usr/lib, ModernGL projects might fail")
 
             # Compile the Python project with Pyinstaller
             if not nuitka:
@@ -772,7 +776,7 @@ class BrokenCLI:
 
             # Fix Fortran compiler for Windows crosscompilation netlib for ndarray-linalg package
             if (BrokenPlatform == "linux") and (platform == "windows-amd64"):
-                note("Fixing Fortran compilation for Windows crosscompilation")
+                log.note("Fixing Fortran compilation for Windows crosscompilation")
                 os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
 
             # Add target toolchain for Rust
@@ -793,7 +797,7 @@ class BrokenCLI:
         # -----------------------------------------------------------------------------------------|
         # # Deal with bundling
         else:
-            error(f"Unknown Project [{project.name}] Language")
+            log.error(f"Unknown Project [{project.name}] Language")
             return
 
         # Standard naming for all projects
@@ -846,7 +850,7 @@ class BrokenCLI:
 
         # "$ ./broken" -> "$ broken"
         if not "." in os.environ.get("PATH").split(os.pathsep):
-            info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
+            log.info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
 
         # # Install Requirements depending on host platform
         if BrokenPlatform.OnLinux:
@@ -868,7 +872,7 @@ class BrokenCLI:
                 ])
                 return
 
-            warning(f"[{BrokenPlatform.LinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
+            log.warning(f"[{BrokenPlatform.LinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
             if BrokenPlatform.LinuxDistro == "ubuntu":
                 shell(SUDO, APT, "update")

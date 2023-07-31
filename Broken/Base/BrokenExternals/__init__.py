@@ -49,7 +49,7 @@ class BrokenExternals:
         external = BROKEN_STR_TO_EXTERNAL_MAP.get(external, None)
 
         if external is None:
-            error(f"Unknown external [{external}], known values ({BROKEN_STR_TO_EXTERNAL_MAP})", echo=echo)
+            log.error(f"Unknown external [{external}], known values ({BROKEN_STR_TO_EXTERNAL_MAP})", echo=echo)
             return None
 
         # Initialize the external class
@@ -62,10 +62,10 @@ class BrokenExternals:
                 return binary
 
             # Install the external
-            info(f"• Installing External [{external.binary_name}] (attempt {attempt + 1}/{max_attempts})", echo=echo)
+            log.info(f"• Installing External [{external.binary_name}] (attempt {attempt + 1}/{max_attempts})", echo=echo)
             external.install(self.DIRECTORIES)
 
-        error(f"Failed to find binary [{external}] on PATH", echo=echo)
+        log.error(f"Failed to find binary [{external}] on PATH", echo=echo)
         return None
 
 # broken_external = BrokenExternals()
