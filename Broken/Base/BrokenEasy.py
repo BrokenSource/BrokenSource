@@ -66,28 +66,42 @@ class BrokenEasy:
         return function(**previous_locals)
 
     # A class inside a class, huh
-    class CountTime():
+    class Stopwatch():
         """
-        Context Manager that counts the time it took to run
+        Context Manager or callable that counts the time it took to run
 
         ```python
-        with BrokenEasy.CountTime() as counter:
+        with BrokenEasy.Stopwatch() as counter:
             took_so_far = counter.took
             ...
 
         # Stays at (finish - start) time after exiting
         print(counter.took)
+
+        # Or use it as a callable
+        counter = BrokenEasy.Stopwatch()
+        ...
+        counter.took
+        counter()
         ```
         """
-        def __enter__(self):
+        def __init__(self):
             self.start = time.time()
+
+        def __enter__(self):
             return self
 
         def __exit__(self, exc_type, exc_value, traceback):
+            self.stop()
+
+        def stop(self):
             self.end = time.time()
 
+        def __call__(self):
+            return self.time
+
         @property
-        def took(self):
+        def time(self):
             return getattr(self, "end", time.time()) - self.start
 
     def Benchmark(
@@ -111,18 +125,18 @@ class BrokenEasy:
             leave=False,
         ) as progress_bar:
 
-            with BrokenEasy.CountTime() as counter:
+            with BrokenEasy.Stopwatch() as counter:
                 while True:
 
                     # Call Function to benchmark
-                    with BrokenEasy.CountTime() as call_time:
+                    with BrokenEasy.Stopwatch() as call_time:
                         function(*args, **kwargs)
-                        frametimes.append(call_time.took)
+                        frametimes.append(call_time.time)
 
                     # Update progress bar and check finish conditions
                     if benchmark_method == "duration":
-                        progress_bar.n = min(counter.took, benchmark_duration)
-                        if counter.took > benchmark_duration:
+                        progress_bar.n = min(counter.time, benchmark_duration)
+                        if counter.time > benchmark_duration:
                             break
 
                     elif benchmark_method == "executions":

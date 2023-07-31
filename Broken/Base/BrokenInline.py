@@ -11,12 +11,12 @@ def shell(*args, output=False, Popen=False, echo=True, confirm=False, do=True, *
     - shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
 
     # Parameters:
-    - args: The command to run, can be a list of arguments or a list of lists of arguments, don't care
-    - output: Whether to return the output of the command or not
-    - Popen: Whether to run and return the Popen object or not
-    - echo: Whether to print the command or not
+    - args:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
+    - output:  Whether to return the output of the command or not
+    - Popen:   Whether to run and return the Popen object or not
+    - echo:    Whether to print the command or not
     - confirm: Whether to ask for confirmation before running the command or not
-    - do: Whether to run the command or not, good for conditional commands
+    - do:      Whether to run the command or not, good for conditional commands
     """
     if output and Popen:
         raise ValueError("Cannot use output=True and Popen=True at the same time")
