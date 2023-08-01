@@ -28,12 +28,6 @@
         // "Work" folder
         "Papers":                true,
         "Website":               true,
-
-        // Rust stuff (for now, focusing on Python)
-        "Broken/Rust":           true,
-        "Broken/Broken.rs":      true,
-        "Cargo.lock":            true,
-        "Cargo.toml":            true,
     },
 
     // Better comments colors

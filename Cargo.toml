@@ -3,7 +3,7 @@
 
 [package]
 name = "Broken-Source-Projects"
-version = "2023.7.31"
+version = "2023.8.1"
 edition = "2021"
 authors = ["Tremeschin"]
 description = "Broken Source Software Monorepo"
@@ -13,7 +13,7 @@ repository = "https://github.com/BrokenSource/BrokenSource"
 
 [lib]
 name = "Broken"
-path = "BrokenRust/Broken.rs"
+path = "Rust/Broken.rs"
 
 # -------------------------------------------------------------------------------------------------|
 

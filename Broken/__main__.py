@@ -514,7 +514,7 @@ class BrokenCLI:
             if branch: shell(GIT, "checkout", branch, "-q", cwd=path)
             else: log.warning(f"Default branch not found for [{owner}/{name}], skipping checkout?")
 
-    def install(self, linux_desktop_file=True) -> None:
+    def install(self, linux_desktop_file: bool=True, scripts: bool=True) -> None:
         """Symlinks current directory to Broken Shared Directory for sharing code in External projects, makes `broken` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
         log.fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
@@ -555,6 +555,9 @@ class BrokenCLI:
 
         # Add Broken Shared Directory to PATH
         ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
+
+        if scripts:
+            self.scripts()
 
     def update(self,
         rust: bool=False,

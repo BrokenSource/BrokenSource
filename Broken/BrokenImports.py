@@ -115,6 +115,7 @@ while True:
         import loguru
         import moderngl
         import moderngl_window
+        import moderngl_window.integrations.imgui
         import numpy
         import openai
         import PIL
