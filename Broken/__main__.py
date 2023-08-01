@@ -302,6 +302,10 @@ class BrokenCLI:
                     .get("description", description)
                 )
 
+        # Add project's mascot to description
+        if   language == ProjectLanguage.Python: description = f"🐍 {description}"
+        elif language == ProjectLanguage.Rust:   description = f"🦀 {description}"
+
         # Create Typer command
         self.typer_app.command(
             name=name.lower(),

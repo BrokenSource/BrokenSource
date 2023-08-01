@@ -110,7 +110,7 @@ class BrokenEasy:
         benchmark_method: Option["duration", "executions"]="duration",
 
         # Duration arguments
-        benchmark_duration: float=5,
+        benchmark_duration: float=2,
         benchmark_executions: int=100,
 
         # Callable arguments

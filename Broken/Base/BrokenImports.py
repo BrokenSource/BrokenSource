@@ -79,6 +79,7 @@ while True:
         from enum import Enum
         from functools import lru_cache
         from functools import wraps
+        from importlib import resources as get_resource
         from io import BytesIO
         from math import *
         from os import PathLike
@@ -94,6 +95,7 @@ while True:
         from time import time as now
         from typing import Any
         from typing import Dict
+        from typing import Generator
         from typing import Iterable
         from typing import List
         from typing import Tuple
@@ -117,6 +119,7 @@ while True:
         import openai
         import PIL
         import PIL.Image
+        import pkg_resources
         import requests
         import requests_cache
         import rich
