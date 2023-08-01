@@ -59,7 +59,7 @@ class BrokenDirectories:
 BROKEN_DIRECTORIES = BrokenDirectories(echo=False)
 
 # Root of BrokenSource Monorepo
-BROKEN_MONOREPO_DIR = BROKEN_DIRECTORIES.EXECUTABLE.parent.parent
+BROKEN_MONOREPO_DIR = BROKEN_DIRECTORIES.EXECUTABLE.parent
 SYSTEM_ROOT_DIR = Path("/").absolute().resolve()
 
 # Where Broken shall be placed as a symlink to be shared
