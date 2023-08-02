@@ -59,6 +59,7 @@ while True:
         import inspect
         import itertools
         import json
+        import math
         import operator
         import os
         import platform
@@ -136,6 +137,11 @@ while True:
         from tqdm import tqdm
 
         break
+
+# NumPy options and override common math functions to it
+if not isinstance(numpy, BrokenImportError):
+    from numpy import *
+    numpy.set_printoptions(precision=5, suppress=True)
 
 # -------------------------------------------------------------------------------------------------|
 

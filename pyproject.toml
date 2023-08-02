@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Broken"
-version = "2023.8.1"
+version = "2023.8.2"
 description = "Broken Source Software Python Shared Code"
 authors = ["Tremeschin"]
 license = "AGPLv3-only"

@@ -41,6 +41,7 @@ from .BrokenDotmap import *
 from .BrokenDownloads import *
 from .BrokenExternals import *
 from .BrokenEasy import *
+from .BrokenDynamics import *
 # isort: on
 
 class BrokenBase:
