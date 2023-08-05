@@ -189,35 +189,45 @@ class BrokenVsyncClient:
     - frequency:  Frequency of callback calls
     - enabled:    Whether to enable this client or not
     - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
+    - dt:         Whether to pass dt (time since last call) to callback
     """
     callback:   callable = None
+    name:       str      = None
     args:       List[Any] = []
     kwargs:     Dict[str, Any] = {}
     frequency:  float    = 60
     context:    Any      = None
     enabled:    bool     = False
     next_call:  float    = 0
+    dt:         bool     = False
+    _broken_vsync_last_call: float = None
 
 @attrs.define
 class BrokenVsync:
     clients: List[BrokenVsyncClient] = []
 
     def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
+        """Adds a client to the manager with immediate next call"""
         client.next_call += now()
         self.clients.append(client)
         return client
+
+    def get_client(self, name: str) -> Option[BrokenVsyncClient, None]:
+        """Gets a client by name"""
+        return next((client for client in self.clients if client.name == name), None)
 
     def new(self, *args, **kwargs) -> BrokenVsyncClient:
         """Wraps around BrokenVsync for convenience"""
         return self.add_client(BrokenVsyncClient(*args, **kwargs))
 
     def next(self, block=True) -> Option[None, Any]:
+        """Calls the next call client in the list"""
         client = sorted(self.clients, key=lambda item: item.next_call*(item.enabled))[0]
 
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = client.next_call - now()
+        wait = client.next_call - time.time()
 
         # Wait for next call time if blocking
         if block:
@@ -227,6 +237,13 @@ class BrokenVsync:
         elif not (wait < 0):
             return None
 
+        # Get the time since last call
+        dt = time.time() - (client._broken_vsync_last_call or time.time())
+
+        if client.dt:
+            client.kwargs["dt"] = dt
+            client._broken_vsync_last_call = time.time()
+
         # Keep adding periods until next call is on the future
         while client.next_call < now():
             client.next_call += 1/client.frequency
@@ -234,3 +251,10 @@ class BrokenVsync:
         # Enter or not the given context, call callback with args and kwargs
         with (client.context or BrokenNullContext()):
             return client.callback(*client.args, **client.kwargs)
+
+    def start_thread(self) -> None:
+        BetterThread(self.loop)
+
+    def loop(self) -> None:
+        while True:
+            self.next()

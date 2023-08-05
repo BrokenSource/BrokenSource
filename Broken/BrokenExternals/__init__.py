@@ -1,4 +1,4 @@
-from .. import *
+from Broken import *
 
 # FIXME: This whole BrokenExternals needs to be carefully thought for extensibility
 # Is this mock-up good enough?

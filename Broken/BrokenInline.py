@@ -40,8 +40,19 @@ def shell(*args, output=False, Popen=False, echo=True, confirm=False, do=True, *
     if Popen:  return subprocess.Popen(command, **kwargs)
     else:      return subprocess.run(command, **kwargs)
 
-def BetterThread(callable, *args, start=True, **kwargs) -> Thread:
+def BetterThread(callable, *args, start=True, infinite=False, **kwargs) -> Thread:
     """Create a thread on a callable, yeet whatever you think it works"""
+
+    # Wrap callable on a loop
+    if infinite:
+        original = copy.copy(callable)
+
+        @wraps(callable)
+        def infinite_callable(*args, **kwargs):
+            while True:
+                original(*args, **kwargs)
+        callable = infinite_callable
+
     thread = Thread(target=callable, args=args, kwargs=kwargs)
     if start: thread.start()
     return thread
@@ -65,6 +76,22 @@ class BrokenUtils:
             (flatten(subitem) if isinstance(subitem, (list, tuple)) else [subitem])
         ]
         return flatten(stuff)
+
+    def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
+        """Fuzzy search a string in a list of strings, returns a list of matches"""
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            import thefuzz.process
+            result = thefuzz.process.extract(string, choices, limit=many)
+            if many == 1:
+                return result[0]
+            return result
+
+    def get_free_tcp_port() -> int:
+        """Get a unused TCP port"""
+        temp_socket = socket.socket()
+        temp_socket.bind(('', 0))
+        return [temp_socket.getsockname()[1], temp_socket.close()][0]
 
 def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
     """Get an environment variable, cast it to a type, or return a default value"""

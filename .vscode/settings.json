@@ -30,6 +30,39 @@
         "Website":               true,
     },
 
+    "material-icon-theme.files.associations": {
+        "brakeit": "python"
+    },
+
+    "material-icon-theme.folders.associations": {
+        // Python
+        "Broken": "src",
+
+        // Rust
+        "Rust": "src",
+        ".cargo": "config",
+
+        // Other
+        "Externals": "resource",
+        "Scenes": "core",
+        "User": "home",
+        "Premium": "admin",
+        "Default": "examples",
+
+        // Projects
+        "Ardmin": "tools",
+        "AudioSight": "tools",
+        "DepthFlow": "tools",
+        "Harper": "tools",
+        "HypeWord": "tools",
+        "Oscillospoor": "tools",
+        "PhasorFlow": "tools",
+        "PocketSolar": "tools",
+        "QuadSnap": "tools",
+        "ShaderFlow": "tools",
+        "Sortia": "tools",
+    },
+
     // Better comments colors
     "better-comments.tags": [
         {"tag": "error",  "color": "#FF2D00"},

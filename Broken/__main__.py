@@ -225,13 +225,19 @@ class BrokenCLI:
         def run_project_template(name, path, language):
             def run_project(
                 ctx: typer.Context,
-                reinstall: bool=typer.Option(False, "--reinstall", help="Delete and reinstall Poetry dependencies"),
-                infinite: bool=typer.Option(False, "--infinite", help="Press Enter after each run to run again"),
-                clear: bool=typer.Option(False, "--clear", help="Clear terminal before running"),
-                debug: bool=typer.Option(False, "--debug", help="Debug mode for Rust projects"),
+                reinstall: Annotated[bool, typer.Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
+                infinite: Annotated[bool, typer.Option("--infinite", help="Press Enter after each run to run again")]=False,
+                clear: Annotated[bool, typer.Option("--clear", help="Clear terminal before running")]=False,
+                debug: Annotated[bool, typer.Option("--debug", help="Debug mode for Rust projects")]=False,
             ):
                 # Route for Python projects
                 if language == ProjectLanguage.Python:
+
+                    # For all arguments in ctx.args, if it's a file, replace it with its path
+                    # This also fixes files references on the nested poetry command rebasing to its path
+                    for i, arg in enumerate(ctx.args):
+                        if (fix := BrokenPath.true_path(arg)).exists():
+                            ctx.args[i] = fix
 
                     # Set env vars for Broken
                     os.environ["BROKEN_CURRENT_PROJECT_NAME"] = name
@@ -596,7 +602,7 @@ class BrokenCLI:
     def release(self,
         project: ProjectsEnumerator,
         platform: ReleasePlatform,
-        nuitka: bool=typer.Option(False, "--nuitka", "-n", help="(Python) Use Nuitka than Pyinstaller for builds - experimental"),
+        nuitka: Annotated[bool, typer.Option("--nuitka", "-n", help="(Python) Use Nuitka than Pyinstaller for builds - experimental")]=False,
     ):
         """Builds and releases a project for a specific platform"""
 

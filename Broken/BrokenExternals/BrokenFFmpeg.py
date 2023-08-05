@@ -12,8 +12,9 @@ class BrokenFFmpeg(BrokenExternalABC):
         ...
 
     def get_binary(self, directories: BrokenDirectories):
-        BrokenNeedImport("imageio_ffmpeg")
-        return imageio_ffmpeg.get_ffmpeg_exe()
+        # BrokenNeedImport("imageio_ffmpeg")
+        # return imageio_ffmpeg.get_ffmpeg_exe()
+        return "ffmpeg"
 
     # ---------------------------------------------------------------------------------------------|
 

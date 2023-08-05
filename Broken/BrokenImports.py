@@ -51,7 +51,9 @@ def BrokenImports():
 
 while True:
     with BrokenImports():
+        import ast
         import configparser
+        import copy
         import ctypes
         import datetime
         import hashlib
@@ -75,14 +77,12 @@ while True:
         from abc import ABC
         from abc import abstractmethod
         from contextlib import suppress
-        from copy import deepcopy
         from dataclasses import dataclass
         from enum import Enum
         from functools import lru_cache
         from functools import wraps
         from importlib import resources as get_resource
         from io import BytesIO
-        from math import *
         from os import PathLike
         from pathlib import Path
         from shutil import which as find_binary
@@ -94,6 +94,7 @@ while True:
         from sys import argv
         from threading import Thread
         from time import time as now
+        from typing import Annotated
         from typing import Any
         from typing import Dict
         from typing import Generator
@@ -105,6 +106,7 @@ while True:
         import aenum
         import arrow
         import attrs
+        import audioread
         import diffusers
         import distro
         import forbiddenfruit
@@ -127,6 +129,8 @@ while True:
         import rich
         import rich.prompt
         import schedule
+        import soundcard
+        import thefuzz
         import toml
         import torch
         import transformers
@@ -134,14 +138,15 @@ while True:
         import yaml
         from appdirs import AppDirs
         from dotmap import DotMap
+        from numpy import *
         from tqdm import tqdm
-
         break
 
-# NumPy options and override common math functions to it
-if not isinstance(numpy, BrokenImportError):
-    from numpy import *
-    numpy.set_printoptions(precision=5, suppress=True)
+numpy.set_printoptions(precision=5, suppress=True)
+
+# Numpy's blas broken multiprocessing on matmul
+# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+os.environ["OMP_NUM_THREADS"] = "1"
 
 # -------------------------------------------------------------------------------------------------|
 

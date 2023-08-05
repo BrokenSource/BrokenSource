@@ -29,7 +29,8 @@ class BrokenDirectories:
         self.EXECUTABLE = BrokenDirectories.get_system_executable_directory()
 
         # Resources directory relative to a project's root directory
-        self.RESOURCES = get_resource.files(inspect.stack()[1].frame.f_globals.get("__package__", None))/resources
+        self.PACKAGE = get_resource.files(inspect.stack()[1].frame.f_globals.get("__package__", None))
+        self.RESOURCES = self.PACKAGE/resources
 
         # Log info and root dir for user convenience
         log.info(f"Project Directories [AppName: {app_name}] by [AppAuthor: {app_author}] at [{self.ROOT}]", echo=echo)

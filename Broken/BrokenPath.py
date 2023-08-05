@@ -200,7 +200,7 @@ class ShellCraft:
             for current_shell, shellrc in [
                 (ShellCraft.BASH,    HOME_DIR/".bashrc"                 ),
                 (ShellCraft.ZSH,     HOME_DIR/".zshrc"                  ),
-                (ShellCraft.FISH,    HOME_DIR/".config/fish/config.fish"),
+                # (ShellCraft.FISH,    HOME_DIR/".config/fish/config.fish"),
                 (ShellCraft.Unknown, HOME_DIR/".profile")
             ]:
                 # Skip if not on this chell
