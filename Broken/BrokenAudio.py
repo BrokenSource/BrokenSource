@@ -212,18 +212,18 @@ class BrokenAudio:
 
 class BrokenAudioFourierMagnitude:
     """"Given an raw FFT, interpret the complex number as some size"""
-    amplitude = eval("lambda x: abs(x)")
+    amplitude = eval("lambda x: numpy.abs(x)")
     power     = eval("lambda x: x*x.conjugate()")
 
 class BrokenAudioSpectrogramInterpolation:
     """Interpolate the FFT values, discrete to continuous"""
-    euler = eval("lambda x: exp(-(x*1.3)**2)")
-    sinc  = eval("lambda x: sinc(x)")
+    euler = eval("lambda x: numpy.exp(-(x*1.3)**2)")
+    sinc  = eval("lambda x: numpy.sinc(x)")
 
 class BrokenAudioVolume:
     """Convert the FFT into the final spectrogram's magnitude bin (kinda volume)"""
-    dBFsTremx = eval("lambda x: 10*(log10(x+0.1) + 1)/1.0414")
-    dBFs      = eval("lambda x: 10*log10(x)")
+    dBFsTremx = eval("lambda x: 10*(numpy.log10(x+0.1) + 1)/1.0414")
+    dBFs      = eval("lambda x: 10*numpy.log10(x)")
     sqrt2     = eval("lambda x: x**0.5")
     linear    = eval("lambda x: x")
 
@@ -238,7 +238,7 @@ class BrokenAudioSpectrogramScale:
 
     # Personally not a big fan
     mel = (
-        eval("lambda x: 2595 * log10(1 + x/700)"),
+        eval("lambda x: 2595 * numpy.log10(1 + x/700)"),
         eval("lambda x: 700 * (10**(x/2595) - 1)"),
     )
 
