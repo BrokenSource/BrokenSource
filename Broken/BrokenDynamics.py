@@ -56,7 +56,7 @@ class BrokenSecondOrderDynamics:
     @property
     def k1(self) -> float:
         """Y velocity coefficient"""
-        return self.zeta/(pi * self.frequency)
+        return self.zeta/(math.pi * self.frequency)
 
     @property
     def k2(self) -> float:
@@ -71,7 +71,7 @@ class BrokenSecondOrderDynamics:
     @property
     def radians(self) -> float:
         """Natural frequency in radians per second"""
-        return 2*pi*self.frequency
+        return 2*math.pi*self.frequency
 
     @property
     def damping(self) -> float:

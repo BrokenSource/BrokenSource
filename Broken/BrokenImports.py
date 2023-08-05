@@ -138,7 +138,6 @@ while True:
         import yaml
         from appdirs import AppDirs
         from dotmap import DotMap
-        from numpy import *
         from tqdm import tqdm
         break
 
