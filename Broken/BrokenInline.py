@@ -57,6 +57,11 @@ def BetterThread(callable, *args, start=True, infinite=False, **kwargs) -> Threa
     if start: thread.start()
     return thread
 
+def BrokenAppend(list: List[Any], item: Any, returns: Option["item", "list"]="item") -> List[Any]:
+    """Appends an item to a list, returns the item"""
+    list.append(item)
+    return item if (returns == "item") else list
+
 class BrokenUtils:
     def force_list(item: Union[Any, List[Any]]) -> List[Any]:
         """Force an item to be a list, if it's not already"""

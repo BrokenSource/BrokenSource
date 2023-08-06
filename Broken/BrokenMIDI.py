@@ -29,7 +29,7 @@ class BrokenNote:
 
     def index_to_name(note: int) -> str:
         """Convert a MIDI note index to a key name, eg (60 -> C4) (69 -> A4)"""
-        return [_PIANO_NOTES[note % 12], str(note // 12 - 1)][note % 12 < 3]
+        return _PIANO_NOTES[note % 12] + str(note // 12 - 1)
 
     def name_to_index(key: str) -> int:
         """Convert a key name to a MIDI note index, eg (C4 -> 60) (A4 -> 69) (A10)"""

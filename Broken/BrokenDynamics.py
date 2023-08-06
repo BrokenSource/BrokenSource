@@ -114,8 +114,8 @@ class BrokenSecondOrderDynamics:
 
         # "Use pole matching when the system is very fast" <- This ought be the case with ShaderFlow
         else:
-            t1    = exp(-self.zeta * self.radians * dt)
-            alpha = 2 * t1 * (cos if self.zeta <= 1 else cosh)(self.damping*dt)
+            t1    = math.exp(-self.zeta * self.radians * dt)
+            alpha = 2 * t1 * (math.cos if self.zeta <= 1 else math.cosh)(self.damping*dt)
             t2    = 1/(1 + t1*t1 - alpha) * dt
             k1    = t2 * (1 - t1*t1)
             k2    = t2 * dt
