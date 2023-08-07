@@ -96,16 +96,13 @@ Please read all instructions before executing them for tips and notes
 
 ```bash
 # Clone and enter the repository directory
-git clone https://github.com/BrokenSource/BrokenSource
+git clone --recurse-submodules https://github.com/BrokenSource/BrokenSource
 
 # "Open" the repository folder
 cd BrokenSource
 
 # Install dependencies, activates virtual environment
 python ./brakeit
-
-# Clone submodules
-broken clone
 ```
 
 And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!

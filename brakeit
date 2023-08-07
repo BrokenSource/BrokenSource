@@ -16,6 +16,10 @@ os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 # On Linux it's /tmp under System RAM, so it's brutally fast
 os.environ["PYTHONPYCACHEPREFIX"] = str(Path(tempfile.gettempdir())/"pycache")
 
+# Weird KDE wallet or GNOME wallet askings on Linux
+if os.name == "posix":
+    os.environ["PYTHON_KEYRING_BACKEND"] = "keyring.backends.null.Keyring"
+
 # Current Python executable
 PYTHON = sys.executable
 POETRY = [PYTHON, "-m", "poetry"]

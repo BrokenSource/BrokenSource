@@ -1,45 +1,27 @@
 [submodule "Assets"]
 	path = Assets
 	url = https://github.com/BrokenSource/Assets
-[submodule "Projects/HypeWord"]
-	path = Projects/HypeWord
-	url = https://github.com/BrokenSource/HypeWord
-[submodule "Projects/PhasorFlow"]
-	path = Projects/PhasorFlow
-	url = https://github.com/BrokenSource/PhasorFlow
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url = https://github.com/BrokenSource/ShaderFlow
-[submodule "Projects/Harper"]
-	path = Projects/Harper
-	url = https://github.com/BrokenSource/Harper
 [submodule "Projects/Ardmin"]
 	path = Projects/Ardmin
 	url = https://github.com/BrokenSource/Ardmin
-[submodule "Projects/Sortia"]
-	path = Projects/Sortia
-	url = https://github.com/BrokenSource/Sortia
-[submodule "Projects/Oscillospoor"]
-	path = Projects/Oscillospoor
-	url = https://github.com/BrokenSource/Oscillospoor
 [submodule "Projects/PocketSolar"]
 	path = Projects/PocketSolar
 	url = https://github.com/BrokenSource/PocketSolar
 [submodule ".github/.github"]
 	path = .github/Special
 	url = https://github.com/BrokenSource/.github
-[submodule "Projects/AudioSight"]
-	path = Projects/AudioSight
-	url = https://github.com/BrokenSource/AudioSight
 [submodule "Papers"]
 	path = Papers
 	url = https://github.com/BrokenSource/Papers
-[submodule "Website"]
-	path = Website
-	url = https://github.com/BrokenSource/Website
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow
 	url = https://github.com/BrokenSource/DepthFlow
 [submodule "Projects/QuadSnap"]
 	path = Projects/QuadSnap
 	url = https://github.com/BrokenSource/QuadSnap
+[submodule "Website"]
+	path = Website
+	url = https://github.com/BrokenSource/brokensource.github.io

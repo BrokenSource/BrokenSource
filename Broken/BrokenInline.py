@@ -98,12 +98,26 @@ class BrokenUtils:
         temp_socket.bind(('', 0))
         return [temp_socket.getsockname()[1], temp_socket.close()][0]
 
-def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
-    """Get an environment variable, cast it to a type, or return a default value"""
-    value = os.environ.get(name, default)
-    if cast:
-        return cast(value)
-    return value
+    def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
+        """Get an environment variable, cast it to a type, or return a default value"""
+        value = os.environ.get(name, default)
+        if cast:
+            return cast(value)
+        return value
+
+    def add_method_to_self(method):
+        """Add a method to the current scope's self"""
+
+        # Find previous scope's self
+        self = inspect.currentframe().f_back.f_locals.get("self", None)
+
+        # Assert self is not None
+        if self is None:
+            log.error("Could not add method to self, are you in a class?")
+            return
+
+        # Add method to self
+        setattr(self, method.__name__, method)
 
 # # Weird classes
 

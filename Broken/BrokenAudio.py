@@ -242,6 +242,30 @@ class BrokenAudioSpectrogramScale:
         eval("lambda x: 700 * (10**(x/2595) - 1)"),
     )
 
+class BrokenAudioSpectrogramWindow:
+    @lru_cache
+    def hann_poisson_window(N, alpha=2):
+        """
+        Generate a Hann-Poisson window.
+
+        Parameters:
+            N (int): The number of window samples.
+            alpha (float): The parameter that controls the slope of the exponential.
+
+        Returns:
+            np.array: The window samples.
+        """
+        n = numpy.arange(N)
+        hann_part = 0.5 * (1 - numpy.cos(2 * numpy.pi * n / N))
+        poisson_part = numpy.exp(-alpha * numpy.abs(N - 2*n) / N)
+
+        return hann_part * poisson_part
+
+    @lru_cache
+    def hanning(size: int) -> numpy.ndarray:
+        """Returns a hanning window of the given size"""
+        return lru_cache(numpy.hanning)(size)
+
 @attrs.define
 class BrokenAudioSpectrogram:
     audio: BrokenAudio
@@ -250,19 +274,16 @@ class BrokenAudioSpectrogram:
     # 2^n FFT size, higher values, higher frequency resolution, less responsiveness
     fft_n:  int = 12
     magnitude_function: callable = BrokenAudioFourierMagnitude.amplitude
+    window_function:    callable = BrokenAudioSpectrogramWindow.hanning
 
     # Transformation Matrix functions
-    scale: Tuple[callable] = BrokenAudioSpectrogramScale.octave
+    scale:  Tuple[callable] = BrokenAudioSpectrogramScale.octave
     interpolation: callable = BrokenAudioSpectrogramInterpolation.euler
 
     # Spectrogram properties
     spectrogram_volume: callable = BrokenAudioVolume.linear
     spectrogram_frequencies: numpy.ndarray = None
     spectrogram_matrix:      numpy.ndarray = None
-
-    def hanning(self, size: int) -> numpy.ndarray:
-        """Returns a hanning window of the given size"""
-        return lru_cache(numpy.hanning)(size)
 
     @property
     def fft_size(self) -> int:
@@ -281,9 +302,9 @@ class BrokenAudioSpectrogram:
 
     def fft(self, end: int=-1) -> numpy.ndarray:
         """Calculates the FFT of the last batch of samples"""
-        hann = self.hanning(self.fft_size)
+        window = self.window_function(self.fft_size)
         data = self.audio.get_data_between_samples(end - self.fft_size, end)
-        return self.magnitude_function(numpy.fft.rfft(data * hann)).astype(self.audio.dtype)
+        return self.magnitude_function(numpy.fft.rfft(window*data)).astype(self.audio.dtype)
 
     def spectrogram(self) -> numpy.ndarray:
         """Apply the transformation matrix to the FFT on each channel of self.fft"""

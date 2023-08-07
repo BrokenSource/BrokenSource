@@ -40,7 +40,7 @@ class BrokenSecondOrderDynamics:
     """
 
     # # State variables
-    y:  float = 0
+    y: float = None
 
     # # Parameters
     frequency: float = 1
@@ -81,15 +81,8 @@ class BrokenSecondOrderDynamics:
     # # Implementation of the second order system itself
 
     # Get super main instance class of BrokenGL
-    def __init__(self, initial_value=None, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         self.__attrs_init__(*args, **kwargs)
-        self._set_initial_value(initial_value)
-
-    def _set_initial_value(self, value: float) -> None:
-        """Set initial value of the system"""
-        if self.y is None:
-            self._previous_x = value
-            self.y           = value
 
     def update(self, target: float, dt: float, velocity=None) -> float:
         """
@@ -100,7 +93,9 @@ class BrokenSecondOrderDynamics:
         - dt      : Time delta since last update
         - velocity: Optional velocity to use instead of calculating it from previous values
         """
-        self._set_initial_value(target)
+        if self.y is None:
+            self._previous_x = target
+            self.y           = target
 
         # Estimate velocity
         if velocity is None:
