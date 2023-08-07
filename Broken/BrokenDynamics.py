@@ -47,6 +47,9 @@ class BrokenSecondOrderDynamics:
     zeta     : float = 1
     response : float = 0
 
+    # Special, free lunches
+    integral: float = 0
+
     # # Internal variables
     _previous_x: float = 0
     _y_speed    : float = 0
@@ -84,7 +87,7 @@ class BrokenSecondOrderDynamics:
     def __init__(self, *args, **kwargs) -> None:
         self.__attrs_init__(*args, **kwargs)
 
-    def update(self, target: float, dt: float, velocity=None) -> float:
+    def update(self, target: float, dt: float, velocity=None, integrate=True) -> float:
         """
         Update the system with a new target value
 
@@ -120,6 +123,9 @@ class BrokenSecondOrderDynamics:
 
         # Integrate velocity with acceleration
         self._y_speed += (target + self.k3*velocity - self.y - k1*self._y_speed)/k2 * dt
+
+        # Integrate the system with next y value
+        self.integral += self.y * integrate * dt
 
         return self.y
 
