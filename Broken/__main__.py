@@ -283,7 +283,7 @@ class BrokenCLI:
             BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
 
         # Search every subdirectories for pyproject.toml or Main.rs
-        for path in self.PROJECTS_DIR.glob("**/*"))
+        for path in self.PROJECTS_DIR.glob("**/*"):
 
             # Resolve symlinks
             path = path.resolve().absolute()
