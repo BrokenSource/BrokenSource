@@ -74,6 +74,7 @@ class BrokenCLI:
         self.PROJECTS_DIR       = BROKEN_MONOREPO_DIR/"Projects"
         self.ASSETS_DIR         = BROKEN_MONOREPO_DIR/"Assets"
         self.BUILD_DIR          = BROKEN_MONOREPO_DIR/"Build"
+        self.TEMPLATES_DIR      = BROKEN_MONOREPO_DIR/"Templates"
 
         # Nested directories
         self.OTHER_PROJECTS_DIR = self.PROJECTS_DIR/"Others"
@@ -282,7 +283,7 @@ class BrokenCLI:
             BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
 
         # Search every subdirectories for pyproject.toml or Main.rs
-        for path in self.PROJECTS_DIR.glob("**/*"):
+        for path in self.PROJECTS_DIR.glob("**/*"))
 
             # Resolve symlinks
             path = path.resolve().absolute()

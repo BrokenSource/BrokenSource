@@ -25,3 +25,6 @@
 [submodule "Website"]
 	path = Website
 	url = https://github.com/BrokenSource/brokensource.github.io
+[submodule "Templates/Python"]
+	path = Templates/PythonTemplate
+	url = https://github.com/BrokenSource/Python
