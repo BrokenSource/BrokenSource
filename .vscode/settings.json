@@ -48,6 +48,7 @@
         "User": "home",
         "Premium": "admin",
         "Default": "examples",
+        "Community": "shared",
 
         // Projects
         "Ardmin": "tools",

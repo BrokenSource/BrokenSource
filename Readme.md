@@ -23,6 +23,8 @@ This _mono_-repository hosts the **shared library** called **Broken** ❤️‍�
 
 **Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus
 
+- 🤚 For potential project status updates see our [**Twitter**](https://twitter.com/BrokenSourcerer)
+
 <sub>❤️‍🔥 We are Linux-first support 🐧</sub>
 
 

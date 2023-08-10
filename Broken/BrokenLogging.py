@@ -78,7 +78,8 @@ log.critical  = add_log_option("CRITICAL")
 log.exception = add_log_option("EXCEPTION")
 
 # Custom logging functions
-log.fixme = add_log_option("FIXME", 35, "cyan")
-log.todo  = add_log_option("TODO",  35, "blue")
-log.note  = add_log_option("NOTE",  35, "magenta")
-log.minor = add_log_option("MINOR", 35, "fg #777")
+log.fixme  = add_log_option("FIXME", 35, "cyan")
+log.todo   = add_log_option("TODO",  35, "blue")
+log.note   = add_log_option("NOTE",  35, "magenta")
+log.minor  = add_log_option("MINOR", 35, "fg #777")
+log.action = add_log_option("ACTION", 35, "fg #7340ff")

@@ -79,8 +79,6 @@ while True:
         from contextlib import suppress
         from dataclasses import dataclass
         from enum import Enum
-        from functools import lru_cache
-        from functools import wraps
         from importlib import resources as get_resource
         from io import BytesIO
         from os import PathLike
@@ -109,6 +107,7 @@ while True:
         import attrs
         import audioread
         import diffusers
+        import functools
         import distro
         import forbiddenfruit
         import gradio

@@ -16,7 +16,7 @@ class BrokenDirectories:
         - Temp:      Temporary files
         - Downloads: Downloaded files
     """
-    def __init__(self, app_name: str="Broken", app_author: str="BrokenSource", resources="Resources", echo=True):
+    def __init__(self, app_name: str="Broken", app_author: str="BrokenSource", echo=True):
 
         # App information
         self.app_name   = app_name
@@ -26,11 +26,10 @@ class BrokenDirectories:
         # Special directories
         self.ROOT = Path(self.APPDIRS.user_data_dir)/self.app_name
         self.ROOT.mkdir(parents=True, exist_ok=True)
-        self.EXECUTABLE = BrokenDirectories.get_system_executable_directory()
 
-        # Resources directory relative to a project's root directory
-        self.PACKAGE = get_resource.files(inspect.stack()[1].frame.f_globals.get("__package__", None))
-        self.RESOURCES = self.PACKAGE/resources
+        # On Source Code mode is the __init__.py file's parent, on release is the executable's parent
+        self.PACKAGE = BrokenDirectories.get_system_executable_directory()
+        self.RESOURCES = self.PACKAGE/"Resources"
 
         # Log info and root dir for user convenience
         log.info(f"Project Directories [AppName: {app_name}] by [AppAuthor: {app_author}] at [{self.ROOT}]", echo=echo)
@@ -60,7 +59,7 @@ class BrokenDirectories:
 BROKEN_DIRECTORIES = BrokenDirectories(echo=False)
 
 # Root of BrokenSource Monorepo
-BROKEN_MONOREPO_DIR = BROKEN_DIRECTORIES.EXECUTABLE.parent
+BROKEN_MONOREPO_DIR = BROKEN_DIRECTORIES.PACKAGE.parent
 SYSTEM_ROOT_DIR = Path("/").absolute().resolve()
 
 # Where Broken shall be placed as a symlink to be shared

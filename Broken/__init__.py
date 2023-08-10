@@ -44,6 +44,7 @@ from .BrokenEasy import *
 from .BrokenDynamics import *
 from .BrokenMIDI import *
 from .BrokenAudio import *
+from .BrokenTimeline import *
 # isort: on
 
 class BrokenBase:
@@ -51,6 +52,7 @@ class BrokenBase:
         return typer.Typer(
             help=description or "No help provided",
             add_help_option=False,
+            pretty_exceptions_enable=True,
             no_args_is_help=kwargs.get("no_args_is_help", True),
             add_completion=False,
             rich_markup_mode="rich",

@@ -47,7 +47,7 @@ def BetterThread(callable, *args, start=True, infinite=False, **kwargs) -> Threa
     if infinite:
         original = copy.copy(callable)
 
-        @wraps(callable)
+        @functools.wraps(callable)
         def infinite_callable(*args, **kwargs):
             while True:
                 original(*args, **kwargs)
@@ -118,6 +118,9 @@ class BrokenUtils:
 
         # Add method to self
         setattr(self, method.__name__, method)
+
+    def root_mean_square(x):
+        return numpy.sqrt(numpy.mean(numpy.square(x)))
 
 # # Weird classes
 

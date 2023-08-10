@@ -91,7 +91,7 @@ class BrokenEasy:
         def __enter__(self):
             return self
 
-        def __exit__(self, exc_type, exc_value, traceback):
+        def __exit__(self, *args):
             self.stop()
 
         def stop(self):
@@ -205,6 +205,7 @@ class BrokenVsyncClient:
 @attrs.define
 class BrokenVsync:
     clients: List[BrokenVsyncClient] = []
+    __thread__: Option[Thread, None] = None
 
     def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
         """Adds a client to the manager with immediate next call"""
@@ -253,7 +254,10 @@ class BrokenVsync:
             return client.callback(*client.args, **client.kwargs)
 
     def start_thread(self) -> None:
-        BetterThread(self.loop)
+        self.__thread__ = BetterThread(self.loop)
+
+    def stop_thread(self):
+        self.__thread__._stop()
 
     def loop(self) -> None:
         while True:

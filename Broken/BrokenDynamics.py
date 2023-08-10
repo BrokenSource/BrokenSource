@@ -40,7 +40,7 @@ class BrokenSecondOrderDynamics:
     """
 
     # # State variables
-    y: float = None
+    value: float = None
 
     # # Parameters
     frequency: float = 1
@@ -48,11 +48,12 @@ class BrokenSecondOrderDynamics:
     response : float = 0
 
     # Special, free lunches
-    integral: float = 0
+    integral:     float = 0
+    derivative:   float = 0
+    acceleration: float = 0
 
     # # Internal variables
     _previous_x: float = 0
-    _y_speed    : float = 0
 
     # # Properties and math that are subset of the parameters
 
@@ -87,7 +88,7 @@ class BrokenSecondOrderDynamics:
     def __init__(self, *args, **kwargs) -> None:
         self.__attrs_init__(*args, **kwargs)
 
-    def update(self, target: float, dt: float, velocity=None, integrate=True) -> float:
+    def update(self, target: float, dt: float, velocity=None) -> float:
         """
         Update the system with a new target value
 
@@ -96,9 +97,9 @@ class BrokenSecondOrderDynamics:
         - dt      : Time delta since last update
         - velocity: Optional velocity to use instead of calculating it from previous values
         """
-        if self.y is None:
+        if self.value is None:
             self._previous_x = target
-            self.y           = target
+            self.value           = target
 
         # Estimate velocity
         if velocity is None:
@@ -119,15 +120,18 @@ class BrokenSecondOrderDynamics:
             k2    = t2 * dt
 
         # Integrate position with velocity
-        self.y += self._y_speed * dt
+        self.value += self.derivative * dt
+
+        # Calculate acceleration
+        self.acceleration = (target + self.k3*velocity - self.value - k1*self.derivative)/k2
 
         # Integrate velocity with acceleration
-        self._y_speed += (target + self.k3*velocity - self.y - k1*self._y_speed)/k2 * dt
+        self.derivative += self.acceleration * dt
 
         # Integrate the system with next y value
-        self.integral += self.y * integrate * dt
+        self.integral += self.value * dt
 
-        return self.y
+        return self.value
 
     def next(self, target: float, dt: float, velocity=None) -> float:
         """Alias for update"""

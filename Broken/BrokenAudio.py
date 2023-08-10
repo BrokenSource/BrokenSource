@@ -243,7 +243,7 @@ class BrokenAudioSpectrogramScale:
     )
 
 class BrokenAudioSpectrogramWindow:
-    @lru_cache
+    @functools.lru_cache
     def hann_poisson_window(N, alpha=2):
         """
         Generate a Hann-Poisson window.
@@ -261,10 +261,10 @@ class BrokenAudioSpectrogramWindow:
 
         return hann_part * poisson_part
 
-    @lru_cache
+    @functools.lru_cache
     def hanning(size: int) -> numpy.ndarray:
         """Returns a hanning window of the given size"""
-        return lru_cache(numpy.hanning)(size)
+        return numpy.hanning(size)
 
 @attrs.define
 class BrokenAudioSpectrogram:
