@@ -206,6 +206,7 @@ class BrokenVsyncClient:
 class BrokenVsync:
     clients: List[BrokenVsyncClient] = []
     __thread__: Option[Thread, None] = None
+    __stop__:   bool = False
 
     def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
         """Adds a client to the manager with immediate next call"""
@@ -253,12 +254,25 @@ class BrokenVsync:
         with (client.context or BrokenNullContext()):
             return client.callback(*client.args, **client.kwargs)
 
+    # # Thread-wise wording
+
     def start_thread(self) -> None:
+        self.__stop__   = False
         self.__thread__ = BetterThread(self.loop)
 
     def stop_thread(self):
+        self.__stop__   = True
         self.__thread__._stop()
 
+    # # "Natural" wording?
+
     def loop(self) -> None:
-        while True:
+        while not self.__stop__:
             self.next()
+
+    def stop(self):
+        self.__stop__ = True
+
+    def start(self):
+        self.__stop__ = False
+        self.loop()

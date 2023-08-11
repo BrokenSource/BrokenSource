@@ -40,11 +40,11 @@ def shell(*args, output=False, Popen=False, echo=True, confirm=False, do=True, *
     if Popen:  return subprocess.Popen(command, **kwargs)
     else:      return subprocess.run(command, **kwargs)
 
-def BetterThread(callable, *args, start=True, infinite=False, **kwargs) -> Thread:
+def BetterThread(callable, *args, start: bool=True, loop: bool=False, daemon: bool=False, **kwargs) -> Thread:
     """Create a thread on a callable, yeet whatever you think it works"""
 
     # Wrap callable on a loop
-    if infinite:
+    if loop:
         original = copy.copy(callable)
 
         @functools.wraps(callable)
@@ -53,7 +53,7 @@ def BetterThread(callable, *args, start=True, infinite=False, **kwargs) -> Threa
                 original(*args, **kwargs)
         callable = infinite_callable
 
-    thread = Thread(target=callable, args=args, kwargs=kwargs)
+    thread = Thread(target=callable, daemon=daemon, args=args, kwargs=kwargs)
     if start: thread.start()
     return thread
 
