@@ -768,4 +768,5 @@ class BrokenEnum(Enum):
 
             return cls[value]
         except KeyError:
-            raise ValueError(f"No such value on enum [{cls.__name__}]: {value}")
+            log.error(f"No such value [{value}] on Enum class [{cls.__name__}]")
+            raise ValueError

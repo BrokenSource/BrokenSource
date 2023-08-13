@@ -15,6 +15,9 @@ class BrokenAudio:
     recorder: Any = None
     device:   Any = None
 
+    # Internal
+    end: int = -1
+
     # FIXME: Maybe implement own audioread for better control
 
     def __init__(self, *args, **kwargs):
@@ -77,9 +80,15 @@ class BrokenAudio:
 
         # Read data from all buffers from bytes, "self.file.read_data()" is a generator of bytes
         self.data = numpy.frombuffer(
+            # Join all byte chunks
             b"".join(self.file.read_data()),
-            dtype=self.dtype
-        ).reshape((self.channels, -1))
+
+            # 16-bit little-endian signed integer PCM data
+            dtype=numpy.dtype(numpy.int16)
+        ).reshape((-1, self.channels)).T
+
+        # Convert and normalize to self.dtype
+        self.data = self.data.astype(self.dtype) / 2**15
 
         # About 700 MB for 1 hour of 48 kHz stereo audio, do we need to make it better?
         log.fixme(f"Loaded full audio file [{file}] into memory [Size: {self.data.nbytes/1024/1024:.2f} MB], maybe implement progressive mode")
@@ -187,15 +196,18 @@ class BrokenAudio:
         if self.data_length < end:
             log.warning(f"Audio buffer doesn't have enough data to get [{end}] samples, only has [{self.data_length}]")
             return None
-        return self.data[:, start:end]
+        return self.data[:, int(start):int(end)]
 
     def get_data_between_seconds(self, start: float, end: float) -> Option[numpy.ndarray, None]:
         """Get the audio data between seconds intervals, returns [channels][start:end] size int(sample_rate*(end - start)) samples"""
         return self.get_data_between_samples(*self.sample_rate*numpy.array((start, end), dtype=int))
 
     def get_last_n_samples(self, n: int) -> Option[numpy.ndarray, None]:
-        """Get the last n samples from the audio buffer, returns [channels][-n:]"""
-        return self.get_data_between_samples(self.data_length - n, self.data_length)
+        """Get the last n samples from the audio buffer relative to self.end, returns [channels][-n:]"""
+        # TODO: Return zeros on the start if not enough data
+        if (self.end >= 0) and (self.end < n):
+            return self.get_data_between_samples(0, n)
+        return self.get_data_between_samples(self.end-n, self.end)
 
     # # Internal functions
 
@@ -272,7 +284,7 @@ class BrokenAudioSpectrogram:
 
     # # FFT Options
     # 2^n FFT size, higher values, higher frequency resolution, less responsiveness
-    fft_n:  int = 12
+    fft_n: int = 12
     magnitude_function: callable = BrokenAudioFourierMagnitude.amplitude
     window_function:    callable = BrokenAudioSpectrogramWindow.hanning
 
@@ -302,9 +314,8 @@ class BrokenAudioSpectrogram:
 
     def fft(self, end: int=-1) -> numpy.ndarray:
         """Calculates the FFT of the last batch of samples"""
-        window = self.window_function(self.fft_size)
-        data = self.audio.get_data_between_samples(end - self.fft_size, end)
-        return self.magnitude_function(numpy.fft.rfft(window*data)).astype(self.audio.dtype)
+        data = self.window_function(self.fft_size) * self.audio.get_last_n_samples(self.fft_size)
+        return self.magnitude_function(numpy.fft.rfft(data)).astype(self.audio.dtype)
 
     def spectrogram(self) -> numpy.ndarray:
         """Apply the transformation matrix to the FFT on each channel of self.fft"""
