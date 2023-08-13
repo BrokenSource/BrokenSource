@@ -145,6 +145,9 @@ class FFmpegFilterFactory:
     def scale(width: int, height: int, filter: str="lanczos") -> str:
         return f"scale={width}:{height}:flags={filter}"
 
+    def flip_vertical() -> str:
+        return "vflip"
+
 # ----------------------------------------------|
 # Vsync
 
@@ -336,7 +339,7 @@ class BrokenFFmpeg:
     # Loglevel, stats
 
     def __loglevel__(self, loglevel: FFmpegLogLevel=FFmpegLogLevel.Error) -> Self:
-        """Set the loglevel for the next input"""
+        """Set FFmpeg global loglevel"""
         loglevel = FFmpegLogLevel.smart(loglevel)
         log.debug(f"BrokenFFmpeg Log Level: {loglevel}")
         self.__command__ += ["-loglevel", loglevel]
@@ -443,6 +446,7 @@ class BrokenFFmpeg:
             self.__framerate__,
             self.__audio_bitrate__,
             self.__video_bitrate__,
+            self.__map__,
         )
         return self
 
@@ -506,7 +510,7 @@ class BrokenFFmpeg:
                 self.__preset__h264,
                 self.__tune__h264,
                 self.__profile__h264,
-                self.__quality__h265,
+                self.__quality__h264,
             )
         elif codec == FFmpegVideoCodec.H265:
             self.__add_option__(
@@ -622,14 +626,21 @@ class BrokenFFmpeg:
         # self.ffmpeg = shell(command)
         self.ffmpeg = shell(
             self.command,
-            Popen=("-i", "-") in self.command,
+            Popen=BrokenUtils.sublist_in_list(("-i", "-"), self.command),
             stdin=PIPE,
             output=output,
         )
+
         return self.ffmpeg
 
     def close(self) -> None:
+        """Close the ffmpeg process"""
         self.ffmpeg.stdin.close()
+        return self
+
+    def wait(self) -> None:
+        """Wait for the ffmpeg process to finish"""
+        self.ffmpeg.wait()
         return self
 
     # ---------------------------------------------------------------------------------------------|

@@ -300,6 +300,11 @@ class BrokenUtils:
         f = lambda x: f"{x:.3f} it/s"
         log.info(f"• Benchmark Results for [{str(benchmark_name or function.__name__).ljust(20)}]: [Average {f(1.0/frametimes.mean())}] [Max {f(1.0/frametimes.min())}] [Min {f(1.0/frametimes.max())}] [Std {f((1/frametimes).std())}]")
 
+    def sublist_in_list(sublist: List[Any], list: List[Any]) -> bool:
+        """Check if a sublist is in a list"""
+        return all(item in list for item in sublist)
+
+
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenPath:
