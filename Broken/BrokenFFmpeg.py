@@ -1,4 +1,5 @@
 """State of the art FFmpeg class. See BrokenFFmpeg for more info"""
+from __future__ import annotations
 from . import *
 
 # ----------------------------------------------|
@@ -6,13 +7,26 @@ from . import *
 
 class FFmpegVideoCodec(BrokenEnum):
     """-c:v ffmpeg option"""
+    # H264, AVC - Advanced Video Coding
     H264       = "libx264"
-    H265       = "libx265"
     H264_NVENC = "h264_nvenc"
+
+    # H265, HEVC - High Efficiency Video Encoding
+    H265       = "libx265"
     H265_NVENC = "hevc_nvenc"
+
+    # Alliance for Open Media Video
     AV1        = "libaom-av1"
+    AV1_NVENC  = "av1_nvenc"
+
+    # Raw, special
     Rawvideo   = "rawvideo"
     Copy       = "copy"
+
+    @staticmethod
+    def is_nvenc(option: FFmpegVideoCodec):
+        option = FFmpegVideoCodec.smart(option)
+        return "nvenc" in option.value
 
 class FFmpegAudioCodec(BrokenEnum):
     """-c:a ffmpeg option"""
@@ -22,6 +36,7 @@ class FFmpegAudioCodec(BrokenEnum):
     OPUS   = "libopus"
     FLAC   = "flac"
     AC3    = "ac3"
+    Copy   = "copy"
 
 # ----------------------------------------------|
 # H264
@@ -106,6 +121,107 @@ class FFmpegH265Quality(BrokenEnum):
     Veryhigh = 15
     Ultra    = 10
     Lossless = 0
+
+# ----------------------------------------------|
+# Generic NVENC
+
+class FFmpegNVENC_Preset(BrokenEnum):
+    """-preset h264_nvenc ffmpeg option"""
+    # Default is P4
+    Default = "default"
+
+    # Similar to H264 Software
+    HQ2PassesSlow = "slow"
+    HQ1PassMedium = "medium"
+    HP1PassFast   = "fast"
+
+    HP = "hp"
+    HQ = "hq"
+    BD = "bd"
+
+    # Streaming ones
+    LowLatency   = "ll"
+    LowLatencyHQ = "llhq"
+    LowLatencyHP = "llhp"
+    Lossless     = "lossless"
+    LosslessHP   = "losslesshp"
+
+    # "Common" ones
+    Fastest = "p1"
+    Faster  = "p2"
+    Fast    = "p3"
+    Medium  = "p4"
+    Slow    = "p5"
+    Slower  = "p6"
+    Slowest = "p7"
+
+class FFmpegNVENC_Tune(BrokenEnum):
+    """-tune h264_nvenc ffmpeg option"""
+    HighQuality     = "hq"
+    LowLatency      = "ll"
+    UltraLowLatency = "ull"
+    Lossless        = "lossless"
+
+class FFmpegNVENC_Level(BrokenEnum):
+    """-level h264_nvenc ffmpeg option"""
+    Auto    = "auto"
+    Level10 = "1"
+    Level1b = "1b"
+    Level11 = "1.1"
+    Level12 = "1.2"
+    Level13 = "1.3"
+    Level20 = "2.0"
+    Level21 = "2.1"
+    Level22 = "2.2"
+    Level30 = "3.0"
+    Level31 = "3.1"
+    Level32 = "3.2"
+    Level40 = "4.0"
+    Level41 = "4.1"
+    Level42 = "4.2"
+    Level50 = "5.0"
+    Level51 = "5.1"
+    Level52 = "5.2"
+    Level60 = "6.0"
+    Level61 = "6.1"
+    Level62 = "6.2"
+
+class FFmpegNVENC_RC(BrokenEnum):
+    """-rc h264_nvenc ffmpeg option"""
+    ConstantQP                 = "constqp"
+    VariableBitrate            = "vbr"
+    VariableBitrateHighQuality = "vbr_hq"
+    ConstantBitrate            = "cbr"
+    ConstantBitrateHighQuality = "cbr_hq"
+
+class FFmpegNVENC_B_Ref_Mode(BrokenEnum):
+    Disabled = "disabled"
+    Each     = "each"
+    Middle   = "middle"
+
+# ----------------------------------------------|
+# H264 NVENC
+
+class FFmpegH264_NVENC_Profile(BrokenEnum):
+    """-profile h264_nvenc ffmpeg option"""
+    Baseline = "baseline"
+    Main     = "main"
+    High     = "high"
+    High444  = "high444"
+
+# ----------------------------------------------|
+# H265 NVENC
+
+class FFmpegH265_NVENC_Profile(BrokenEnum):
+    """-profile hevc_nvenc ffmpeg option"""
+    Main   = "main"
+    Main10 = "main10"
+    Rext   = "rext"
+
+class FFmpegH265_NVENC__Tier(BrokenEnum):
+    """-tier hevc_nvenc ffmpeg option"""
+    Main = "main"
+    High = "high"
 
 # ----------------------------------------------|
 # Formats
@@ -230,6 +346,9 @@ class BrokenFFmpeg:
         instance = super().__new__(cls)
         return instance
 
+    def __call__(self, *args, **kwargs) -> Self:
+        return self
+
     def __init__(self):
         self.options = DotMap()
         self.__command__ = ["ffmpeg"]
@@ -254,6 +373,7 @@ class BrokenFFmpeg:
             self.__vsync__,
             self.__no_audio__,
             self.__advanced__,
+            self.__audio_codec__,
         )
 
     # ---------------------------------------------------------------------------------------------|
@@ -285,7 +405,19 @@ class BrokenFFmpeg:
         Some Fluent option errored out, continue the chain
         · It is dangerous, can yield to unexpected results and broken commands, but we shouldn't exit()
         """
-        log.warning(f"BrokenFFmpeg skipped Fluent Option with args {a} and kwargs {k}")
+        log.warning(f"Skipped Fluent Option with args {a} and kwargs {k}")
+        return self
+
+    def __smart__(self,
+            *items: list[Any],
+            delete: Union[callable, list[callable]]=None,
+            add:    Union[callable, list[callable]]=None,
+        ) -> Self:
+        """Append items to the command, maybe delete or add new callbacks to the options"""
+        log.debug(f"BrokenFFmpeg Append: {items}")
+        self.__command__ += items
+        self.__del_option__(delete)
+        self.__add_option__(add)
         return self
 
     # # Deal with next option - to call it or list available options
@@ -321,30 +453,17 @@ class BrokenFFmpeg:
     # ---------------------------------------------------------------------------------------------|
     # Formats
 
-    def __pixel__(self, format: FFmpegPixelFormat) -> Self:
-        """Set the pixel format for the next input"""
-        format = FFmpegPixelFormat.smart(format)
-        log.debug(f"BrokenFFmpeg Pixel Format: {format}")
-        self.__command__ += ["-pix_fmt", format]
-        return self
+    def __pixel__(self, option: FFmpegPixelFormat) -> Self:
+        return self.__smart__("-pix_fmt", FFmpegPixelFormat.smart(option), delete=self.__pixel__)
 
-    def __format__(self, format: FFmpegFormat) -> Self:
-        """Set the format for the next input"""
-        format = FFmpegFormat.smart(format)
-        log.debug(f"BrokenFFmpeg Format: {format}")
-        self.__command__ += ["-f", format]
-        return self
+    def __format__(self, option: FFmpegFormat) -> Self:
+        return self.__smart__("-f", FFmpegFormat.smart(option), delete=self.__format__)
 
     # ---------------------------------------------------------------------------------------------|
     # Loglevel, stats
 
-    def __loglevel__(self, loglevel: FFmpegLogLevel=FFmpegLogLevel.Error) -> Self:
-        """Set FFmpeg global loglevel"""
-        loglevel = FFmpegLogLevel.smart(loglevel)
-        log.debug(f"BrokenFFmpeg Log Level: {loglevel}")
-        self.__command__ += ["-loglevel", loglevel]
-        self.__del_option__(self.__loglevel__)
-        return self
+    def __loglevel__(self, option: FFmpegLogLevel=FFmpegLogLevel.Error) -> Self:
+        return self.__smart__("-loglevel", FFmpegLogLevel.smart(option), delete=self.__loglevel__)
 
     def __quiet__(self) -> Self:
         """Shorthand for loglevel error and hide banner"""
@@ -356,58 +475,34 @@ class BrokenFFmpeg:
         """Shorthand for only showing important stats"""
         self.__loglevel__(FFmpegLogLevel.Error)
         self.__hide_banner__()
-        self.__command__ += ["-stats"]
-        return self
+        return self.__smart__("-stats", delete=self.__stats__)
 
     def __hide_banner__(self) -> Self:
-        """Hide the banner for the next input"""
-        log.debug(f"BrokenFFmpeg Hide Banner")
-        self.__command__ += ["-hide_banner"]
-        self.__del_option__(self.__hide_banner__)
-        return self
+        return self.__smart__("-hide_banner", delete=self.__hide_banner__)
 
     # ---------------------------------------------------------------------------------------------|
     # Bitrates
 
-    def __audio_bitrate__(self, bitrate: int) -> Self:
-        """Set the audio bitrate for the next input"""
-        log.debug(f"BrokenFFmpeg Audio Bitrate: {bitrate}")
-        self.__command__ += ["-b:a", str(bitrate)]
-        self.__del_option__(self.__audio_bitrate__)
-        return self
+    def __audio_bitrate__(self, option: int) -> Self:
+        return self.__smart__("-b:a", str(option), delete=self.__audio_bitrate__)
 
-    def __video_bitrate__(self, bitrate: int) -> Self:
-        """Set the video bitrate for the next input"""
-        log.debug(f"BrokenFFmpeg Video Bitrate: {bitrate}")
-        self.__command__ += ["-b:v", str(bitrate)]
-        self.__del_option__(self.__video_bitrate__)
-        return self
+    def __video_bitrate__(self, option: int) -> Self:
+        return self.__smart__("-b:v", str(option), delete=self.__video_bitrate__)
 
     # ---------------------------------------------------------------------------------------------|
     # Special
 
-    def __hwaccel__(self, hwaccel: str="auto") -> Self:
-        """Set hardware acceleration"""
-        self.__command__ += ["-hwaccel", hwaccel]
-        return self
+    def __hwaccel__(self, option: FFmpegHWAccel=FFmpegHWAccel.Auto) -> Self:
+        return self.__smart__("-hwaccel", FFmpegHWAccel.smart(option), delete=self.__hwaccel__)
 
     def __overwrite__(self) -> Self:
-        """Overwrite output files"""
-        self.__command__ += ["-y"]
-        self.__del_option__(self.__overwrite__)
-        return self
+        return self.__smart__("-y", delete=self.__overwrite__)
 
     def __shortest__(self) -> Self:
-        """Stop encoding when the shortest input ends"""
-        self.__command__ += ["-shortest"]
-        self.__del_option__(self.__shortest__)
-        return self
+        return self.__smart__("-shortest", delete=self.__shortest__)
 
     def __no_audio__(self) -> Self:
-        """Do not include audio in the output"""
-        self.__command__ += ["-an"]
-        self.__del_option__(self.__no_audio__)
-        return self
+        return self.__smart__("-an", delete=self.__no_audio__)
 
     def __map__(self, input_stream: int, stream: Option["v", "a"], output_stream: int) -> Self:
         """
@@ -438,33 +533,31 @@ class BrokenFFmpeg:
             return self
 
         # Add command
-        log.debug(f"BrokenFFmpeg Input: [{path}]")
-        self.__command__ += ["-i", path]
-        self.__add_option__(
+        self.__smart__("-i", path, add=(
             self.__resolution__,
             self.__video_codec__,
             self.__framerate__,
             self.__audio_bitrate__,
             self.__video_bitrate__,
             self.__map__,
-        )
+            self.__pixel__,
+        ))
         return self
 
     def __output__(self, path: str) -> Self:
         """Output some audio file, video file"""
-        BrokenPath.mkdir(Path(path).parent)
+        BrokenPath.mkdir(Path(path).parent, echo=False)
 
         # Add video filters
         if self.filters:
-            filters = ",".join(self.filters)
-            log.debug(f"BrokenFFmpeg Filters: {filters}")
-            self.__command__ += ["-vf", filters]
+            log.debug(f"BrokenFFmpeg Filters:")
+            for filter in self.filters:
+                log.debug(f"• {filter}")
+            self.__command__ += ["-vf", ",".join(self.filters)]
 
         # Add command
-        log.debug(f"BrokenFFmpeg Output: [{path}]")
-        self.__command__ += [path]
         self.__no_option__()
-        return self
+        return self.__smart__(path, delete=self.__overwrite__)
 
     # ---------------------------------------------------------------------------------------------|
     # Sizes, framerates, filter
@@ -475,36 +568,21 @@ class BrokenFFmpeg:
         return self
 
     def __resolution__(self, width: int, height: int) -> Self:
-        """Set the next input or output resolution"""
-        log.debug(f"BrokenFFmpeg Resolution: {width}x{height}")
-        self.__command__ += ["-s", f"{int(width)}x{int(height)}"]
-        self.__del_option__(self.__resolution__)
-        return self
+        return self.__smart__("-s", f"{int(width)}x{int(height)}", delete=self.__resolution__)
 
-    def __framerate__(self, framerate: int) -> Self:
-        """Set the framerate for the next input"""
-        log.debug(f"BrokenFFmpeg Framerate: {framerate}")
-        self.__command__ += ["-r", framerate]
-        self.__del_option__(self.__framerate__)
-        return self
+    def __framerate__(self, option: int) -> Self:
+        return self.__smart__("-framerate", option, delete=self.__framerate__)
 
-    def __vsync__(self, vsync: FFmpegVsync=FFmpegVsync.ConstantFramerate) -> Self:
-        """Set the vsync for the next input"""
-        vsync = FFmpegVsync.smart(vsync)
-        log.debug(f"BrokenFFmpeg Vsync: {vsync}")
-        self.__command__ += ["-vsync", vsync]
-        self.__del_option__(self.__vsync__)
-        return self
+    def __vsync__(self, option: FFmpegVsync=FFmpegVsync.ConstantFramerate) -> Self:
+        return self.__smart__("-vsync", option, delete=self.__vsync__)
 
     # ---------------------------------------------------------------------------------------------|
     # Base codecs
 
     def __video_codec__(self, codec: FFmpegVideoCodec=FFmpegVideoCodec.H264) -> Self:
-        """Set the video codec"""
         codec = FFmpegVideoCodec.smart(codec)
 
-        log.debug(f"BrokenFFmpeg Video Codec: {codec}")
-
+        # Add codec parameters options based on selected
         if codec == FFmpegVideoCodec.H264:
             self.__add_option__(
                 self.__preset__h264,
@@ -512,6 +590,31 @@ class BrokenFFmpeg:
                 self.__profile__h264,
                 self.__quality__h264,
             )
+        elif FFmpegVideoCodec.is_nvenc(codec):
+            self.__add_option__(
+                self.__preset__nvenc,
+                self.__tune__nvenc,
+                self.__level__nvenc,
+                self.__rc__nvenc,
+                self.__gpu__nvenc,
+                self.__rate_control_lookahead__nvenc,
+                self.__surfaces__nvenc,
+                self.__qp__nvenc,
+                self.__bref_mode__nvenc,
+            )
+            if codec == FFmpegVideoCodec.H264_NVENC:
+                self.__add_option__(
+                    self.__profile__h264_nvenc,
+                )
+            elif codec == FFmpegVideoCodec.H265_NVENC:
+                self.__add_option__(
+                    self.__profile__h265_nvenc,
+                    self.__tier__h265_nvenc,
+                )
+            elif codec == FFmpegVideoCodec.AV1_NVENC:
+                log.error(f"We don't have any RTX 4000 card to test AV1 NVENC")
+                return self.__skip__
+
         elif codec == FFmpegVideoCodec.H265:
             self.__add_option__(
                 self.__preset__h265,
@@ -522,97 +625,96 @@ class BrokenFFmpeg:
         elif codec == FFmpegVideoCodec.AV1:
             raise NotImplementedError("AV1 is not supported yet")
         elif codec == FFmpegVideoCodec.Copy:
-            pass
+            pass # Copy is self contained
         elif codec == FFmpegVideoCodec.Rawvideo:
-            pass
+            pass # Configured with format
         else:
             log.error(f"Video codec {codec} not supported")
             return self.__skip__
 
-        self.__command__ += ["-c:v", codec]
-        self.__del_option__(
+        return self.__smart__("-c:v", codec, delete=(
             self.__video_codec__,
             self.__hwaccel__,
-        )
-        return self
+        ))
 
     def __audio_codec__(self, codec: FFmpegAudioCodec=FFmpegAudioCodec.AAC) -> Self:
-        """Set the audio codec"""
-        codec = FFmpegAudioCodec.smart(codec)
-        log.debug(f"BrokenFFmpeg Audio Codec: {codec}")
-        self.__command__ += ["-c:a", codec]
-        self.__del_option__(self.__audio_codec__)
-        return self
+        return self.__smart__("-c:a", FFmpegAudioCodec.smart(codec), delete=self.__audio_codec__)
+
+    # ---------------------------------------------------------------------------------------------|
+    # Generic NVENC
+
+    def __gpu__nvenc(self, option: int=0) -> Self:
+        return self.__smart__("-gpu", option, delete=self.__gpu__nvenc)
+
+    def __rate_control_lookahead__nvenc(self, option: int=0) -> Self:
+        return self.__smart__("-rc-lookahead", option, delete=self.__rate_control_lookahead__nvenc)
+
+    def __surfaces__nvenc(self, option: Union[int, range(0, 65)]=0) -> Self:
+        return self.__smart__("-surfaces", min(max(option, 0), 64), delete=self.__surfaces__nvenc)
+
+    def __qp__nvenc(self, option: Union[int, range(-1, 51)]=-1) -> Self:
+        return self.__smart__("-qp", option, delete=self.__qp__nvenc)
+
+    def __bref_mode__nvenc(self, option: FFmpegNVENC_B_Ref_Mode=FFmpegNVENC_B_Ref_Mode.Disabled) -> Self:
+        log.warning("B Frames requires Turing or newer architecture (RTX 2000+)")
+        return self.__smart__("-b_ref_mode", FFmpegNVENC_B_Ref_Mode.smart(option), delete=self.__bref_mode__nvenc)
+
+    def __preset__nvenc(self, option: FFmpegNVENC_Preset=FFmpegNVENC_Preset.Slower) -> Self:
+        return self.__smart__("-preset", FFmpegNVENC_Preset.smart(option), delete=self.__preset__nvenc)
+
+    def __tune__nvenc(self, option: FFmpegNVENC_Tune=FFmpegNVENC_Tune.HighQuality) -> Self:
+        return self.__smart__("-tune", FFmpegNVENC_Tune.smart(option), delete=self.__tune__nvenc)
+
+    def __level__nvenc(self, option: FFmpegNVENC_Level=FFmpegNVENC_Level.Auto) -> Self:
+        return self.__smart__("-level", FFmpegNVENC_Level.smart(option), delete=self.__level__nvenc)
+
+    def __rc__nvenc(self, option: FFmpegNVENC_RC=FFmpegNVENC_RC.VariableBitrateHighQuality) -> Self:
+        return self.__smart__("-rc", FFmpegNVENC_RC.smart(option), delete=self.__rc__nvenc)
+
+    # ---------------------------------------------------------------------------------------------|
+    # H264 NVENC
+
+    def __profile__h264_nvenc(self, option: FFmpegH264_NVENC_Profile=FFmpegH264_NVENC_Profile.Main) -> Self:
+        return self.__smart__("-profile", FFmpegH264_NVENC_Profile.smart(option), delete=self.__profile__h264_nvenc)
+
+    # ---------------------------------------------------------------------------------------------|
+    # H265 NVENC
+
+    def __profile__h265_nvenc(self, option: FFmpegH265_NVENC_Profile=FFmpegH265_NVENC_Profile.Main) -> Self:
+        return self.__smart__("-profile", FFmpegH265_NVENC_Profile.smart(option), delete=self.__profile__h265_nvenc)
+
+    def __tier__h265_nvenc(self, option: FFmpegH265_NVENC__Tier=FFmpegH265_NVENC__Tier.Main) -> Self:
+        return self.__smart__("-tier", FFmpegH265_NVENC__Tier.smart(option), delete=self.__tier__h265_nvenc)
 
     # ---------------------------------------------------------------------------------------------|
     # H264
 
-    def __preset__h264(self, preset: FFmpegH264Preset=FFmpegH264Preset.Slow) -> Self:
-        """Set the next h264 preset"""
-        preset = FFmpegH264Preset.smart(preset)
-        log.debug(f"BrokenFFmpeg H264 Preset: {preset}")
-        self.__command__ += ["-preset", preset]
-        self.__del_option__(self.__preset__h264)
-        return self
+    def __preset__h264(self, option: FFmpegH264Preset=FFmpegH264Preset.Slow) -> Self:
+        return self.__smart__("-preset", FFmpegH264Preset.smart(option), delete=self.__preset__h264)
 
-    def __tune__h264(self, tune: FFmpegH264Tune=FFmpegH264Tune.Film) -> Self:
-        """Set the next h264 tune"""
-        tune = FFmpegH264Tune.smart(tune)
-        log.debug(f"BrokenFFmpeg H264 Tune: {tune}")
-        self.__command__ += ["-tune", tune]
-        self.__del_option__(self.__tune__h264)
-        return self
+    def __tune__h264(self, option: FFmpegH264Tune=FFmpegH264Tune.Film) -> Self:
+        return self.__smart__("-tune", FFmpegH264Tune.smart(option), delete=self.__tune__h264)
 
-    def __profile__h264(self, profile: FFmpegH264Profile=FFmpegH264Profile.Main) -> Self:
-        """Set the next h264 profile"""
-        profile = FFmpegH264Profile.smart(profile)
-        log.debug(f"BrokenFFmpeg H264 Profile: {profile}")
-        self.__command__ += ["-profile:v", profile]
-        self.__del_option__(self.__profile__h264)
-        return self
+    def __profile__h264(self, option: FFmpegH264Profile=FFmpegH264Profile.Main) -> Self:
+        return self.__smart__("-profile:v", FFmpegH264Profile.smart(option), delete=self.__profile__h264)
 
-    def __quality__h264(self, quality: FFmpegH264Quality=FFmpegH264Quality.High) -> Self:
-        """Set the next h264 quality"""
-        quality = FFmpegH264Quality.smart(quality)
-        log.debug(f"BrokenFFmpeg H264 Quality: {quality}")
-        self.__command__ += ["-crf", quality]
-        self.__del_option__(self.__quality__h264)
-        return self
+    def __quality__h264(self, option: FFmpegH264Quality=FFmpegH264Quality.High) -> Self:
+        return self.__smart__("-crf", FFmpegH264Quality.smart(option), delete=self.__quality__h264)
 
     # ---------------------------------------------------------------------------------------------|
     # H265
 
-    def __preset__h265(self, preset: FFmpegH265Preset=FFmpegH265Preset.Slow) -> Self:
-        """Set the next H265 preset"""
-        preset = FFmpegH265Preset.smart(preset)
-        log.debug(f"BrokenFFmpeg H265 Preset: {preset}")
-        self.__command__ += ["-preset", preset]
-        self.__del_option__(self.__preset__h265)
-        return self
+    def __preset__h265(self, option: FFmpegH265Preset=FFmpegH265Preset.Slow) -> Self:
+        return self.__smart__("-preset", FFmpegH265Preset.smart(option), delete=self.__preset__h265)
 
-    def __tune__h265(self, tune: FFmpegH265Tune) -> Self:
-        """Set the next H265 tune"""
-        tune = FFmpegH265Tune.smart(tune)
-        log.debug(f"BrokenFFmpeg H265 Tune: {tune}")
-        self.__command__ += ["-tune", tune]
-        self.__del_option__(self.__tune__h265)
-        return self
+    def __tune__h265(self, option: FFmpegH265Tune) -> Self:
+        return self.__smart__("-tune", FFmpegH265Tune.smart(option), delete=self.__tune__h265)
 
-    def __profile__h265(self, profile: FFmpegH265Profile=FFmpegH265Profile.Main) -> Self:
-        """Set the next H265 profile"""
-        profile = FFmpegH265Profile.smart(profile)
-        log.debug(f"BrokenFFmpeg H265 Profile: {profile}")
-        self.__command__ += ["-profile:v", profile]
-        self.__del_option__(self.__profile__h265)
-        return self
+    def __profile__h265(self, option: FFmpegH265Profile=FFmpegH265Profile.Main) -> Self:
+        return self.__smart__("-profile:v", FFmpegH265Profile.smart(option), delete=self.__profile__h265)
 
-    def __quality__h265(self, quality: FFmpegH264Quality.High) -> Self:
-        """Set the next H265 quality"""
-        quality = FFmpegH265Quality.smart(quality)
-        log.debug(f"BrokenFFmpeg H265 Quality: {quality}")
-        self.__command__ += ["-crf", quality]
-        self.__del_option__(self.__quality__h265)
-        return self
+    def __quality__h265(self, option: FFmpegH264Quality.High) -> Self:
+        return self.__smart__("-crf", FFmpegH264Quality.smart(option), delete=self.__quality__h265)
 
     # ---------------------------------------------------------------------------------------------|
     # End user manual actions
@@ -621,27 +723,56 @@ class BrokenFFmpeg:
     def command(self) -> List[str]:
         return BrokenUtils.denum(BrokenUtils.flatten(self.__command__))
 
-    def run(self, output: bool=False) -> Union[None, subprocess.Popen]:
+    def run(self) -> subprocess.CompletedProcess:
+        return shell(self.command)
 
-        # self.ffmpeg = shell(command)
-        self.ffmpeg = shell(
-            self.command,
-            Popen=BrokenUtils.sublist_in_list(("-i", "-"), self.command),
-            stdin=PIPE,
-            output=output,
-        )
+    def popen(self) -> subprocess.stdin:
+        return shell(self.command, Popen=True)
 
-        return self.ffmpeg
+    def pipe(self, buffer: int=100):
+        """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
+        self.ffmpeg = shell(self.command, Popen=True, stdin=PIPE)
 
-    def close(self) -> None:
-        """Close the ffmpeg process"""
-        self.ffmpeg.stdin.close()
-        return self
+        @attrs.define
+        class BrokenFFmpegBuffered:
+            ffmpeg: subprocess.Popen
+            buffer: int = 100
+            frames: list[bytes] = attrs.Factory(list)
+            __stop__:   bool = False
 
-    def wait(self) -> None:
-        """Wait for the ffmpeg process to finish"""
-        self.ffmpeg.wait()
-        return self
+            def __attrs_post_init__(self):
+                """Starts worker thread"""
+                BrokenUtils.better_thread(self.__worker__)
+
+            def write(self, frame: bytes):
+                """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
+                self.frames.append(frame)
+                while len(self.frames) > self.buffer:
+                    time.sleep(0.01)
+
+            def close(self):
+                """Wait for all frames to be written and close the pipe"""
+                self.__stop__ = True
+                with halo.Halo() as spinner:
+                    while self.frames:
+                        spinner.text = f"Waiting for ({len(self.frames):4}) frames to be written"
+                        time.sleep(0.2)
+                with halo.Halo("Waiting FFmpeg to finish") as spinner:
+                    while not self.ffmpeg.stdin.closed:
+                        time.sleep(0.2)
+
+            def __worker__(self):
+                while True:
+                    # If there is frames to write, write them
+                    if self.frames:
+                        self.ffmpeg.stdin.write(self.frames.pop(0))
+                        continue
+                    if self.__stop__:
+                        break
+                    time.sleep(0.01)
+                self.ffmpeg.stdin.close()
+
+        return BrokenFFmpegBuffered(self.ffmpeg, buffer)
 
     # ---------------------------------------------------------------------------------------------|
     # High level functions
