@@ -25,12 +25,10 @@ class BrokenExternalABC(ABC):
 
 # -------------------------------------------------------------------------------------------------|
 
-from .BrokenFFmpeg import *
 from .BrokenNihui import *
 from .BrokenStableDiffusion import *
 
 BROKEN_STR_TO_EXTERNAL_MAP = {
-    "ffmpeg": BrokenFFmpeg,
     "stable_diffusion": BrokenStableDiffusion,
 
     # Nihui

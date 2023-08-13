@@ -91,6 +91,7 @@ class BrokenCLI:
         self.typer_app.command(rich_help_panel="📦 Installation")(self.install)
         self.typer_app.command(rich_help_panel="📦 Installation")(self.requirements)
         self.typer_app.command(rich_help_panel="📦 Installation")(self.scripts)
+        self.typer_app.command(rich_help_panel="📦 Installation")(self.link)
 
         # Section: Miscellanous
         self.typer_app.command(rich_help_panel="⚙️  Core")(self.date)
@@ -101,12 +102,27 @@ class BrokenCLI:
 
         # Section: Experimental
         self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.pillow_simd)
-        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.link)
+        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.wheel)
 
         # Execute the CLI
         self.typer_app()
 
     # # Experimental
+
+    def wheel(self):
+        """Builds a Python wheel for Broken"""
+        BrokenPath.mkdir(self.BUILD_DIR)
+        dist = BrokenPath.resetdir(BROKEN_MONOREPO_DIR/"dist")
+
+        # Make Python Wheel
+        shell(POETRY, "build", "--format", "wheel", f"--directory={self.BUILD_DIR}")
+
+        # Get the wheel file, move to Build dir
+        wheel = next(dist.glob("*.whl"))
+        wheel = BrokenPath.move(wheel, self.BUILD_DIR/wheel.name)
+        BrokenPath.remove(dist)
+
+        log.info(f"Python wheel built at {wheel}")
 
     def link(self, path: Path):
         """Links some Project Path or Folder of Projects to also be managed by Broken"""
@@ -208,14 +224,14 @@ class BrokenCLI:
                             default="retry"
                         )
                         if answer == "r":
-                            BrokenEasy.Recurse(run_project, reinstall=True)
+                            BrokenUtils.recurse(run_project, reinstall=True)
                         elif answer == "retry":
-                            BrokenEasy.Recurse(run_project)
+                            BrokenUtils.recurse(run_project)
 
                     elif infinite:
-                        log.success(f"Detect Project [{name}] finished running successfully")
+                        log.success(f"Detected Project [{name}] finished running successfully")
                         rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
-                        BrokenEasy.Recurse(run_project)
+                        BrokenUtils.recurse(run_project)
 
                 # Route for Rust projects
                 elif language == ProjectLanguage.Rust:

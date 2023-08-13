@@ -5,7 +5,7 @@
 name = "Broken-Source-Projects"
 version = "2023.8.10"
 edition = "2021"
-authors = ["Tremeschin"]
+authors = ["Tremeschin <tremeschin@users.noreply.github.com>"]
 description = "Broken Source Software Monorepo"
 repository = "https://github.com/BrokenSource/BrokenSource"
 

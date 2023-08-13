@@ -1,7 +1,7 @@
 from . import *
 
 
-class Interpolation:
+class BrokenTimelineInterpolation:
     """An interpolation function defines points in betwee (t=0, a) (t=1, b)"""
     def lerp(a, b, t, clamp=True):
         """Linear interpolation, a line"""
@@ -9,11 +9,11 @@ class Interpolation:
 
     def smoothstep(a, b, t, clamp=True):
         """Smooth interpolation with a cubic curve"""
-        return Interpolation.lerp(a, b, t*t*(3 - 2*t), clamp)
+        return BrokenTimelineInterpolation.lerp(a, b, t*t*(3 - 2*t), clamp)
 
     def sine(a, b, t, clamp=True):
         """Smooth interpolation with the shape of a sine wave"""
-        return Interpolation.lerp(a, b, sin(t*pi/2), clamp)
+        return BrokenTimelineInterpolation.lerp(a, b, sin(t*pi/2), clamp)
 
     def step(a, t):
         """Steps to 1 at t >= a else zero"""
@@ -21,18 +21,18 @@ class Interpolation:
 
     def istep(a, t):
         """Steps to 0 at t >= a else one"""
-        return 1 - Interpolation.step(a, t)
+        return 1 - BrokenTimelineInterpolation.step(a, t)
 
     def heaviside(a, b, t):
         """Steps to 1 when on the interval [a, b] else zero"""
-        return Interpolation.step(a, t) * Interpolation.istep(b, t)
+        return BrokenTimelineInterpolation.step(a, t) * BrokenTimelineInterpolation.istep(b, t)
 
     def iheaviside(a, b, t):
         """Steps to 0 when on the interval [a, b] else one"""
-        return 1 - Interpolation.heaviside(a, b, t)
+        return 1 - BrokenTimelineInterpolation.heaviside(a, b, t)
 
 
-class Continuous:
+class BrokenTimelineContinuous:
     """Generic and useful functions are defined here for keyframes"""
 
     # Trigonometric
@@ -53,7 +53,7 @@ class Continuous:
 
     def triangle(T: float, frequency: float=1, amplitude: float=1, offset: float=0) -> float:
         """Standard generic triangle wave. Range [0, 1], starts at 0"""
-        return 1 - 2 * amplitude * abs(Continuous.sawtooth(T, frequency, amplitude, offset)*2 - 1)
+        return 1 - 2 * amplitude * abs(BrokenTimelineContinuous.sawtooth(T, frequency, amplitude, offset)*2 - 1)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -141,13 +141,13 @@ def test_timeline():
 
     class CustomKeyframeA(BrokenKeyframe):
         def __call__(self, variables, T, t, tau):
-            variables.A = Interpolation.lerp(a=0, b=1, t=t)
-            variables.B = Interpolation.smoothstep(a=0, b=1, t=t)
-            variables.C = Interpolation.heaviside(0.4, 0.6, t)
+            variables.A = BrokenTimelineInterpolation.lerp(a=0, b=1, t=t)
+            variables.B = BrokenTimelineInterpolation.smoothstep(a=0, b=1, t=t)
+            variables.C = BrokenTimelineInterpolation.heaviside(0.4, 0.6, t)
 
     class CustomKeyframeB(BrokenKeyframe):
         def __call__(self, variables, T, t, tau):
-            variables.D = Continuous.triangle(tau, frequency=2, amplitude=0.5)
+            variables.D = BrokenTimelineContinuous.triangle(tau, frequency=2, amplitude=0.5)
 
     # Create Timeline
     timeline = BrokenTimeline()

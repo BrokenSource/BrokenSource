@@ -3,7 +3,7 @@ from . import *
 
 class BrokenStableDiffusion:
     def __init__(self, config=BROKEN_DIRECTORIES.CONFIG/"BrokenStableDiffusion.toml"):
-        BrokenNeedImport("torch", "diffusers", "accelerate", "transformers")
+        BrokenUtils.need_import("torch", "diffusers", "accelerate", "transformers")
         self.config = BrokenDotmap(config)
 
     def load_model(self):

@@ -40,7 +40,8 @@ class BrokenSecondOrderDynamics:
     """
 
     # # State variables
-    value: float = None
+    value:  float = None
+    target: float = None
 
     # # Parameters
     frequency: float = 1
@@ -53,7 +54,17 @@ class BrokenSecondOrderDynamics:
     acceleration: float = 0
 
     # # Internal variables
-    _previous_x: float = 0
+    _previous_x:    float = 0
+    _initial_value: float = 0
+
+    def reset(self):
+        """Resets the system to default values"""
+        self.value        = self._initial_value
+        self.target       = self._initial_value
+        self.integral     = 0
+        self.derivative   = 0
+        self.acceleration = 0
+        self._previous_x  = 0
 
     # # Properties and math that are subset of the parameters
 
@@ -87,24 +98,33 @@ class BrokenSecondOrderDynamics:
     # Get super main instance class of BrokenGL
     def __init__(self, *args, **kwargs) -> None:
         self.__attrs_init__(*args, **kwargs)
+        self.target         = self.value
+        self._initial_value = self.value
 
-    def update(self, target: float, dt: float, velocity=None) -> float:
+    def update(self, target: float=None, dt: float=1, velocity=None) -> float:
         """
         Update the system with a new target value
 
         # Parameters
-        - target  : Next target value to reach
+        - target  : Next target value to reach, None for previous
         - dt      : Time delta since last update
         - velocity: Optional velocity to use instead of calculating it from previous values
         """
+
+        # dt zero does nothing
+        if dt == 0: return
+
+        # Continue previous target if no new one is set
+        self.target = self.target if (target is None) else target
+
         if self.value is None:
-            self._previous_x = target
-            self.value           = target
+            self._previous_x = self.target
+            self.value       = self.target
 
         # Estimate velocity
         if velocity is None:
-            velocity         = (target - self._previous_x)/dt
-            self._previous_x = target
+            velocity         = (self.target - self._previous_x)/dt
+            self._previous_x = self.target
 
         # Clamp k2 to stable values without jitter
         if (self.radians * dt < self.zeta):
@@ -123,7 +143,7 @@ class BrokenSecondOrderDynamics:
         self.value += self.derivative * dt
 
         # Calculate acceleration
-        self.acceleration = (target + self.k3*velocity - self.value - k1*self.derivative)/k2
+        self.acceleration = (self.target + self.k3*velocity - self.value - k1*self.derivative)/k2
 
         # Integrate velocity with acceleration
         self.derivative += self.acceleration * dt
@@ -135,4 +155,11 @@ class BrokenSecondOrderDynamics:
 
     def next(self, target: float, dt: float, velocity=None) -> float:
         """Alias for update"""
-        return self.update(target, dt, velocity)
+        return self.update(target=target, dt=dt, velocity=velocity)
+
+
+@attrs.define
+class SimplexNoise:
+    """
+    Simplex noise generator
+    """

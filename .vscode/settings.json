@@ -49,6 +49,8 @@
         "Premium": "admin",
         "Default": "examples",
         "Community": "shared",
+        "Workspace": "tools",
+        "Prompts": "log",
 
         // Projects
         "Ardmin": "tools",

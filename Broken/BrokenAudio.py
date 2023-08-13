@@ -19,7 +19,7 @@ class BrokenAudio:
 
     def __init__(self, *args, **kwargs):
         self.__attrs_init__(*args, **kwargs)
-        BrokenNeedImport("soundcard", "audioread")
+        BrokenUtils.need_import("soundcard", "audioread")
 
     # # Properties utils
 
@@ -178,7 +178,7 @@ class BrokenAudio:
 
     def start_capture_thread(self) -> None:
         """Keep recording audio on a separate thread"""
-        BetterThread(self.catch_up_recorder, daemon=True, loop=True)
+        BrokenUtils.better_thread(self.catch_up_recorder, daemon=True, loop=True)
 
     # # Get data functions
 
