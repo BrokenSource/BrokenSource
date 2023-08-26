@@ -1,6 +1,19 @@
 """State of the art FFmpeg class. See BrokenFFmpeg for more info"""
 from __future__ import annotations
+
 from . import *
+
+# ----------------------------------------------|
+# Basics
+
+class FFmpegResolution(BrokenEnum):
+    """-s ffmpeg option"""
+
+    # 4K
+    UHD_4K_16x9   = "3840x2160"
+    UHD_4K_21x9   = "4096x1716"
+
+
 
 # ----------------------------------------------|
 # Codecs
@@ -351,7 +364,8 @@ class BrokenFFmpeg:
 
     def __init__(self):
         self.options = DotMap()
-        self.__command__ = ["ffmpeg"]
+        self.set_ffmpeg_binary()
+        self.__command__ = []
         self.filters = []
 
         # Add default available options
@@ -375,6 +389,22 @@ class BrokenFFmpeg:
             self.__advanced__,
             self.__audio_codec__,
         )
+
+    def set_ffmpeg_binary(self, binary: Path=None):
+        """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
+        if binary:
+            log.info(f"Using custom ffmpeg binary {ffmpeg}")
+        elif (binary := shutil.which("ffmpeg")):
+            log.info(f"Using system ffmpeg binary at [{ffmpeg}]")
+        elif BrokenUtils.have_import("imageio_ffmpeg"):
+            binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
+            log.info(f"Using ImageIO FFmpeg binary at [{ffmpeg}]")
+        else:
+            log.error(f"Could not find (FFmpeg) binary on PATH and don't have (ImageIO FFmpeg) package, please install it")
+            exit(1)
+
+        self.__ffmpeg__ = binary
+        return self
 
     # ---------------------------------------------------------------------------------------------|
     # Options related
@@ -721,7 +751,7 @@ class BrokenFFmpeg:
 
     @property
     def command(self) -> List[str]:
-        return BrokenUtils.denum(BrokenUtils.flatten(self.__command__))
+        return BrokenUtils.denum(BrokenUtils.flatten([self.ffmpeg] + self.__command__))
 
     def run(self) -> subprocess.CompletedProcess:
         return shell(self.command)
@@ -736,7 +766,7 @@ class BrokenFFmpeg:
         @attrs.define
         class BrokenFFmpegBuffered:
             ffmpeg: subprocess.Popen
-            buffer: int = 100
+            buffer: int
             frames: list[bytes] = attrs.Factory(list)
             __stop__:   bool = False
 

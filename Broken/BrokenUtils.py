@@ -218,6 +218,14 @@ class BrokenUtils:
                 log.error(f"• Dependency {name} is required, maybe it's not installed on this virtual environment, not listed in BrokenImports or not imported")
                 exit(1)
 
+    def have_import(*packages: Union[str, List[str]]) -> bool:
+        """Check if a package is imported (required for project), else exit with error"""
+        for name in packages:
+            module = sys.modules.get(name, None)
+            if (module is None) or isinstance(module, BrokenImportError):
+                return False
+        return True
+
     def append_return(list: List[Any], item: Any, returns: Option["item", "list"]="item") -> List[Any]:
         """Appends an item to a list, returns the item"""
         list.append(item)
@@ -304,6 +312,50 @@ class BrokenUtils:
         """Check if a sublist is in a list"""
         return all(item in list for item in sublist)
 
+    def extend(base: type, name: str=None, as_property: bool=False) -> type:
+        """
+        Extend a class with another classe's methods or a method directly.
+
+        # Usage:
+        Decorator of the class or method, class to extend as argument
+
+        @BrokenUtils.extend(BaseClass)
+        class ExtendedClass:
+            def method(self):
+                ...
+
+        @BrokenUtils.extend(BaseClass)
+        def method(self):
+            ...
+
+        @BrokenUtils.extend(BaseClass, as_property=True)
+        def method(self):
+            ...
+        """
+        def extender(add: type):
+
+            # Extend as property
+            if as_property:
+                return BrokenUtils.extend(base, as_property=False)(property(add))
+
+            # If add is a method
+            if isinstance(add, types.FunctionType):
+                setattr(base, name or add.__name__, add)
+                return base
+
+            # If it's a property
+            if isinstance(add, property):
+                setattr(base, name or add.fget.__name__, add)
+                return base
+
+            # If add is a class, add its methods to base
+            for key, value in add.__dict__.items():
+                if key.startswith("__"):
+                    continue
+                setattr(base, key, value)
+                return base
+
+        return extender
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -408,7 +460,7 @@ class BrokenPath:
         path = Path(path)
         if path.exists():
             log.success(f"Directory [{path}] already exists", echo=echo)
-            return
+            return path
         log.info(f"Creating directory {path}", echo=echo)
         path.mkdir(parents=True, exist_ok=True)
         return path
@@ -658,6 +710,7 @@ class BrokenVsyncClient:
     - enabled:    Whether to enable this client or not
     - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
     - dt:         Whether to pass dt (time since last call) to callback
+    - time:       Whether to pass time (time since first call) to callback
     """
     callback:   callable = None
     name:       str      = None
@@ -668,7 +721,9 @@ class BrokenVsyncClient:
     enabled:    bool     = False
     next_call:  float    = 0
     dt:         bool     = False
-    _broken_vsync_last_call: float = None
+    time:       float    = 0
+    started:    float    = None
+    last_call:  float = None
 
 @attrs.define
 class BrokenVsync:
@@ -678,7 +733,8 @@ class BrokenVsync:
 
     def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
         """Adds a client to the manager with immediate next call"""
-        client.next_call += now()
+        client.next_call += time.time()
+        client.started = time.time()
         self.clients.append(client)
         return client
 
@@ -707,12 +763,12 @@ class BrokenVsync:
         elif not (wait < 0):
             return None
 
-        # Get the time since last call
-        dt = time.time() - (client._broken_vsync_last_call or time.time())
-
         if client.dt:
-            client.kwargs["dt"] = dt
-            client._broken_vsync_last_call = time.time()
+            client.kwargs["dt"] = time.time() - (client.last_call or time.time())
+            client.last_call = time.time()
+
+        if client.time:
+            client.kwargs["time"] = time.time() - client.started
 
         # Keep adding periods until next call is on the future
         while client.next_call < now():

@@ -7,6 +7,9 @@
 
   <h2>Broken Source Software</h2>
 
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json%3Fshow%3Dunique&label=Visitors&color=blue"/>
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json&label=Page%20Views&color=blue"/>
+
   <i>Readme available in:</i>
 
   <!-- <a href="Readme pt-BR.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a> -->
@@ -235,6 +238,7 @@ Below a list, **not ordered by importance or relevance**, of the most notable so
 - [**Huggingface 🤗**](https://huggingface.co): Central repository for AI models made easy with Diffusers, Gradio, Transformers
 - [**Khronos Group**](https://www.khronos.org): For OpenGL, GLSL, Vulkan
 - [**NVIDIA**](https://www.nvidia.com): Bittersweet one, but CUDA and the GPU's technology are undeniably amazing
+- [**GitHub Copilot**](https://copilot.github.com): Spend more time thinking architecture than implementation
 
 
 ### Python

@@ -231,6 +231,7 @@ class BrokenCLI:
                     elif infinite:
                         log.success(f"Detected Project [{name}] finished running successfully")
                         rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
+                        reinstall = False
                         BrokenUtils.recurse(run_project)
 
                 # Route for Rust projects

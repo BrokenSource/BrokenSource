@@ -34,7 +34,7 @@ class BrokenAudio:
             return 44100
         elif self.file:
             return self.file.samplerate
-        return self.__no_input_error()
+        return None
 
     @property
     def channels(self) -> Option[int, None]:
@@ -43,7 +43,7 @@ class BrokenAudio:
             return self.device.channels
         elif self.file:
             return self.file.channels
-        return self.__no_input_error()
+        return None
 
     @property
     def duration(self) -> Option[float, None]:
@@ -52,7 +52,7 @@ class BrokenAudio:
             return math.inf
         elif self.file:
             return self.file.duration
-        return self.__no_input_error()
+        return None
 
     @property
     def data_length(self) -> Option[int, None]:
