@@ -40,6 +40,7 @@ class ProjectLanguage:
     """The programming language of a project"""
     Python  = "python"
     Rust    = "rust"
+    CPP     = "cpp"
     Unknown = "unknown"
 
 # FIXME: How to merge with BrokenPlatform?
@@ -89,21 +90,24 @@ class BrokenCLI:
         self.add_run_projects_commands()
 
         # Section: Installation
-        self.typer_app.command(rich_help_panel="📦 Installation")(self.install)
-        self.typer_app.command(rich_help_panel="📦 Installation")(self.requirements)
-        self.typer_app.command(rich_help_panel="📦 Installation")(self.scripts)
-        self.typer_app.command(rich_help_panel="📦 Installation")(self.link)
+        emoji = "📦"
+        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.install)
+        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.requirements)
+        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.scripts)
+        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.link)
 
         # Section: Miscellaneous
-        self.typer_app.command(rich_help_panel="⚙️  Core")(self.date)
-        # self.typer_app.command(rich_help_panel="⚙️  Core")(self.hooks)
-        self.typer_app.command(rich_help_panel="⚙️  Core")(self.update)
-        self.typer_app.command(rich_help_panel="⚙️  Core")(self.clean)
-        self.typer_app.command(rich_help_panel="⚙️  Core")(self.release)
+        emoji = "🛡️ "
+        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.date)
+        self.typer_app.command(rich_help_panel=f"{emoji} Core", hidden=True)(self.hooks)
+        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.update)
+        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.clean)
+        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.release)
 
         # Section: Experimental
-        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.pillow_simd)
-        self.typer_app.command(rich_help_panel="⚠️  Experimental")(self.wheel)
+        emoji = "⚠️ "
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.pillow_simd)
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.wheel)
 
         # Execute the CLI
         self.typer_app()
@@ -172,13 +176,19 @@ class BrokenCLI:
                 return venv_path
 
     def get_project_language(self, path: Path, echo=True) -> ProjectLanguage:
-        """Get the language of a project"""
+        """
+        Get the programming language of a project
+        # Fixme: this could be done smartly (like a Broken.toml file)
+        """
         if (path/"pyproject.toml").exists():
             log.info(f"Project [{path}] is a Python project", echo=echo)
             return ProjectLanguage.Python
         elif (path/"Main.rs").exists() and (path.name in BrokenCLI.RustProjectFeatures):
             log.info(f"Project [{path}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
+        elif (path/"meson.build").exists():
+            log.info(f"Project [{path}] is a C++ project", echo=echo)
+            return ProjectLanguage.CPP
         else:
             log.error(f"Unknown project language for [{path}]", echo=echo)
             return ProjectLanguage.Unknown
@@ -241,6 +251,13 @@ class BrokenCLI:
                     release = ["--profile", "release"] if not debug else []
                     shell(CARGO, "run", "--bin", name, "--features", BrokenCLI.RustProjectFeatures[name], release, "--", ctx.args)
 
+                # Route for C++ projects
+                elif language == ProjectLanguage.CPP:
+                    with BrokenPath.pushd(path):
+                        shell("meson", "setup", self.BUILD_DIR/name)
+                        shell("meson", "compile", "-C", self.BUILD_DIR/name)
+                        shell(self.BUILD_DIR/name/name, ctx.args)
+
             return run_project
 
         # Get the base parent path of the project (might be folder of projects), resolve symlinks
@@ -250,6 +267,7 @@ class BrokenCLI:
         description = "···"
 
         # Get project description from config files based on language
+        # Fixme: Broken.toml specification would be nice
         if language == ProjectLanguage.Python:
             if (config := path/"pyproject.toml").exists():
                 description = (
@@ -266,6 +284,12 @@ class BrokenCLI:
                     .get("package", {})
                     .get("description", description)
                 )
+
+        elif language == ProjectLanguage.CPP:
+            # Experimental C++ because I ain't good enough in Rust yet
+            # (I'm terrible at C++ also, but memory unsafe is easier to code lol)
+            ...
+
         else:
             # TODO: Any standard on what Broken.toml might contain?
             if (config := path/"Broken.toml").exists():
@@ -275,8 +299,9 @@ class BrokenCLI:
                 )
 
         # Add project's mascot to description
-        if   language == ProjectLanguage.Python: description = f"🐍 {description}"
-        elif language == ProjectLanguage.Rust:   description = f"🦀 {description}"
+        if   language == ProjectLanguage.Python: description = f"🐍 (Python) {description}"
+        elif language == ProjectLanguage.Rust:   description = f"🦀 (Rust  ) {description}"
+        elif language == ProjectLanguage.CPP:    description = f"🌀 (C/C++ ) {description}"
 
         # Create Typer command
         self.typer_app.command(
