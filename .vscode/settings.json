@@ -10,24 +10,8 @@
         // Syncthing
         ".stignore": true,
 
-        //// Hide non "focusing now" repositories
-
-        // "Projects" folder
-        "Projects/Ardmin":       true,
-        "Projects/AudioSight":   false,
-        "Projects/DepthFlow":    false,
-        "Projects/Harper":       true,
-        "Projects/HypeWord":     true,
-        "Projects/Oscillospoor": true,
-        "Projects/PhasorFlow":   true,
-        "Projects/PocketSolar":  true,
-        "Projects/QuadSnap":     false,
-        "Projects/ShaderFlow":   false,
-        "Projects/Sortia":       true,
-
-        // "Work" folder
-        "Papers":                true,
-        "Website":               true,
+        // Lock files
+        "**/*.lock": true,
     },
 
     "material-icon-theme.files.associations": {
@@ -79,9 +63,6 @@
         {"tag": "info",   "color": "#3498DB"},
         {"tag": "debug",  "color": "#FCC203"},
     ],
-
-    // Awesome font ligatures
-    "editor.fontLigatures": true,
 
     // Better minimap
     "editor.minimap.renderCharacters": false,

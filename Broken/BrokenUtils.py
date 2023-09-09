@@ -535,7 +535,19 @@ class BrokenPath:
     def symlink(where: Path, to: Path, echo=True):
         """Symlink a path to another path"""
         log.info(f"Symlinking [{where}] -> [{to}]", echo=echo)
+
+        # Make parent directory
         BrokenPath.mkdir(where.parent, echo=False)
+
+        # Remove old symlink
+        if where.is_symlink():
+            where.unlink()
+
+        # Error: `where` is a existing file or directory
+        if where.exists():
+            log.error(f"Path [{where}] already exists, can't symlink")
+            return
+
         where.symlink_to(to)
 
 class ShellCraft:

@@ -21,9 +21,6 @@
         // Save bytes, save the world
         "shardulm94.trailing-spaces",
 
-        // Why this isn't default
-        "MarkosTh09.color-picker",
-
         // Actually see special notes on the code
         "aaron-bond.better-comments",
     ]

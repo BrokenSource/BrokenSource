@@ -1,6 +1,5 @@
 from . import *
 
-_PIANO_NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
 
 @attrs.define
 class BrokenNote:
@@ -8,6 +7,8 @@ class BrokenNote:
     start:    float = 0
     end:      float = 0
     velocity: float = 100
+
+    _PIANO_NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
 
     # Initialization functions
 
@@ -29,11 +30,11 @@ class BrokenNote:
 
     def index_to_name(note: int) -> str:
         """Convert a MIDI note index to a key name, eg (60 -> C4) (69 -> A4)"""
-        return _PIANO_NOTES[note % 12] + str(note // 12 - 1)
+        return BrokenNote._PIANO_NOTES[note % 12] + str(note // 12 - 1)
 
     def name_to_index(key: str) -> int:
         """Convert a key name to a MIDI note index, eg (C4 -> 60) (A4 -> 69) (A10)"""
-        return _PIANO_NOTES.index(key[0]) + 12 * (int(key[1:]) + 1)
+        return BrokenNote._PIANO_NOTES.index(key[:-1]) + (int(key[-1]) + 1) * 12
 
     def index_to_frequency(note: int) -> float:
         """Convert a MIDI note index to a frequency, eg (60 -> 261.63) (69 -> 440)"""

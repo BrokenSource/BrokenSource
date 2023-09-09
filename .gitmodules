@@ -28,3 +28,6 @@
 [submodule "Templates/Python"]
 	path = Templates/PythonTemplate
 	url = https://github.com/BrokenSource/Python
+[submodule "Docs"]
+	path = Docs
+	url = https://github.com/BrokenSource/Docs

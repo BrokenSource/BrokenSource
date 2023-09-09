@@ -69,15 +69,16 @@ class BrokenCLI:
     ProjectsInfo = {}
 
     def __init__(self) -> None:
-        # Monorepository directories for Broken CLI script
+        # Mono repository directories for Broken CLI script
         self.RELEASES_DIR       = BROKEN_MONOREPO_DIR/"Release"
         self.PROJECTS_DIR       = BROKEN_MONOREPO_DIR/"Projects"
         self.ASSETS_DIR         = BROKEN_MONOREPO_DIR/"Assets"
         self.BUILD_DIR          = BROKEN_MONOREPO_DIR/"Build"
+        self.DOCS_DIR           = BROKEN_MONOREPO_DIR/"Docs"
         self.TEMPLATES_DIR      = BROKEN_MONOREPO_DIR/"Templates"
 
         # Nested directories
-        self.OTHER_PROJECTS_DIR = self.PROJECTS_DIR/"Others"
+        self.OTHER_PROJECTS_DIR = self.PROJECTS_DIR/"Hook"
         self.WINEPREFIX         = self.BUILD_DIR/"Wineprefix"
 
     # Builds CLI commands and starts Typer
@@ -93,7 +94,7 @@ class BrokenCLI:
         self.typer_app.command(rich_help_panel="📦 Installation")(self.scripts)
         self.typer_app.command(rich_help_panel="📦 Installation")(self.link)
 
-        # Section: Miscellanous
+        # Section: Miscellaneous
         self.typer_app.command(rich_help_panel="⚙️  Core")(self.date)
         # self.typer_app.command(rich_help_panel="⚙️  Core")(self.hooks)
         self.typer_app.command(rich_help_panel="⚙️  Core")(self.update)
@@ -213,7 +214,7 @@ class BrokenCLI:
                     project_venv = self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
                     status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
-                    # Detect bad returnstatus, reinstall virtualenv and retry once
+                    # Detect bad return status, reinstall virtualenv and retry once
                     if (status.returncode != 0) and (not reinstall):
                         log.warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
                         log.warning(f"- Virtual environment path: [{project_venv}]")
@@ -293,47 +294,57 @@ class BrokenCLI:
 
     # TODO: Will I ever have projects in other languages?
     def add_run_projects_commands(self, echo=False) -> None:
-        self.cargotoml = DotMap(toml.loads((BROKEN_MONOREPO_DIR/"Cargo.toml").read_text()))
+        self.cargo_toml = DotMap(toml.loads((BROKEN_MONOREPO_DIR/"Cargo.toml").read_text()))
 
         # Build Rust required features
-        for rust_project in self.cargotoml["bin"]:
+        for rust_project in self.cargo_toml["bin"]:
             BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
 
-        # Search every subdirectories for pyproject.toml or Main.rs
-        for path in self.PROJECTS_DIR.glob("**/*"):
+        def check_directory(path: Path):
 
-            # Resolve symlinks
-            path = path.resolve().absolute()
+            # Search every subdirectories for pyproject.toml or Main.rs
+            for sub in path.glob("**/*"):
 
-            # Might have non-project files
-            if not path.is_dir():
-                continue
+                # Avoid recursion
+                if sub == BROKEN_MONOREPO_DIR:
+                    continue
 
-            # Empty dir might be a bare submodule
-            if not list(path.iterdir()):
-                continue
+                # Resolve symlinks recursively
+                if sub.is_symlink():
+                    return check_directory(sub.resolve().absolute())
 
-            # Project programming language
-            language = self.get_project_language(path, echo=False)
+                # Might have non-project files
+                if not sub.is_dir():
+                    continue
 
-            # Skip unknown projects
-            if language == ProjectLanguage.Unknown:
-                continue
+                # Empty dir might be a bare submodule
+                if not list(sub.iterdir()):
+                    continue
 
-            # Get project name and translate lowercase to real name
-            name = path.name
-            BrokenCLI.ProjectsInfo[name.lower()] = DotMap(
-                name=name,
-                path=path,
-                language=language,
-            )
+                # Project programming language
+                language = self.get_project_language(sub, echo=False)
 
-            # Add project command
-            self.add_project_command(name=name, path=path, language=language)
+                # Skip unknown projects
+                if language == ProjectLanguage.Unknown:
+                    continue
 
-            # Add attribute to the enumerator ProjectsEnumerator
-            if name.lower() not in ProjectsEnumerator.__members__:
-                aenum.extend_enum(ProjectsEnumerator, name.lower(), name.lower())
+                # Get project name and translate lowercase to real name
+                name = sub.name
+                BrokenCLI.ProjectsInfo[name.lower()] = DotMap(
+                    name=name,
+                    path=sub,
+                    language=language,
+                )
+
+                # Add project command
+                self.add_project_command(name=name, path=sub, language=language)
+
+                # Add attribute to the enumerator ProjectsEnumerator
+                if name.lower() not in ProjectsEnumerator.__members__:
+                    aenum.extend_enum(ProjectsEnumerator, name.lower(), name.lower())
+
+        # Check all projects directories
+        check_directory(self.PROJECTS_DIR)
 
     # NOTE: Also returns date string
     def date(self) -> str:
@@ -423,10 +434,10 @@ class BrokenCLI:
             # Download and install Rust
             with BrokenDownloads.download(rust_installer) as installer:
                 shell(BASH, installer, "--profile", "default", "-y")
-                log.fixme(f"Please run the last command again or restar terminal or Rust binaries won't be found")
+                log.fixme(f"Please run the last command again or restart terminal or Rust binaries won't be found")
                 exit(0)
 
-        # Detect if default Rust toolchain installed is the one specificed in RUSTUP_TOOLCHAIN
+        # Detect if default Rust toolchain installed is the one specified in RUSTUP_TOOLCHAIN
         for line in shell(RUSTUP, "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
                 log.info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
@@ -597,7 +608,7 @@ class BrokenCLI:
 
             # Cross compilation bootstrap for Windows from Linux
             if (BrokenPlatform.OnLinux) and (platform == ReleasePlatform.WindowsAMD64):
-                log.warning("wine-staging as of version 8.11 fails creating and installing the virtualenvironments in poetry")
+                log.warning("wine-staging as of version 8.11 fails creating and installing the virtual environments in poetry")
 
                 # Wine called binaries
                 WINE_PYTHON = [WINE, "python.exe"]
@@ -654,14 +665,14 @@ class BrokenCLI:
 
             # Use the project's virtualenv site-packages
             if (BrokenPlatform.OnLinux):
-                libname = "libglfw.so"
-                log.fixme(f"Applying [{libname}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
+                lib_name = "libglfw.so"
+                log.fixme(f"Applying [{lib_name}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
                 try:
-                    lib = next(Path("/usr/lib").glob(f"**/{libname}"))
-                    log.success(f"Found [{libname}] at [{lib}]")
+                    lib = next(Path("/usr/lib").glob(f"**/{lib_name}"))
+                    log.success(f"Found [{lib_name}] at [{lib}]")
                     os.environ["PYGLFW_LIBRARY"] = str(lib)
                 except StopIteration:
-                    log.error(f"[{libname}] not found on /usr/lib, ModernGL projects might fail")
+                    log.error(f"[{lib_name}] not found on /usr/lib, ModernGL projects might fail")
 
             # Compile the Python project with Pyinstaller
             if not nuitka:
@@ -742,9 +753,9 @@ class BrokenCLI:
             self.install_rust()
             rust_profile = "ultra"
 
-            # Fix Fortran compiler for Windows crosscompilation netlib for ndarray-linalg package
+            # Fix Fortran compiler for Windows cross compilation netlib for ndarray-linalg package
             if (BrokenPlatform == "linux") and (platform == "windows-amd64"):
-                log.note("Fixing Fortran compilation for Windows crosscompilation")
+                log.note("Fixing Fortran compilation for Windows cross compilation")
                 os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
 
             # Add target toolchain for Rust
@@ -829,7 +840,7 @@ class BrokenCLI:
                     "mingw-w64-toolchain",
                     "upx",
 
-                    # Python crosscompilation to Windows
+                    # Python cross compilation to Windows
                     "wine",
                     "wine-mono",
                     "winetricks",
