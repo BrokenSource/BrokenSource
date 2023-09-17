@@ -5,20 +5,30 @@ BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'R
 
 # -------------------------------------------------------------------------------------------------|
 
-def shell(*args, output=False, Popen=False, echo=True, confirm=False, do=True, **kwargs):
+def shell(
+    *args: list[Any],
+    output: bool=False,
+    Popen: bool=False,
+    echo: bool=True,
+    confirm: bool=False,
+    do:bool =True,
+    **kwargs
+):
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
 
-    # Usage:
-    - shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
+    Example:
+    ```python
+    shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
+    ```
 
-    # Parameters:
-    - args:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
-    - output:  Whether to return the output of the command or not
-    - Popen:   Whether to run and return the Popen object or not
-    - echo:    Whether to print the command or not
-    - confirm: Whether to ask for confirmation before running the command or not
-    - do:      Whether to run the command or not, good for conditional commands
+    Args:
+        args (list[]):    The command to run, can be a list of arguments or a list of lists of arguments, don't care
+        output:  Whether to return the output of the command or not
+        Popen:   Whether to run and return the Popen object or not
+        echo:    Whether to print the command or not
+        confirm: Whether to ask for confirmation before running the command or not
+        do:      Whether to run the command or not, good for conditional commands
     """
     if output and Popen:
         raise ValueError("Cannot use output=True and Popen=True at the same time")
@@ -63,9 +73,22 @@ class BrokenPlatform:
 # -------------------------------------------------------------------------------------------------|
 
 class Dummy:
-    """Well, an empty callable both initialization and __call__, eats up args and kwargs as well, does nothing"""
+    """
+    A class that does nothing
+    """
     def __init__(self,*a,**b): ...
     def __call__(self,*a,**b): ...
+    def __getattr__(self,*a,**b): return self
+    def __setattr__(self,*a,**b): return self
+    def __delattr__(self,*a,**b): return self
+    def __getitem__(self,*a,**b): return self
+    def __setitem__(self,*a,**b): return self
+    def __delitem__(self,*a,**b): return self
+    def __iter__(self,*a,**b): return self
+    def __next__(self,*a,**b): return self
+    def __enter__(self,*a,**b): return self
+    def __exit__(self,*a,**b): return self
+
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -336,7 +359,7 @@ class BrokenUtils:
 
             # Extend as property
             if as_property:
-                return BrokenUtils.extend(base, as_property=False)(property(add))
+                return BrokenUtils.extend(base, name=name, as_property=False)(property(add))
 
             # If add is a method
             if isinstance(add, types.FunctionType):
@@ -411,6 +434,7 @@ class BrokenPath:
         # Restore PATH
         os.environ["PATH"] = old
 
+    @staticmethod
     def get_binary(name: str, file_not_tagged_executable_workaround=True, echo=True) -> Option[Path, None]:
         """Get a binary from PATH"""
 
@@ -430,6 +454,7 @@ class BrokenPath:
 
         return binary
 
+    @staticmethod
     def binary_exists(name: str, echo=True) -> bool:
         """Check if a binary exists on PATH"""
         return BrokenPath.get_binary(name, echo=echo) is not None
@@ -444,9 +469,11 @@ class BrokenPath:
         yield path
         os.chdir(cwd)
 
+    @staticmethod
     def true_path(path: PathLike) -> Path:
         return Path(path).expanduser().resolve().absolute()
 
+    @staticmethod
     def make_executable(path: PathLike, echo=False) -> None:
         """Make a file executable"""
         path = Path(path)
@@ -455,6 +482,7 @@ class BrokenPath:
 
     # # File or directory creation
 
+    @staticmethod
     def mkdir(path: PathLike, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = Path(path)
@@ -465,11 +493,13 @@ class BrokenPath:
         path.mkdir(parents=True, exist_ok=True)
         return path
 
+    @staticmethod
     def resetdir(path: PathLike, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         BrokenPath.remove(path, echo=echo)
         return BrokenPath.mkdir(path, echo=echo)
 
+    @staticmethod
     def touch(path: PathLike, echo=True):
         """Creates a file, fail safe™"""
         path = Path(path)
@@ -481,19 +511,21 @@ class BrokenPath:
 
     # # Data moving
 
+    @staticmethod
     def copy(source: PathLike, destination: PathLike, echo=True) -> "destination":
         source, destination = Path(source), Path(destination)
         log.info(f"Copying [{source}] -> [{destination}]", echo=echo)
         shutil.copy2(source, destination)
         return destination
 
+    @staticmethod
     def move(source: PathLike, destination: PathLike, echo=True) -> "destination":
         source, destination = Path(source), Path(destination)
         log.info(f"Moving [{source}] -> [{destination}]", echo=echo)
         shutil.move(source, destination)
         return destination
 
-    # Path may be a file or directory
+    @staticmethod
     def remove(path: PathLike, confirm=False, echo=True) -> bool:
         path = Path(path)
         log.info(f"• Removing Path ({confirm=}) [{path}]", echo=echo)
@@ -522,6 +554,7 @@ class BrokenPath:
 
         return True
 
+    @staticmethod
     def open_in_file_explorer(path: PathLike):
         """Opens a path in the file explorer"""
         path = Path(path)
@@ -532,23 +565,32 @@ class BrokenPath:
         elif BrokenPlatform.OnMacOS:
             shell("open", path)
 
+    @staticmethod
     def symlink(where: Path, to: Path, echo=True):
-        """Symlink a path to another path"""
-        log.info(f"Symlinking [{where}] -> [{to}]", echo=echo)
+        """Symlink [where] -> [to], `where` being the symlink and `to` the target
+
+        Args:
+            where (Path): Symlink path
+            to (Path): Target path
+
+        Returns:
+            None
+        """
+        log.info(f"Symlinking [{to}] -> [{where}]", echo=echo)
 
         # Make parent directory
-        BrokenPath.mkdir(where.parent, echo=False)
+        BrokenPath.mkdir(to.parent, echo=False)
 
         # Remove old symlink
-        if where.is_symlink():
-            where.unlink()
+        if to.is_symlink():
+            to.unlink()
 
         # Error: `where` is a existing file or directory
-        if where.exists():
-            log.error(f"Path [{where}] already exists, can't symlink")
+        if to.exists():
+            log.error(f"Path [{to}] exists and isn't a symlink")
             return
 
-        where.symlink_to(to)
+        to.symlink_to(where)
 
 class ShellCraft:
 
@@ -775,15 +817,20 @@ class BrokenVsync:
         elif not (wait < 0):
             return None
 
+        # The assumed instant the code below will run instantly
+        now = time.time()
+
+        # Delta time between last call and next call
         if client.dt:
-            client.kwargs["dt"] = time.time() - (client.last_call or time.time())
-            client.last_call = time.time()
+            client.kwargs["dt"] = now - (client.last_call or now)
+            client.last_call = now
 
+        # Time since client started
         if client.time:
-            client.kwargs["time"] = time.time() - client.started
+            client.kwargs["time"] = now - client.started
 
-        # Keep adding periods until next call is on the future
-        while client.next_call < now():
+        # Add periods until next call is in the future
+        while client.next_call <= now:
             client.next_call += 1/client.frequency
 
         # Enter or not the given context, call callback with args and kwargs
@@ -838,3 +885,15 @@ class BrokenEnum(Enum):
         except KeyError:
             log.error(f"No such value [{value}] on Enum class [{cls.__name__}]")
             raise ValueError
+
+    @classmethod
+    @property
+    def options(cls) -> List[Enum]:
+        """Get all members of the enum"""
+        return list(cls)
+
+    @classmethod
+    @property
+    def values(cls) -> List[Any]:
+        """Get all values of the enum"""
+        return [member.value for member in cls]

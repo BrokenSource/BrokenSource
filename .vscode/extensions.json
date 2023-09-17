@@ -23,5 +23,8 @@
 
         // Actually see special notes on the code
         "aaron-bond.better-comments",
+
+        // Python Isort
+        "ms-python.isort",
     ]
 }

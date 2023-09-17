@@ -14,13 +14,19 @@
         "**/*.lock": true,
     },
 
+    // Python isort
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+
     "material-icon-theme.files.associations": {
         "brakeit": "python"
     },
 
     "material-icon-theme.folders.associations": {
-        // Python
+        // Broken Stuff
         "Broken": "src",
+        "Papers": "log",
 
         // Rust
         "Rust": "src",
@@ -29,6 +35,7 @@
         // Other
         "Externals": "resource",
         "Scenes": "core",
+        "Sombrero": "environment",
         "User": "home",
         "Premium": "admin",
         "Default": "examples",

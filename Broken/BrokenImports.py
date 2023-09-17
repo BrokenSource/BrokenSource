@@ -53,6 +53,7 @@ while True:
     with BrokenImports():
         import ast
         import configparser
+        import collections
         import copy
         import ctypes
         import datetime

@@ -50,7 +50,7 @@ class BrokenBase:
         return typer.Typer(
             help=description or "No help provided",
             add_help_option=False,
-            pretty_exceptions_enable=True,
+            pretty_exceptions_enable=False,
             no_args_is_help=kwargs.get("no_args_is_help", True),
             add_completion=False,
             rich_markup_mode="rich",

@@ -12,8 +12,8 @@ INSTALL_MAX_ATTEMPTS = 3
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 
-# Write annoying __pycache__ and .pyc on temporary directory
-# On Linux it's /tmp under System RAM, so it's brutally fast
+# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean
+# On Linux it's /tmp under System RAM, so it's brutally fast, shouldn't take that much memory
 os.environ["PYTHONPYCACHEPREFIX"] = str(Path(tempfile.gettempdir())/"pycache")
 
 # Weird KDE wallet or GNOME wallet askings on Linux
