@@ -43,6 +43,10 @@
         "Workspace": "tools",
         "Prompts": "log",
 
+        // Shaders
+        "Fragment": "shader",
+        "Vertex": "shader",
+
         // Projects
         "Ardmin": "tools",
         "AudioSight": "tools",

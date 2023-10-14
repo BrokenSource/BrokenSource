@@ -1,61 +1,64 @@
 #!/usr/bin/env python3
+import itertools
 import os
 import sys
 import tempfile
-from itertools import count
 from pathlib import Path
 from subprocess import run as command
 
 # Constants
 INSTALL_MAX_ATTEMPTS = 3
+TEMP_DIR = Path(tempfile.gettempdir())
 
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 
 # Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean
 # On Linux it's /tmp under System RAM, so it's brutally fast, shouldn't take that much memory
-os.environ["PYTHONPYCACHEPREFIX"] = str(Path(tempfile.gettempdir())/"pycache")
+os.environ["PYTHONPYCACHEPREFIX"] = str(TEMP_DIR/"__pycache__")
 
 # Weird KDE wallet or GNOME wallet askings on Linux
 if os.name == "posix":
     os.environ["PYTHON_KEYRING_BACKEND"] = "keyring.backends.null.Keyring"
 
-# Current Python executable
+# Binaries convenience
 PYTHON = sys.executable
 POETRY = [PYTHON, "-m", "poetry"]
 PIP    = [PYTHON, "-m", "pip"]
 
-# Directories
-THIS_FILE = Path(__file__).absolute()
-ROOT      = THIS_FILE.parent.absolute()
+# Path to this script
+BRAKEIT = Path(__file__).absolute()
 
-# Change directory to where the script is
-os.chdir(ROOT)
+# Change directory to where the script is from anywhere
+os.chdir(BRAKEIT.parent)
 
-# Make the script executable
+# Make the script executable (runnable if on PATH)
 if os.name in ["posix", "mac"]:
-    os.chmod(THIS_FILE, 0o755)
+    os.chmod(BRAKEIT, 0o755)
 
-# Install pip
-for attempt in count(1):
+# Ensure pip is installed
+for attempt in itertools.count(0):
     try:
         import pip
         break
     except Exception:
         if attempt == INSTALL_MAX_ATTEMPTS:
-            print("Failed to install pip with [python -m ensurepip], please have it available")
+            print("Failed to install pip automatically")
             exit(1)
+        print("Couldn't import pip")
 
-    # FIXME: Do we need any more complex solutions?
-    command([sys.executable, "-m", "ensurepip"])
+    # Fixme: Do we need a more complex solution?
+    print("Installing pip with [python -m ensurepip]")
+    command([sys.executable, "-m", "ensurepip", "--upgrade"])
 
 # Install poetry
-for attempt in count(0):
+for attempt in itertools.count(0):
 
-    # Installation is hanging
+    # Couldn't install poetry or not available on Path
     if attempt == INSTALL_MAX_ATTEMPTS:
         print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but failed")
-        print( "· Please install it at (https://python-poetry.org/docs/#installation)")
+        print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
+        print( "2) Installe it manually at (https://python-poetry.org/docs/#installation)")
         exit(1)
 
     # Call poetry --version, command might exit status 1 if it's not installed

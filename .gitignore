@@ -14,4 +14,6 @@ ___*
 .stversions
 
 # Symlinks
-Projects/*
+Projects/**
+!Projects/Hook
+!Projects/Hook/Readme.md

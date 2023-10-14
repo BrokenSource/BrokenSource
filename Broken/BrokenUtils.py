@@ -13,7 +13,7 @@ def shell(
     confirm: bool=False,
     do:bool =True,
     **kwargs
-):
+) -> None | str | subprocess.Popen | subprocess.CompletedProcess:
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
 

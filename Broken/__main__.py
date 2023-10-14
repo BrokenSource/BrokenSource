@@ -108,11 +108,44 @@ class BrokenCLI:
         emoji = "⚠️ "
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.pillow_simd)
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.wheel)
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
 
         # Execute the CLI
         self.typer_app()
 
     # # Experimental
+
+    def docs(self):
+        # Run sphinx-apidoc to generate docs
+        BUILD_DOCS_DIR = self.BUILD_DIR/"Documentation"
+        BrokenPath.resetdir(BUILD_DOCS_DIR)
+
+        shell(
+            "sphinx-apidoc",
+            "-d", 10,
+            "-e",
+            "--full",
+            "-o",
+            BUILD_DOCS_DIR,
+            BROKEN_MONOREPO_DIR
+        )
+
+        # Copy conf.py
+        BrokenPath.copy(
+            self.DOCS_DIR/"conf.py",
+            BUILD_DOCS_DIR/"conf.py"
+        )
+
+        # Run sphinx-build to generate HTML
+        HTML_FILES = self.DOCS_DIR/"HTML"
+        BrokenPath.resetdir(HTML_FILES)
+
+        shell(
+            "sphinx-build",
+            "-b", "html",
+            BUILD_DOCS_DIR,
+            HTML_FILES
+        )
 
     def wheel(self):
         """Builds a Python wheel for Broken"""
@@ -131,7 +164,7 @@ class BrokenCLI:
 
     def link(self, path: Path):
         """Links some Project Path or Folder of Projects to also be managed by Broken"""
-        BrokenPath.symlink(self.OTHER_PROJECTS_DIR/path.name, path)
+        BrokenPath.symlink(where=path, to=self.OTHER_PROJECTS_DIR/path.name)
 
     def pillow_simd(self):
         """
@@ -254,9 +287,16 @@ class BrokenCLI:
                 # Route for C++ projects
                 elif language == ProjectLanguage.CPP:
                     with BrokenPath.pushd(path):
-                        shell("meson", "setup", self.BUILD_DIR/name)
-                        shell("meson", "compile", "-C", self.BUILD_DIR/name)
-                        shell(self.BUILD_DIR/name/name, ctx.args)
+                        if shell("meson", "setup", self.BUILD_DIR/name).returncode != 0:
+                            log.error(f"Meson failed to setup project [{name}]")
+                            return
+
+                        if shell("meson", "compile", "-C", self.BUILD_DIR/name).returncode != 0:
+                            log.error(f"Meson failed to compile project [{name}]")
+                            return
+
+                        if (status := shell(self.BUILD_DIR/name/name, ctx.args).returncode) != 0:
+                            log.error(f"Detected bad return status ({status}) for the Project [{name}]")
 
             return run_project
 
@@ -344,6 +384,10 @@ class BrokenCLI:
 
                 # Empty dir might be a bare submodule
                 if not list(sub.iterdir()):
+                    continue
+
+                # "___" in path means to ignore
+                if "___" in str(sub):
                     continue
 
                 # Project programming language
@@ -482,6 +526,11 @@ class BrokenCLI:
                 log.info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
                 shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
 
+            # Symlink `brakeit` on local bin
+            brakeit_symlink = HOME_DIR/".local/bin/brakeit"
+            BrokenPath.symlink(where=BROKEN_SHARED_DIR/"brakeit", to=brakeit_symlink)
+            BrokenPath.make_executable(brakeit_symlink)
+
             # Create .desktop file
             if linux_desktop_file:
                 desktop = HOME_DIR/".local/share/applications/Broken.desktop"
@@ -503,7 +552,10 @@ class BrokenCLI:
                 return
             BrokenPath.remove(BROKEN_SHARED_DIR, confirm=True)
             Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
-        else: log.error(f"Unknown Platform [{BrokenPlatform.Name}]"); return
+
+        else:
+            log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
+            return
 
         log.success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
 

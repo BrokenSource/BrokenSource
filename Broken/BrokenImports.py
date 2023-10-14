@@ -52,7 +52,6 @@ def BrokenImports():
 while True:
     with BrokenImports():
         import ast
-        import configparser
         import collections
         import copy
         import ctypes
@@ -114,6 +113,7 @@ while True:
         import moderngl_window.integrations.imgui
         import numpy
         import openai
+        import opensimplex
         import PIL
         import PIL.Image
         import pkg_resources
