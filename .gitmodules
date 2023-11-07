@@ -1,5 +1,5 @@
 [submodule "Assets"]
-	path = Assets
+	path = Meta/Assets
 	url = https://github.com/BrokenSource/Assets
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
@@ -8,13 +8,13 @@
 	path = Projects/Ardmin
 	url = https://github.com/BrokenSource/Ardmin
 [submodule "Projects/PocketSolar"]
-	path = Projects/PocketSolar
+	path = Projects/Others/PocketSolar
 	url = https://github.com/BrokenSource/PocketSolar
 [submodule ".github/.github"]
-	path = .github/Special
+	path = .github/Organization
 	url = https://github.com/BrokenSource/.github
 [submodule "Papers"]
-	path = Papers
+	path = Meta/Papers
 	url = https://github.com/BrokenSource/Papers
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow
@@ -23,11 +23,11 @@
 	path = Projects/QuadSnap
 	url = https://github.com/BrokenSource/QuadSnap
 [submodule "Website"]
-	path = Website
+	path = Meta/Website
 	url = https://github.com/BrokenSource/brokensource.github.io
 [submodule "Templates/Python"]
-	path = Templates/PythonTemplate
+	path = Meta/Templates/PythonTemplate
 	url = https://github.com/BrokenSource/Python
 [submodule "Docs"]
-	path = Docs
+	path = Meta/Docs
 	url = https://github.com/BrokenSource/Docs

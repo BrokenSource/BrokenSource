@@ -6,80 +6,114 @@ forbiddenfruit.curse(
     property(lambda self: f"{(self.seconds*1000 + self.microseconds/1000):5.0f}")
 )
 
-# Set up empty logger
-loguru.logger.remove()
-logger = loguru.logger.bind()
+class BrokenLogging:
 
-# Get the current project name that imported Broken, on the logging format a
-# lambda is needed to inject the current project name into the format string
-BROKEN_CURRENT_PROJECT_NAME = os.environ.get("BROKEN_CURRENT_PROJECT_NAME", "Broken")
-BROKEN_LOG_LEVEL = os.environ.get("LOG_LEVEL", "TRACE").upper()
+    # # Singleton
 
-def _make_logging_format(type: Option["stdout", "file"]="stdout") -> str:
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "singleton"):
+            cls.singleton = super().__new__(cls)
+            cls.singleton.__start__()
+        return cls.singleton
 
-    if type == "stdout":
-        # Get the project name color, "dim" Broken since it's the manager
-        project_color = "dim" if (BROKEN_CURRENT_PROJECT_NAME == "Broken") else "light-blue"
+    def __start__(self):
+        """__init__ but for the singleton"""
+        self.reset()
 
-        # Beautiful logging format for the terminal
-        return (
-            f"│<{project_color}>{BROKEN_CURRENT_PROJECT_NAME.ljust(10)}</{project_color}>├┤<green>{{elapsed.milliseconds}}ms</green>├"
-            "┤<level>{level:7}</level>"
-            "│ ▸ <level>{message}</level>"
+    # # Context information
+
+    @property
+    def project(self):
+        """Current project name"""
+        return os.environ.get("BROKEN_CURRENT_PROJECT_NAME", "Broken")
+
+    @property
+    def project_color(self):
+        """Current project 'logging color'"""
+        return "dim" if (self.project == "Broken") else "light-blue"
+
+    # # Output log places
+
+    def reset(self):
+        """Reset logger bindings"""
+        loguru.logger.remove()
+        self.logger = loguru.logger.bind()
+        self.__loglevels__()
+
+    def stdout(self, loglevel: str) -> Self:
+        """Add stdout logging"""
+        self.reset()
+        self.logger.add(
+            sys.stdout,
+            colorize=True,
+            level=loglevel,
+            format=(
+                f"│<{self.project_color}>{self.project.ljust(10)}</{self.project_color}>├"
+                "┤<green>{elapsed.milliseconds}ms</green>├"
+                "┤<level>{level:7}</level>"
+                "│ ▸ <level>{message}</level>"
+            )
         )
+        return self
 
-    elif type == "file":
-        # Nice logging format, no colors, detailed
-        return (
-            f"[{BROKEN_CURRENT_PROJECT_NAME}]"
-            "[{time:YYYY-MM-DD HH:mm:ss}]-"
-            "[{elapsed.milliseconds}ms]-"
-            "[{level:7}]"
-            " ▸ {message}"
+    def file(self, path: PathLike, loglevel: str, empty: bool=True) -> Self:
+        """Add file logging"""
+
+        # Remove
+        if (path := Path(path)).exists() and empty:
+            path.unlink()
+
+        self.logger.add(
+            path,
+            level=loglevel,
+            format=(
+                f"[{self.project}]"
+                "[{time:YYYY-MM-DD HH:mm:ss}]-"
+                "[{elapsed.milliseconds}ms]-"
+                "[{level:7}]"
+                " ▸ {message}"
+            )
         )
-    else:
-        log.error(f"Unknown logging type: {type}")
-        raise ValueError(f"Unknown logging type: {type}")
+        return self
 
-# Add stdout logging
-logger.add(sys.stdout, colorize=True, level=BROKEN_LOG_LEVEL,
-    format=_make_logging_format(type="stdout")
-)
+    # # Add new log levels
 
-# Uncolored raw text logging asame format as above
-def add_logging_file(path: PathLike):
-    logger.add(path, level=BROKEN_LOG_LEVEL, format=_make_logging_format(type="file"))
+    def __add_loglevel__(self, name: str, loglevel: int = 0, color: str = None) -> Self:
+        """Create a new loglevel `.{name.lower()}` on the logger"""
+        def log(*args, echo=True, **kwargs):
+            if echo: self.logger.log(name, " ".join(map(str, args)), **kwargs)
 
-def add_log_option(name: str, loglevel: int=0, color: str=None):
+        # Create new log level on logger
+        try:
+            self.logger.level(name, loglevel, f"<{color}><bold>" if color else "<bold>")
+        except TypeError:
+            pass
 
-    def log(*args, echo=True, **kwargs):
-        if not echo: return
-        loguru.logger.log(name, ' '.join(map(str, args)), **kwargs)
+        # Assign log function to logger
+        setattr(self.logger, name.lower(), log)
+        return self
 
-    # Maybe add new log level, TypeErrors if it already exists
-    try:
-        loguru.logger.level(name, loglevel, f"<{color}><bold>" if color else "<bold>")
-    except TypeError:
-        pass
+    def __loglevels__(self) -> Self:
+        """Bootstrap better log levels"""
 
-    # Assign function, return it
-    loguru.logger.name = log
-    return loguru.logger.name
+        # Override default ones for echo= argument
+        self.__add_loglevel__("INFO")
+        self.__add_loglevel__("WARNING")
+        self.__add_loglevel__("ERROR")
+        self.__add_loglevel__("DEBUG")
+        self.__add_loglevel__("TRACE")
+        self.__add_loglevel__("SUCCESS")
+        self.__add_loglevel__("CRITICAL")
+        self.__add_loglevel__("EXCEPTION")
 
-log = logger
+        # Add custom ones
+        self.__add_loglevel__("FIXME",  35, "cyan"      )
+        self.__add_loglevel__("TODO",   35, "blue"      )
+        self.__add_loglevel__("NOTE",   35, "magenta"   )
+        self.__add_loglevel__("MINOR",  35, "fg #777"   )
+        self.__add_loglevel__("ACTION", 35, "fg #7340ff")
 
-log.info      = add_log_option("INFO")
-log.warning   = add_log_option("WARNING")
-log.error     = add_log_option("ERROR")
-log.debug     = add_log_option("DEBUG")
-log.trace     = add_log_option("TRACE")
-log.success   = add_log_option("SUCCESS")
-log.critical  = add_log_option("CRITICAL")
-log.exception = add_log_option("EXCEPTION")
+        return self
 
-# Custom logging functions
-log.fixme  = add_log_option("FIXME", 35, "cyan")
-log.todo   = add_log_option("TODO",  35, "blue")
-log.note   = add_log_option("NOTE",  35, "magenta")
-log.minor  = add_log_option("MINOR", 35, "fg #777")
-log.action = add_log_option("ACTION", 35, "fg #7340ff")
+# Initialize logging class
+log = BrokenLogging().stdout("CRITICAL").logger

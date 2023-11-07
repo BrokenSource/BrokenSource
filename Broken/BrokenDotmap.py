@@ -1,18 +1,17 @@
-"""See BrokenDict class documentation"""
 from . import *
 
 
-class BrokenDotmap(dict):
+class BrokenDotmap:
     """
     Trivia
     • Tremeschin 🐙 🎲 🌿 🔱 🪶, [7/7/23 1:29 AM]
     • I just made the most cursed user friendly lazy dictionary you'll ever see
 
     # Description
-    BrokenDict is a file-synced or not dictionary similar to DotMap with some extra utilities
-    - Any dictionary modification outside .no_sync() context will be synced to the file
-    - Utility function ._default(key, value) to set a default value for a key
+    BrokenDict is a file-synced (or not!) dictionary similar to DotMap with some extra utilities
     - Support for TOML, JSON, YAML file formats, just specify the file extension of path on creation
+    - Utility function .default(key, value) to set a default value for a key and sync it
+    - Any dictionary modification outside .no_sync() context will be synced to the file
 
     # Usage
     ```python
@@ -27,80 +26,73 @@ class BrokenDotmap(dict):
     broken_dict.nested.key = "value"
 
     # Default values (returns key if exists else sets value)
-    broken_dict._default("key", "value")
+    broken_dict.default("key", "value")
 
     # Load from dictionary (loads dict into broken_dict["key"] = {"cat": "dog"})
     broken_dict.key.from_dict({"cat": "dog"})
 
     # Get dictionary from this instance nest downwards
-    broken_dict.dict
-    broken_dict.nested.dict
+    broken_dict.to_dict()
+    broken_dict.nested.to_dict()
 
     # Load dictionary from also any TOML, JSON, YAML file
     broken_dict.inner_loaded.from_file("path/to/file.{toml,json,yaml}")
 
-    # Do some heavy operations without syncing
+    # Do some heavy operations without syncing and then sync
     with broken_dict.no_sync():
         for i in range(100):
             broken_dict.primes[i] = is_prime(i)
-
-    # Also do heavy operations but don't sync after finishing
-    with broken_dict.no_sync(sync_after=False):
-        ...
     ```
     """
 
+    # Utility methods
     is_dunder = lambda key: key.startswith("__") and key.endswith("__")
+    true_path = lambda path: Path(path).expanduser().resolve().absolute()
 
-    def __init__(self, path: Path=None, sorted=True, super: Self=None):
-        """
-        Initializes BrokenDict, reads from file or creates it if it doesn't exist
-        - **Do not send `super` argument unless you know what you're doing**
-        """
+    def __init__(self, path: Path=None, sync: bool=True, super: Self=None):
+
+        # Data of the instnace
+        self.__dict__ = dict()
 
         # A reference to the root instance of the dictionaries
         self.__super__ = super or self
 
-        # This instance is the root instance
-        if super is None:
-            self.__sorted__ = sorted
-            self.__sync__   = True
+        # Behavior configuration
+        self.__path__ = path
+        self.__sync__ = sync
 
-            if path is None:
-                self.__path__ = None
-            else:
-                self.__path__   = BrokenPath.true_path(path)
+        # Load or create from file
+        if self.__path__ is not None:
+            self.__path__ = BrokenDotmap.true_path(self.__path__)
 
-                # Information on screen
-                log.info(f"• New BrokenDict instance created")
-                if self.__path__.exists():
-                    log.info(f"└─ Loading from File: [{self.__path__}]")
-                    self.from_file(self.__path__)
-                else:
-                    log.info(f"└─ Creating new File: [{self.__path__}]")
+            log.info(f"• New BrokenDotmap @ ({self.__path__})")
 
-    @property
-    def dict(self):
-        """Get a dictionary from this instance downwards"""
-        return {
-            k: v.dict if isinstance(v, self.__class__) else v
-            for k, v in (
-                sorted(self.items(), key=lambda x: x[0])
-                if self.__super__.__sorted__ else self.items()
-            )
-            if not BrokenDotmap.is_dunder(k)
-        }
+            if self.__path__.exists():
+                self.from_file(self.__path__)
+                return
 
-    def inverse(self, value: Any) -> Any:
-        """Search by value"""
-        return next((k for k, v in self.items() if v == value), None)
+            self.sync()
 
     # # Loading and saving
 
-    def from_file(self, path: Path):
-        """Load a file into this nested instance"""
-        path = BrokenPath.true_path(path)
-        format = path.suffix
+    def from_dict(self, data={}) -> Self:
+        """Append a dictionary to this instance"""
+        for key, value in (data or {}).items():
+            self.__set__(key, self.__recurse__(value))
+        return self
+
+    def to_dict(self) -> dict:
+        """Get a dictionary from this instance downwards"""
+        return {
+            k: v.to_dict() if isinstance(v, self.__class__) else v
+            for k, v in sorted(self.items(), key=lambda x: x[0])
+            if not BrokenDotmap.is_dunder(k)
+        }
+
+    def from_file(self, path: Path) -> Self:
+        """Load a file into this dotmap instance"""
+        path   = BrokenDotmap.true_path(path)
+        format = path.suffix.lower()
 
         # Load data from file
         try:
@@ -111,58 +103,41 @@ class BrokenDotmap(dict):
             elif format == ".yaml":
                 data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
             else:
-                log.error(f"• BrokenDict: Unknown file format")
+                log.error(f"• BrokenDotmap: Unknown file format")
                 log.error(f"└─ File: [{path}]")
                 return
 
         except Exception as e:
-            log.error(f"• BrokenDict: Failed to load file [{path}]")
+            log.error(f"• BrokenDotmap: Failed to load file [{path}]")
             log.error(f"└─ {e}")
-            exit(1)
+            return
 
-        self.from_dict(data)
+        return self.from_dict(data)
 
-    # # From / to methods
+    def sync(self, sync: bool=True) -> None:
+        """Sync this instance to the file"""
+        self.__sync__ = sync
+        self.__super__.__sync_to_file__()
 
-    def from_dict(self, data={}) -> Self:
-        """Append a dictionary to this instance"""
-        for key, value in (data or {}).items():
-            super().__setitem__(key, self.__recurse__(value))
-        self._sync()
-        return self
-
-    # # Utilities
-
-    @contextmanager
-    def no_sync(self, sync_after=True) -> None:
-        """Temporarily disables syncing, for example bulk operations"""
-        self.__sync__ = False
-        yield None
-        self.__sync__ = True
-        if sync_after:
-            self._sync()
-
-    def defaults(self, key: str, value: Any) -> Any:
-        """Set a default value for a key else don't change, returns it"""
-        if key not in self:
-            self[key] = value
-        return self[key]
-
-    # # Internal dunder methods
+    # Internal recursion
 
     def __recurse__(self, value={}) -> Union[Self, Any]:
         """Transforms a dict-like into Self or return the value itself"""
-        if isinstance(value, dict):
-            nested = self.__class__(path=None, super=self.__super__)
-            nested.from_dict(value)
-            value = nested
-        return value
+        return value if (not isinstance(value, dict)) else self.__class__(super=self.__super__).from_dict(value)
 
-    # Get methods
+    # # Redirect items, keys
+
+    def items(self) -> list:
+        return self.__dict__.items()
+
+    def keys(self) -> list:
+        return self.__dict__.keys()
+
+    # # Patch Get methods
 
     def __get__(self, key) -> Union[Self, Any]:
         """If a key doesn't exist, recurse, else return its the value"""
-        return super().setdefault(key, self.__recurse__())
+        return self.__dict__.setdefault(key, self.__recurse__())
 
     def __getitem__(self, key) -> Union[Self, Any]:
         """Handle dictionary item access using key indexing"""
@@ -172,12 +147,12 @@ class BrokenDotmap(dict):
         """Handle attribute access using dot notation"""
         return self.__get__(key)
 
-    # Set methods
+    # # Patch Set methods
 
     def __set__(self, key, value={}) -> None:
         """Set a key to a value, recurses on the value"""
-        super().__setitem__(key, self.__recurse__(value))
-        self._sync()
+        self.__dict__[key] = self.__recurse__(value)
+        self.sync()
 
     def __setitem__(self, key, value) -> None:
         """Handle dictionary item assignment using key indexing"""
@@ -193,22 +168,43 @@ class BrokenDotmap(dict):
 
         self.__set__(key, value)
 
-    # # Internal save to file method
+    # # Utilities
 
-    def _sync(self) -> None:
-        """Save dictionary data to the specified file"""
+    def default(self, key: str, value: Any) -> Any:
+        """Set a default value for a key else don't change, returns it"""
+        return (self.__dict__.setdefault(key, value), self.sync())[0]
+
+    def setdefault(self, key: str, value: Any) -> Any:
+        """Set a default value for a key else don't change, returns it"""
+        return self.default(key, value)
+
+    @contextmanager
+    def no_sync(self) -> None:
+        """Temporarily disables syncing, for example bulk operations"""
+        self.__sync__ = False
+        yield None
+        self.__sync__ = True
+        self._sync()
+
+    def inverse(self, value: Any) -> Any | None:
+        """Search by value"""
+        return next((k for k, v in self.items() if v == value), None)
+
+    # # Sync
+
+    def __sync_to_file__(self) -> None:
 
         # Non file mode
-        if self.__super__.__path__ is None:
+        if self.__path__ is None:
             return
 
         # Don't sync mode
-        if not self.__super__.__sync__:
+        if not self.__sync__:
             return
 
         # Get the full dictionary to save
-        format = self.__super__.__path__.suffix
-        dict  = self.__super__.dict
+        format = self.__path__.suffix
+        dict   = self.to_dict()
 
         # Load file based on format
         if format == ".toml":
@@ -218,8 +214,8 @@ class BrokenDotmap(dict):
         elif format == ".yaml":
             data = yaml.dump(dict)
         else:
-            log.error(f"BrokenDict: Unknown file format [{format}], cannot save to file")
+            log.error(f"BrokenDotmap: Unknown file format [{format}], cannot save to file")
             return
 
         # Write to file the full dictionary data
-        self.__super__.__path__.write_text(data)
+        self.__path__.write_text(data)

@@ -42,12 +42,12 @@ class BrokenDownloads:
                 log.warning(f"├─ Status: [Invalid size ({current_size/1e6:.2f} MB != {download_size/1e6:.2f} MB)]")
                 remove_path(download_file)
             else:
-                log.success(f"└─ Status: [Download exists and is ok]")
+                log.success("└─ Status: [Download exists and is ok]")
                 yield download_file
                 return
 
         # Download the file
-        log.info(f"└─ Status: [Downloading]")
+        log.info("└─ Status: [Downloading]")
         with halo.Halo(f"Downloading [{download_file.name}]"):
             download_file.write_bytes(requests.get(url).content)
 
@@ -71,11 +71,11 @@ class BrokenDownloads:
 
         # Already extracted
         if destination.exists():
-            log.success(f"└─ Status:      [Already extracted]", echo=echo)
+            log.success("└─ Status:      [Already extracted]", echo=echo)
             return destination
 
         # Extract
-        log.info(f"└─ Status:      [Extracting]", echo=echo)
+        log.info("└─ Status:      [Extracting]", echo=echo)
         shutil.unpack_archive(archive, destination)
         return destination
 

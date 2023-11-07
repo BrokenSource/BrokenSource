@@ -1,4 +1,3 @@
-# Lifelong utilities
 from . import *
 
 BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')
@@ -18,9 +17,9 @@ def shell(
     Better subprocess.* commands, all in one, yeet whatever you think it works
 
     Example:
-    ```python
-    shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
-    ```
+        ```python
+        shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
+        ```
 
     Args:
         args (list[]):    The command to run, can be a list of arguments or a list of lists of arguments, don't care
@@ -70,12 +69,21 @@ class BrokenPlatform:
     # Distros IDs: https://distro.readthedocs.io/en/latest/
     LinuxDistro = distro.id()
 
+    # Booleans if the current platform is the following
+    OnUbuntu    = LinuxDistro == "ubuntu"
+    OnDebian    = LinuxDistro == "debian"
+    OnArch      = LinuxDistro == "arch"
+    OnFedora    = LinuxDistro == "fedora"
+    OnMint      = LinuxDistro == "linuxmint"
+    OnGentoo    = LinuxDistro == "gentoo"
+    OnRaspberry = LinuxDistro == "raspbian"
+    OnOpenBSD   = LinuxDistro == "openbsd"
+    OnNetBSD    = LinuxDistro == "netbsd"
+
 # -------------------------------------------------------------------------------------------------|
 
 class Dummy:
-    """
-    A class that does nothing
-    """
+    """A class that does nothing"""
     def __init__(self,*a,**b): ...
     def __call__(self,*a,**b): ...
     def __getattr__(self,*a,**b): return self
@@ -88,7 +96,11 @@ class Dummy:
     def __next__(self,*a,**b): return self
     def __enter__(self,*a,**b): return self
     def __exit__(self,*a,**b): return self
-
+    def __add__(self,*a,**b): return self
+    def __sub__(self,*a,**b): return self
+    def __mul__(self,*a,**b): return self
+    def __div__(self,*a,**b): return self
+    def __mod__(self,*a,**b): return self
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -97,49 +109,65 @@ class BrokenStopwatch():
     """
     Context Manager or callable that counts the time it took to run
 
-    ```python
-    with BrokenUtils.BrokenStopwatch() as counter:
-        took_so_far = counter.took
+    Example:
+        ```python
+        with BrokenStopwatch() as watch:
+            ...
+            took_so_far = watch.time
+
+        # Stays at (finish - start) time after exiting
+        print(watch.time)
+
+        # Or use it as a callable
+        watch = BrokenStopwatch()
         ...
-
-    # Stays at (finish - start) time after exiting
-    print(counter.took)
-
-    # Or use it as a callable
-    counter = BrokenUtils.BrokenStopwatch()
-    ...
-    counter.took
-    counter()
-    ```
+        took = watch.took
+        took = watch()
+        ...
+        watch.stop()
+        ...
+        ```
     """
     def __init__(self):
         self.start = time.time()
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args):
         self.stop()
 
-    def stop(self):
+    def stop(self) -> float:
         self.end = time.time()
+        return self.took
 
-    def __call__(self):
+    def __call__(self) -> float:
         return self.time
 
     @property
-    def time(self):
+    def time(self) -> float:
         return getattr(self, "end", time.time()) - self.start
+
+    @property
+    def took(self) -> float:
+        return self.time
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSingleton:
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "__instance__"):
+            cls.__instance__ = super().__new__(cls)
+            cls.__singleton__(*args, **kwargs)
+        return cls.__instance__
+
+    def __singleton__(self, *args, **kwargs):
+        """__init__ but for the singleton"""
+        ...
 
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenUtils:
-    class Singleton:
-        def __new__(cls, *args, **kwargs):
-            if not hasattr(cls, "__singleton__"):
-                cls.__singleton__ = super().__new__(cls)
-            return cls.__singleton__
-
     def force_list(item: Union[Any, List[Any]]) -> List[Any]:
         """Force an item to be a list, if it's not already"""
         return item if (type(item) is list) else [item]

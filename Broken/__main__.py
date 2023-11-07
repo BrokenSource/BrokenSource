@@ -71,16 +71,19 @@ class BrokenCLI:
 
     def __init__(self) -> None:
         # Mono repository directories for Broken CLI script
-        self.RELEASES_DIR       = BROKEN_MONOREPO_DIR/"Release"
-        self.PROJECTS_DIR       = BROKEN_MONOREPO_DIR/"Projects"
-        self.ASSETS_DIR         = BROKEN_MONOREPO_DIR/"Assets"
-        self.BUILD_DIR          = BROKEN_MONOREPO_DIR/"Build"
-        self.DOCS_DIR           = BROKEN_MONOREPO_DIR/"Docs"
-        self.TEMPLATES_DIR      = BROKEN_MONOREPO_DIR/"Templates"
+        self.RELEASES_DIR      = BROKEN_MONOREPO_DIR/"Release"
+        self.PROJECTS_DIR      = BROKEN_MONOREPO_DIR/"Projects"
+        self.BUILD_DIR         = BROKEN_MONOREPO_DIR/"Build"
+
+        # Secondary auxiliary repositores
+        self.META_DIR          = BROKEN_MONOREPO_DIR/"Meta"
+        self.ASSETS_DIR        = self.META_DIR/"Assets"
+        self.DOCS_DIR          = self.META_DIR/"Docs"
+        self.TEMPLATES_DIR     = self.META_DIR/"Templates"
 
         # Nested directories
-        self.OTHER_PROJECTS_DIR = self.PROJECTS_DIR/"Hook"
-        self.WINEPREFIX         = self.BUILD_DIR/"Wineprefix"
+        self.HOOK_PROJECTS_DIR = self.PROJECTS_DIR/"Hook"
+        self.WINEPREFIX        = self.BUILD_DIR/"Wineprefix"
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
@@ -164,19 +167,17 @@ class BrokenCLI:
 
     def link(self, path: Path):
         """Links some Project Path or Folder of Projects to also be managed by Broken"""
-        BrokenPath.symlink(where=path, to=self.OTHER_PROJECTS_DIR/path.name)
+        BrokenPath.symlink(where=path, to=self.HOOK_PROJECTS_DIR/path.name)
 
     def pillow_simd(self):
-        """
-        Installs Pillow-SIMD, a way faster Pillow fork, does not change poetry dependencies. Requires AVX2 CPU, and dependencies installed
-        """
+        # Installs Pillow-SIMD, a faster Pillow fork, does not change poetry dependencies. Requires AVX2 CPU, and dependencies installed
         shell(PIP, "uninstall", "pillow-simd", "-y")
         os.environ["CC"] = "cc -mavx2"
         shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")
 
     ## Adding Commands
 
-    def __get_install_python_virtualenvironment(self,
+    def __get_install_python_venv(self,
         project_name: str,
         project_path: PathLike,
         reinstall: bool=False,
@@ -214,16 +215,12 @@ class BrokenCLI:
         # Fixme: this could be done smartly (like a Broken.toml file)
         """
         if (path/"pyproject.toml").exists():
-            log.info(f"Project [{path}] is a Python project", echo=echo)
             return ProjectLanguage.Python
         elif (path/"Main.rs").exists() and (path.name in BrokenCLI.RustProjectFeatures):
-            log.info(f"Project [{path}] is a Rust project", echo=echo)
             return ProjectLanguage.Rust
         elif (path/"meson.build").exists():
-            log.info(f"Project [{path}] is a C++ project", echo=echo)
             return ProjectLanguage.CPP
         else:
-            log.error(f"Unknown project language for [{path}]", echo=echo)
             return ProjectLanguage.Unknown
 
     def add_project_command(self, name: str, path: PathLike, language: ProjectLanguage) -> None:
@@ -254,7 +251,7 @@ class BrokenCLI:
                     shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
 
                     # Maybe install or reinstall virtualenv, run project, get status
-                    project_venv = self.__get_install_python_virtualenvironment(name, path, reinstall=reinstall)
+                    project_venv = self.__get_install_python_venv(name, path, reinstall=reinstall)
                     status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
 
                     # Detect bad return status, reinstall virtualenv and retry once
@@ -273,7 +270,7 @@ class BrokenCLI:
                             BrokenUtils.recurse(run_project)
 
                     elif infinite:
-                        log.success(f"Detected Project [{name}] finished running successfully")
+                        log.success(f"Project [{name}] finished successfully")
                         rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
                         reinstall = False
                         BrokenUtils.recurse(run_project)
@@ -521,8 +518,9 @@ class BrokenCLI:
 
         # Symlink Broken Shared Directory to Broken Root
         if BrokenPlatform.OnUnix:
+
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
-            if not Path(BROKEN_SHARED_DIR).resolve() == BROKEN_MONOREPO_DIR:
+            if Path(BROKEN_SHARED_DIR).resolve() != BROKEN_MONOREPO_DIR:
                 log.info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
                 shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
 
@@ -569,7 +567,7 @@ class BrokenCLI:
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
 
         # Get Broken virtualenv path
-        bin_path = self.__get_install_python_virtualenvironment("Broken", BROKEN_MONOREPO_DIR)/"bin"
+        bin_path = self.__get_install_python_venv("Broken", BROKEN_MONOREPO_DIR)/"bin"
 
         # Watermark to tag files are Broken made
         WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
@@ -718,7 +716,7 @@ class BrokenCLI:
                 return
 
             # Create install virtualenv dependencies
-            project.venv = self.__get_install_python_virtualenvironment(project.name, project.path)
+            project.venv = self.__get_install_python_venv(project.name, project.path)
 
             # Find site_packages of the project's virtualenv
             project.site_packages = project.venv/"lib"/f"python{python_version_site_packages}"/"site-packages"
@@ -737,7 +735,7 @@ class BrokenCLI:
             torch_fixes = [
                 ("--copy-metadata", package)
                 for package in "tqdm torch regex sacremoses requests packaging filelock numpy tokenizers importlib_metadata".split()
-                if (target := project.site_packages/package).exists()
+                if (project.site_packages/package).exists()
             ]
 
             # Use the project's virtualenv site-packages
@@ -910,7 +908,7 @@ class BrokenCLI:
 
         # # Install Requirements depending on host platform
         if BrokenPlatform.OnLinux:
-            if BrokenPlatform.LinuxDistro == "arch":
+            if BrokenPlatform.OnArch:
                 shell(SUDO, PACMAN, "-Syu", [
                     "base-devel",
                     "gcc-fortran",
@@ -930,14 +928,14 @@ class BrokenCLI:
 
             log.warning(f"[{BrokenPlatform.LinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
 
-            if BrokenPlatform.LinuxDistro == "ubuntu":
+            if BrokenPlatform.OnUbuntu:
                 shell(SUDO, APT, "update")
                 shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx wine".split())
 
-        elif BrokenPlatform == "windows":
+        elif BrokenPlatform.OnWindows:
             raise NotImplementedError("Broken releases on Windows not implemented")
 
-        elif BrokenPlatform == "macos":
+        elif BrokenPlatform.OnMacOS:
             raise NotImplementedError("Broken releases on macOS not tested / implemented")
 
             # Install Homebrew

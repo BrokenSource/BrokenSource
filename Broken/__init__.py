@@ -1,41 +1,33 @@
-try:
-    # FIXME: How to, do we need version on bundled releases?
-    import pkg_resources
-    BROKEN_VERSION = f'v{pkg_resources.get_distribution("Broken").version}'
-except:
-    BROKEN_VERSION = ""
-
+import importlib.metadata
 import sys
 
-# Is the current Python some "compiler" release?
-IS_RELEASE_NUITKA      = ("__compiled__" in globals())
-IS_RELEASE_PYINSTALLER = getattr(sys, "frozen", False)
-
-# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
-# Patch torch.jit requiring inspect.getsource
-if IS_RELEASE_PYINSTALLER:
-    try:
-        import torch.jit
-        patch = lambda object, **kwargs: object
-        torch.jit.script_method = patch
-        torch.jit.script = patch
-    except (ModuleNotFoundError, ImportError):
-        pass
-
-# Close Pyinstaller splash screen
-if IS_RELEASE_PYINSTALLER:
-    try:
-        import pyi_splash
-        pyi_splash.close()
-    except:
-        pass
+# Information about the release and version
+BROKEN_PYINSTALLER: bool = getattr(sys, "frozen", False)
+BROKEN_NUITKA:      bool = ("__compiled__" in globals())
+BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER)
+BROKEN_VERSION:     str = "v" + (importlib.metadata.version("Broken") or "Unknown")
 
 # isort: off
 from .BrokenImports import *
 from .BrokenLogging import *
-from .BrokenDirectories import *
 from .BrokenDotmap import *
+from .BrokenDirectories import *
 from .BrokenUtils import *
+# isort: on
+
+# Symlink path to projects data to the root of the monorepo for convenience
+BrokenPath.symlink(where=BROKEN_DIRECTORIES.ROOT, to=BROKEN_MONOREPO_DIR/"Workspace")
+
+# Create main Broken configuration file
+BROKEN_CONFIG = BrokenDotmap(path=BROKEN_DIRECTORIES.CONFIG/"Broken.toml")
+
+# Create logger based on configuration
+__loglevel__ = BROKEN_CONFIG.logging.default("level", "info").upper()
+BrokenLogging().stdout(__loglevel__).file(BROKEN_DIRECTORIES.LOGS/"Broken.log", __loglevel__)
+
+# -------------------------------------------------------------------------------------------------|
+
+# isort: off
 from .BrokenDownloads import *
 from .BrokenExternals import *
 from .BrokenDynamics import *
@@ -45,8 +37,9 @@ from .BrokenTimeline import *
 from .BrokenFFmpeg import *
 # isort: on
 
+
 class BrokenBase:
-    def typer_app(description: str=None, **kwargs) -> typer.Typer:
+    def typer_app(description: str = None, **kwargs) -> typer.Typer:
         return typer.Typer(
             help=description or "No help provided",
             add_help_option=False,

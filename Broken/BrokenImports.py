@@ -1,19 +1,28 @@
-import sys
+import os
 from contextlib import contextmanager
 
 from . import *
 
-# -------------------------------------------------------------------------------------------------|
-# Ignore import errors inside BrokenImports context, replace the module with BrokenImportError class
-#
-# Usage:
-# | while True:
-# |     with BrokenImports():
-# |         import A
-# |         import B
-# |         import C
-# |         break
+# Numpy's blas broken multiprocessing on matmul
+# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+os.environ["OMP_NUM_THREADS"] = "1"
 
+# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
+# Patch torch.jit requiring inspect.getsource
+if BROKEN_PYINSTALLER:
+    try:
+        import torch.jit
+        patch = lambda object, **kwargs: object
+        torch.jit.script_method = patch
+        torch.jit.script = patch
+    except (ModuleNotFoundError, ImportError):
+        pass
+
+    # Close Pyinstaller splash screen
+    import pyi_splash
+    pyi_splash.close()
+
+# -------------------------------------------------------------------------------------------------|
 
 class BrokenImportError:
     LAST_ERROR = None
@@ -21,27 +30,31 @@ class BrokenImportError:
 
 @contextmanager
 def BrokenImports():
+    """
+    Ignore import errors inside this context, replaces the module with BrokenImportError class
+
+    Usage:
+    | while True:
+    |     with BrokenImports():
+    |         import A
+    |         import B
+    |         import C
+    |         break
+    """
     try:
         yield
+
     except (ModuleNotFoundError, ImportError) as error:
 
-        # ERROR: Same error as last time, raise it (import loop?)
+        # Same error as last time, raise it (import loop?)
         if BrokenImportError.LAST_ERROR == str(error):
             raise error
-
-        # Save last error (see above)
         BrokenImportError.LAST_ERROR = str(error)
 
-        # Module and its spec import error class
+        # Create a fake module
         import_error = BrokenImportError()
-
-        # Patch system.modules for no re-importing
         sys.modules[error.name] = import_error
-
-        # "spec is not None" -> make it something, might break stuff
         sys.modules[error.name].__spec__ = import_error
-
-        # Make it available on local globals() else name not found
         globals()[error.name] = import_error
 
     except Exception as error:
@@ -78,7 +91,8 @@ while True:
         import uuid
         import warnings
         import zipfile
-        from abc import ABC, abstractmethod
+        from abc import ABC
+        from abc import abstractmethod
         from contextlib import suppress
         from dataclasses import dataclass
         from enum import Enum
@@ -87,7 +101,11 @@ while True:
         from os import PathLike
         from pathlib import Path
         from shutil import which as find_binary
-        from subprocess import DEVNULL, PIPE, Popen, check_output, run
+        from subprocess import DEVNULL
+        from subprocess import PIPE
+        from subprocess import Popen
+        from subprocess import check_output
+        from subprocess import run
         from sys import argv
         from threading import Thread
         from time import time as now
@@ -133,29 +151,26 @@ while True:
         from appdirs import AppDirs
         from dotmap import DotMap
         from tqdm import tqdm
+
         break
 
-numpy.set_printoptions(precision=5, suppress=True)
-
-# Numpy's blas broken multiprocessing on matmul
-# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
-os.environ["OMP_NUM_THREADS"] = "1"
-
 # -------------------------------------------------------------------------------------------------|
+
+numpy.set_printoptions(precision=5, suppress=True)
 
 # # Custom types, some Rust inspiration
 
 # PIL.Image is a module, PIL.Image.Image is the class
-PilImage  = PIL.Image.Image
+PilImage = PIL.Image.Image
 
 # Stuff that accepts "anything that can be converted to X"
-URL       = str
+URL = str
 
 # def divide(a, b) -> Option[float, ZeroDivisionError]:
 Option = Union
 
 # self.__class__ -> "Self" class
-Self   = Any
+Self = Any
 
 # Values might not be updated
 # def load(a: type=Unchanged): ...

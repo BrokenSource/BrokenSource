@@ -40,7 +40,7 @@
         "Premium": "admin",
         "Default": "examples",
         "Community": "shared",
-        "Workspace": "tools",
+        "Workspace": "container",
         "Prompts": "log",
 
         // Shaders
