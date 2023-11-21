@@ -1,7 +1,5 @@
 from . import *
 
-BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')
-
 # -------------------------------------------------------------------------------------------------|
 
 def shell(
@@ -47,38 +45,164 @@ def shell(
     if confirm and not rich.prompt.Confirm.ask(f"• Confirm running the command above"):
         return
 
-    if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
-    if Popen:  return subprocess.Popen(command, **kwargs)
-    else:      return subprocess.run(command, **kwargs)
+    # Get current environment variables
+    env = os.environ.copy()
+
+    # Update environment variables with kwargs
+    env.update(**kwargs.get("env", {}))
+
+    # Run the command and return specified object
+    if output: return subprocess.check_output(command, env=env, **kwargs).decode("utf-8")
+    if Popen:  return subprocess.Popen(command, env=env, **kwargs)
+    else:      return subprocess.run(command, env=env, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenPlatform:
-    # Name of the current platform
-    Name      = platform.system().lower().replace("darwin", "macos")
+
+    # Name of the current platform - (linux, windows, macos, bsd)
+    Name         = platform.system().lower().replace("darwin", "macos")
 
     # Booleans if the current platform is the following
-    OnLinux   = Name == "linux"
-    OnWindows = Name == "windows"
-    OnMacOS   = Name == "macos"
-    OnBSD     = Name == "bsd"
+    OnLinux      = (Name == "linux")
+    OnWindows    = (Name == "windows")
+    OnMacOS      = (Name == "macos")
+    OnBSD        = (Name == "bsd")
 
     # Family of platforms
-    OnUnix    = OnLinux or OnMacOS or OnBSD
+    OnUnix       = (OnLinux or OnMacOS or OnBSD)
 
     # Distros IDs: https://distro.readthedocs.io/en/latest/
-    LinuxDistro = distro.id()
+    LinuxDistro  = distro.id()
 
     # Booleans if the current platform is the following
-    OnUbuntu    = LinuxDistro == "ubuntu"
-    OnDebian    = LinuxDistro == "debian"
-    OnArch      = LinuxDistro == "arch"
-    OnFedora    = LinuxDistro == "fedora"
-    OnMint      = LinuxDistro == "linuxmint"
-    OnGentoo    = LinuxDistro == "gentoo"
-    OnRaspberry = LinuxDistro == "raspbian"
-    OnOpenBSD   = LinuxDistro == "openbsd"
-    OnNetBSD    = LinuxDistro == "netbsd"
+    OnUbuntu     = (LinuxDistro == "ubuntu")
+    OnDebian     = (LinuxDistro == "debian")
+    OnArch       = (LinuxDistro == "arch")
+    OnFedora     = (LinuxDistro == "fedora")
+    OnMint       = (LinuxDistro == "linuxmint")
+    OnGentoo     = (LinuxDistro == "gentoo")
+    OnRaspberry  = (LinuxDistro == "raspbian")
+    OnOpenBSD    = (LinuxDistro == "openbsd")
+    OnNetBSD     = (LinuxDistro == "netbsd")
+
+    # Family of distros
+    OnUbuntuLike = OnUbuntu or OnDebian or OnMint or OnRaspberry
+
+    class Targets(Enum):
+        """List of common platforms targets for releases"""
+        LinuxAMD64   = "linux-amd64"
+        LinuxARM     = "linux-arm"
+        WindowsAMD64 = "windows-amd64"
+        WindowsARM   = "windows-arm"
+        MacOSAMD64   = "macos-amd64"
+        MacOSARM     = "macos-arm"
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenEnum(Enum):
+
+    @classmethod
+    def smart(cls, value: Union[str, Enum]) -> Self:
+        """Get enum members from their value, name or themselves"""
+
+        # Value already a member of the enum
+        if isinstance(value, cls):
+            return value
+
+        try:
+            # Try finding the member by name
+            for member in cls:
+                if isinstance(member.value, (list, tuple)):
+                    if value in member.value:
+                        return member
+                elif member.value == value:
+                    return member
+
+            return cls[value]
+
+        except KeyError:
+            log.error(f"No such value [{value}] on Enum class [{cls.__name__}]")
+            raise ValueError
+
+    @classmethod
+    @property
+    def options(cls) -> List[Enum]:
+        """Get all members of the enum"""
+        return list(cls)
+
+    @classmethod
+    @property
+    def values(cls) -> List[Any]:
+        """Get all values of the enum"""
+        return [member.value for member in cls]
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSingleton:
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "__instance__"):
+            cls.__instance__ = super().__new__(cls)
+            cls.__singleton__(*args, **kwargs)
+        return cls.__instance__
+
+    def __singleton__(self, *args, **kwargs):
+        """__init__ but for the singleton"""
+        ...
+
+# -------------------------------------------------------------------------------------------------|
+
+@attrs.define
+class BrokenRelay:
+    """
+    A class to bind some callback to many callables.
+
+    Useful for ModernGL window function, eg pseudocode:
+
+    ```python
+    window = moderngl_window(...)
+
+    # Create BrokenRelay instance
+    scroll_callbacks = BrokenRelay()
+
+    # Map window scroll func callback to this class
+    window.mouse_scroll_event_func = scroll_callbacks
+
+    # Define many callbacks that should be called on window resize
+    def log_scroll(x, y):
+        ...
+
+    camera2d = Camera2D(...)
+
+    # Add callbacks
+    scroll_callbacks.bind(log_scroll, camera2d.resize)
+
+    # Or with @ syntax
+    scroll_callbacks @ (log_scroll, camera2d.resize)
+
+    # It also returns self when binding
+    self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
+    ```
+    """
+    callbacks: list[callable] = attrs.field(factory=list)
+
+    def __bind__(self, *callbacks: callable) -> Self:
+        """Adds callbacks to the list of callables, runs on self.__call__"""
+        self.callbacks += BrokenUtils.flatten(callbacks)
+        return self
+
+    def bind(self, *callbacks: callable) -> Self:
+        """Adds callbacks to the list of callables, runs on self.__call__"""
+        return self.__bind__(callbacks)
+
+    def __matmul__(self, *callbacks: callable) -> Self:
+        """Convenience syntax for binding"""
+        return self.__bind__(callbacks)
+
+    def __call__(self, *args, **kwargs):
+        """Pass through all callbacks to who called "us" (self)"""
+        for callback in self.callbacks:
+            callback(*args, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -104,69 +228,6 @@ class Dummy:
 
 # -------------------------------------------------------------------------------------------------|
 
-# A class inside a class, huh
-class BrokenStopwatch():
-    """
-    Context Manager or callable that counts the time it took to run
-
-    Example:
-        ```python
-        with BrokenStopwatch() as watch:
-            ...
-            took_so_far = watch.time
-
-        # Stays at (finish - start) time after exiting
-        print(watch.time)
-
-        # Or use it as a callable
-        watch = BrokenStopwatch()
-        ...
-        took = watch.took
-        took = watch()
-        ...
-        watch.stop()
-        ...
-        ```
-    """
-    def __init__(self):
-        self.start = time.time()
-
-    def __enter__(self) -> Self:
-        return self
-
-    def __exit__(self, *args):
-        self.stop()
-
-    def stop(self) -> float:
-        self.end = time.time()
-        return self.took
-
-    def __call__(self) -> float:
-        return self.time
-
-    @property
-    def time(self) -> float:
-        return getattr(self, "end", time.time()) - self.start
-
-    @property
-    def took(self) -> float:
-        return self.time
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenSingleton:
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "__instance__"):
-            cls.__instance__ = super().__new__(cls)
-            cls.__singleton__(*args, **kwargs)
-        return cls.__instance__
-
-    def __singleton__(self, *args, **kwargs):
-        """__init__ but for the singleton"""
-        ...
-
-# -------------------------------------------------------------------------------------------------|
-
 class BrokenUtils:
     def force_list(item: Union[Any, List[Any]]) -> List[Any]:
         """Force an item to be a list, if it's not already"""
@@ -178,8 +239,8 @@ class BrokenUtils:
 
     def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
         """
-        Flatten nested lists and tuples to a single list
-        [[a, b], c, [d, e, None], [g, h]] -> [a, b, c, d, e, None, g, h]
+        Flatten nested list like iterables to a 1D list
+        [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
         """
         flatten = lambda stuff: [
             item for subitem in stuff for item in
@@ -187,8 +248,8 @@ class BrokenUtils:
         ]
         return BrokenUtils.truthy(flatten(stuff)) if truthy else flatten(stuff)
 
-    def denum(stuff: list[Any]) -> list[Any]:
-        """Converts items of an list that are Enums to their values"""
+    def denum(stuff: Iterable[Any]) -> list[Any]:
+        """De-enumerates enum iterables to their value"""
         return [item.value if issubclass(item.__class__, Enum) else item for item in stuff]
 
     def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
@@ -217,70 +278,6 @@ class BrokenUtils:
         thread = Thread(target=callable, daemon=daemon, args=args, kwargs=kwargs)
         if start: thread.start()
         return thread
-
-    def get_free_tcp_port() -> int:
-        """Get a unused TCP port"""
-        temp_socket = socket.socket()
-        temp_socket.bind(('', 0))
-        return [temp_socket.getsockname()[1], temp_socket.close()][0]
-
-    def get_environ_var(name: str, default: Any=None, cast: Any=None) -> Any:
-        """Get an environment variable, cast it to a type, or return a default value"""
-        value = os.environ.get(name, default)
-        if cast:
-            return cast(value)
-        return value
-
-    def add_method_to_self(method):
-        """Add a method to the current scope's self"""
-
-        # Find previous scope's self
-        self = inspect.currentframe().f_back.f_locals.get("self", None)
-
-        # Assert self is not None
-        if self is None:
-            log.error("Could not add method to self, are you in a class?")
-            return
-
-        # Add method to self
-        setattr(self, method.__name__, method)
-
-    def root_mean_square(x):
-        """Calculate the root mean square of some array"""
-        return numpy.sqrt(numpy.mean(numpy.square(x)))
-
-    def polar_to_complex(r, theta):
-        """Convert polar coordinates to a complex number"""
-        return r * numpy.exp(1j * theta)
-
-    @contextmanager
-    def exit_on_keyboard_interrupt():
-        """A context that exits the program on KeyboardInterrupt"""
-        try:
-            yield
-        except KeyboardInterrupt:
-            exit(0)
-
-    def need_import(*packages: Union[str, List[str]]):
-        """Check if a package is imported (required for project), else exit with error"""
-        for name in packages:
-            module = sys.modules.get(name, None)
-            if (module is None) or isinstance(module, BrokenImportError):
-                log.error(f"• Dependency {name} is required, maybe it's not installed on this virtual environment, not listed in BrokenImports or not imported")
-                exit(1)
-
-    def have_import(*packages: Union[str, List[str]]) -> bool:
-        """Check if a package is imported (required for project), else exit with error"""
-        for name in packages:
-            module = sys.modules.get(name, None)
-            if (module is None) or isinstance(module, BrokenImportError):
-                return False
-        return True
-
-    def append_return(list: List[Any], item: Any, returns: Option["item", "list"]="item") -> List[Any]:
-        """Appends an item to a list, returns the item"""
-        list.append(item)
-        return item if (returns == "item") else list
 
     def recurse(function: callable, **variables) -> Any:
         """
@@ -556,7 +553,7 @@ class BrokenPath:
     @staticmethod
     def remove(path: PathLike, confirm=False, echo=True) -> bool:
         path = Path(path)
-        log.info(f"• Removing Path ({confirm=}) [{path}]", echo=echo)
+        log.info(f"• Removing Path [{path}]", echo=echo)
 
         if not path.exists():
             log.success(f"└─ Does not exist", echo=echo)
@@ -620,159 +617,16 @@ class BrokenPath:
 
         to.symlink_to(where)
 
-class ShellCraft:
-
-    # Current shell name (binary path)
-    SHELL_BINARY = os.environ.get("SHELL", "unknown")
-
-    # Booleans if the current shell is the following
-    BASH       = "bash" in SHELL_BINARY
-    ZSH        = "zsh"  in SHELL_BINARY
-    FISH       = "fish" in SHELL_BINARY
-    Unknown    = (not (BASH or ZSH or FISH)) or (SHELL_BINARY == "unknown")
-
-    def add_path_to_system_PATH(path: PathLike, echo=True) -> bool:
-        """Add a path to the system PATH _ideally_ for all platforms. Sincerely, f-pointer-comment-at this function"""
-        path = Path(path)
-
-        # If the path is already in the system path, no work to do
-        if str(path) in os.environ.get("PATH", "").split(os.pathsep):
-            log.success(f"Path [{path}] already in PATH", echo=echo)
-            return True
-
-        # Unix is complicated, ideally one would put on /etc/profile but it's only reloaded on logins
-        # The user shell varies a lot, but most are in BASH, ZSH or FISH apparently, but need sourcing or restarting
-        if BrokenPlatform.OnUnix:
-
-            # The export line adding to PATH the wanted path
-            export = f"export PATH={path}:$PATH"
-
-            # Add the export line based on the current shell
-            for current_shell, shellrc in [
-                (ShellCraft.BASH,    HOME_DIR/".bashrc"                 ),
-                (ShellCraft.ZSH,     HOME_DIR/".zshrc"                  ),
-                # (ShellCraft.FISH,    HOME_DIR/".config/fish/config.fish"),
-                (ShellCraft.Unknown, HOME_DIR/".profile")
-            ]:
-                # Skip if not on this chell
-                if not current_shell: continue
-
-                # Info on what's going on
-                if ShellCraft.Unknown:
-                    log.error(f"Your shell is unknown and PATH will be re-exported in [{shellrc}], you need to log out and log in for changes to take effect, go touch some grass..   (PRs are welcome!)", echo=echo)
-
-                log.info(f"Your current shell is [{ShellCraft.SHELL_BINARY}], adding the directory [{path}] to PATH in the shell rc file [{shellrc}] as [{export}]", echo=echo)
-
-                # Add the export line to the shell rc file
-                with open(shellrc, "a") as file:
-                    file.write(f"{export}\n")
-
-            # Need to restart the shell or source it
-            log.warning(f"Please restart your shell for the changes to take effect or run [source {shellrc}] or [. {shellrc}] on current one, this must be done since a children process (Python) can't change the parent process (your shell) environment variables plus the [source] or [.] not binaries but shell builtins")
-
-        # No clue if this works.
-        elif BrokenPlatform.OnWindows:
-            log.fixme("I don't know if the following reg command works for adding a PATH to PATH on Windows")
-            shell("reg", "add", r"HKCU\Environment", "/v", "PATH", "/t", "REG_SZ", "/d", f"{path};%PATH%", "/f")
-            shell("refreshenv")
-
-        else:
-            log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
-            return False
-
-        return True
-
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define
-class BrokenRelay:
-    """
-    A class to bind, passthrough some callback to many callables.
+class BrokenBinaries:
+    @property
+    def python(self) -> Path:
+        return Path(sys.executable)
 
-    Useful for ModernGL window function, eg pseudocode:
-
-    ```python
-    window = moderngl_window(...)
-
-    # Create BrokenRelay instance
-    scroll_callbacks = BrokenRelay()
-
-    # Map window scroll func callback to this class
-    window.mouse_scroll_event_func = scroll_callbacks
-
-    # Define many callbacks that should be called on window resize
-    def log_scroll(x, y):
-        ...
-
-    camera2d = Camera2D(...)
-
-    # Add callbacks
-    scroll_callbacks.bind(log_scroll, camera2d.resize)
-
-    # Or with @ syntax
-    scroll_callbacks @ (log_scroll, camera2d.resize)
-
-    # It also returns self when binding
-    self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
-    ```
-    """
-    callbacks: list[callable] = attrs.Factory(list)
-
-    def __bind__(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        self.callbacks += BrokenUtils.flatten(callbacks)
-        return self
-
-    def bind(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        return self.__bind__(*callbacks)
-
-    def __matmul__(self, *callbacks: callable) -> Self:
-        """Convenience syntax for binding"""
-        return self.__bind__(*callbacks)
-
-    def __call__(self, *args, **kwargs):
-        """Pass through all callbacks to who called "us" (self)"""
-        for callback in self.callbacks:
-            callback(*args, **kwargs)
-
-# -------------------------------------------------------------------------------------------------|
-
-@contextmanager
-def BrokenNullContext():
-    """A context that does nothing"""
-    yield Dummy()
-
-class BrokenSmart:
-    def load_image(image: Union[PilImage, PathLike, URL], pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
-        """Smartly load 'SomeImage', a path, url or PIL Image"""
-
-        # Nothing to do if already a PIL Image
-        if isinstance(image, PilImage):
-            return image
-
-        try:
-            # Load image if a path or url is supplied
-            if any([isinstance(image, T) for T in (PathLike, str)]):
-                if (path := BrokenPath.true_path(image)).exists():
-                    log.info(f"Loading image from Path [{path}]", echo=echo)
-                    return PIL.Image.open(path).convert(pixel)
-                else:
-                    log.info(f"Loading image from (maybe) URL [{image}]", echo=echo)
-                    try:
-                        requests = BROKEN_REQUESTS_CACHE if cache else requests
-                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
-                    except Exception as e:
-                        log.error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
-                        return None
-            else:
-                log.error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)
-                return None
-
-        # Can't open file
-        except Exception as e:
-            log.error(f"Failed to load image [{image}]: {e}", echo=echo)
-            return None
+    @property
+    def pip(self) -> Path:
+        return BrokenPath.get_binary("pip")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -862,7 +716,7 @@ class BrokenVsync:
             client.next_call += 1/client.frequency
 
         # Enter or not the given context, call callback with args and kwargs
-        with (client.context or BrokenNullContext()):
+        with (client.context or contextlib.nullcontext()):
             return client.callback(*client.args, **client.kwargs)
 
     # # Thread-wise wording
@@ -890,38 +744,106 @@ class BrokenVsync:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenEnum(Enum):
+class BrokenStopwatch():
+    """
+    Context Manager or callable that counts the time it took to run
 
-    @classmethod
-    def smart(cls, value: Union[str, Enum]):
-        """Get enum member from string name, value or enum"""
+    Example:
+        ```python
+        with BrokenStopwatch() as watch:
+            ...
+            took_so_far = watch.time
 
-        # Value already a member of the enum
-        if isinstance(value, cls):
-            return value
+        # Stays at (finish - start) time after exiting
+        print(watch.time)
+
+        # Or use it as a callable
+        watch = BrokenStopwatch()
+        ...
+        took = watch.took
+        took = watch()
+        ...
+        watch.stop()
+        ...
+        ```
+    """
+    def __init__(self):
+        self.start = time.time()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args):
+        self.stop()
+
+    def stop(self) -> float:
+        self.end = time.time()
+        return self.took
+
+    def __call__(self) -> float:
+        return self.time
+
+    @property
+    def time(self) -> float:
+        return getattr(self, "end", time.time()) - self.start
+
+    @property
+    def took(self) -> float:
+        return self.time
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenTyper:
+    def typer_app(description: str = None, **kwargs) -> typer.Typer:
+        return typer.Typer(
+            help=description or "No help provided",
+            add_help_option=False,
+            pretty_exceptions_enable=False,
+            no_args_is_help=kwargs.get("no_args_is_help", True),
+            add_completion=False,
+            rich_markup_mode="rich",
+            chain=False,
+            epilog=(
+                f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
+                "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
+            ),
+        )
+
+    @staticmethod
+    def with_context() -> list:
+        return dict(context_settings=dict(allow_extra_args=True, ignore_unknown_options=True))
+
+# Relics from the past
+
+BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')
+
+class BrokenSmart:
+    def load_image(image: Union[PilImage, PathLike, URL], pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
+        """Smartly load 'SomeImage', a path, url or PIL Image"""
+
+        # Nothing to do if already a PIL Image
+        if isinstance(image, PilImage):
+            return image
 
         try:
-            # Try finding the member by name
-            for member in cls:
-                if isinstance(member.value, (list, tuple)):
-                    if value in member.value:
-                        return member
-                elif member.value == value:
-                    return member
+            # Load image if a path or url is supplied
+            if any([isinstance(image, T) for T in (PathLike, str)]):
+                if (path := BrokenPath.true_path(image)).exists():
+                    log.info(f"Loading image from Path [{path}]", echo=echo)
+                    return PIL.Image.open(path).convert(pixel)
+                else:
+                    log.info(f"Loading image from (maybe) URL [{image}]", echo=echo)
+                    try:
+                        requests = BROKEN_REQUESTS_CACHE if cache else requests
+                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
+                    except Exception as e:
+                        log.error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
+                        return None
+            else:
+                log.error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)
+                return None
 
-            return cls[value]
-        except KeyError:
-            log.error(f"No such value [{value}] on Enum class [{cls.__name__}]")
-            raise ValueError
-
-    @classmethod
-    @property
-    def options(cls) -> List[Enum]:
-        """Get all members of the enum"""
-        return list(cls)
-
-    @classmethod
-    @property
-    def values(cls) -> List[Any]:
-        """Get all values of the enum"""
-        return [member.value for member in cls]
+        # Can't open file
+        except Exception as e:
+            log.error(f"Failed to load image [{image}]: {e}", echo=echo)
+            return None

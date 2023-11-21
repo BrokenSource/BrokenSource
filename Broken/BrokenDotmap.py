@@ -49,10 +49,7 @@ class BrokenDotmap:
     is_dunder = lambda key: key.startswith("__") and key.endswith("__")
     true_path = lambda path: Path(path).expanduser().resolve().absolute()
 
-    def __init__(self, path: Path=None, sync: bool=True, super: Self=None):
-
-        # Data of the instnace
-        self.__dict__ = dict()
+    def __init__(self, path: Path=None, sync: bool=True, echo: bool=False, super: Self=None):
 
         # A reference to the root instance of the dictionaries
         self.__super__ = super or self
@@ -65,7 +62,7 @@ class BrokenDotmap:
         if self.__path__ is not None:
             self.__path__ = BrokenDotmap.true_path(self.__path__)
 
-            log.info(f"• New BrokenDotmap @ ({self.__path__})")
+            log.info(f"• New BrokenDotmap @ ({self.__path__})", echo=echo)
 
             if self.__path__.exists():
                 self.from_file(self.__path__)
@@ -75,7 +72,7 @@ class BrokenDotmap:
 
     # # Loading and saving
 
-    def from_dict(self, data={}) -> Self:
+    def from_dict(self, data: dict={}) -> Self:
         """Append a dictionary to this instance"""
         for key, value in (data or {}).items():
             self.__set__(key, self.__recurse__(value))
@@ -128,37 +125,37 @@ class BrokenDotmap:
     # # Redirect items, keys
 
     def items(self) -> list:
-        return self.__dict__.items()
+        return list(self.__dict__.items())
 
     def keys(self) -> list:
-        return self.__dict__.keys()
+        return list(self.__dict__.keys())
 
     # # Patch Get methods
 
-    def __get__(self, key) -> Union[Self, Any]:
+    def __get__(self, key: str) -> Union[Self, Any]:
         """If a key doesn't exist, recurse, else return its the value"""
         return self.__dict__.setdefault(key, self.__recurse__())
 
-    def __getitem__(self, key) -> Union[Self, Any]:
+    def __getitem__(self, key: str) -> Union[Self, Any]:
         """Handle dictionary item access using key indexing"""
         return self.__get__(key)
 
-    def __getattr__(self, key) -> Union[Self, Any]:
+    def __getattr__(self, key: str) -> Union[Self, Any]:
         """Handle attribute access using dot notation"""
         return self.__get__(key)
 
     # # Patch Set methods
 
-    def __set__(self, key, value={}) -> None:
+    def __set__(self, key: str, value: Any={}) -> None:
         """Set a key to a value, recurses on the value"""
         self.__dict__[key] = self.__recurse__(value)
         self.sync()
 
-    def __setitem__(self, key, value) -> None:
+    def __setitem__(self, key: str, value: Any) -> None:
         """Handle dictionary item assignment using key indexing"""
         self.__set__(key, value)
 
-    def __setattr__(self, key, value) -> None:
+    def __setattr__(self, key: str, value: Any) -> None:
         """Handle attribute assignment using dot notation"""
 
         # Do not "recurse" on dunder attributes, they are self!

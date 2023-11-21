@@ -6,14 +6,108 @@ from . import *
 # ----------------------------------------------|
 # Basics
 
-class FFmpegResolution(BrokenEnum):
-    """-s ffmpeg option"""
+@attrs.define
+class FFmpegResolution:
+    width:  int = attrs.field(converter=int)
+    height: int = attrs.field(converter=int)
 
-    # 4K
-    UHD_4K_16x9   = "3840x2160"
-    UHD_4K_21x9   = "4096x1716"
+    @width.validator
+    @height.validator
+    def check(self, attribute, value):
+        if value < 0:
+            raise ValueError(f"FFmpegResolution {attribute.name} must be positive")
 
+    def __mul__(self, ratio: float) -> Self:
+        return FFmpegResolution(
+            width=self.width*ratio,
+            height=self.height*ratio
+        )
 
+    def __truediv__(self, ratio: float) -> Self:
+        return self.__mul__(1/ratio)
+
+    def aspect_ratio(self) -> float:
+        return self.width / self.height
+
+    def __str__(self) -> str:
+        return f"{self.width}x{self.height}"
+
+class FFmpegResolutionEnum(BrokenEnum):
+    """
+    Common resolutions for videos and images enumerator
+
+    Aspect ratios:
+        - Standard:  4:3
+        - Wide:      16:9 or 16:10
+        - UltraWide: 21:9
+        - SuperWide: 32:9
+        - Univisium: 2:1
+
+    Resolutions:
+        - SD:   480p
+        - HD:   720p
+        - FHD: 1080p
+        - QHD: 1440p
+        - 4K:  2160p
+        - 8K:  4320p
+        - 16K: 8640p
+    """
+
+    # 480p
+    Standard_480p_SD     = FFmpegResolution(  640,  480)
+    Wide16x9_480p_SD     = FFmpegResolution(  854,  480)
+    Wide16x10_480p_SD    = FFmpegResolution(  720,  534)
+    UltraWide_480p_SD    = FFmpegResolution( 1140,  480)
+    SuperWide_480p_SD    = FFmpegResolution( 1706,  480)
+    Univisium_480p_SD    = FFmpegResolution(  960,  480)
+
+    # 720p
+    Standard_720p_HD     = FFmpegResolution(  960,  720)
+    Wide16x9_720p_HD     = FFmpegResolution( 1280,  720)
+    Wide16x10_720p_HD    = FFmpegResolution( 1280,  800)
+    UltraWide_720p_HD    = FFmpegResolution( 1720,  720)
+    SuperWide_720p_HD    = FFmpegResolution( 2560,  720)
+    Univisium_720p_HD    = FFmpegResolution( 1440,  720)
+
+    # 1080p
+    Standard_1080p_FHD   = FFmpegResolution( 1440, 1080)
+    Wide16x9_1080p_FHD   = FFmpegResolution( 1920, 1080)
+    Wide16x10_1080p_FHD  = FFmpegResolution( 1920, 1200)
+    UltraWide_1080p_FHD  = FFmpegResolution( 2560, 1080)
+    SuperWide_1080p_FHD  = FFmpegResolution( 3840, 1080)
+    Univisium_1080p_FHD  = FFmpegResolution( 2160, 1080)
+
+    # 1440p
+    Standard_1440p_QHD   = FFmpegResolution( 1920, 1440)
+    Wide16x9_1440p_QHD   = FFmpegResolution( 2560, 1440)
+    Wide16x10_1440p_QHD  = FFmpegResolution( 2560, 1600)
+    UltraWide_1440p_QHD  = FFmpegResolution( 3440, 1440)
+    SuperWide_1440p_QHD  = FFmpegResolution( 5120, 1440)
+    Univisium_1440p_QHD  = FFmpegResolution( 2880, 1440)
+
+    # 2160p
+    Standard_2160p_4K    = FFmpegResolution( 2880, 2160)
+    Wide16x9_2160p_4K    = FFmpegResolution( 3840, 2160)
+    Wide16x10_2160p_4K   = FFmpegResolution( 3840, 2400)
+    UltraWide_2160p_4K   = FFmpegResolution( 5120, 2160)
+    SuperWide_2160p_4K   = FFmpegResolution( 7680, 2160)
+    Univisium_2160p_4K   = FFmpegResolution( 4320, 2160)
+
+    # 4320p
+    Standard_4320p_8K    = FFmpegResolution( 5760, 4320)
+    Wide16x9_4320p_8K    = FFmpegResolution( 7680, 4320)
+    Wide16x10_4320p_8K   = FFmpegResolution( 7680, 4800)
+    UltraWide_4320p_8K   = FFmpegResolution(10240, 4320)
+    SuperWide_4320p_8K   = FFmpegResolution(15360, 4320)
+    Univisium_4320p_8K   = FFmpegResolution( 8640, 4320)
+
+    # 8640p
+    Standard_8640p_16K   = FFmpegResolution(11520, 8640)
+    Wide16x9_8640p_16K   = FFmpegResolution(15360, 8640)
+    Wide16x10_8640p_16K  = FFmpegResolution(15360, 9600)
+    UltraWide_8640p_16K  = FFmpegResolution(20480, 8640)
+    SuperWide_8640p_16K  = FFmpegResolution(30720, 8640)
+    Univisium_8640p_16K  = FFmpegResolution(17280, 8640)
 
 # ----------------------------------------------|
 # Codecs
@@ -28,7 +122,7 @@ class FFmpegVideoCodec(BrokenEnum):
     H265       = "libx265"
     H265_NVENC = "hevc_nvenc"
 
-    # Alliance for Open Media Video
+    # Alliance for Open Media Video Codec - AV1
     AV1        = "libaom-av1"
     AV1_NVENC  = "av1_nvenc"
 
@@ -597,8 +691,10 @@ class BrokenFFmpeg:
         self.filters.extend(filters)
         return self
 
-    def __resolution__(self, width: int, height: int) -> Self:
-        return self.__smart__("-s", f"{int(width)}x{int(height)}", delete=self.__resolution__)
+    def __resolution__(self, width: FFmpegResolution | int, height: int=None) -> Self:
+        if not isinstance(width, FFmpegResolution):
+            width = FFmpegResolution(width, height)
+        return self.__smart__("-s", str(width), delete=self.__resolution__)
 
     def __framerate__(self, option: int) -> Self:
         return self.__smart__("-framerate", option, delete=self.__framerate__)

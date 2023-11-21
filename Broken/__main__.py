@@ -1,543 +1,379 @@
+from __future__ import annotations
+
 from Broken import *
 
 # -------------------------------------------------------------------------------------------------|
 
-find = lambda name: BrokenPath.get_binary(name, echo=False)
+def main():
+    broken = BrokenCLI()
+    broken.cli()
 
-# Find binaries absolute path
-PYTHON      = sys.executable
-POETRY      = [PYTHON, "-m", "poetry"]
-PIP         = [PYTHON, "-m", "pip"]
-NUITKA      = [PYTHON, "-m", "nuitka"]
-PYINSTALLER = find("pyinstaller")
-BASH        = find("bash") if (not BrokenPlatform.OnWindows) else None
-WINETRICKS  = find("winetricks")
-PACMAN      = find("pacman")
-RUSTUP      = find("rustup")
-CARGO       = find("cargo")
-CHMOD       = find("chmod")
-SUDO        = find("sudo")
-WINE        = find("wine")
-APT         = find("apt")
-GIT         = find("git")
-UPX         = find("upx")
-
-# Development tools
-ISORT   = find("isort")
-PYCLEAN = find("pyclean")
+if __name__ == "__main__":
+    main()
 
 # -------------------------------------------------------------------------------------------------|
-# Releases related
 
-# Rust toolchain ("nightly" or "stable")
-RUSTUP_TOOLCHAIN = os.environ.get("RUSTUP_TOOLCHAIN", "stable")
-
-class ProjectsEnumerator(Enum):
-    """List of runnable projects Broken finds. Is dynamically extended"""
-    ...
-
-class ProjectLanguage:
-    """The programming language of a project"""
+class ProjectLanguage(BrokenEnum):
     Python  = "python"
     Rust    = "rust"
     CPP     = "cpp"
     Unknown = "unknown"
 
-# FIXME: How to merge with BrokenPlatform?
-class ReleasePlatform(Enum):
-    """List of common platforms targets for releases"""
-    LinuxAMD64   = "linux-amd64"
-    LinuxARM     = "linux-arm"
-    WindowsAMD64 = "windows-amd64"
-    WindowsARM   = "windows-arm"
-    MacOSAMD64   = "macos-amd64"
-    MacOSARM     = "macos-arm"
+@attrs.define
+class BrokenProject:
+    path: Path
+    name: str = "Unknown"
+    config: BrokenDotmap = None
+    typer_app: typer.Typer = None
+
+    # # Main entry point
+
+    def cli(self, ctx: typer.Context) -> None:
+        self.typer_app = BrokenTyper.typer_app()
+
+        # Run command
+        self.typer_app.command(
+            **BrokenTyper.with_context(),
+            help=f"Automagically run the project"
+        )(self.run)
+
+        # Update command
+        self.typer_app.command(
+            help=f"Update project dependencies"
+        )(self.update)
+
+        # Implicitly add run command by default
+        if (not ctx.args) or (ctx.args[0] not in ("update")):
+            ctx.args.insert(0, "run")
+
+        with BrokenPath.pushd(self.path):
+            self.typer_app(ctx.args)
+
+    # # Initialization
+
+    def __attrs_post_init__(self):
+        self.config = BrokenDotmap(self.path/"Broken.toml")
+        self.name   = self.config.setdefault("name", self.path.name)
+
+    def __eq__(self, other: Self) -> bool:
+        return self.path == other.path
+
+    # # Utility Attributes
+
+    @property
+    def lname(self) -> str:
+        """Lowercase name"""
+        return self.name.lower()
+
+    @property
+    def version(self) -> str:
+        return self.config.setdefault("version", arrow.utcnow().format("YYYY.M.D"))
+
+    @property
+    def description(self) -> str:
+
+        # Stop if there exists a custom Broken description
+        if (description := self.config.setdefault("description", "")):
+            pass
+
+        # Read Python's pyproject.toml
+        elif self.is_python and (config := self.path/"pyproject.toml").exists():
+            description = (
+                toml.loads(config.read_text())
+                .get("tool", {})
+                .get("poetry", {})
+                .get("description", "")
+            )
+
+        # Read Rust's Cargo.toml
+        elif self.is_rust and (config := self.path/"Cargo.toml").exists():
+            description = (
+                toml.loads(config.read_text())
+                .get("package", {})
+                .get("description", "")
+            )
+
+        return description
+
+    @property
+    def languages(self) -> set[ProjectLanguage]:
+        languages = set()
+
+        # Best attempts to detect language
+        if (self.path/"pyproject.toml").exists():
+            languages.add(ProjectLanguage.Python)
+        elif (self.path/"Cargo.toml").exists():
+            languages.add(ProjectLanguage.Rust)
+        elif (self.path/"meson.build").exists():
+            languages.add(ProjectLanguage.CPP)
+        else:
+            languages.add(ProjectLanguage.Unknown)
+
+        return languages
+
+    @property
+    def description_pretty_language(self) -> str:
+        if self.is_python: return f"🐍 (Python) {self.description}"
+        if self.is_rust:   return f"🦀 (Rust  ) {self.description}"
+        if self.is_cpp:    return f"🌀 (C/C++ ) {self.description}"
+        return self.description
+
+    # Shorthands for project language
+
+    @property
+    def is_python(self) -> bool:
+        return ProjectLanguage.Python in self.languages
+
+    @property
+    def is_rust(self) -> bool:
+        return ProjectLanguage.Rust in self.languages
+
+    @property
+    def is_cpp(self) -> bool:
+        return ProjectLanguage.CPP in self.languages
+
+    # # Commands
+
+    def update(self, dependencies: bool=True, version: bool=True) -> None:
+
+        # # Dependencies
+        if dependencies:
+            if self.is_python:
+                shell("poetry", "update")
+            if self.is_rust:
+                shell("cargo", "update")
+            if self.is_cpp:
+                log.error("C++ projects are not supported yet")
+
+        # # Date
+        if version:
+            def up_date(file: Path) -> None:
+                """Find "version=" line and set it to "version = {date}"", write back to file"""
+                if not file.exists(): return
+                log.info(f"Updating version of file [{file}]")
+                file.write_text('\n'.join(
+                    [line if not line.startswith("version") else f'version = "{self.version}"'
+                    for line in file.read_text().split("\n")]
+                ))
+
+            # Update version in all files
+            up_date(self.path/"Cargo.toml")
+            up_date(self.path/"pyproject.toml")
+
+    def run(self,
+        ctx:       typer.Context,
+        reinstall: Annotated[bool, typer.Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
+        infinite:  Annotated[bool, typer.Option("--infinite",  help="Press Enter after each run to run again")]=False,
+        clear:     Annotated[bool, typer.Option("--clear",     help="Clear terminal before running")]=False,
+        debug:     Annotated[bool, typer.Option("--debug",     help="Debug mode for Rust projects")]=False,
+    ) -> None:
+
+        # Set environment variable for the project name
+        os.environ["BROKEN_CURRENT_PROJECT_NAME"] = self.name
+
+        # For all arguments in ctx.args, if it's a file, replace it with its path
+        # This also fixes files references on the nested poetry command rebasing to its path
+        for i, arg in enumerate(ctx.args):
+            if (fix := BrokenPath.true_path(arg)).exists():
+                ctx.args[i] = fix
+
+        with BrokenPath.pushd(self.path):
+            while True:
+
+                # Optionally clear terminal
+                shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
+
+                if self.is_python:
+                    venv = self.__install_venv__(reinstall=reinstall)
+                    status = shell("poetry", "run", self.name.lower(), ctx.args)
+                if self.is_rust:
+                    status = shell(
+                        "cargo", "run",
+                        "--bin", self.name,
+                        ["--profile", "release"] if not debug else [],
+                        "--features", self.rust_features,
+                        "--", ctx.args
+                    )
+                if self.is_cpp:
+                    log.error("C++ projects are not supported yet")
+
+                # Avoid reinstalling on future runs
+                reinstall = False
+
+                # Detect bad return status, reinstall virtualenv and retry once
+                if (status.returncode != 0) and (not reinstall):
+                    log.warning(f"Detected bad return status for the Project [{self.name}]")
+
+                    if self.is_python:
+                        log.warning(f"- Virtual environment path: [{venv}]")
+
+                    # Prompt user for action
+                    answer = rich.prompt.Prompt.ask(
+                        f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
+                        choices=["r", "e", ""],
+                        default="retry"
+                    )
+                    if answer == "r":
+                        reinstall = True
+                    elif answer == "retry":
+                        pass
+
+                elif infinite:
+                    log.success(f"Project [{self.name}] finished successfully")
+                    rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
+
+                else:
+                    break
+
+    # # Python shenanigans
+
+    def __install_venv__(self, reinstall: bool=False) -> Path:
+        """Install and get a virtual environment path for Python project"""
+
+        # Unset virtualenv else the nested poetry will use it
+        os.environ.pop("VIRTUAL_ENV", None)
+
+        while True:
+            venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
+
+            # Virtualenv is not created if command errors or if it's empty
+            if (venv.returncode == 1) or (not venv.stdout.strip()):
+                log.info(f"Installing virtual environment for {self.name} project")
+                shell("poetry", "install")
+                continue
+
+            # Get and return virtualenv path
+            venv = Path(venv.stdout.decode("utf-8").strip())
+
+            # Reinstall virtualenv if requested
+            if reinstall:
+                reinstall = False
+                BrokenPath.remove(venv)
+                BrokenPath.remove(self.path/"poetry.lock")
+                continue
+
+            return venv
 
 # -------------------------------------------------------------------------------------------------|
 
-ABOUT = f"""
-🚀 Broken Source Software manager script\n
-• Tip: run "broken (command) --help" for options on commands or projects ✨
-
-©️  2022-2023 Broken Source Software and its authors, AGPLv3-only License.
-"""
-
+@attrs.define
 class BrokenCLI:
-    # Cargo.toml's required-features as ["--features", "default" ? "feature1,feature2"]
-    RustProjectFeatures = {}
+    projects: list[BrokenProject] = attrs.field(factory=list)
+    directories: BrokenDirectories = attrs.field(factory=BrokenDirectories)
+    typer_app: typer.Typer = None
 
-    # dict["depthflow"] -> "DepthFlow"
-    ProjectsInfo = {}
+    def __attrs_post_init__(self) -> None:
+        self.find_projects(self.directories.PROJECTS)
 
-    def __init__(self) -> None:
-        # Mono repository directories for Broken CLI script
-        self.RELEASES_DIR      = BROKEN_MONOREPO_DIR/"Release"
-        self.PROJECTS_DIR      = BROKEN_MONOREPO_DIR/"Projects"
-        self.BUILD_DIR         = BROKEN_MONOREPO_DIR/"Build"
+    def find_projects(self, path: Path) -> None:
+        for directory in path.iterdir():
 
-        # Secondary auxiliary repositores
-        self.META_DIR          = BROKEN_MONOREPO_DIR/"Meta"
-        self.ASSETS_DIR        = self.META_DIR/"Assets"
-        self.DOCS_DIR          = self.META_DIR/"Docs"
-        self.TEMPLATES_DIR     = self.META_DIR/"Templates"
+            # Avoid hidden directories
+            if "__" in str(directory):
+                continue
 
-        # Nested directories
-        self.HOOK_PROJECTS_DIR = self.PROJECTS_DIR/"Hook"
-        self.WINEPREFIX        = self.BUILD_DIR/"Wineprefix"
+            # Avoid recursion
+            if directory == self.directories.PACKAGE:
+                continue
+
+            # Resolve symlinks recursively
+            if directory.is_symlink():
+                return self.find_projects(path=directory)
+
+            # Instantiate project class
+            if (directory/"Broken.toml").exists():
+                self.projects.append(BrokenProject(directory))
+
+            if directory.is_dir():
+                self.find_projects(path=directory)
+
+    # # Main entry point
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
-        self.typer_app = BrokenBase.typer_app(description=ABOUT)
-
-        # Add projects commands
-        self.add_run_projects_commands()
+        self.typer_app = BrokenTyper.typer_app(description=(
+            "🚀 Broken Source Software manager script\n\n"
+            "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
+            "©️  2022-2023 Broken Source Software and its authors, AGPLv3-only License."
+        ))
 
         # Section: Installation
         emoji = "📦"
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.install)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.requirements)
-        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.scripts)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.link)
 
-        # Section: Miscellaneous
+         # Section: Miscellaneous
         emoji = "🛡️ "
-        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.date)
-        self.typer_app.command(rich_help_panel=f"{emoji} Core", hidden=True)(self.hooks)
-        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.update)
         self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.clean)
+        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.updateall)
         self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.release)
 
         # Section: Experimental
         emoji = "⚠️ "
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.pillow_simd)
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.pillow)
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.wheel)
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
+        # self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
+
+        # Section: Projects
+        self.add_projects_to_cli()
 
         # Execute the CLI
         self.typer_app()
 
-    # # Experimental
+    def add_projects_to_cli(self):
+        def project_cli_template(project: BrokenProject):
+            def project_cli(ctx: typer.Context):
+                project.cli(ctx=ctx)
+            return project_cli
 
-    def docs(self):
-        # Run sphinx-apidoc to generate docs
-        BUILD_DOCS_DIR = self.BUILD_DIR/"Documentation"
-        BrokenPath.resetdir(BUILD_DOCS_DIR)
+        # Add all projects
+        for project in self.projects:
+            self.typer_app.command(
+                name=project.name.lower(),
+                help=project.description_pretty_language,
+                rich_help_panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
+                add_help_option=False,
+                **BrokenTyper.with_context()
+            )(project_cli_template(project))
 
-        shell(
-            "sphinx-apidoc",
-            "-d", 10,
-            "-e",
-            "--full",
-            "-o",
-            BUILD_DOCS_DIR,
-            BROKEN_MONOREPO_DIR
-        )
-
-        # Copy conf.py
-        BrokenPath.copy(
-            self.DOCS_DIR/"conf.py",
-            BUILD_DOCS_DIR/"conf.py"
-        )
-
-        # Run sphinx-build to generate HTML
-        HTML_FILES = self.DOCS_DIR/"HTML"
-        BrokenPath.resetdir(HTML_FILES)
-
-        shell(
-            "sphinx-build",
-            "-b", "html",
-            BUILD_DOCS_DIR,
-            HTML_FILES
-        )
-
-    def wheel(self):
-        """Builds a Python wheel for Broken"""
-        BrokenPath.mkdir(self.BUILD_DIR)
-        dist = BrokenPath.resetdir(BROKEN_MONOREPO_DIR/"dist")
-
-        # Make Python Wheel
-        shell(POETRY, "build", "--format", "wheel", f"--directory={self.BUILD_DIR}")
-
-        # Get the wheel file, move to Build dir
-        wheel = next(dist.glob("*.whl"))
-        wheel = BrokenPath.move(wheel, self.BUILD_DIR/wheel.name)
-        BrokenPath.remove(dist)
-
-        log.info(f"Python wheel built at {wheel}")
+    # # Installation commands
 
     def link(self, path: Path):
-        """Links some Project Path or Folder of Projects to also be managed by Broken"""
-        BrokenPath.symlink(where=path, to=self.HOOK_PROJECTS_DIR/path.name)
+        """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
+        BrokenPath.symlink(where=path, to=self.directories.HOOK/path.name)
 
-    def pillow_simd(self):
-        # Installs Pillow-SIMD, a faster Pillow fork, does not change poetry dependencies. Requires AVX2 CPU, and dependencies installed
-        shell(PIP, "uninstall", "pillow-simd", "-y")
-        os.environ["CC"] = "cc -mavx2"
-        shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")
+    def install(self):
+        self.__scripts__()
+        self.__shortcut__()
 
-    ## Adding Commands
-
-    def __get_install_python_venv(self,
-        project_name: str,
-        project_path: PathLike,
-        reinstall: bool=False,
-    ) -> Path:
-        """Get the virtual environment path for a Python project"""
-
-        with BrokenPath.pushd(project_path):
-
-            # Unset virtualenv else the nested poetry will use it
-            os.environ.pop("VIRTUAL_ENV", None)
-
-            while True:
-                venv = shell(POETRY + ["env", "info", "--path"], echo=False, capture_output=True, cwd=project_path)
-
-                # Virtualenv is not created if command errors or if it's empty
-                if (venv.returncode == 1) or (not venv.stdout.strip()):
-                    log.info(f"Installing virtual environment for {project_name} project")
-                    shell(POETRY, "install", cwd=project_path)
-                    continue
-
-                # Get and return virtualenv path
-                venv_path = Path(venv.stdout.decode("utf-8").strip())
-
-                # Reinstall virtualenv if requested
-                if reinstall:
-                    reinstall = False
-                    BrokenPath.remove(venv_path)
-                    BrokenPath.remove(project_path/"poetry.lock")
-                    continue
-                return venv_path
-
-    def get_project_language(self, path: Path, echo=True) -> ProjectLanguage:
-        """
-        Get the programming language of a project
-        # Fixme: this could be done smartly (like a Broken.toml file)
-        """
-        if (path/"pyproject.toml").exists():
-            return ProjectLanguage.Python
-        elif (path/"Main.rs").exists() and (path.name in BrokenCLI.RustProjectFeatures):
-            return ProjectLanguage.Rust
-        elif (path/"meson.build").exists():
-            return ProjectLanguage.CPP
-        else:
-            return ProjectLanguage.Unknown
-
-    def add_project_command(self, name: str, path: PathLike, language: ProjectLanguage) -> None:
-        """Add a command to run a project on self.typer_app"""
-
-        # A very weird @wraps() decorator to keep local strings and return a function that runs the project
-        def run_project_template(name, path, language):
-            def run_project(
-                ctx: typer.Context,
-                reinstall: Annotated[bool, typer.Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
-                infinite: Annotated[bool, typer.Option("--infinite", help="Press Enter after each run to run again")]=False,
-                clear: Annotated[bool, typer.Option("--clear", help="Clear terminal before running")]=False,
-                debug: Annotated[bool, typer.Option("--debug", help="Debug mode for Rust projects")]=False,
-            ):
-                # Route for Python projects
-                if language == ProjectLanguage.Python:
-
-                    # For all arguments in ctx.args, if it's a file, replace it with its path
-                    # This also fixes files references on the nested poetry command rebasing to its path
-                    for i, arg in enumerate(ctx.args):
-                        if (fix := BrokenPath.true_path(arg)).exists():
-                            ctx.args[i] = fix
-
-                    # Set env vars for Broken
-                    os.environ["BROKEN_CURRENT_PROJECT_NAME"] = name
-
-                    # Optionally clear terminal
-                    shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
-
-                    # Maybe install or reinstall virtualenv, run project, get status
-                    project_venv = self.__get_install_python_venv(name, path, reinstall=reinstall)
-                    status = shell(POETRY, "run", name.lower(), ctx.args, cwd=path)
-
-                    # Detect bad return status, reinstall virtualenv and retry once
-                    if (status.returncode != 0) and (not reinstall):
-                        log.warning(f"Detected bad return status for the Project [{name}], maybe a broken virtual environment or some exception?")
-                        log.warning(f"- Virtual environment path: [{project_venv}]")
-
-                        answer = rich.prompt.Prompt.ask(
-                            f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
-                            choices=["r", "e", ""],
-                            default="retry"
-                        )
-                        if answer == "r":
-                            BrokenUtils.recurse(run_project, reinstall=True)
-                        elif answer == "retry":
-                            BrokenUtils.recurse(run_project)
-
-                    elif infinite:
-                        log.success(f"Project [{name}] finished successfully")
-                        rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
-                        reinstall = False
-                        BrokenUtils.recurse(run_project)
-
-                # Route for Rust projects
-                elif language == ProjectLanguage.Rust:
-                    self.install_rust()
-                    release = ["--profile", "release"] if not debug else []
-                    shell(CARGO, "run", "--bin", name, "--features", BrokenCLI.RustProjectFeatures[name], release, "--", ctx.args)
-
-                # Route for C++ projects
-                elif language == ProjectLanguage.CPP:
-                    with BrokenPath.pushd(path):
-                        if shell("meson", "setup", self.BUILD_DIR/name).returncode != 0:
-                            log.error(f"Meson failed to setup project [{name}]")
-                            return
-
-                        if shell("meson", "compile", "-C", self.BUILD_DIR/name).returncode != 0:
-                            log.error(f"Meson failed to compile project [{name}]")
-                            return
-
-                        if (status := shell(self.BUILD_DIR/name/name, ctx.args).returncode) != 0:
-                            log.error(f"Detected bad return status ({status}) for the Project [{name}]")
-
-            return run_project
-
-        # Get the base parent path of the project (might be folder of projects), resolve symlinks
-        base_path = path.resolve().parent.absolute()
-
-        # Start with unknown project description
-        description = "···"
-
-        # Get project description from config files based on language
-        # Fixme: Broken.toml specification would be nice
-        if language == ProjectLanguage.Python:
-            if (config := path/"pyproject.toml").exists():
-                description = (
-                    toml.loads(config.read_text())
-                    .get("tool", {})
-                    .get("poetry", {})
-                    .get("description", description)
-                )
-
-        elif language == ProjectLanguage.Rust:
-            if (config := path/"Cargo.toml").exists():
-                description = (
-                    toml.loads(config.read_text())
-                    .get("package", {})
-                    .get("description", description)
-                )
-
-        elif language == ProjectLanguage.CPP:
-            # Experimental C++ because I ain't good enough in Rust yet
-            # (I'm terrible at C++ also, but memory unsafe is easier to code lol)
-            ...
-
-        else:
-            # TODO: Any standard on what Broken.toml might contain?
-            if (config := path/"Broken.toml").exists():
-                description = (
-                    toml.loads(config.read_text())
-                    .get("description", description)
-                )
-
-        # Add project's mascot to description
-        if   language == ProjectLanguage.Python: description = f"🐍 (Python) {description}"
-        elif language == ProjectLanguage.Rust:   description = f"🦀 (Rust  ) {description}"
-        elif language == ProjectLanguage.CPP:    description = f"🌀 (C/C++ ) {description}"
-
-        # Create Typer command
-        self.typer_app.command(
-            name=name.lower(),
-            help=description,
-            rich_help_panel=f"🔥 Projects at [bold]({base_path})[/bold]",
-
-            # Catch extra (unknown to typer) arguments that are sent to Python
-            context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
-
-            # Projects implement their own --help
-            add_help_option=False,
-
-        )(run_project_template(name, path, language))
-
-    # TODO: Will I ever have projects in other languages?
-    def add_run_projects_commands(self, echo=False) -> None:
-        self.cargo_toml = DotMap(toml.loads((BROKEN_MONOREPO_DIR/"Cargo.toml").read_text()))
-
-        # Build Rust required features
-        for rust_project in self.cargo_toml["bin"]:
-            BrokenCLI.RustProjectFeatures[rust_project.get("name")] = ','.join(rust_project.get("required-features", ["default"]))
-
-        def check_directory(path: Path):
-
-            # Search every subdirectories for pyproject.toml or Main.rs
-            for sub in path.glob("**/*"):
-
-                # Avoid recursion
-                if sub == BROKEN_MONOREPO_DIR:
-                    continue
-
-                # Resolve symlinks recursively
-                if sub.is_symlink():
-                    return check_directory(sub.resolve().absolute())
-
-                # Might have non-project files
-                if not sub.is_dir():
-                    continue
-
-                # Empty dir might be a bare submodule
-                if not list(sub.iterdir()):
-                    continue
-
-                # "___" in path means to ignore
-                if "___" in str(sub):
-                    continue
-
-                # Project programming language
-                language = self.get_project_language(sub, echo=False)
-
-                # Skip unknown projects
-                if language == ProjectLanguage.Unknown:
-                    continue
-
-                # Get project name and translate lowercase to real name
-                name = sub.name
-                BrokenCLI.ProjectsInfo[name.lower()] = DotMap(
-                    name=name,
-                    path=sub,
-                    language=language,
-                )
-
-                # Add project command
-                self.add_project_command(name=name, path=sub, language=language)
-
-                # Add attribute to the enumerator ProjectsEnumerator
-                if name.lower() not in ProjectsEnumerator.__members__:
-                    aenum.extend_enum(ProjectsEnumerator, name.lower(), name.lower())
-
-        # Check all projects directories
-        check_directory(self.PROJECTS_DIR)
-
-    # NOTE: Also returns date string
-    def date(self) -> str:
-        """Set current UTC dates on all Cargo.toml and pyproject.toml for known projects"""
-        date = arrow.utcnow().format("YYYY.M.D")
-        log.info(f"Current UTC date is [{date}]")
-
-        # Find "version=" line and set it to "version = {date}"", write back to file
-        def update_date(file: Path) -> None:
-            if not file.exists(): return
-            log.info(f"Updating date of file [{file}]")
-            file.write_text('\n'.join(
-                [line if not line.startswith("version") else f'version = "{date}"'
-                for line in file.read_text().split("\n")]
-            ))
-
-        for path in self.PROJECTS_DIR.glob("**/*"):
-
-            # Might have non-project files
-            if not path.is_dir():
-                continue
-
-            # Update common files
-            update_date(path/"pyproject.toml")
-            update_date(path/"Cargo.toml")
-
-        # Broken
-        update_date(BROKEN_MONOREPO_DIR/"pyproject.toml")
-        update_date(BROKEN_MONOREPO_DIR/"Cargo.toml")
-
-        # Update poetry.lock
-        shell(POETRY, "install")
-
-        return date
-
-    # # Commands section
-
-    def hooks(self) -> None:
-        """Use all Git hooks under the folder Broken/Hooks"""
-
-        # Make all hooks executable
-        for file in (BROKEN_MONOREPO_DIR/"Broken/Hooks").iterdir():
-            shell(CHMOD, "+x", file)
-
-        # Set git hooks path to Broken/Hooks
-        shell(GIT, "config", "core.hooksPath", "./Broken/Hooks")
-
-    def clean(self,
-        isort: bool=True,
-        pycache: bool=True,
-        build: bool=False,
-        releases: bool=False,
-        all: bool=False
-    ) -> None:
-        """Sorts imports, cleans .pyc files and __pycache__ directories"""
-
-        # Sort imports, ignore "Releases" folder
-        if all or isort:
-            shell(ISORT, BROKEN_MONOREPO_DIR,
-                "--force-single-line-imports",
-                "--skip", self.RELEASES_DIR,
-                "--skip", self.BUILD_DIR,
-            )
-
-        # Remove all .pyc files and __pycache__ folders
-        if all or pycache:
-            for path in list(BROKEN_MONOREPO_DIR.glob("**/*.pyc")) + list(BROKEN_MONOREPO_DIR.glob("**/__pycache__")):
-                if any([ignore in path.parents for ignore in (self.RELEASES_DIR, self.BUILD_DIR)]):
-                    continue
-                BrokenPath.remove(path)
-
-        # Remove build and releases folders if requested
-        if all or build:    BrokenPath.remove(self.BUILD_DIR)
-        if all or releases: BrokenPath.remove(self.RELEASES_DIR)
-
-    # Install Rust toolchain on macOS, Linux
-    def install_rust(self) -> None:
-
-        # Install rustup for toolchains
-        if not all([BrokenPath.get_binary(binary) is not None for binary in ["rustup", "rustc", "cargo"]]):
-            log.info(f"Installing Rustup default profile")
-
-            # Get rustup link for each platform
-            if BrokenPlatform.OnWindows: rust_installer = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe"
-            elif BrokenPlatform.OnUnix:  rust_installer = "https://sh.rustup.rs"
-
-            # Download and install Rust
-            with BrokenDownloads.download(rust_installer) as installer:
-                shell(BASH, installer, "--profile", "default", "-y")
-                log.fixme(f"Please run the last command again or restart terminal or Rust binaries won't be found")
-                exit(0)
-
-        # Detect if default Rust toolchain installed is the one specified in RUSTUP_TOOLCHAIN
-        for line in shell(RUSTUP, "toolchain", "list", output=True, echo=False).split("\n"):
-            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != RUSTUP_TOOLCHAIN)):
-                log.info(f"Defaulting Rust toolchain to [{RUSTUP_TOOLCHAIN}]")
-                shell(RUSTUP, "default", RUSTUP_TOOLCHAIN)
-
-    def install(self, linux_desktop_file: bool=True, scripts: bool=True) -> None:
-        """Symlinks current directory to Broken Shared Directory for sharing code in External projects, makes `broken` command available anywhere by adding current folder to PATH, creates .desktop file on Linux"""
+    def __shortcut__(self):
         log.fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
-
-        # Create direct project scripts
-        self.add_run_projects_commands()
 
         # Symlink Broken Shared Directory to Broken Root
         if BrokenPlatform.OnUnix:
 
             # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
-            if Path(BROKEN_SHARED_DIR).resolve() != BROKEN_MONOREPO_DIR:
-                log.info(f"Creating symlink [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
-                shell("sudo", "ln", "-snf", BROKEN_MONOREPO_DIR, BROKEN_SHARED_DIR)
+            if Path(self.directories.BROKEN_SHARED).resolve() != self.directories.PACKAGE:
+                log.info(f"Creating symlink [{self.directories.BROKEN_SHARED}] -> [{self.directories.PACKAGE}]")
+                shell("sudo", "ln", "-snf", self.directories.PACKAGE, self.directories.BROKEN_SHARED)
+            else:
+                log.success(f"Symlink [{self.directories.BROKEN_SHARED}] -> [{self.directories.PACKAGE}] already exists")
 
             # Symlink `brakeit` on local bin
-            brakeit_symlink = HOME_DIR/".local/bin/brakeit"
-            BrokenPath.symlink(where=BROKEN_SHARED_DIR/"brakeit", to=brakeit_symlink)
+            brakeit_symlink = self.directories.HOME/".local/bin/brakeit"
+            BrokenPath.symlink(where=self.directories.BROKEN_SHARED/"brakeit", to=brakeit_symlink)
             BrokenPath.make_executable(brakeit_symlink)
 
-            # Create .desktop file
-            if linux_desktop_file:
-                desktop = HOME_DIR/".local/share/applications/Broken.desktop"
+            # Create Linux .desktop file
+            if BrokenPlatform.OnLinux:
+                desktop = self.directories.HOME/".local/share/applications/Broken.desktop"
                 desktop.write_text('\n'.join([
                     "[Desktop Entry]",
                     "Type=Application",
                     "Name=Broken Shell",
-                    f"Exec={BROKEN_SHARED_DIR/'brakeit'}",
-                    f"Icon={self.ASSETS_DIR/'Default'/'Icon.png'}",
+                    f"Exec={self.directories.BROKEN_SHARED/'brakeit'}",
+                    f"Icon={self.directories.RESOURCES/'Default'/'Icon.png'}",
                     "Comment=Broken Shell Development Environment",
                     "Terminal=true",
                     "Categories=Development",
@@ -545,29 +381,19 @@ class BrokenCLI:
                 log.success(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
-            if not ctypes.windll.shell32.IsUserAnAdmin():
-                log.warning("Windows symlink requires admin privileges on current shell, please open an admin PowerShell/CMD and run [  broken install] again")
-                return
-            BrokenPath.remove(BROKEN_SHARED_DIR, confirm=True)
-            Path(BROKEN_SHARED_DIR).symlink_to(BROKEN_MONOREPO_DIR, target_is_directory=True)
-
+            log.fixme("Windows installation is not supported yet")
         else:
             log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return
 
-        log.success(f"Symlink created [{BROKEN_SHARED_DIR}] -> [{BROKEN_MONOREPO_DIR}]")
-
         # Add Broken Shared Directory to PATH
-        ShellCraft.add_path_to_system_PATH(BROKEN_SHARED_DIR)
+        log.todo("Add Broken Shared Directory to PATH")
 
-        if scripts:
-            self.scripts()
-
-    def scripts(self):
+    def __scripts__(self):
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
 
         # Get Broken virtualenv path
-        bin_path = self.__get_install_python_venv("Broken", BROKEN_MONOREPO_DIR)/"bin"
+        bin_path = BrokenProject(self.directories.PACKAGE).__install_venv__()/"bin"
 
         # Watermark to tag files are Broken made
         WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
@@ -582,375 +408,82 @@ class BrokenCLI:
             except Exception as e:
                 raise e
 
-        # For each internal command
-        for command in self.typer_app.registered_commands:
-
-            # No typer.command(name=str)(...) given
-            if command.name is None:
-                continue
-
-            log.info(f"Creating script for command [{command.name}]")
-            script = bin_path/command.name
+        for project in self.projects:
+            script = bin_path/project.lname
 
             if BrokenPlatform.OnUnix:
                 script.write_text('\n'.join([
                     f"#!/bin/bash",
                     f"# {WATERMARK}",
-                    f"broken {command.name} $@",
+                    f"broken {project.lname} $@",
                 ]))
                 BrokenPath.make_executable(script, echo=False)
             elif BrokenPlatform.OnWindows:
                 script.write_text('\n'.join([
                     f"@echo off",
                     f":: {WATERMARK}",
-                    f"broken {command.name} %*",
+                    f"broken {project.lname} %*",
                 ]))
 
-    def update(self,
-        rust: bool=False,
-        python: bool=False,
-        repos: bool=False,
-        all: bool=False,
-    ):
-        """Updates Cargo and Python dependencies, Rust language toolchain and Poetry"""
-        if not any([rust, python, repos, all]):
-            log.error("Please specify what to update see [broken update --help]")
-            return
+    def requirements(self):
+        log.todo("Reimplement better requirements command")
 
-        # Update Rust
-        if all or rust:
-            self.install_rust()
-            shell(CARGO, "update")
-            shell(RUSTUP, "update")
+    def clean(self,
+        isort: bool=True,
+        pycache: bool=True,
+        build: bool=False,
+        releases: bool=False,
+        all: bool=False
+    ) -> None:
+        """Sorts imports, cleans .pyc files and __pycache__ directories"""
 
-        # Update Python
-        if all or python:
-
-            # Main repository dependencies
-            shell(POETRY, "update")
-
-            # All Python projects dependencies
-            for project in self.PROJECTS_DIR.iterdir():
-                if (project/"pyproject.toml").exists():
-                    log.info(f"Updating Python dependencies for Project [{project.name}]")
-                    os.environ.pop("VIRTUAL_ENV", None)
-                    shell(POETRY, "update", cwd=project)
-
-        # Update Git Repositories
-        if all or repos:
-            shell(GIT, "submodule", "update", "--init", "--recursive")
-
-    def release(self,
-        project: ProjectsEnumerator,
-        platform: ReleasePlatform,
-        nuitka: Annotated[bool, typer.Option("--nuitka", "-n", help="(Python) Use Nuitka than Pyinstaller for builds - experimental")]=False,
-    ):
-        """Builds and releases a project for a specific platform"""
-
-        # Get info on the project
-        project = BrokenCLI.ProjectsInfo.get(project.value.lower())
-
-        # Find project's programming language
-        language = self.get_project_language(path=project.path)
-
-        # Update dates and create releases directory
-        date = self.date()
-        BrokenPath.mkdir(self.RELEASES_DIR)
-        BrokenPath.mkdir(self.BUILD_DIR)
-
-        # Get info based on target platform
-        (rust_target_triple, compiled_extension, release_extension) = {
-            # Linux
-            ReleasePlatform.LinuxAMD64:   ("x86_64-unknown-linux-gnu",  "",     ".bin"),
-            ReleasePlatform.LinuxARM:     ("aarch64-unknown-linux-gnu", "",     ".bin"),
-
-            # Windows
-            ReleasePlatform.WindowsAMD64: ("x86_64-pc-windows-gnu",     ".exe", ".exe"),
-
-            # FIXME: MacOS Requires Xcode, can we crosscompile from Linux? Do not care for AMD64?
-            ReleasePlatform.MacOSAMD64:   ("x86_64-apple-darwin",       "",     ".bin"),
-            ReleasePlatform.MacOSARM:     ("aarch64-apple-darwin",      "",     ".bin"),
-        }.get(platform)
-
-        # -----------------------------------------------------------------------------------------|
-
-        if language == ProjectLanguage.Python:
-
-            # "python3.11.4", "python3.11", for example
-            vi = sys.version_info
-            python_version_installer_url = f"{vi.major}.{vi.minor}.{vi.micro}"
-            python_version_site_packages = f"{vi.major}.{vi.minor}"
-
-            # Cross compilation bootstrap for Windows from Linux
-            if (BrokenPlatform.OnLinux) and (platform == ReleasePlatform.WindowsAMD64):
-                log.warning("wine-staging as of version 8.11 fails creating and installing the virtual environments in poetry")
-
-                # Wine called binaries
-                WINE_PYTHON = [WINE, "python.exe"]
-                WINE_PIP    = [WINE_PYTHON, "-m", "pip"]
-                WINE_POETRY = [WINE_PYTHON, "-m", "poetry"]
-
-                # Set Wineprefix
-                os.environ["WINEPREFIX"] = str(self.WINEPREFIX)
-                os.environ["WINEARCH"]   = "win64"
-                os.environ["WINEDEBUG"]  = "-all"
-
-                # Download and install Python for Windows
-                python_installer_url = f"https://www.python.org/ftp/python/{python_version_installer_url}/python-{python_version_installer_url}-amd64.exe"
-
-                # Set to Windows 10 version (Python can't be installed for <= 8)
-                shell(WINETRICKS, "win10", "-q")
-
-                # Install Python, add to path
-                with BrokenDownloads.download(python_installer_url) as python_installer:
-                    shell(WINE, python_installer, "/quiet", "InstallAllUsers=1", "PrependPath=1")
-
-                # Install Broken dependencies and create virtualenv
-                shell(WINE_PIP, "install", "--upgrade", "pip", "wheel")
-                shell(WINE_PIP, "install", "--upgrade", "poetry")
-                shell(WINE_POETRY, "install")
-
-                # Inception: Run this function but from Wine Python
-                os.environ.pop("VIRTUAL_ENV", None)
-                shell(WINE_POETRY, "run", "broken", "release", project.name.lower(), platform.value, "--nuitka" if nuitka else "")
-                return
-
-            # Create install virtualenv dependencies
-            project.venv = self.__get_install_python_venv(project.name, project.path)
-
-            # Find site_packages of the project's virtualenv
-            project.site_packages = project.venv/"lib"/f"python{python_version_site_packages}"/"site-packages"
-
-            # Use the project's virtualenv site-packages
-            os.environ["PYTHONPATH"] = str(project.site_packages)
-            log.info(f"Using site-packages at [{project.site_packages}]")
-
-            # Find common project assets
-            def get_project_asset_file_or_default(relative_path: Path) -> Path:
-                if (target := self.ASSETS_DIR/project.name/relative_path).exists():
-                    return target
-                return self.ASSETS_DIR/"Default"/relative_path
-
-            # Torch fixes not including metadata
-            torch_fixes = [
-                ("--copy-metadata", package)
-                for package in "tqdm torch regex sacremoses requests packaging filelock numpy tokenizers importlib_metadata".split()
-                if (project.site_packages/package).exists()
-            ]
-
-            # Use the project's virtualenv site-packages
-            if (BrokenPlatform.OnLinux):
-                lib_name = "libglfw.so"
-                log.fixme(f"Applying [{lib_name}] workaround for Pyinstaller, is it on any other path than /usr/lib?")
-                try:
-                    lib = next(Path("/usr/lib").glob(f"**/{lib_name}"))
-                    log.success(f"Found [{lib_name}] at [{lib}]")
-                    os.environ["PYGLFW_LIBRARY"] = str(lib)
-                except StopIteration:
-                    log.error(f"[{lib_name}] not found on /usr/lib, ModernGL projects might fail")
-
-            # Compile the Python project with Pyinstaller
-            if not nuitka:
-                shell(PYINSTALLER,
-
-                    # Where and how to build
-                    "--workpath", self.BUILD_DIR,
-                    "--onefile",
-                    # "--clean",
-                    "--noconfirm",
-                    # "--strip",
-                    "--console",
-
-                    # Hidden imports that may contain binaries
-                    "--hidden-import", "imageio_ffmpeg",
-                    "--hidden-import", "glcontext",
-                    "--hidden-import", "glfw",
-                    # "--hidden-import", "torch",
-
-                    # Torch fixes
-                    torch_fixes,
-
-                    # Where to put the binary and its name
-                    f"--distpath={self.RELEASES_DIR}",
-                    f"--specpath={self.BUILD_DIR}",
-                    "-n", project.name,
-
-                    # Use the project's virtualenv site-packages just in case
-                    "--paths", project.site_packages,
-
-                    # Branding: Icon and splash screen
-                    "--splash", get_project_asset_file_or_default("Splash.png"),
-                    "--icon", get_project_asset_file_or_default("Icon.ico"),
-
-                    # Target file to compile
-                    project.path/project.name/"__main__.py",
-                )
-
-                # Path of the compiled binary
-                compiled_binary = self.RELEASES_DIR/f"{project.name}{compiled_extension}"
-
-
-            # Compile the Python project with Nuitka
-            if nuitka:
-                shell(NUITKA,
-                    # Basic options
-                    "--standalone",
-                    "--onefile",
-                    "--lto=yes",
-                    "--assume-yes-for-downloads",
-
-                    # FFmpeg Binaries
-                    "--include-package-data=imageio_ffmpeg",
-
-                    # "--onefile-tempdir-spec=%CACHE_DIR%/%COMPANY%/%PRODUCT%/%VERSION%"
-                    f"--onefile-tempdir-spec=%CACHE_DIR%/BrokenSource/{project.name}-{date}",
-
-                    # Binary metadata
-                    f"--company-name='Broken Source Software'",
-                    f"--product-name='{project.name}'",
-                    f"--file-version={date}",
-                    f"--product-version={date}",
-
-                    # Output options
-                    f"--output-filename={project.name}",
-                    f"--output-dir={self.RELEASES_DIR}",
-
-                    # Note: We don't target __main__ else nuitka won't "find the __init__ and as a package"
-                    self.PROJECTS_DIR/project.name/project.name,
-                )
-
-                # Path of the compiled binary
-                compiled_binary = self.RELEASES_DIR/f"{project.name}"
-
-        # -----------------------------------------------------------------------------------------|
-
-        elif language == ProjectLanguage.Rust:
-            self.install_rust()
-            rust_profile = "ultra"
-
-            # Fix Fortran compiler for Windows cross compilation netlib for ndarray-linalg package
-            if (BrokenPlatform == "linux") and (platform == "windows-amd64"):
-                log.note("Fixing Fortran compilation for Windows cross compilation")
-                os.environ["FC"] = "x86_64-w64-mingw32-gfortran"
-
-            # Add target toolchain for Rust
-            shell(RUSTUP, "target", "add", rust_target_triple)
-            rust_required_features = BrokenCLI.RustProjectFeatures[project.name]
-
-            # Build the binary
-            shell(CARGO, "build",
-                "--bin", project.name,
-                "--target", rust_target_triple,
-                "--features", rust_required_features,
-                "--profile", rust_profile,
+        # Sort imports, ignore "Releases" folder
+        if all or isort:
+            shell("isort", self.directories.PACKAGE,
+                "--force-single-line-imports",
+                "--skip", self.directories.RELEASES,
+                "--skip", self.directories.BUILD,
             )
 
-            # Path of the compiled binary
-            compiled_binary = self.BUILD_DIR/rust_target_triple/rust_profile/f"{project.name}{compiled_extension}"
+        # Remove all .pyc files and __pycache__ folders
+        if all or pycache:
+            delete  = list(self.directories.PACKAGE.glob("**/*.pyc"))
+            delete += list(self.directories.PACKAGE.glob("**/__pycache__"))
 
-        # -----------------------------------------------------------------------------------------|
-        # # Deal with bundling
-        else:
-            log.error(f"Unknown Project [{project.name}] Language")
-            return
+            for path in delete:
+                BrokenPath.remove(path)
 
-        # Standard naming for all projects
-        release_binary = self.RELEASES_DIR/f"{project.name.lower()}-{platform.value}-{date}{release_extension}"
-        release_zip    = release_binary.parent/(release_binary.stem + ".zip")
+        # Remove build and releases folders if requested
+        if all or build:    BrokenPath.remove(self.directories.BUILD)
+        if all or releases: BrokenPath.remove(self.directories.RELEASES)
 
-        # Default release
-        shutil.copy(compiled_binary, release_binary)
-        os.remove(compiled_binary)
+    def updateall(self) -> None:
+        """Updates all projects"""
+        for project in self.projects:
+            project.update()
 
-        # Rust: Windows bundling into a ZIP file for ndarray-linalg that doesn't properly statically link
-        if (language == ProjectLanguage.Rust) and (BrokenPlatform.OnLinux) and (platform == "windows-amd64") and ("ndarray" in rust_required_features):
-            required_shared_libraries = [
-                "libgfortran-5.dll",
-                "libgcc_s_seh-1.dll",
-                "libwinpthread-1.dll",
-                "libquadmath-0.dll",
-            ]
+    def release(self) -> None:
+        log.todo("Reimplement release command")
 
-            COMMON_MINGW_DLL_PATHS = [
-                Path("/usr/x86_64-w64-mingw32/bin/"),              # Arch
-                Path("/usr/lib/gcc/x86_64-w64-mingw32/10-win32/"), # Ubuntu
-            ]
+    # # Experimental
 
-            # Zip the releaseBinary and all the required shared libraries
-            with zipfile.ZipFile(release_zip, "w") as zip:
-                def add_file_to_zip(file: Path, remove=False):
-                    zip.write(file, file.name)
-                    if remove: file.unlink()
+    def wheel(self):
+        """Builds a Python wheel for Broken"""
+        BrokenPath.mkdir(self.directories.BUILD)
+        dist = BrokenPath.resetdir(self.directories.PACKAGE/"dist")
 
-                add_file_to_zip(release_binary, remove=True)
+        # Make Python Wheel
+        shell("poetry", "build", "--format", "wheel", f"--directory={self.directories.BUILD}")
 
-                for library in required_shared_libraries:
-                    for path in COMMON_MINGW_DLL_PATHS:
-                        try:
-                            add_file_to_zip(path/library)
-                        except FileNotFoundError:
-                            pass
+        # Get the wheel file, move to Build dir
+        wheel = next(dist.glob("*.whl"))
+        wheel = BrokenPath.move(wheel, self.directories.BUILD/wheel.name)
+        BrokenPath.remove(dist)
 
-                    # Check if library was copied to the zip
-                    if not library in zip.namelist():
-                        raise FileNotFoundError(f"Could not find [{library}] in any of the following paths: {COMMON_MINGW_DLL_PATHS}")
+        log.info(f"Python wheel built at {wheel}")
 
-        # Write sha256sum of a file next to it
-        sha256 = hashlib.sha256(release_binary.read_bytes()).hexdigest()
-        release_binary.with_suffix(".sha256").write_text(sha256)
-
-    def requirements(self):
-        """Install external dependencies based on your platform for Python releases or compiling Rust projects"""
-
-        # "$ ./broken" -> "$ broken"
-        if not "." in os.environ.get("PATH").split(os.pathsep):
-            log.info(f"TIP: You can append '.' to $PATH env var so current directory binaries are found, no more typing './broken' but simply 'broken'. Add to your shell config: 'export PATH=$PATH:.'")
-
-        # # Install Requirements depending on host platform
-        if BrokenPlatform.OnLinux:
-            if BrokenPlatform.OnArch:
-                shell(SUDO, PACMAN, "-Syu", [
-                    "base-devel",
-                    "gcc-fortran",
-                    "mingw-w64-toolchain",
-                    "upx",
-
-                    # Python cross compilation to Windows
-                    "wine",
-                    "wine-mono",
-                    "winetricks",
-
-                    # Python Nuitka
-                    "ccache",
-                    "patchelf"
-                ])
-                return
-
-            log.warning(f"[{BrokenPlatform.LinuxDistro}] Linux Distro is not officially supported. Please fix or implement dependencies for your distro if it doesn't work.")
-
-            if BrokenPlatform.OnUbuntu:
-                shell(SUDO, APT, "update")
-                shell(SUDO, APT, "install", "build-essential mingw-w64 gfortran-mingw-w64 gcc gfortran upx wine".split())
-
-        elif BrokenPlatform.OnWindows:
-            raise NotImplementedError("Broken releases on Windows not implemented")
-
-        elif BrokenPlatform.OnMacOS:
-            raise NotImplementedError("Broken releases on macOS not tested / implemented")
-
-            # Install Homebrew
-            with BrokenDownloads.download("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh") as installer:
-                shell(BASH, installer)
-
-            # Install make dependencies
-            shell(brew, "install", "mingw-w64", "upx")
-
-
-# -------------------------------------------------------------------------------------------------|
-
-def main():
-    broken = BrokenCLI()
-    broken.cli()
-
-if __name__ == "__main__":
-    main()
+    def pillow(self):
+        """Use Pillow-SIMD. Requires AVX2 CPU and dependencies"""
+        shell(PIP, "uninstall", "pillow-simd", "-y")
+        os.environ["CC"] = "cc -mavx2"
+        shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")

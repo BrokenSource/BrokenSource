@@ -43,11 +43,11 @@ Otherwise, you'll have to run from the source code, see below
 
 - **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
-<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completelty Open Source, no shady between the lines stuff</i></sub>
+<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
 
 <br>
 
-Our **release binaries** follows the **naming convention** below:
+Our **release binaries** follow the **naming convention** below:
 
 - `$project_name-$operating_system-$cpu_architecture-$version.$extension`
 
@@ -101,7 +101,7 @@ Please read all instructions before executing them for tips and notes
 
 ```bash
 # Clone and enter the repository directory
-git clone --recurse-submodules https://github.com/BrokenSource/BrokenSource
+git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
 
 # "Open" the repository folder
 cd BrokenSource
@@ -129,7 +129,7 @@ A quick note based on the project language:
 
 - Running the Python projects is **easy**, while Rust requires **extra steps**
 
-- **Rust** is split in its own instructions to reduce micro-management and complexity
+- **Rust** is split in its own instructions to reduce micromanagement and complexity
 
 
 <details>
@@ -174,7 +174,7 @@ Now run the same **Linux** and **MacOS** commands above
 
 Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but **doable if you want to try**
 
-Easiest way is using [MSYS2](https://www.msys2.org/) which provides an **Unix-like** environment for Windows, please install it
+Easiest way is using [MSYS2](https://www.msys2.org/) which provides a **Unix-like** environment for Windows, please install it
 
 - Open a MSYS2 terminal and run:
 
@@ -203,7 +203,7 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 
 ## • Help Needed
 - Designer needed for the logos and consistent art
-- Packaging binaries on Linux and MacOS package managers
+- Packaging binaries on Linux and MacOS - package managers
 
 ## • Reporting Issues
 - **We do not** test enough or at all the code on Windows or MacOS
@@ -218,6 +218,7 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 - No commentaries are criticizing your person, rather your *work*
 - **Stuff needs time and effort to be implemented**
 - Feel absolutely free to debate on choices and ideas for the projects
+- Do not be afraid to ask for help or guidance
 
 
 <br>
@@ -226,7 +227,7 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 
 # 💎 Acknowledgements
 
-All the infrastructure in **Broken Source Software's Framework** and **Projects** wouldn't be possible without many programming language packages, softwares we use and exponentially more **Open Source Contributors** that made it possible. **To all of you**, an **uncountable list of direct and indirect contributors**, we thank you for your time and effort to make the world a better place ❤️‍🩹
+All the infrastructure in **Broken Source Software's Framework** and **Projects** wouldn't be possible without many programming language packages, software we use and exponentially more **Open Source Contributors** that made it possible. **To all of you**, an **uncountable list of direct and indirect contributors**, we thank you for your time and effort to make the world a better place ❤️‍🩹
 
 Below a list, **not ordered by importance or relevance**, of the most notable software and people.
 
@@ -289,9 +290,10 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 # ⚖️ License and Fair Use
 
 **Basics**
-- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or some other directory, all files are subject to the `License.md` on their respective repository
+- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or subdirectories, all files are subject to the `License.md` on their respective repository
 
-- 📈 We embrace the **Open Source** philosophy; The **Free** part we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse. This being said, smaller projects tends to be MIT licensed since the effort is considerably lower
+- 📈 We embrace the **Free and Open Source Software** philosophy; The **Free** part, we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse - **Open**.
+  - Smaller projects tend to be MIT licensed since the effort is considerably lower
 
 
 <br/>
@@ -307,7 +309,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 **Fair Use**
 - 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
 
-- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us and we'll be happy to help both sides grow
+- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow
 
 
 <br/>

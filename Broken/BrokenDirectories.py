@@ -1,71 +1,158 @@
 from . import *
 
 
+@attrs.define(slots=False)
 class BrokenDirectories:
-    """
-    Class that handles creating directories for Broken projects for consistency.
-    # Default directories:
-        - Root:      Root directory for the project (data directory)
-        - Resources:
-    # Directories are created as needed. Suggestions:
-        - Cache:     Cache files
-        - Config:    Configuration files
-        - Data:      Data files
-        - Logs:      Log files
-        - Externals: External files
-        - Temp:      Temporary files
-        - Downloads: Downloaded files
-    """
-    def __init__(self, app_name: str="Broken", app_author: str="BrokenSource", echo=True):
 
-        # App information
-        self.app_name   = app_name
-        self.app_author = app_author
-        self.APPDIRS    = AppDirs(app_author, app_author)
+    # App information
+    app_name:   str     = attrs.field(default="Broken")
+    app_author: str     = attrs.field(default="BrokenSource")
+    app_dirs:   AppDirs = attrs.field(default=None)
 
-        # Special directories
-        self.ROOT = Path(self.APPDIRS.user_data_dir)#/self.app_name
-        self.ROOT.mkdir(parents=True, exist_ok=True)
+    def __attrs_post_init__(self):
+        self.app_dirs = AppDirs(self.app_author, self.app_author)
 
-        # On Source Code mode is the __init__.py file's parent, on release is the executable's parent
-        self.PACKAGE   = BrokenDirectories.get_system_executable_directory()
-        self.RESOURCES = self.PACKAGE/"Resources"
+    def __mkdir__(self, path: Path) -> Path:
+        """Make a directory and return it"""
+        path = Path(path).absolute()
+        if not path.exists():
+            log.info(f"Creating directory: {path}")
+            path.mkdir(parents=True, exist_ok=True)
+        return path
 
-        # Log info and root dir for user convenience
-        # log.info(f"Project Directories [AppName: {app_name}] by [AppAuthor: {app_author}] at [{self.ROOT}]", echo=echo)
+    # # Unknown / new project directories
 
-    def __getattr__(self, name: str) -> Path:
-        """Attributes not found are assumed to be a new project directory"""
-        return self.new_project_directory(name)
+    def __set__(self, name: str, value: Path) -> Path:
+        self.__dict__[name] = value if not isinstance(value, Path) else self.__mkdir__(value)
 
-    def new_project_directory(self, name: Path) -> Path:
-        """Make a new directory relative to the project's root"""
-        name = name.capitalize()
-        directory = self.ROOT/name
-        directory.mkdir(parents=True, exist_ok=True)
-        setattr(self, name.upper(), directory)
-        return directory
+    def __setattr__(self, name: str, value: Path) -> Path:
+        self.__set__(name, value)
 
-    def get_system_executable_directory() -> Path:
-        """Smartly gets the current "executable" of the current scope, or the release binary's path"""
+    def __setitem__(self, name: str, value: Path) -> Path:
+        self.__set__(name, value)
+
+    # # Base directories
+
+    @property
+    def PACKAGE(self, level: int=0):
+        """
+        Source Code:
+            Returns the __init__.py file's parent directory
+            (where 'shared' and 'common' directories are located)
+
+        Compiled:
+            Returns the executable's directory
+        """
         if BROKEN_PYINSTALLER:
             return Path(sys.executable).parent.absolute().resolve()
+
         elif BROKEN_NUITKA:
             return Path(sys.argv[0]).parent.absolute().resolve()
-        else:
-            return Path(inspect.stack()[2].filename).parent.absolute().resolve()
+
+        # Search as when the stack's self is not the current selv
+        while (stack := inspect.stack()[level := level+1]):
+            if stack.frame.f_locals.get("self", None) != self:
+                break
+
+        return Path(stack.filename).parent.parent.absolute().resolve()
+
+    @property
+    def WORKSPACE(self) -> Path:
+        return self.__mkdir__(Path(self.app_dirs.user_data_dir)/self.app_name)
+
+    @property
+    def HOME(self) -> Path:
+        return self.__mkdir__(Path.home())
+
+    # # Common system directories
+
+    @property
+    def SYSTEM_ROOT(self) -> Path:
+        """(Unix: /), (Windows: C://)"""
+        return self.__mkdir__("/")
+
+    @property
+    def BROKEN_SHARED(self) -> Path:
+        """Returns the shared directory of Broken"""
+        return self.__mkdir__(self.SYSTEM_ROOT/"Broken")
+
+    # # Broken monorepo specific, potentially useful
+
+    @property
+    def RELEASES(self) -> Path:
+        return self.__mkdir__(self.PACKAGE/"Release")
+
+    @property
+    def BUILD(self) -> Path:
+        return self.__mkdir__(self.PACKAGE/"Build")
+
+    @property
+    def WINEPREFIX(self) -> Path:
+        return self.__mkdir__(self.BUILD/"Wineprefix")
+
+    @property
+    def PROJECTS(self) -> Path:
+        return self.__mkdir__(self.PACKAGE/"Projects")
+
+    @property
+    def HOOK(self) -> Path:
+        return self.__mkdir__(self.PROJECTS/"Hook")
+
+    # # Meta directories - Broken monorepo specific
+
+    @property
+    def META(self) -> Path:
+        return self.__mkdir__(self.PACKAGE/"Meta")
+
+    @property
+    def DOCS(self) -> Path:
+        return self.__mkdir__(self.META/"Docs")
+
+    @property
+    def PAPERS(self) -> Path:
+        return self.__mkdir__(self.META/"Papers")
+
+    @property
+    def TEMPLATES(self) -> Path:
+        return self.__mkdir__(self.META/"Templates")
+
+    @property
+    def WEBSITE(self) -> Path:
+        return self.__mkdir__(self.META/"Website")
+
+    # # Workspace directories
+
+    @property
+    def RESOURCES(self) -> Path:
+        return self.__mkdir__(self.PACKAGE/"Resources")
+
+    @property
+    def CONFIG(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Config")
+
+    @property
+    def LOGS(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Logs")
+
+    @property
+    def CACHE(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Cache")
+
+    @property
+    def DATA(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Data")
+
+    @property
+    def DOWNLOADS(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Downloads")
+
+    @property
+    def EXTERNALS(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Externals")
+
+    @property
+    def TEMP(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Temp")
 
 # Broken package shared and common directories
-BROKEN_DIRECTORIES = BrokenDirectories(echo=False)
-
-# Root of BrokenSource Monorepo
-BROKEN_MONOREPO_DIR = BROKEN_DIRECTORIES.PACKAGE.parent
-BROKEN_SYS_ROOT_DIR = Path("/").absolute().resolve()
-
-# Where Broken shall be placed as a symlink to be shared
-# (on other pyproject.toml have it as broken = {path="/Broken", develop=true})
-BROKEN_SHARED_DIR = BROKEN_SYS_ROOT_DIR/"Broken"
-
-# Constants
-USERNAME = os.environ.get("USER") or os.environ.get("USERNAME")
-HOME_DIR = Path.home()
+BROKEN_DIRECTORIES = BrokenDirectories()
