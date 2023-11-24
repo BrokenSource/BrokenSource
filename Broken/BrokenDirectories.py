@@ -1,7 +1,7 @@
 from . import *
 
 
-@attrs.define(slots=False)
+@attrs.define(slots=False, hash=True)
 class BrokenDirectories:
 
     # App information
@@ -11,6 +11,11 @@ class BrokenDirectories:
 
     def __attrs_post_init__(self):
         self.app_dirs = AppDirs(self.app_author, self.app_author)
+
+        # Load .env file on the package
+        if (env := self.PACKAGE/".env").exists():
+            log.info(f"Loading environment variables from: {env}")
+            dotenv.load_dotenv(env)
 
     def __mkdir__(self, path: Path) -> Path:
         """Make a directory and return it"""
@@ -57,7 +62,10 @@ class BrokenDirectories:
         return Path(stack.filename).parent.parent.absolute().resolve()
 
     @property
+    @cache
     def WORKSPACE(self) -> Path:
+        if (path := os.environ.get("WORKSPACE", None)):
+            return self.__mkdir__(Path(path)/self.app_author/self.app_name)
         return self.__mkdir__(Path(self.app_dirs.user_data_dir)/self.app_name)
 
     @property
@@ -119,6 +127,10 @@ class BrokenDirectories:
     @property
     def WEBSITE(self) -> Path:
         return self.__mkdir__(self.META/"Website")
+
+    @property
+    def _ASSETS(self) -> Path:
+        return self.__mkdir__(self.META/"Assets")
 
     # # Workspace directories
 

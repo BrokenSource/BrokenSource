@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Broken"
 version = "2023.11.12"
-description = "Broken Source Software Broken Framework"
+description = "Broken Source Software Framework"
 authors = ["Tremeschin <tremeschin@users.noreply.github.com>"]
 license = "AGPLv3-only"
 
@@ -37,6 +37,10 @@ intervaltree = "^3.1.0"
 meson = "^1.2.1"
 ninja = "^1.11.1"
 wheel = "^0.41.3"
+opensimplex = "^0.4.5"
+moderngl = "^5.9.0"
+poethepoet = "^0.24.4"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"

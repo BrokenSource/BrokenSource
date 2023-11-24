@@ -23,7 +23,6 @@ class ProjectLanguage(BrokenEnum):
 class BrokenProject:
     path: Path
     name: str = "Unknown"
-    config: BrokenDotmap = None
     typer_app: typer.Typer = None
 
     # # Main entry point
@@ -31,19 +30,32 @@ class BrokenProject:
     def cli(self, ctx: typer.Context) -> None:
         self.typer_app = BrokenTyper.typer_app()
 
-        # Run command
+        # Poetry command
         self.typer_app.command(
             **BrokenTyper.with_context(),
-            help=f"Automagically run the project"
-        )(self.run)
+            help=f"Run poetry command"
+        )(self.poetry)
+
+        # Poe command
+        self.typer_app.command(
+            **BrokenTyper.with_context(),
+            help=f"Run poethepoet command"
+        )(self.poe)
 
         # Update command
         self.typer_app.command(
             help=f"Update project dependencies"
         )(self.update)
 
+        # Run command
+        self.typer_app.command(
+            **BrokenTyper.with_context(),
+            help=f"Automagically run the project"
+        )(self.run)
+
         # Implicitly add run command by default
-        if (not ctx.args) or (ctx.args[0] not in ("update")):
+        # Fixme: Automatically find valid commands
+        if (not ctx.args) or (ctx.args[0] not in ("poetry", "poe", "update")):
             ctx.args.insert(0, "run")
 
         with BrokenPath.pushd(self.path):
@@ -52,8 +64,8 @@ class BrokenProject:
     # # Initialization
 
     def __attrs_post_init__(self):
-        self.config = BrokenDotmap(self.path/"Broken.toml")
-        self.name   = self.config.setdefault("name", self.path.name)
+        self.name = self.path.name
+        # self.config = BrokenDotmap()
 
     def __eq__(self, other: Self) -> bool:
         return self.path == other.path
@@ -71,13 +83,10 @@ class BrokenProject:
 
     @property
     def description(self) -> str:
-
-        # Stop if there exists a custom Broken description
-        if (description := self.config.setdefault("description", "")):
-            pass
+        description = ""
 
         # Read Python's pyproject.toml
-        elif self.is_python and (config := self.path/"pyproject.toml").exists():
+        if (config := self.path/"pyproject.toml").exists():
             description = (
                 toml.loads(config.read_text())
                 .get("tool", {})
@@ -86,7 +95,7 @@ class BrokenProject:
             )
 
         # Read Rust's Cargo.toml
-        elif self.is_rust and (config := self.path/"Cargo.toml").exists():
+        elif (config := self.path/"Cargo.toml").exists():
             description = (
                 toml.loads(config.read_text())
                 .get("package", {})
@@ -121,6 +130,10 @@ class BrokenProject:
     # Shorthands for project language
 
     @property
+    def is_known(self) -> bool:
+        return ProjectLanguage.Unknown not in self.languages
+
+    @property
     def is_python(self) -> bool:
         return ProjectLanguage.Python in self.languages
 
@@ -133,6 +146,14 @@ class BrokenProject:
         return ProjectLanguage.CPP in self.languages
 
     # # Commands
+
+    def poetry(self, ctx: typer.Context) -> None:
+        """Run poetry command"""
+        shell("poetry", *ctx.args)
+
+    def poe(self, ctx: typer.Context) -> None:
+        """Run poethepoet command"""
+        shell("poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
 
@@ -177,53 +198,52 @@ class BrokenProject:
             if (fix := BrokenPath.true_path(arg)).exists():
                 ctx.args[i] = fix
 
-        with BrokenPath.pushd(self.path):
-            while True:
+        while True:
 
-                # Optionally clear terminal
-                shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
+            # Optionally clear terminal
+            shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
+
+            if self.is_python:
+                venv = self.__install_venv__(reinstall=reinstall)
+                status = shell("poetry", "run", self.name.lower(), ctx.args)
+            if self.is_rust:
+                status = shell(
+                    "cargo", "run",
+                    "--bin", self.name,
+                    ["--profile", "release"] if not debug else [],
+                    "--features", self.rust_features,
+                    "--", ctx.args
+                )
+            if self.is_cpp:
+                log.error("C++ projects are not supported yet")
+
+            # Avoid reinstalling on future runs
+            reinstall = False
+
+            # Detect bad return status, reinstall virtualenv and retry once
+            if (status.returncode != 0) and (not reinstall):
+                log.warning(f"Detected bad return status for the Project [{self.name}]")
 
                 if self.is_python:
-                    venv = self.__install_venv__(reinstall=reinstall)
-                    status = shell("poetry", "run", self.name.lower(), ctx.args)
-                if self.is_rust:
-                    status = shell(
-                        "cargo", "run",
-                        "--bin", self.name,
-                        ["--profile", "release"] if not debug else [],
-                        "--features", self.rust_features,
-                        "--", ctx.args
-                    )
-                if self.is_cpp:
-                    log.error("C++ projects are not supported yet")
+                    log.warning(f"- Virtual environment path: [{venv}]")
 
-                # Avoid reinstalling on future runs
-                reinstall = False
+                # Prompt user for action
+                answer = rich.prompt.Prompt.ask(
+                    f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
+                    choices=["r", "e", ""],
+                    default="retry"
+                )
+                if answer == "r":
+                    reinstall = True
+                elif answer == "retry":
+                    pass
 
-                # Detect bad return status, reinstall virtualenv and retry once
-                if (status.returncode != 0) and (not reinstall):
-                    log.warning(f"Detected bad return status for the Project [{self.name}]")
+            elif infinite:
+                log.success(f"Project [{self.name}] finished successfully")
+                rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
 
-                    if self.is_python:
-                        log.warning(f"- Virtual environment path: [{venv}]")
-
-                    # Prompt user for action
-                    answer = rich.prompt.Prompt.ask(
-                        f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
-                        choices=["r", "e", ""],
-                        default="retry"
-                    )
-                    if answer == "r":
-                        reinstall = True
-                    elif answer == "retry":
-                        pass
-
-                elif infinite:
-                    log.success(f"Project [{self.name}] finished successfully")
-                    rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
-
-                else:
-                    break
+            else:
+                break
 
     # # Python shenanigans
 
@@ -277,15 +297,11 @@ class BrokenCLI:
                 continue
 
             # Resolve symlinks recursively
-            if directory.is_symlink():
-                return self.find_projects(path=directory)
+            if directory.is_symlink() or directory.is_dir():
+                self.find_projects(path=directory.resolve())
 
-            # Instantiate project class
-            if (directory/"Broken.toml").exists():
-                self.projects.append(BrokenProject(directory))
-
-            if directory.is_dir():
-                self.find_projects(path=directory)
+            if (project := BrokenProject(directory)).is_known:
+                self.projects.append(project)
 
     # # Main entry point
 
@@ -373,7 +389,7 @@ class BrokenCLI:
                     "Type=Application",
                     "Name=Broken Shell",
                     f"Exec={self.directories.BROKEN_SHARED/'brakeit'}",
-                    f"Icon={self.directories.RESOURCES/'Default'/'Icon.png'}",
+                    f"Icon={self.directories._ASSETS/'Default'/'Icon.png'}",
                     "Comment=Broken Shell Development Environment",
                     "Terminal=true",
                     "Categories=Development",

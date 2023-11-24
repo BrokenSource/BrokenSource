@@ -13,8 +13,8 @@ TEMP_DIR = Path(tempfile.gettempdir())
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 
-# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean
-# On Linux it's /tmp under System RAM, so it's brutally fast, shouldn't take that much memory
+# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean.
+# On Linux, it's under /tmp - System RAM, brutally fast, also shouldn't take that much memory
 os.environ["PYTHONPYCACHEPREFIX"] = str(TEMP_DIR/"__pycache__")
 
 # Weird KDE wallet or GNOME wallet askings on Linux
@@ -82,6 +82,9 @@ try:
         command("clear")
 except Exception:
     pass
+
+# Install scripts, desktop files
+command(POETRY + ["run", "broken", "install"])
 
 # Enter virtual environment
 command(POETRY + ["shell"])

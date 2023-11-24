@@ -9,9 +9,6 @@
 
         // Syncthing
         ".stignore": true,
-
-        // Lock files
-        "**/*.lock": true,
     },
 
     // Python isort

@@ -206,25 +206,13 @@ class BrokenRelay:
 
 # -------------------------------------------------------------------------------------------------|
 
-class Dummy:
+class BrokenNOP:
     """A class that does nothing"""
-    def __init__(self,*a,**b): ...
-    def __call__(self,*a,**b): ...
-    def __getattr__(self,*a,**b): return self
-    def __setattr__(self,*a,**b): return self
-    def __delattr__(self,*a,**b): return self
-    def __getitem__(self,*a,**b): return self
-    def __setitem__(self,*a,**b): return self
-    def __delitem__(self,*a,**b): return self
-    def __iter__(self,*a,**b): return self
-    def __next__(self,*a,**b): return self
-    def __enter__(self,*a,**b): return self
-    def __exit__(self,*a,**b): return self
-    def __add__(self,*a,**b): return self
-    def __sub__(self,*a,**b): return self
-    def __mul__(self,*a,**b): return self
-    def __div__(self,*a,**b): return self
-    def __mod__(self,*a,**b): return self
+    def __nop__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __getattr__(self, _):
+        return self.__nop__
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -407,6 +395,22 @@ class BrokenUtils:
 
 # -------------------------------------------------------------------------------------------------|
 
+class BrokenFluentBuilder:
+    """
+    Do you ever feel like using a builder-like fluent syntax for changing attributes of an object?
+    """
+    def __call__(self, **kwargs) -> Self:
+        """Updates the instance with the provided kwargs"""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return self
+
+    def copy(self) -> Self:
+        """Returns a copy of this instance"""
+        return copy.deepcopy(self)
+
+# -------------------------------------------------------------------------------------------------|
+
 class BrokenPath:
 
     @contextmanager
@@ -490,8 +494,10 @@ class BrokenPath:
     def pushd(path: PathLike):
         """Change directory, then change back when done"""
         cwd = os.getcwd()
+        log.info(f"Pushd [{path}]")
         os.chdir(path)
         yield path
+        log.info(f"Popd  [{path}]")
         os.chdir(cwd)
 
     @staticmethod

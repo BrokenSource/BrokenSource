@@ -114,9 +114,9 @@ while True:
         import diffusers
         import diskcache
         import distro
+        import dotenv
         import forbiddenfruit
         import glfw
-        import gradio
         import halo
         import imageio_ffmpeg
         import imgui
@@ -138,10 +138,7 @@ while True:
         import rich.prompt
         import schedule
         import soundcard
-        import thefuzz
         import toml
-        import torch
-        import transformers
         import typer
         import yaml
         from appdirs import AppDirs
