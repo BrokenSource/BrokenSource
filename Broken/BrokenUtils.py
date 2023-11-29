@@ -37,7 +37,7 @@ def shell(
     if (cwd := kwargs.get("cwd", "")):
         cwd = f" @ ({cwd})"
 
-    (log.info if do else log.minor)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
+    (log.info if do else log.minor)(("Running" if do else "Skipping") + f" command {tuple(command)}{cwd}", echo=echo)
 
     if not do: return
 
@@ -537,14 +537,17 @@ class BrokenPath:
 
     @staticmethod
     def true_path(path: PathLike) -> Path:
-        return Path(path).expanduser().resolve().absolute()
+        return Path(path).expanduser().resolve()
 
     @staticmethod
-    def make_executable(path: PathLike, echo=False) -> None:
+    def make_executable(path: PathLike, echo=False) -> Path:
         """Make a file executable"""
         path = Path(path)
         if BrokenPlatform.OnUnix:
             shell("chmod", "+x", path, echo=echo)
+        elif BrokenPlatform.OnWindows:
+            shell("attrib", "+x", path, echo=echo)
+        return path
 
     # # File or directory creation
 
@@ -632,7 +635,7 @@ class BrokenPath:
             shell("open", path)
 
     @staticmethod
-    def symlink(where: Path, to: Path, echo=True):
+    def symlink(virtual: Path, real: Path, echo=True) -> Path:
         """Symlink [where] -> [to], `where` being the symlink and `to` the target
 
         Args:
@@ -642,21 +645,31 @@ class BrokenPath:
         Returns:
             None
         """
-        log.info(f"Symlinking [{to}] -> [{where}]", echo=echo)
+        log.info(f"Symlinking [{virtual}] -> [{real}]", echo=echo)
 
-        # Make parent directory
-        BrokenPath.mkdir(to.parent, echo=False)
+        # Return if already symlinked
+        if (BrokenPath.true_path(virtual) == BrokenPath.true_path(real)):
+            return virtual
 
-        # Remove old symlink
-        if to.is_symlink():
-            to.unlink()
+        # Make Virtual's parent directory
+        BrokenPath.mkdir(virtual.parent, echo=False)
 
-        # Error: `where` is a existing file or directory
-        if to.exists():
-            log.error(f"Path [{to}] exists and isn't a symlink")
+        # Remove old symlink (target changed)
+        if virtual.is_symlink():
+            virtual.unlink()
+
+        # Virtual must not be a file
+        if virtual.is_file():
+            log.error(f"Path [{virtual}] is a file, cannot symlink")
             return
 
-        to.symlink_to(where)
+        # Remove Virtual empty folder if so
+        if not os.listdir(virtual):
+            BrokenPath.remove(virtual, echo=False)
+
+        # Actually symlink
+        virtual.symlink_to(real)
+        return virtual
 
 # -------------------------------------------------------------------------------------------------|
 

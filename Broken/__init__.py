@@ -15,25 +15,26 @@ from .BrokenDirectories import *
 from .BrokenUtils import *
 # isort: on
 
+# -------------------------------------------------------------------------------------------------|
+
 # Symlink path to projects data to the root of the monorepo for convenience
-BrokenPath.symlink(where=BROKEN_DIRECTORIES.WORKSPACE.parent, to=BROKEN_DIRECTORIES.PACKAGE/"Workspace")
+try:
+    BrokenPath.symlink(virtual=BROKEN_DIRECTORIES.PACKAGE/"Workspace", real=BROKEN_DIRECTORIES.WORKSPACE.parent)
+except Exception:
+    pass
 
 # Create main Broken configuration file
 BROKEN_CONFIG = BrokenDotmap(path=BROKEN_DIRECTORIES.CONFIG/"Broken.toml")
 
 # Create logger based on configuration
 __loglevel__ = BROKEN_CONFIG.logging.default("level", "trace").upper()
-BrokenLogging().stdout(__loglevel__).file(BROKEN_DIRECTORIES.LOGS/"Broken.log", __loglevel__)
+try:
+    # Fixme: Windows and two Broken instances sharing a log file
+    BrokenLogging().stdout(__loglevel__)
+    BrokeLogging().file(BROKEN_DIRECTORIES.LOGS/"Broken.log", __loglevel__)
+except Exception:
+    pass
 
 # -------------------------------------------------------------------------------------------------|
 
-# isort: off
-# from .BrokenDownloads import *
-# from .BrokenExternals import *
-# from .BrokenDynamics import *
-# from .BrokenMIDI import *
-# from .BrokenAudio import *
-# from .BrokenTimeline import *
-from .BrokenFFmpeg import *
-# isort: on
-
+from .Modules import *

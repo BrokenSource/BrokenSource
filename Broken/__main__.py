@@ -357,29 +357,24 @@ class BrokenCLI:
 
     def link(self, path: Path):
         """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
-        BrokenPath.symlink(where=path, to=self.directories.HOOK/path.name)
+        BrokenPath.symlink(virtual=self.directories.HOOK/path.name, real=path)
 
     def install(self):
         self.__scripts__()
         self.__shortcut__()
 
     def __shortcut__(self):
-        log.fixme("Do you need to install Broken for multiple users? If so, please open an issue on GitHub.")
 
-        # Symlink Broken Shared Directory to Broken Root
+        # Symlink Broken Shared Directory to current root
+        BrokenPath.symlink(virtual=self.directories.BROKEN_SHARED, real=self.directories.PACKAGE)
+
         if BrokenPlatform.OnUnix:
 
-            # BROKEN_SHARED_DIRECTORY might already be a symlink to BROKEN_ROOT
-            if Path(self.directories.BROKEN_SHARED).resolve() != self.directories.PACKAGE:
-                log.info(f"Creating symlink [{self.directories.BROKEN_SHARED}] -> [{self.directories.PACKAGE}]")
-                shell("sudo", "ln", "-snf", self.directories.PACKAGE, self.directories.BROKEN_SHARED)
-            else:
-                log.success(f"Symlink [{self.directories.BROKEN_SHARED}] -> [{self.directories.PACKAGE}] already exists")
-
-            # Symlink `brakeit` on local bin
-            brakeit_symlink = self.directories.HOME/".local/bin/brakeit"
-            BrokenPath.symlink(where=self.directories.BROKEN_SHARED/"brakeit", to=brakeit_symlink)
-            BrokenPath.make_executable(brakeit_symlink)
+            # Symlink `brakeit` on local bin and make it executable
+            BrokenPath.make_executable(BrokenPath.symlink(
+                virtual=self.directories.HOME/".local/bin/brakeit",
+                real=self.directories.BROKEN_SHARED/"brakeit"
+            ))
 
             # Create Linux .desktop file
             if BrokenPlatform.OnLinux:
@@ -394,7 +389,7 @@ class BrokenCLI:
                     "Terminal=true",
                     "Categories=Development",
                 ]))
-                log.success(f"Created .desktop file [{desktop}]")
+                log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
             log.fixme("Windows installation is not supported yet")

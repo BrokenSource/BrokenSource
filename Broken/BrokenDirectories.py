@@ -82,7 +82,7 @@ class BrokenDirectories:
     @property
     def BROKEN_SHARED(self) -> Path:
         """Returns the shared directory of Broken"""
-        return self.__mkdir__(self.SYSTEM_ROOT/"Broken")
+        return self.__mkdir__(self.HOME/".BrokenSource")
 
     # # Broken monorepo specific, potentially useful
 

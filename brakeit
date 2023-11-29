@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 from subprocess import run as command
 
+# -------------------------------------------------------------------------------------------------|
+
 # Constants
 INSTALL_MAX_ATTEMPTS = 3
 TEMP_DIR = Path(tempfile.gettempdir())
@@ -20,6 +22,8 @@ os.environ["PYTHONPYCACHEPREFIX"] = str(TEMP_DIR/"__pycache__")
 # Weird KDE wallet or GNOME wallet askings on Linux
 if os.name == "posix":
     os.environ["PYTHON_KEYRING_BACKEND"] = "keyring.backends.null.Keyring"
+
+# -------------------------------------------------------------------------------------------------|
 
 # Binaries convenience
 PYTHON = sys.executable
@@ -36,6 +40,8 @@ os.chdir(BRAKEIT.parent)
 if os.name in ["posix", "mac"]:
     os.chmod(BRAKEIT, 0o755)
 
+# -------------------------------------------------------------------------------------------------|
+
 # Ensure pip is installed
 for attempt in itertools.count(0):
     try:
@@ -50,6 +56,8 @@ for attempt in itertools.count(0):
     # Fixme: Do we need a more complex solution?
     print("Installing pip with [python -m ensurepip]")
     command([sys.executable, "-m", "ensurepip", "--upgrade"])
+
+# -------------------------------------------------------------------------------------------------|
 
 # Install poetry
 for attempt in itertools.count(0):
@@ -73,6 +81,27 @@ for attempt in itertools.count(0):
 
 # Create, install dependencies on virtual environment
 command(POETRY + ["install"])
+
+# -------------------------------------------------------------------------------------------------|
+
+# # Hot patch Poetry to allow for expanduser and symlinks on path dependencies
+# This shouldn't break BrokenSource/Projects, as they use relative paths, is a fix for private infra
+
+# Find the virtual environment path
+venv_path = Path(command(POETRY + ["env", "info", "-p"], capture_output=True).stdout.decode().strip())
+
+# Find the path_dependency.py file
+path_dependency = next(venv_path.glob("**/*/path_dependency.py"))
+
+# Patch the file, mom get the camera
+path_dependency.write_text(
+    path_dependency.read_text().replace(
+        "self._path = path\n",
+        "self._path = (path := path.expanduser().resolve())\n"
+    )
+)
+
+# -------------------------------------------------------------------------------------------------|
 
 # Clear screen
 try:

@@ -18,17 +18,92 @@
 
 <br/>
 
-This _mono_-repository hosts the **shared library** called **Broken** ❤️‍🩹 (Rust and Python), a convenience script of the same name - `broken` - and **submodules** of **all our projects**
+This _mono_-repository hosts the **shared library** called **Broken** ❤️‍🩹, a convenience tool of the same name, and **submodules** of **all our projects**
 
 - **Broken** is a _Framework_ for all other projects, a solution to manage them all in a single place 🌟
 
 - **Broken** does a lot of things automatically for you, spend more time **using** the projects 🚀
 
-**Rust** projects might take longer to be developed and shall be the focus on the medium future, while **Python** projects are prototypes, mockups, proof-of-concepts or smaller projects and are the current focus
-
-- 🤚 For potential project status updates see our [**Twitter**](https://twitter.com/BrokenSourcerer)
-
 <sub>❤️‍🔥 We are Linux-first support 🐧</sub>
+
+
+<br>
+<br>
+<br>
+
+# 🔥 Running From the Source Code
+
+> Please read all instructions before executing them for tips and notes
+
+<br>
+
+## Linux and MacOS
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
+  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
+
+  **Linux** 💎 **MacOS**
+</div>
+
+<sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
+
+- Install [Git](https://git-scm.com/downloads) and [
+  Python](https://www.python.org/downloads) for your platform
+
+- Open a Terminal on some directory and run:
+
+```bash
+# Clone the repository
+$ git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+
+# "Open" the folder
+$ cd BrokenSource
+
+# Enter the Framework
+$ python ./brakeit
+```
+
+And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
+
+- Head back to the *Project* you want to run for further instructions 🍷
+
+<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `python ./brakeit` script again</sub>
+
+
+<br>
+
+## Windows
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;" width="82">
+
+  **Windows 10+**
+</div>
+
+Open some folder you want to download the code to on Windows Explorer
+
+- Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
+
+- **Install** [Git for Windows](https://git-scm.com/downloads) with:
+  - `winget install -e --id Git.Git --source winget`
+
+- **Install** [Python](https://www.python.org/downloads) with:
+  - `winget install -e --id Python.Python.3.12`
+
+Now run the same **Linux** and **MacOS** commands above
+
+<details>
+  <summary>
+    ⚠️ Getting the error <i>"execution of scripts is disabled on this system"</i> ❓
+  </summary>
+
+  Open a PowerShell terminal as Administrator and run:
+
+  ```powershell
+  Set-ExecutionPolicy RemoteSigned
+  ```
+</details>
 
 
 <br>
@@ -39,7 +114,7 @@ This _mono_-repository hosts the **shared library** called **Broken** ❤️‍�
 
 Head over to each project's **Releases** page and download the latest version for your platform if any available
 
-Otherwise, you'll have to run from the source code, see below
+Otherwise, you'll have to run from the source code
 
 - **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
@@ -72,124 +147,23 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 <sub><i>*2: Our versioning is based on a date format since most code is rolling release; we don't plan to have that many releases; they encode the rough timespan where the project was at and gets neatly sorted by name on file explorers</i></sub>
 
 
-<br>
-<br>
-<br>
+<br/>
+<br/>
+<br/>
 
-# 🔥 Running From the Source Code
+# 🚧 Hardware Requirements
 
-Please read all instructions before executing them for tips and notes
+<sup><b>Note</b>: This section is under construction</sup>
 
-**Common stuff** for all platforms:
+The faster the hardware (CPU, GPU, RAM), the faster the code will run.
 
-- The pre-requirements are having [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
+Apart from memory restrictions your hardware should support some minimum technologies:
 
-<br>
+## Projects with PyTorch
 
-## Linux and MacOS
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
-
-  **Linux** 💎 **MacOS**
-</div>
-
-<sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed</i></sub>
-
-- Open a Terminal on some directory and run:
-
-```bash
-# Clone and enter the repository directory
-git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
-
-# "Open" the repository folder
-cd BrokenSource
-
-# Install dependencies, activates virtual environment
-python ./brakeit
-```
-
-And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
-
-<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `python ./brakeit` script again</sub>
+## Projects with FFmpeg
 
 
-<br>
-
-## Windows
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;" width="82">
-
-  **Windows 10+**
-</div>
-
-A quick note based on the project language:
-
-- Running the Python projects is **easy**, while Rust requires **extra steps**
-
-- **Rust** is split in its own instructions to reduce micromanagement and complexity
-
-
-<details>
-  <summary>
-    ⚠️ Getting the error <i>"execution of scripts is disabled on this system"</i> ❓
-  </summary>
-
-  Open a PowerShell terminal as Administrator and run:
-
-  ```powershell
-  Set-ExecutionPolicy RemoteSigned
-  ```
-</details>
-
-<br>
-<br>
-
-Depending on the **project language** you want to run, follow the **instructions below**
-
-
-<br>
-
-## • Python Projects
-
-Have [Git](https://git-scm.com/downloads) and [Python](https://www.python.org/downloads) installed
-
-<sub><b>Note:</b> Be sure to mark the option to add Python to PATH</sub>
-
-- **Windows 10**: `Shift+Right Click` some empty space in Windows Explorer
-  - Select `Open PowerShell window here`
-
-- **Windows 11**: `Right Click` some empty space in Windows Explorer
-  - Select `Open in Terminal`
-
-Now run the same **Linux** and **MacOS** commands above
-
-<br>
-
-## • Rust Projects
-
-**Rust** requires quite some **dependencies** to be **installed** for a Windows release
-
-Compiling "natively" requires installing manually Python, Git, CMake, MinGW GCC and GFortran, Visual Studio C++ Build Tools, not really easy but **doable if you want to try**
-
-Easiest way is using [MSYS2](https://www.msys2.org/) which provides a **Unix-like** environment for Windows, please install it
-
-- Open a MSYS2 terminal and run:
-
-```bash
-# Install all required dependencies
-pacman -S git python python-pip python-wheel mingw-w64-x86_64-toolchain libffi-devel zlib-devel
-```
-
-- Now follow the same **Linux** and **MacOS** instructions above
-
-**Note**: Stuff will be downloaded to `C:\msys64\home\USERNAME\BrokenSource` on default configs
-
-**Tip:** You can press `Shift+Insert` to paste stuff on the clipboard to MSYS2 terminal
-
-<sub><i>Linux and terminal commands aren't that hard!.. see? 😉</i></sub>
 
 
 <br>
@@ -290,9 +264,9 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 # ⚖️ License and Fair Use
 
 **Basics**
-- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or subdirectories, all files are subject to the `License.md` on their respective repository
+- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or subdirectories, all files are subject to the `License.md` and `Readme.md` on their respective repository
 
-- 📈 We embrace the **Free and Open Source Software** philosophy; The **Free** part, we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse - **Open**.
+- 📈 We embrace the **Free and Open Source Software** philosophy; The **Free** part, we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse - **Open**. A feedback loop of **sharing** and **improving**.
   - Smaller projects tend to be MIT licensed since the effort is considerably lower
 
 
@@ -310,10 +284,5 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 - 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
 
 - 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow
-
-
-<br/>
-
-<sub>These are not legal advice, just our thoughts and intentions</sub>
 
 </div>
