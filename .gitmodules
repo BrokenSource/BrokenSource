@@ -22,9 +22,6 @@
 [submodule "Projects/QuadSnap"]
 	path = Projects/QuadSnap
 	url = https://github.com/BrokenSource/QuadSnap
-[submodule "Website"]
-	path = Meta/Website
-	url = https://github.com/BrokenSource/brokensource.github.io
 [submodule "Templates/Python"]
 	path = Meta/Templates/PythonTemplate
 	url = https://github.com/BrokenSource/Python
