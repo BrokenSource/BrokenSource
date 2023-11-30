@@ -7,30 +7,26 @@
 
   <h2>Broken Source Software</h2>
 
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json%3Fshow%3Dunique&label=Visitors&color=blue"/>
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json&label=Page%20Views&color=blue"/>
-
-  <i>Readme available in:</i>
+  <img src="https://img.shields.io/github/stars/BrokenSource/BrokenSource" alt="Stars Badge"/>
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json%3Fshow%3Dunique&label=Visitors&color=blue" alt="Visitors Badge"/>
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json&label=Page%20Views&color=blue" alt="Page Views Badge"/>
+  <img src="https://img.shields.io/github/license/BrokenSource/BrokenSource?color=blue" alt="License Badge"/>
+  <a href="https://t.me/brokensource">
+    <img src="https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram" alt="Telegram Channel Badge"/>
+  </a>
 
   <!-- <a href="Readme pt-BR.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a> -->
-  <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a>
+  <!-- <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a> -->
 </div>
 
+<hr/>
 <br/>
 
-This _mono_-repository hosts the **shared library** called **Broken** ❤️‍🩹, a convenience tool of the same name, and **submodules** of **all our projects**
+This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 Broken**, a **🎩 Manager Tool** of the same name, and **📦 Submodules** of all our **💎 Projects**. User first, trust and quality are our core values.
 
-- **Broken** is a _Framework_ for all other projects, a solution to manage them all in a single place 🌟
+- **Framework**: A solution for project unification, automation and consistency 🌟
 
-- **Broken** does a lot of things automatically for you, spend more time **using** the projects 🚀
-
-<sub>❤️‍🔥 We are Linux-first support 🐧</sub>
-
-<br>
-
-Want to get in touch or quick support?
-
-- <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/telegram.svg" align="top" width="20"> Join our <a href="https://t.me/brokensource"><b>Telegram</a> group</b>
+- **Automation**: Easy deploy, spend more time **using** the Projects 🚀
 
 
 <br>
@@ -54,10 +50,9 @@ Want to get in touch or quick support?
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
 
-- Install [Git](https://git-scm.com/downloads) and [
-  Python](https://www.python.org/downloads) for your platform
+- **Install** [**Git**](https://git-scm.com/downloads) and [**Python**](https://www.python.org/downloads) for your platform
 
-- Open a Terminal on some directory and run:
+- Open a **Terminal** on some directory and run:
 
 ```bash
 # Clone the repository
@@ -91,10 +86,10 @@ Open some folder you want to download the code to on Windows Explorer
 
 - Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
 
-- **Install** [Git for Windows](https://git-scm.com/downloads) with:
+- **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command:
   - `winget install -e --id Git.Git --source winget`
 
-- **Install** [Python](https://www.python.org/downloads) with:
+- **Install** [**Python**](https://www.python.org/downloads) with the command:
   - `winget install -e --id Python.Python.3.12`
 
 Now run the same **Linux** and **MacOS** commands above
