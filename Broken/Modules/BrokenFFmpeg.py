@@ -487,9 +487,9 @@ class BrokenFFmpeg:
     def set_ffmpeg_binary(self, binary: Path=None):
         """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
         if binary:
-            log.info(f"Using custom ffmpeg binary {binary}")
+            log.info(f"Using custom FFmpeg binary {binary}")
         elif (binary := shutil.which("ffmpeg")):
-            log.info(f"Using system ffmpeg binary at [{binary}]")
+            log.info(f"Using system FFmpeg binary at [{binary}]")
         elif BrokenUtils.have_import("imageio_ffmpeg"):
             binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
             log.info(f"Using ImageIO FFmpeg binary at [{binary}]")

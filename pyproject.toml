@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Broken"
-version = "2023.11.12"
+version = "2023.11.29"
 description = "Broken Source Software Framework"
 authors = ["Tremeschin <tremeschin@users.noreply.github.com>"]
 license = "AGPLv3-only"

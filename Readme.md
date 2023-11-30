@@ -26,6 +26,12 @@ This _mono_-repository hosts the **shared library** called **Broken** ❤️‍�
 
 <sub>❤️‍🔥 We are Linux-first support 🐧</sub>
 
+<br>
+
+Want to get in touch or quick support?
+
+- <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/telegram.svg" align="top" width="20"> Join our <a href="https://t.me/brokensource"><b>Telegram</a> group</b>
+
 
 <br>
 <br>

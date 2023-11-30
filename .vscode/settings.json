@@ -11,6 +11,11 @@
         ".stignore": true,
     },
 
+    // Pylance and star imports..
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUndefinedVariable": "none"
+    },
+
     // Python isort
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
