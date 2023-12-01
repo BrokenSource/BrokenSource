@@ -19,9 +19,6 @@
   <!-- <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a> -->
 </div>
 
-<hr/>
-<br/>
-
 This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 Broken**, a **🎩 Manager Tool** of the same name, and **📦 Submodules** of all our **💎 Projects**. User first, trust and quality are our core values.
 
 - **Framework**: A solution for project unification, automation and consistency 🌟
@@ -39,7 +36,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <br>
 
-## Linux and MacOS
+## ✅ Linux and MacOS
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
@@ -65,7 +62,7 @@ $ cd BrokenSource
 $ python ./brakeit
 ```
 
-And done, you can now run `broken` and see all available commands: compile, release and run projects with ease!
+And done, you can now run `broken` and see all available commands 🚀
 
 - Head back to the *Project* you want to run for further instructions 🍷
 
@@ -74,7 +71,7 @@ And done, you can now run `broken` and see all available commands: compile, rele
 
 <br>
 
-## Windows
+## ✅ Windows
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;" width="82">
@@ -82,7 +79,7 @@ And done, you can now run `broken` and see all available commands: compile, rele
   **Windows 10+**
 </div>
 
-Open some folder you want to download the code to on Windows Explorer
+**Open** some folder you want to download the code to on **Windows Explorer**
 
 - Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
 
@@ -119,10 +116,6 @@ Otherwise, you'll have to run from the source code
 
 - **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
-<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
-
-<br>
-
 Our **release binaries** follow the **naming convention** below:
 
 - `$project_name-$operating_system-$cpu_architecture-$version.$extension`
@@ -146,6 +139,8 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 <sub><i>*1: We don't have the hardware to test on ARM or MacOS, so we can't provide binaries for those platforms. You likely can run from the source code</i></sub>
 
 <sub><i>*2: Our versioning is based on a date format since most code is rolling release; we don't plan to have that many releases; they encode the rough timespan where the project was at and gets neatly sorted by name on file explorers</i></sub>
+
+<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
 
 
 <br/>

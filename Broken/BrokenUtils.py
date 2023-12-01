@@ -31,7 +31,7 @@ def shell(
         raise ValueError("Cannot use output=True and Popen=True at the same time")
 
     # Flatten a list, remove falsy values, convert to strings
-    command = [item for item in map(str, BrokenUtils.flatten(args)) if item]
+    command = list(map(str, BrokenUtils.flatten(args)))
 
     # Maybe print custom working directory
     if (cwd := kwargs.get("cwd", "")):
@@ -798,7 +798,7 @@ class BrokenVsync:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenStopwatch():
+class BrokenStopwatch:
     """
     Context Manager or callable that counts the time it took to run
 

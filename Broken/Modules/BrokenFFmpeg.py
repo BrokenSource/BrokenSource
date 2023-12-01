@@ -484,7 +484,7 @@ class BrokenFFmpeg:
             self.__audio_codec__,
         )
 
-    def set_ffmpeg_binary(self, binary: Path=None):
+    def set_ffmpeg_binary(self, binary: Path=None) -> Self:
         """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
         if binary:
             log.info(f"Using custom FFmpeg binary {binary}")
@@ -533,10 +533,10 @@ class BrokenFFmpeg:
         return self
 
     def __smart__(self,
-            *items: list[Any],
-            delete: Union[callable, list[callable]]=None,
-            add:    Union[callable, list[callable]]=None,
-        ) -> Self:
+        *items: list[Any],
+        delete: Union[callable, list[callable]]=None,
+        add:    Union[callable, list[callable]]=None,
+    ) -> Self:
         """Append items to the command, maybe delete or add new callbacks to the options"""
         log.debug(f"BrokenFFmpeg Append: {items}")
         self.__command__ += items
@@ -847,7 +847,7 @@ class BrokenFFmpeg:
 
     @property
     def command(self) -> List[str]:
-        return BrokenUtils.denum(BrokenUtils.flatten([self.ffmpeg] + self.__command__))
+        return BrokenUtils.denum(BrokenUtils.flatten([self.__ffmpeg__] + self.__command__))
 
     def run(self) -> subprocess.CompletedProcess:
         return shell(self.command)
@@ -857,7 +857,7 @@ class BrokenFFmpeg:
 
     def pipe(self, buffer: int=100):
         """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
-        self.ffmpeg = shell(self.command, Popen=True, stdin=PIPE)
+        ffmpeg = shell(self.command, Popen=True, stdin=PIPE)
 
         @attrs.define
         class BrokenFFmpegBuffered:
@@ -898,7 +898,7 @@ class BrokenFFmpeg:
                     time.sleep(0.01)
                 self.ffmpeg.stdin.close()
 
-        return BrokenFFmpegBuffered(self.ffmpeg, buffer)
+        return BrokenFFmpegBuffered(ffmpeg, buffer)
 
     # ---------------------------------------------------------------------------------------------|
     # High level functions

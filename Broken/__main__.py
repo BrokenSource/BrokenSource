@@ -55,6 +55,7 @@ class BrokenProject:
 
         # Implicitly add run command by default
         # Fixme: Automatically find valid commands
+        # Fixme: This is a recurring issue
         if (not ctx.args) or (ctx.args[0] not in ("poetry", "poe", "update")):
             ctx.args.insert(0, "run")
 
@@ -362,6 +363,7 @@ class BrokenCLI:
     def install(self):
         self.__scripts__()
         self.__shortcut__()
+        log.note(f"Next time, to enter Broken Development environment, run (python ./brakeit) again!")
 
     def __shortcut__(self):
 

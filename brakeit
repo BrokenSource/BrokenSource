@@ -85,7 +85,7 @@ command(POETRY + ["install"])
 # -------------------------------------------------------------------------------------------------|
 
 # # Hot patch Poetry to allow for expanduser and symlinks on path dependencies
-# This shouldn't break BrokenSource/Projects, as they use relative paths, is a fix for private infra
+# Note: This shouldn't break this repo, as relative paths are used, is a fix for private infra
 
 # Find the virtual environment path
 venv_path = Path(command(POETRY + ["env", "info", "-p"], capture_output=True).stdout.decode().strip())
