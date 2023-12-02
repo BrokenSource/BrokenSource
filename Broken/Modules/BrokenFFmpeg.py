@@ -464,6 +464,7 @@ class BrokenFFmpeg:
 
         # Add default available options
         self.__add_option__(
+            self.__custom__,
             self.__input__,
             self.__resolution__,
             self.__hwaccel__,
@@ -573,6 +574,14 @@ class BrokenFFmpeg:
 
         # Skip this fluent command
         return self.__skip__
+
+    # ---------------------------------------------------------------------------------------------|
+    # Custom
+
+    def __custom__(self, *command: list[str]) -> Self:
+        """Add an custom command on the pipeline"""
+        self.__command__ += command
+        return self
 
     # ---------------------------------------------------------------------------------------------|
     # Formats
@@ -692,6 +701,8 @@ class BrokenFFmpeg:
         return self
 
     def __resolution__(self, width: FFmpegResolution | int, height: int=None) -> Self:
+        if isinstance(width, (list, tuple)):
+            width, height = width
         if not isinstance(width, FFmpegResolution):
             width = FFmpegResolution(width, height)
         return self.__smart__("-s", str(width), delete=self.__resolution__)

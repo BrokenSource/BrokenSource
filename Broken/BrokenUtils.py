@@ -427,6 +427,10 @@ class BrokenUtils:
             log.error(f"Failed to load image [{image}]: {e}", echo=echo)
             return None
 
+    @staticmethod
+    def have_import(module: str) -> bool:
+        """Check if a module has been imported"""
+        return module in sys.modules
 
 # -------------------------------------------------------------------------------------------------|
 
