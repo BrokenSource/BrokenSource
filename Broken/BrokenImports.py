@@ -62,6 +62,13 @@ def BrokenImports():
 
 # -------------------------------------------------------------------------------------------------|
 
+# Note: List of modules that take a bit import:
+# Fixme: typer, rich, soundcard
+# - imageio_ffmpeg
+# - moderngl_window
+# - requests
+# - arrow
+
 while True:
     with BrokenImports():
         import ast
@@ -81,6 +88,7 @@ while True:
         import math
         import operator
         import os
+        import pickle
         import platform
         import random
         import re
@@ -96,7 +104,6 @@ while True:
         from dataclasses import dataclass
         from enum import Enum
         from functools import cache
-        from importlib import resources as get_resource
         from io import BytesIO
         from os import PathLike
         from pathlib import Path
@@ -108,7 +115,6 @@ while True:
         from typing import *
 
         import aenum
-        import arrow
         import attrs
         import audioread
         import diffusers
@@ -117,30 +123,25 @@ while True:
         import dotenv
         import forbiddenfruit
         import glfw
+        import gradio
         import halo
-        import imageio_ffmpeg
         import imgui
         import intervaltree
         import loguru
         import moderngl
-        import moderngl_window
-        import moderngl_window.integrations.imgui
         import numpy
         import openai
         import opensimplex
         import PIL
         import PIL.Image
-        import pkg_resources
         import quaternion
-        import requests
-        import requests_cache
-        import rich
         import rich.prompt
         import schedule
         import soundcard
         import toml
+        import torch
+        import transformers
         import typer
-        import yaml
         from appdirs import AppDirs
         from dotmap import DotMap
         from tqdm import tqdm

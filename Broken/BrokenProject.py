@@ -1,16 +1,28 @@
 from . import *
 
 
-@attrs.define(slots=False, hash=True)
-class BrokenDirectories:
+@attrs.define(slots=False)
+class BrokenProjectDirectories:
 
     # App information
-    app_name:   str     = attrs.field(default="Broken")
-    app_author: str     = attrs.field(default="BrokenSource")
-    app_dirs:   AppDirs = attrs.field(default=None)
+    PACKAGE: Path
+
+    APP_NAME:   str     = attrs.field(default="Broken")
+    APP_AUTHOR: str     = attrs.field(default="BrokenSource")
+    APP_DIRS:   AppDirs = attrs.field(default=None)
 
     def __attrs_post_init__(self):
-        self.app_dirs = AppDirs(self.app_author, self.app_author)
+        self.APP_DIRS = AppDirs(self.APP_AUTHOR, self.APP_AUTHOR)
+
+        # Find the package directory
+        if BROKEN_PYINSTALLER:
+            self.PACKAGE = Path(sys.executable).parent.resolve()
+        elif BROKEN_NUITKA:
+            self.PACKAGE = Path(sys.argv[0]).parent.resolve()
+        else:
+            self.PACKAGE = Path(self.PACKAGE).parent.resolve()
+
+        print(self.APP_NAME, self.PACKAGE)
 
         # Load .env file on the package
         if (env := self.PACKAGE/".env").exists():
@@ -19,7 +31,7 @@ class BrokenDirectories:
 
     def __mkdir__(self, path: Path) -> Path:
         """Make a directory and return it"""
-        path = Path(path).absolute()
+        path = Path(path).resolve()
         if not path.exists():
             log.info(f"Creating directory: {path}")
             path.mkdir(parents=True, exist_ok=True)
@@ -39,34 +51,14 @@ class BrokenDirectories:
     # # Base directories
 
     @property
-    def PACKAGE(self, level: int=0):
-        """
-        Source Code:
-            Returns the __init__.py file's parent directory
-            (where 'shared' and 'common' directories are located)
-
-        Compiled:
-            Returns the executable's directory
-        """
-        if BROKEN_PYINSTALLER:
-            return Path(sys.executable).parent.absolute().resolve()
-
-        elif BROKEN_NUITKA:
-            return Path(sys.argv[0]).parent.absolute().resolve()
-
-        # Search as when the stack's self is not the current selv
-        while (stack := inspect.stack()[level := level+1]):
-            if stack.frame.f_locals.get("self", None) != self:
-                break
-
-        return Path(stack.filename).parent.parent.absolute().resolve()
-
-    @property
-    @cache
     def WORKSPACE(self) -> Path:
         if (path := os.environ.get("WORKSPACE", None)):
-            return self.__mkdir__(Path(path)/self.app_author/self.app_name)
-        return self.__mkdir__(Path(self.app_dirs.user_data_dir)/self.app_name)
+            return self.__mkdir__(Path(path)/self.APP_AUTHOR/self.APP_NAME)
+        return self.__mkdir__(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
+
+    @property
+    def REPOSITORY(self) -> Path:
+        return self.__mkdir__(self.PACKAGE.parent)
 
     @property
     def HOME(self) -> Path:
@@ -88,11 +80,11 @@ class BrokenDirectories:
 
     @property
     def RELEASES(self) -> Path:
-        return self.__mkdir__(self.PACKAGE/"Release")
+        return self.__mkdir__(self.REPOSITORY/"Release")
 
     @property
     def BUILD(self) -> Path:
-        return self.__mkdir__(self.PACKAGE/"Build")
+        return self.__mkdir__(self.REPOSITORY/"Build")
 
     @property
     def WINEPREFIX(self) -> Path:
@@ -100,7 +92,7 @@ class BrokenDirectories:
 
     @property
     def PROJECTS(self) -> Path:
-        return self.__mkdir__(self.PACKAGE/"Projects")
+        return self.__mkdir__(self.REPOSITORY/"Projects")
 
     @property
     def HOOK(self) -> Path:
@@ -110,7 +102,7 @@ class BrokenDirectories:
 
     @property
     def META(self) -> Path:
-        return self.__mkdir__(self.PACKAGE/"Meta")
+        return self.__mkdir__(self.REPOSITORY/"Meta")
 
     @property
     def DOCS(self) -> Path:
@@ -133,10 +125,6 @@ class BrokenDirectories:
         return self.__mkdir__(self.META/"Assets")
 
     # # Workspace directories
-
-    @property
-    def RESOURCES(self) -> Path:
-        return self.__mkdir__(self.PACKAGE/"Resources")
 
     @property
     def CONFIG(self) -> Path:
@@ -166,5 +154,38 @@ class BrokenDirectories:
     def TEMP(self) -> Path:
         return self.__mkdir__(self.WORKSPACE/"Temp")
 
-# Broken package shared and common directories
-BROKEN_DIRECTORIES = BrokenDirectories()
+# -------------------------------------------------------------------------------------------------|
+
+@attrs.define(slots=False)
+class BrokenProject:
+
+    # App information
+    APP_NAME:   str     = attrs.field(default="Broken")
+    APP_AUTHOR: str     = attrs.field(default="BrokenSource")
+    RESOURCES:  Any = None
+
+    DIRECTORIES: BrokenProjectDirectories = None
+    CONFIG:      BrokenDotmap             = None
+
+    def __init__(self, __file__, *args, **kwargs):
+        self.__attrs_init__(*args, **kwargs)
+
+        # Create Directories class
+        self.DIRECTORIES = BrokenProjectDirectories(
+            PACKAGE=__file__,
+            APP_NAME=self.APP_NAME,
+            APP_AUTHOR=self.APP_AUTHOR,
+        )
+
+        # Create default config
+        self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
+        self.RESOURCES = importlib.resources.files(self.RESOURCES) if self.RESOURCES else None
+
+        # Create logger based on configuration
+        try:
+            # Fixme: Two logging instances on the same file on Windows
+            BrokenLogging().stdout(__loglevel__ := self.CONFIG.logging.default("level", "trace").upper())
+            BrokeLogging().file(BROKEN.DIRECTORIES.LOGS/"Broken.log", __loglevel__)
+        except Exception:
+            pass
+

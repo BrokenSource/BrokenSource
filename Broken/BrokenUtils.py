@@ -1,6 +1,15 @@
 from . import *
 
 # -------------------------------------------------------------------------------------------------|
+# Cursed Python
+
+# Add a .get(index, default=None) method on lists
+forbiddenfruit.curse(
+    list, "get",
+    lambda self, index, default=None: self[index] if (index < len(self)) else default
+)
+
+# -------------------------------------------------------------------------------------------------|
 
 def shell(
     *args: list[Any],
@@ -399,6 +408,7 @@ class BrokenUtils:
 
     def load_image(image: PilImage | PathLike | URL, pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
+        # Todo: Maybe a BrokenImage class with some utils?
 
         # Nothing to do if already a PIL Image
         if isinstance(image, PilImage):
@@ -413,7 +423,8 @@ class BrokenUtils:
                 else:
                     log.info(f"Loading image from (maybe) URL [{image}]", echo=echo)
                     try:
-                        requests = BROKEN_REQUESTS_CACHE if cache else requests
+                        # Fixme: Implement own requests cache, not ideal
+                        import requests
                         return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
                     except Exception as e:
                         log.error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
@@ -530,13 +541,13 @@ class BrokenPath:
     # # Specific / "Utils"
 
     @contextmanager
-    def pushd(path: PathLike):
+    def pushd(path: PathLike, echo: bool=True):
         """Change directory, then change back when done"""
         cwd = os.getcwd()
-        log.info(f"Pushd [{path}]")
+        log.info(f"Pushd [{path}]", echo=echo)
         os.chdir(path)
         yield path
-        log.info(f"Popd  [{path}]")
+        log.info(f"Popd  [{path}]", echo=echo)
         os.chdir(cwd)
 
     @staticmethod
@@ -639,7 +650,7 @@ class BrokenPath:
             shell("open", path)
 
     @staticmethod
-    def symlink(virtual: Path, real: Path, echo=True) -> Path:
+    def symlink(virtual: Path, real: Path, echo: bool=True) -> Path:
         """Symlink [where] -> [to], `where` being the symlink and `to` the target
 
         Args:
@@ -662,9 +673,9 @@ class BrokenPath:
         if virtual.is_symlink():
             virtual.unlink()
 
-        # Virtual must not be a file
-        if virtual.is_file():
-            log.error(f"Path [{virtual}] is a file, cannot symlink")
+        # Virtual must not be a folder
+        if virtual.is_dir():
+            log.error(f"Path [{virtual}] is a directory, cannot symlink")
             return
 
         # Remove Virtual empty folder if so
@@ -712,7 +723,7 @@ class BrokenVsyncClient:
     kwargs:     Dict[str, Any] = {}
     frequency:  float    = 60
     context:    Any      = None
-    enabled:    bool     = False
+    enabled:    bool     = True
     next_call:  float    = 0
     dt:         bool     = False
     time:       float    = 0
@@ -740,9 +751,23 @@ class BrokenVsync:
         """Wraps around BrokenVsync for convenience"""
         return self.add_client(BrokenVsyncClient(*args, **kwargs))
 
-    def next(self, block=True) -> Option[None, Any]:
+    @property
+    def enabled_clients(self) -> List[BrokenVsyncClient]:
+        """Returns a list of enabled clients"""
+        return [client for client in self.clients if client.enabled]
+
+    @property
+    def next_client(self) -> BrokenVsyncClient | None:
+        """Returns the next client to be called"""
+        if clients := sorted(self.enabled_clients, key=lambda item: item.next_call):
+            return clients[0]
+
+    def next(self, block=True) -> None | Any:
         """Calls the next call client in the list"""
-        client = sorted(self.clients, key=lambda item: item.next_call*(item.enabled))[0]
+
+        # Get the next client to call or return if None
+        if not (client := self.next_client):
+            return None
 
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
@@ -871,6 +896,3 @@ class BrokenTyper:
     def with_context() -> list:
         return dict(context_settings=dict(allow_extra_args=True, ignore_unknown_options=True))
 
-# Relics from the past
-
-BROKEN_REQUESTS_CACHE = requests_cache.CachedSession(BROKEN_DIRECTORIES.CACHE/'RequestsCache')

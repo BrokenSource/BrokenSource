@@ -492,6 +492,7 @@ class BrokenFFmpeg:
         elif (binary := shutil.which("ffmpeg")):
             log.info(f"Using system FFmpeg binary at [{binary}]")
         elif BrokenUtils.have_import("imageio_ffmpeg"):
+            import imageio_ffmpeg
             binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
             log.info(f"Using ImageIO FFmpeg binary at [{binary}]")
         else:

@@ -11,30 +11,26 @@ BROKEN_VERSION:     str = "v" + (importlib.metadata.version("Broken") or "Unknow
 from .BrokenImports import *
 from .BrokenLogging import *
 from .BrokenDotmap import *
-from .BrokenDirectories import *
-from .BrokenUtils import *
-# isort: on
+from .BrokenProject import *
 
-# -------------------------------------------------------------------------------------------------|
+# Create Broken monorepo project
+BROKEN = BrokenProject(
+    __file__=__file__,
+    APP_NAME="Broken",
+    APP_AUTHOR="BrokenSource",
+)
 
 # Symlink path to projects data to the root of the monorepo for convenience
 try:
-    BrokenPath.symlink(virtual=BROKEN_DIRECTORIES.PACKAGE/"Workspace", real=BROKEN_DIRECTORIES.WORKSPACE.parent)
+    BrokenPath.symlink(
+        virtual=BROKEN.DIRECTORIES.PACKAGE/"Workspace",
+        real=BROKEN.DIRECTORIES.WORKSPACE.parent,
+        echo=False
+    )
 except Exception:
     pass
 
-# Create main Broken configuration file
-BROKEN_CONFIG = BrokenDotmap(path=BROKEN_DIRECTORIES.CONFIG/"Broken.toml")
-
-# Create logger based on configuration
-__loglevel__ = BROKEN_CONFIG.logging.default("level", "trace").upper()
-try:
-    # Fixme: Windows and two Broken instances sharing a log file
-    BrokenLogging().stdout(__loglevel__)
-    BrokeLogging().file(BROKEN_DIRECTORIES.LOGS/"Broken.log", __loglevel__)
-except Exception:
-    pass
-
-# -------------------------------------------------------------------------------------------------|
+from .BrokenUtils import *
+# isort: on
 
 from .Modules import *

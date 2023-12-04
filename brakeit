@@ -97,7 +97,7 @@ path_dependency = next(venv_path.glob("**/*/path_dependency.py"))
 path_dependency.write_text(
     path_dependency.read_text().replace(
         "self._path = path\n",
-        "self._path = (path := path.expanduser().resolve())\n"
+        "self._path = (path := path.expanduser())\n"
     )
 )
 

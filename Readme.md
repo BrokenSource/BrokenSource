@@ -3,7 +3,7 @@
 <div align="justify">
 
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/110147748" style="vertical-align: middle; border-radius: 10%" width="140">
+  <img src="./Broken/Resources/Broken.png" width="200">
 
   <h2>Broken Source Software</h2>
 
@@ -18,6 +18,9 @@
   <!-- <a href="Readme pt-BR.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a> -->
   <!-- <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a> -->
 </div>
+
+<br>
+<br>
 
 This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 Broken**, a **🎩 Manager Tool** of the same name, and **📦 Submodules** of all our **💎 Projects**. User first, trust and quality are our core values.
 
@@ -143,9 +146,9 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 <sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
 
 
-<br/>
-<br/>
-<br/>
+<br>
+<br>
+<br>
 
 # 🚧 Hardware Requirements
 
@@ -266,7 +269,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
   - Smaller projects tend to be MIT licensed since the effort is considerably lower
 
 
-<br/>
+<br>
 
 **Legal Responsibilities**
 - 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly
@@ -274,7 +277,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 - 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are made by user inputs
 
 
-<br/>
+<br>
 
 **Fair Use**
 - 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
