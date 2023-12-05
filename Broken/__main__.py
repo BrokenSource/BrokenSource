@@ -387,7 +387,7 @@ class BrokenCLI:
                     "Type=Application",
                     "Name=Broken Shell",
                     f"Exec={BROKEN.DIRECTORIES.BROKEN_SHARED/'brakeit'}",
-                    f"Icon={BROKEN.RESOURCES/'Broken.png'}",
+                    f"Icon={BROKEN.DIRECTORIES.PACKAGE/'Resources'/'Broken.png'}",
                     "Comment=Broken Shell Development Environment",
                     "Terminal=true",
                     "Categories=Development",
