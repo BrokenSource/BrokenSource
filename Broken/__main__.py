@@ -330,7 +330,7 @@ class BrokenCLI:
         # Section: Experimental
         emoji = "⚠️ "
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.pillow)
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.wheel)
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.wheel)
         # self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
 
         # Section: Projects
@@ -483,15 +483,15 @@ class BrokenCLI:
 
     def wheel(self):
         """Builds a Python wheel for Broken"""
-        BrokenPath.mkdir(BROKEN.DIRECTORIES.BUILD)
+        BrokenPath.mkdir(BROKEN.DIRECTORIES.BROKEN_BUILD)
         dist = BrokenPath.resetdir(BROKEN.DIRECTORIES.PACKAGE/"dist")
 
         # Make Python Wheel
-        shell("poetry", "build", "--format", "wheel", f"--directory={BROKEN.DIRECTORIES.BUILD}")
+        shell("poetry", "build", "--format", "wheel", f"--directory={BROKEN.DIRECTORIES.BROKEN_BUILD}")
 
         # Get the wheel file, move to Build dir
         wheel = next(dist.glob("*.whl"))
-        wheel = BrokenPath.move(wheel, BROKEN.DIRECTORIES.BUILD/wheel.name)
+        wheel = BrokenPath.move(wheel, BROKEN.DIRECTORIES.BROKEN_BUILD/wheel.name)
         BrokenPath.remove(dist)
 
         log.info(f"Python wheel built at {wheel}")

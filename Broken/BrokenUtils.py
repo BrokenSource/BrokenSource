@@ -567,9 +567,10 @@ class BrokenPath:
     # # File or directory creation
 
     @staticmethod
-    def mkdir(path: PathLike, echo=True) -> Path:
+    def mkdir(path: PathLike, parent: bool=False, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
-        path = Path(path)
+        path = BrokenPath.true_path(path)
+        path = path.parent if parent else path
         if path.exists():
             log.success(f"Directory [{path}] already exists", echo=echo)
             return path
@@ -612,16 +613,14 @@ class BrokenPath:
     @staticmethod
     def remove(path: PathLike, confirm=False, echo=True) -> bool:
         path = Path(path)
-        log.info(f"• Removing Path [{path}]", echo=echo)
+        log.info(f"Removing Path [{path}]", echo=echo)
 
         if not path.exists():
-            log.success(f"└─ Does not exist", echo=echo)
-            return False
+            return True
 
         # Symlinks are safe to remove
         if path.is_symlink():
             path.unlink()
-            log.success(f"└─ Removed Symlink", echo=echo)
             return True
 
         # Confirm removal: directory contains data
@@ -631,10 +630,8 @@ class BrokenPath:
         # Remove the path
         if path.is_dir():
             shutil.rmtree(path, ignore_errors=True)
-            log.success(f"└─ Removed Directory", echo=echo)
         else:
             path.unlink()
-            log.success(f"└─ Removed File", echo=echo)
 
         return True
 
@@ -685,6 +682,32 @@ class BrokenPath:
         # Actually symlink
         virtual.symlink_to(real)
         return virtual
+
+    @staticmethod
+    def zip(path: Path, output: Path=None, echo: bool=True) -> Path:
+        """
+        Zip a directory
+
+        Args:
+            path (Path): Path to zip
+            output (Path): Output path, defaults to path with .zip extension
+
+        Returns:
+            Path: The zipped file's path
+        """
+        path = Path(path)
+
+        # Default output to path with .zip extension
+        output = (Path(output) if output else path).with_suffix(".zip")
+
+        # Remove old zip
+        BrokenPath.remove(output, echo=echo)
+
+        # Make the new zip
+        log.info(f"Zipping [{path}] -> [{output}]", echo=echo)
+        shutil.make_archive(output.with_suffix(""), "zip", path)
+
+        return output
 
 # -------------------------------------------------------------------------------------------------|
 
