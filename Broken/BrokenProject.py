@@ -1,37 +1,48 @@
+from __future__ import annotations
+
 from . import *
 
 
 @attrs.define(slots=False)
-class BrokenProjectDirectories:
+class _BrokenProjectDirectories:
+    """# Info: You shouldn't really use this class directly"""
 
-    # App information
-    PACKAGE: Path
+    # Note: A reference to the main BrokenProject
+    BROKEN_PROJECT: BrokenProject
 
-    APP_NAME:   str     = attrs.field(default="Broken")
-    APP_AUTHOR: str     = attrs.field(default="BrokenSource")
-    APP_DIRS:   AppDirs = attrs.field(default=None)
+    # App basic information
+    APP_DIRS: AppDirs = attrs.field(default=None)
 
     def __attrs_post_init__(self):
-        self.APP_DIRS = AppDirs(self.APP_AUTHOR, self.APP_AUTHOR)
+        self.APP_DIRS = AppDirs(
+            self.BROKEN_PROJECT.APP_AUTHOR,
+            self.BROKEN_PROJECT.APP_AUTHOR
+        )
 
-        # Find the package directory
+    @property
+    def PACKAGE(self) -> Path:
         if BROKEN_PYINSTALLER:
-            self.PACKAGE = Path(sys.executable).parent.resolve()
+            return Path(sys.executable).parent.resolve()
         elif BROKEN_NUITKA:
-            self.PACKAGE = Path(sys.argv[0]).parent.resolve()
+            return Path(sys.argv[0]).parent.resolve()
         else:
-            self.PACKAGE = Path(self.PACKAGE).parent.resolve()
+            return Path(self.BROKEN_PROJECT.PACKAGE).parent.resolve()
 
-        print(self.APP_NAME, self.PACKAGE)
+    # # Convenience properties
 
-        # Load .env file on the package
-        if (env := self.PACKAGE/".env").exists():
-            log.info(f"Loading environment variables from: {env}")
-            dotenv.load_dotenv(env)
+    @property
+    def APP_NAME(self) -> str:
+        return self.BROKEN_PROJECT.APP_NAME
 
-    def __mkdir__(self, path: Path) -> Path:
+    @property
+    def APP_AUTHOR(self) -> str:
+        return self.BROKEN_PROJECT.APP_AUTHOR
+
+    # # Internal methods
+
+    def __mkdir__(self, path: Path, resolve: bool=True) -> Path:
         """Make a directory and return it"""
-        path = Path(path).resolve()
+        path = Path(path).resolve() if resolve else Path(path)
         if not path.exists():
             log.info(f"Creating directory: {path}")
             path.mkdir(parents=True, exist_ok=True)
@@ -74,24 +85,24 @@ class BrokenProjectDirectories:
     @property
     def BROKEN_SHARED(self) -> Path:
         """Returns the shared directory of Broken"""
-        return self.__mkdir__(self.HOME/".BrokenSource")
+        return self.__mkdir__(self.HOME/".BrokenSource", resolve=False)
 
     # # Broken monorepo specific, potentially useful
 
     @property
-    def RELEASES(self) -> Path:
+    def BROKEN_RELEASES(self) -> Path:
         return self.__mkdir__(self.REPOSITORY/"Release")
 
     @property
-    def BUILD(self) -> Path:
+    def BROKEN_BUILD(self) -> Path:
         return self.__mkdir__(self.REPOSITORY/"Build")
 
     @property
-    def WINEPREFIX(self) -> Path:
+    def BROKEN_WINEPREFIX(self) -> Path:
         return self.__mkdir__(self.BUILD/"Wineprefix")
 
     @property
-    def PROJECTS(self) -> Path:
+    def BROKEN_PROJECTS(self) -> Path:
         return self.__mkdir__(self.REPOSITORY/"Projects")
 
     @property
@@ -143,6 +154,10 @@ class BrokenProjectDirectories:
         return self.__mkdir__(self.WORKSPACE/"Data")
 
     @property
+    def PROJECTS(self) -> Path:
+        return self.__mkdir__(self.WORKSPACE/"Projects")
+
+    @property
     def DOWNLOADS(self) -> Path:
         return self.__mkdir__(self.WORKSPACE/"Downloads")
 
@@ -157,29 +172,72 @@ class BrokenProjectDirectories:
 # -------------------------------------------------------------------------------------------------|
 
 @attrs.define(slots=False)
+class _BrokenProjectResources:
+    """# Info: You shouldn't really use this class directly"""
+
+    # Note: A reference to the main BrokenProject
+    BROKEN_PROJECT: BrokenProject
+
+    # # Internal states
+
+    __RESOURCES__: Path = attrs.field(default=None)
+
+    def __attrs_post_init__(self):
+        if self.BROKEN_PROJECT.RESOURCES:
+            self.__RESOURCES__ = importlib.resources.files(self.BROKEN_PROJECT.RESOURCES)
+
+    # # Branding section
+
+    @property
+    def ICON(self) -> Path:
+        return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.png"
+
+    # # Shaders section
+
+    @property
+    def SHADERS(self) -> Path:
+        return self.__RESOURCES__/"Shaders"
+
+    @property
+    def FRAGMENT(self) -> Path:
+        return self.SHADERS/"Fragment"
+
+    @property
+    def VERTEX(self) -> Path:
+        return self.SHADERS/"Vertex"
+
+    # Divide operator -> Get a path relative to the root
+
+    def __div__(self, name: str) -> Path:
+        return self.__RESOURCES__/name
+
+    def __truediv__(self, name: str) -> Path:
+        return self.__div__(name)
+
+# -------------------------------------------------------------------------------------------------|
+
+@attrs.define(slots=False)
 class BrokenProject:
+    # Note: Send the importer's __init__.py's __file__ variable
+    PACKAGE: str
 
     # App information
     APP_NAME:   str     = attrs.field(default="Broken")
     APP_AUTHOR: str     = attrs.field(default="BrokenSource")
-    RESOURCES:  Any = None
 
-    DIRECTORIES: BrokenProjectDirectories = None
-    CONFIG:      BrokenDotmap             = None
+    # Standard Broken objects for a project
+    DIRECTORIES: _BrokenProjectDirectories = None
+    RESOURCES:   _BrokenProjectResources   = None
+    CONFIG:      BrokenDotmap              = None
 
-    def __init__(self, __file__, *args, **kwargs):
-        self.__attrs_init__(*args, **kwargs)
+    def __attrs_post_init__(self):
 
         # Create Directories class
-        self.DIRECTORIES = BrokenProjectDirectories(
-            PACKAGE=__file__,
-            APP_NAME=self.APP_NAME,
-            APP_AUTHOR=self.APP_AUTHOR,
-        )
+        self.DIRECTORIES = _BrokenProjectDirectories(BROKEN_PROJECT=self)
+        self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
 
         # Create default config
         self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
-        self.RESOURCES = importlib.resources.files(self.RESOURCES) if self.RESOURCES else None
 
         # Create logger based on configuration
         try:
@@ -189,3 +247,8 @@ class BrokenProject:
         except Exception:
             pass
 
+        # Fixme: Anywhere to unify envs?
+        # Load .env files from the project
+        for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
+            log.info(f"Loading environment variables ({env})")
+            dotenv.load_dotenv(env)

@@ -651,7 +651,8 @@ class BrokenPath:
 
     @staticmethod
     def symlink(virtual: Path, real: Path, echo: bool=True) -> Path:
-        """Symlink [where] -> [to], `where` being the symlink and `to` the target
+        """
+        Symlink [where] -> [to], `where` being the symlink and `to` the target
 
         Args:
             where (Path): Symlink path
@@ -673,14 +674,13 @@ class BrokenPath:
         if virtual.is_symlink():
             virtual.unlink()
 
-        # Virtual must not be a folder
-        if virtual.is_dir():
+        # Virtual is a directory and not empty
+        elif virtual.is_dir() and (not os.listdir(virtual)):
+            BrokenPath.remove(virtual, echo=False)
+
+        else:
             log.error(f"Path [{virtual}] is a directory, cannot symlink")
             return
-
-        # Remove Virtual empty folder if so
-        if not os.listdir(virtual):
-            BrokenPath.remove(virtual, echo=False)
 
         # Actually symlink
         virtual.symlink_to(real)

@@ -12,10 +12,11 @@ from .BrokenImports import *
 from .BrokenLogging import *
 from .BrokenDotmap import *
 from .BrokenProject import *
+from .BrokenUtils import *
 
 # Create Broken monorepo project
 BROKEN = BrokenProject(
-    __file__=__file__,
+    PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
 )
@@ -23,14 +24,13 @@ BROKEN = BrokenProject(
 # Symlink path to projects data to the root of the monorepo for convenience
 try:
     BrokenPath.symlink(
-        virtual=BROKEN.DIRECTORIES.PACKAGE/"Workspace",
+        virtual=BROKEN.DIRECTORIES.REPOSITORY/"Workspace",
         real=BROKEN.DIRECTORIES.WORKSPACE.parent,
         echo=False
     )
 except Exception:
     pass
 
-from .BrokenUtils import *
 # isort: on
 
 from .Modules import *

@@ -284,7 +284,7 @@ class BrokenCLI:
     typer_app: typer.Typer = None
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(BROKEN.DIRECTORIES.PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
         self.find_projects(Path.cwd())
 
     def find_projects(self, path: Path) -> None:
@@ -369,7 +369,7 @@ class BrokenCLI:
     def __shortcut__(self):
 
         # Symlink Broken Shared Directory to current root
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.PACKAGE)
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.REPOSITORY)
 
         if BrokenPlatform.OnUnix:
 
@@ -455,8 +455,8 @@ class BrokenCLI:
         if all or isort:
             shell("isort", BROKEN.DIRECTORIES.PACKAGE,
                 "--force-single-line-imports",
-                "--skip", BROKEN.DIRECTORIES.RELEASES,
-                "--skip", BROKEN.DIRECTORIES.BUILD,
+                "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
+                "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
             )
 
         # Remove all .pyc files and __pycache__ folders
@@ -468,8 +468,8 @@ class BrokenCLI:
                 BrokenPath.remove(path)
 
         # Remove build and releases folders if requested
-        if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BUILD)
-        if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.RELEASES)
+        if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
+        if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
     def updateall(self) -> None:
         """Updates all projects"""
