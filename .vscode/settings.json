@@ -18,7 +18,7 @@
 
     // Python isort
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+        "source.organizeImports": "explicit"
     },
 
     "material-icon-theme.files.associations": {
@@ -44,6 +44,7 @@
         "Community": "shared",
         "Workspace": "container",
         "Prompts": "log",
+        ".venvs": "python",
 
         // Shaders
         "Fragment": "shader",

@@ -103,6 +103,20 @@ path_dependency.write_text(
 
 # -------------------------------------------------------------------------------------------------|
 
+# Bonus: Symlink the venv path to the current directory
+# Do that on the installer script as `poetry env info -p` is slow
+# Note: This is not a crucial step
+try:
+    # Remove previous symlink if exists
+    if (dot_venv := BRAKEIT.parent/".venvs").exists():
+        dot_venv.unlink()
+
+    # Actually symlink .venvs -> Poetry venvs directory
+    dot_venv.symlink_to(venv_path.parent)
+
+except Exception:
+    print("Couldn't symlink .venvs to the virtual environment path, skipping")
+
 # Clear screen
 try:
     if os.name == "nt":
