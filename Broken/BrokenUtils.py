@@ -416,27 +416,24 @@ class BrokenUtils:
 
         try:
             # Load image if a path or url is supplied
-            if any([isinstance(image, T) for T in (PathLike, str)]):
+            if isinstance(image, (PathLike, str)):
                 if (path := BrokenPath.true_path(image)).exists():
                     log.info(f"Loading image from Path [{path}]", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
                     log.info(f"Loading image from (maybe) URL [{image}]", echo=echo)
                     try:
-                        # Fixme: Implement own requests cache, not ideal
                         import requests
-                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
+                        bytes = BROKEN.CACHE.REQUESTS.default(image, lambda: requests.get(image).content)
+                        return PIL.Image.open(BytesIO(bytes)).convert(pixel)
                     except Exception as e:
                         log.error(f"Failed to load image from URL or Path [{image}]: {e}", echo=echo)
-                        return None
             else:
                 log.error(f"Unknown image parameter [{image}], must be a PIL Image, Path or URL", echo=echo)
-                return None
 
         # Can't open file
         except Exception as e:
             log.error(f"Failed to load image [{image}]: {e}", echo=echo)
-            return None
 
     @staticmethod
     def have_import(module: str) -> bool:
@@ -908,7 +905,7 @@ class BrokenTyper:
             no_args_is_help=kwargs.get("no_args_is_help", True),
             add_completion=False,
             rich_markup_mode="rich",
-            chain=False,
+            chain=True,
             epilog=(
                 f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
                 "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"

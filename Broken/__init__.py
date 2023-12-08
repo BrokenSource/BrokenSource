@@ -12,7 +12,6 @@ from .BrokenImports import *
 from .BrokenLogging import *
 from .BrokenDotmap import *
 from .BrokenProject import *
-from .BrokenUtils import *
 
 # Create Broken monorepo project
 BROKEN = BrokenProject(
@@ -20,6 +19,8 @@ BROKEN = BrokenProject(
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
 )
+
+from .BrokenUtils import *
 
 # Symlink path to projects data to the root of the monorepo for convenience
 try:
@@ -30,7 +31,5 @@ try:
     )
 except Exception:
     pass
-
-# isort: on
 
 from .Modules import *

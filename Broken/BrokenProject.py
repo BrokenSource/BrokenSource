@@ -83,6 +83,11 @@ class _BrokenProjectDirectories:
         return self.__mkdir__("/")
 
     @property
+    def SYSTEM_TEMP(self) -> Path:
+        """(Unix: /tmp), (Windows: C://Windows//Temp)"""
+        return self.__mkdir__(tempfile.gettempdir())
+
+    @property
     def BROKEN_SHARED(self) -> Path:
         """Returns the shared directory of Broken"""
         return self.__mkdir__(self.HOME/".BrokenSource", resolve=False)
@@ -229,6 +234,7 @@ class BrokenProject:
     DIRECTORIES: _BrokenProjectDirectories = None
     RESOURCES:   _BrokenProjectResources   = None
     CONFIG:      BrokenDotmap              = None
+    CACHE:       BrokenDotmap              = None
 
     def __attrs_post_init__(self):
 
@@ -238,6 +244,7 @@ class BrokenProject:
 
         # Create default config
         self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
+        self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP /f"{self.APP_NAME}.pickle")
 
         # Create logger based on configuration
         try:

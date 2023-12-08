@@ -66,9 +66,15 @@ class BrokenDotmap:
 
             if self.__path__.exists():
                 self.from_file(self.__path__)
-                return
+            else:
+                self.sync()
 
-            self.sync()
+    # # Convenience flags
+
+    @property
+    def __ext__(self) -> str:
+        """Get the file extension of the path"""
+        return self.__path__.suffix.lower()
 
     # # Loading and saving
 
@@ -99,6 +105,9 @@ class BrokenDotmap:
                 data = json.loads(path.read_text())
             elif format == ".yaml":
                 data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
+            # Todo: Implement a more efficient method for bytes (db?)
+            elif format == ".pickle":
+                data = pickle.loads(path.read_bytes())
             else:
                 log.error(f"• BrokenDotmap: Unknown file format")
                 log.error(f"└─ File: [{path}]")
@@ -120,7 +129,9 @@ class BrokenDotmap:
 
     def __recurse__(self, value={}) -> Union[Self, Any]:
         """Transforms a dict-like into Self or return the value itself"""
-        return value if (not isinstance(value, dict)) else self.__class__(super=self.__super__).from_dict(value)
+        if isinstance(value, dict):
+            return self.__class__(super=self.__super__).from_dict(value)
+        return value
 
     # # Redirect items, keys
 
@@ -146,10 +157,11 @@ class BrokenDotmap:
 
     # # Patch Set methods
 
-    def __set__(self, key: str, value: Any={}) -> None:
+    def __set__(self, key: str, value: Any={}) -> Any:
         """Set a key to a value, recurses on the value"""
         self.__dict__[key] = self.__recurse__(value)
         self.sync()
+        return value
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Handle dictionary item assignment using key indexing"""
@@ -169,7 +181,13 @@ class BrokenDotmap:
 
     def default(self, key: str, value: Any) -> Any:
         """Set a default value for a key else don't change, returns it"""
-        return (self.__dict__.setdefault(key, value), self.sync())[0]
+
+        # Return the value if it exists
+        if key in self.__dict__:
+            return self.__dict__[key]
+
+        # Set the value and sync (call it if callable - a use as a cache)
+        return self.__set__(key, value() if callable(value) else value)
 
     def setdefault(self, key: str, value: Any) -> Any:
         """Set a default value for a key else don't change, returns it"""
@@ -200,19 +218,17 @@ class BrokenDotmap:
             return
 
         # Get the full dictionary to save
-        format = self.__path__.suffix
         dict   = self.to_dict()
 
         # Load file based on format
-        if format == ".toml":
-            data = toml.dumps(dict)
-        elif format == ".json":
-            data = json.dumps(dict, indent=2, ensure_ascii=False)
-        elif format == ".yaml":
-            data = yaml.dump(dict)
+        if self.__ext__ == ".toml":
+            self.__path__.write_text(toml.dumps(dict))
+        elif self.__ext__ == ".json":
+            self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
+        elif self.__ext__ == ".yaml":
+            self.__path__.write_text(yaml.dump(dict))
+        elif self.__ext__ == ".pickle":
+            self.__path__.write_bytes(pickle.dumps(dict))
         else:
-            log.error(f"BrokenDotmap: Unknown file format [{format}], cannot save to file")
+            log.error(f"BrokenDotmap: Unknown file format [{self.__ext__}], cannot save to file")
             return
-
-        # Write to file the full dictionary data
-        self.__path__.write_text(data)
