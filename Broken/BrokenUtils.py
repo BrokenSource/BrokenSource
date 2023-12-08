@@ -655,7 +655,7 @@ class BrokenPath:
         Returns:
             None
         """
-        log.info(f"Symlinking [{virtual}] -> [{real}]", echo=echo)
+        log.info(f"Symlinking ({virtual}) -> ({real})", echo=echo)
 
         # Return if already symlinked
         if (BrokenPath.true_path(virtual) == BrokenPath.true_path(real)):
@@ -673,7 +673,7 @@ class BrokenPath:
             BrokenPath.remove(virtual, echo=False)
 
         else:
-            log.error(f"Path [{virtual}] is a directory, cannot symlink")
+            log.error(f"Path ({virtual}) is a non empty directory, cannot symlink")
             return
 
         # Actually symlink
@@ -914,5 +914,8 @@ class BrokenTyper:
 
     @staticmethod
     def with_context() -> list:
-        return dict(context_settings=dict(allow_extra_args=True, ignore_unknown_options=True))
+        return dict(context_settings=dict(
+            allow_extra_args=True,
+            ignore_unknown_options=True,
+        ))
 

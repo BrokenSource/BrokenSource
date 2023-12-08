@@ -32,25 +32,30 @@ class BrokenProjectCLI:
 
         # Poetry command
         self.typer_app.command(
+            help=f"Run poetry command",
+            add_help_option=False,
             **BrokenTyper.with_context(),
-            help=f"Run poetry command"
         )(self.poetry)
 
         # Poe command
         self.typer_app.command(
+            help=f"Run poethepoet command",
             **BrokenTyper.with_context(),
-            help=f"Run poethepoet command"
+            add_help_option=False,
         )(self.poe)
 
         # Update command
         self.typer_app.command(
-            help=f"Update project dependencies"
+            help=f"Update project dependencies",
+            **BrokenTyper.with_context(),
+            add_help_option=False,
         )(self.update)
 
         # Run command
         self.typer_app.command(
+            help=f"Automagically run the project",
             **BrokenTyper.with_context(),
-            help=f"Automagically run the project"
+            add_help_option=False,
         )(self.run)
 
         # Implicitly add run command by default
@@ -343,12 +348,6 @@ class BrokenCLI:
         self.typer_app()
 
     def add_projects_to_cli(self):
-        def project_cli_template(project: BrokenProjectCLI):
-            def project_cli(ctx: typer.Context):
-                project.cli(ctx=ctx)
-            return project_cli
-
-        # Add all projects
         for project in self.projects:
             self.typer_app.command(
                 name=project.name.lower(),
@@ -356,7 +355,7 @@ class BrokenCLI:
                 rich_help_panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
                 add_help_option=False,
                 **BrokenTyper.with_context()
-            )(project_cli_template(project))
+            )(project.cli)
 
     # # Installation commands
 
