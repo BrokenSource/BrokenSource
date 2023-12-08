@@ -66,6 +66,10 @@ def BrokenImports():
 # Fixme: typer, rich, soundcard
 # - imageio_ffmpeg
 # - moderngl_window
+# - transformers
+# - torch
+# - openai
+# - gradio
 # - requests
 # - arrow
 
@@ -122,15 +126,12 @@ while True:
         import distro
         import dotenv
         import forbiddenfruit
-        import glfw
-        import gradio
         import halo
         import imgui
         import intervaltree
         import loguru
         import moderngl
         import numpy
-        import openai
         import opensimplex
         import PIL
         import PIL.Image
@@ -139,8 +140,6 @@ while True:
         import schedule
         import soundcard
         import toml
-        import torch
-        import transformers
         import typer
         from appdirs import AppDirs
         from dotmap import DotMap
