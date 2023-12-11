@@ -135,6 +135,20 @@ class BrokenEnum(Enum):
             raise ValueError
 
     @classmethod
+    def next(cls, value: Union[str, Enum]) -> Self:
+        """
+        Get the next enum member (in positon) from their value, name or themselves
+
+        class Platform(BrokenEnum):
+            Linux   = "linux"
+            Windows = "windows"
+            MacOS   = "macos"
+
+        Platform.next("linux") -> Platform.Windows
+        """
+        return list(cls)[(list(cls).index(cls.smart(value)) + 1) % len(cls)]
+
+    @classmethod
     @property
     def options(cls) -> List[Enum]:
         """Get all members of the enum"""
@@ -283,6 +297,7 @@ class BrokenUtils:
     def recurse(function: callable, **variables) -> Any:
         """
         Calls some function with the previous scope locals() updated by variables
+        # Note: Not the fastest method, consider convenience only
 
         Use case are functions that are called recursively and need to be called with the same arguments
 

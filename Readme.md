@@ -263,26 +263,63 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 # ⚖️ License and Fair Use
 
-**Basics**
-- 📝 All projects have their own license; unless specified in the code, asset file or `Readme.md` on the project's root or subdirectories, all files are subject to the `License.md` and `Readme.md` on their respective repository
+> **We are not** _"Source Available"_ or _"Open Core"_ software. **We are** _**Free and Open Source Software**_.
 
-- 📈 We embrace the **Free and Open Source Software** philosophy; The **Free** part, we hope that using more _"restrictive"_ licenses will help to keep the projects free from abuse - **Open**. A feedback loop of **sharing** and **improving**.
-  - Smaller projects tend to be MIT licensed since the effort is considerably lower
+- By contributing to the Projects, you inherently agree to the **License** and **Terms** below.
 
-
-<br>
-
-**Legal Responsibilities**
-- 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly
-
-- 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are made by user inputs
-
+- We deeply trust the user and community, but there is no free lunch. Please read carefully.
 
 <br>
 
-**Fair Use**
-- 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
+**The terms below** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and **retribute** the favor if you can, only sell stuff you own, SAAS derivative work is not allowed for now.
 
-- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow
+<br>
+
+## 🎓 Basic Terms
+- 📝 **All Projects have their own License**; unless specified in the Code or `Readme.md` on the Project's Root or Subdirectories, all Files are subject to the `License.md` and `Readme.md` on the respective Repository and current terms. **Additional terms below apply** for the **Usage** of all the Projects.
+
+- 📈 We hope that using more _"restrictive"_ licenses will keep the projects free from abuse. A feedback loop of **sharing** and **improving**.
+
+- There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it.
+
+<br>
+
+## 👤 User Generated Content
+- 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are your own responsibility. You must own the assets you use.
+
+- 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly. May it be a _broken_ system, hardware damage, social damage, etc.
+
+- ⚠️ By default, all **User Generated Content** follows under the [**CC-BY 4.0 License**](https://creativecommons.org/licenses/by/4.0/).
+
+<sub><b>Note:</b> While we won't enforce punishments for failed attributions, we would appreciate if you could credit us.</sub>
+
+<br>
+
+## 🤝 Fair Use
+- 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others.
+
+- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow.
+
+- 🚫 We **do not allow selling** assets you **do not own**, you must distribute them freely for demonstration, research and/or educational purposes. External copyright laws apply.
+
+<br>
+
+## 🎩 Commercial Usage
+Want to **use** our **Projects** for **Your Company** or **YouTube Channel**?
+
+- Let's do something great together, contact us at [**Broken Source Software**](https://github.com/BrokenSource)
+
+<br>
+
+## 📚 Software as a Service
+- 📡 We are **actively looking** for ways to transform our **Projects** into a **Software as a Service** (SAAS) model for the user's convenience. **Contact us** if you are interested in **collaborating**.
+
+- ✅ No, we are not closing the Source Sode, nor the service shall receive any special(er) treatment.
+
+- ✅ The service won't be greedy, but also can't be entirely free (due computational costs).
+
+- 🔏 We reserve the right to have a closed-source version of the _service_ that uses, externally, the code-bases of any Project. Something similar to what [**Stability AI**](https://stability.ai) does with [**Clipdrop**](https://clipdrop.co)
+
+<sub><b>Note:</b> Until later notice, you must contact us and work together on any SAAS derivative work ❤️‍🩹</sub>
 
 </div>
