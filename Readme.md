@@ -55,18 +55,14 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - Open a **Terminal** on some directory and run:
 
-```bash
-# Clone the repository
-$ git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+  ```bash
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+  ```
+  ```bash
+  python ./BrokenSource/brakeit
+  ```
 
-# "Open" the folder
-$ cd BrokenSource
-
-# Enter the Framework
-$ python ./brakeit
-```
-
-And done, you can now run `broken` and see all available commands 🚀
+**And done**, you can now run `broken` and see all available commands 🚀
 
 - Head back to the *Project* you want to run for further instructions 🍷
 
@@ -88,12 +84,20 @@ And done, you can now run `broken` and see all available commands 🚀
 - Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
 
 - **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command:
-  - `winget install -e --id Git.Git --source winget`
+  ```ps
+  winget install -e --id Git.Git --source winget
+  ```
 
 - **Install** [**Python**](https://www.python.org/downloads) with the command:
-  - `winget install -e --id Python.Python.3.12`
+  ```ps
+  winget install -e --id Python.Python.3.12`
+  ```
 
-Now run the same **Linux** and **MacOS** commands above
+**Now**, run the same **Linux** and **MacOS** commands above
+
+<sub><b>Note:</b> You might need to replace `/` with `\` on the second command and `python` to `python3` or add `.exe` to it</sub>
+
+<br>
 
 <details>
   <summary>
@@ -271,7 +275,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 <br>
 
-**The terms below** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and **retribute** the favor if you can, only sell stuff you own, SAAS derivative work is not allowed for now.
+**The terms below** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and **retribute** the favor if you can, only sell stuff you own, independent SAAS derivative work is not allowed for now.
 
 <br>
 
