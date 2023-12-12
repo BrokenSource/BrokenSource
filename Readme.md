@@ -95,21 +95,48 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 **Now**, run the same **Linux** and **MacOS** commands above
 
+<br>
+
 <sub><b>Note:</b> You might need to replace `/` with `\` on the second command and `python` to `python3` or add `.exe` to it</sub>
+
+<sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manual install Python and Git following the links above</sub>
 
 <br>
 
+### 👇 **Common** Windows Troubleshooting
+
 <details>
   <summary>
-    ⚠️ Getting the error <i>"execution of scripts is disabled on this system"</i> ❓
+    ⚠️ Shell Error: <i>execution of scripts is disabled on this system</i>
   </summary>
+  <br>
 
-  Open a PowerShell terminal as Administrator and run:
+  Following <a href="https://stackoverflow.com/a/4038991"><b>This Answer</b></a>, Open a PowerShell terminal as Administrator and run:
 
   ```powershell
   Set-ExecutionPolicy RemoteSigned
   ```
+  <br>
 </details>
+
+<details>
+  <summary>
+    ⚠️ <a href="https://github.com/microsoft/winget-cli"><b>Winget</b></a> is not installed or available on your System
+  </summary>
+  <br>
+
+  As [**Microsoft**](https://learn.microsoft.com/en-us/windows/package-manager/winget/#install-winget) says in their documentation, you have options:
+
+  - Install it from the [**Microsoft Store**](https://apps.microsoft.com/detail/9NBLGGH4NNS1)
+
+  - Open a PowerShell termial and run:
+
+  ```powershell
+  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+  ```
+  <br>
+</details>
+
 
 
 <br>
