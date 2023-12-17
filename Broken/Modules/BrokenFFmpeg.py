@@ -867,16 +867,19 @@ class BrokenFFmpeg:
     def popen(self) -> subprocess.stdin:
         return shell(self.command, Popen=True)
 
-    def pipe(self, buffer: int=100):
+    def pipe(self, open: bool=True, buffer: int=30):
         """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
-        ffmpeg = shell(self.command, Popen=True, stdin=PIPE)
+        if not open: return
+
+        # Spawn subprocess
+        ffmpeg = shell(self.command, Popen=True, stdin=subprocess.PIPE)
 
         @attrs.define
         class BrokenFFmpegBuffered:
             ffmpeg: subprocess.Popen
             buffer: int
-            frames: list[bytes] = attrs.Factory(list)
-            __stop__:   bool = False
+            frames: List[bytes] = attrs.Factory(list)
+            __stop__: bool = False
 
             def __attrs_post_init__(self):
                 """Starts worker thread"""
@@ -893,11 +896,11 @@ class BrokenFFmpeg:
                 self.__stop__ = True
                 with halo.Halo() as spinner:
                     while self.frames:
-                        spinner.text = f"Waiting for ({len(self.frames):4}) frames to be written"
-                        time.sleep(0.2)
-                with halo.Halo("Waiting FFmpeg to finish") as spinner:
+                        spinner.text = f"Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
+                        time.sleep(0.05)
+                with halo.Halo("Waiting FFmpeg process to finish rendering") as spinner:
                     while not self.ffmpeg.stdin.closed:
-                        time.sleep(0.2)
+                        time.sleep(0.05)
 
             def __worker__(self):
                 while True:
@@ -910,7 +913,7 @@ class BrokenFFmpeg:
                     time.sleep(0.01)
                 self.ffmpeg.stdin.close()
 
-        return BrokenFFmpegBuffered(ffmpeg, buffer)
+        return BrokenFFmpegBuffered(ffmpeg=ffmpeg, buffer=buffer)
 
     # ---------------------------------------------------------------------------------------------|
     # High level functions

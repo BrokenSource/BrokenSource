@@ -246,6 +246,11 @@ class _BrokenProjectResources:
         return self.__RESOURCES__/"Shaders"
 
     @property
+    def SHADERS_INCLUDE(self) -> Path:
+        """Shaders include directory"""
+        return self.SHADERS/"Include"
+
+    @property
     def FRAGMENT(self) -> Path:
         """Fragment shaders directory"""
         return self.SHADERS/"Fragment"
