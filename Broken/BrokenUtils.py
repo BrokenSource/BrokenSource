@@ -112,7 +112,7 @@ class BrokenPlatform:
 class BrokenEnum(Enum):
 
     @classmethod
-    def smart(cls, value: Union[str, Enum]) -> Self:
+    def smart(cls, value: Union[str, Enum], type_safe: bool=True) -> Self:
         """Get enum members from their value, name or themselves"""
 
         # Value already a member of the enum
@@ -120,12 +120,18 @@ class BrokenEnum(Enum):
             return value
 
         try:
-            # Try finding the member by name
+            # Try finding the member by name or value
             for member in cls:
-                if isinstance(member.value, (list, tuple)):
-                    if value in member.value:
-                        return member
-                elif member.value == value:
+
+                # Always compre "in list" for convenience
+                compare = BrokenUtils.force_list(member.value) + [member.name]
+
+                # Convert value and compare values to lowercase strings
+                if type_safe:
+                    value = str(value).lower()
+                    compare = [str(value).lower() for value in compare]
+
+                if value in compare:
                     return member
 
             return cls[value]
