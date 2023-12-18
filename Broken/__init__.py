@@ -1,4 +1,5 @@
 import importlib.metadata
+import importlib.resources
 import sys
 
 # Information about the release and version
