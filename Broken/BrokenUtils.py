@@ -685,8 +685,12 @@ class BrokenPath:
         # Make Virtual's parent directory
         BrokenPath.mkdir(virtual.parent, echo=False)
 
-        # Remove old symlink (target changed)
-        if virtual.is_symlink():
+        # Remove old symlink if it exists
+        if not virtual.exists():
+            pass
+
+        # File exists and is a symlink - safe to remove
+        elif virtual.is_symlink():
             virtual.unlink()
 
         # Virtual is a directory and not empty

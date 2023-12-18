@@ -90,16 +90,14 @@ command(POETRY + ["install"])
 # Find the virtual environment path
 venv_path = Path(command(POETRY + ["env", "info", "-p"], capture_output=True).stdout.decode().strip())
 
-# Find the path_dependency.py file
-path_dependency = next(venv_path.glob("**/*/path_dependency.py"))
-
-# Patch the file, mom get the camera
-path_dependency.write_text(
-    path_dependency.read_text().replace(
-        "self._path = path\n",
-        "self._path = (path := path.expanduser())\n"
+# Find and patch the file, fail safe
+if (path_dependency := next(venv_path.glob("**/*/path_dependency.py"))):
+    path_dependency.write_text(
+        path_dependency.read_text().replace(
+            "self._path = path\n",
+            "self._path = (path := path.expanduser())\n"
+        )
     )
-)
 
 # -------------------------------------------------------------------------------------------------|
 
