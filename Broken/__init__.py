@@ -21,15 +21,4 @@ BROKEN = BrokenProject(
 )
 
 from .BrokenUtils import *
-
-# Symlink path to projects data to the root of the monorepo for convenience
-try:
-    BrokenPath.symlink(
-        virtual=BROKEN.DIRECTORIES.REPOSITORY/"Workspace",
-        real=BROKEN.DIRECTORIES.WORKSPACE.parent,
-        echo=False
-    )
-except Exception:
-    pass
-
 from .Modules import *

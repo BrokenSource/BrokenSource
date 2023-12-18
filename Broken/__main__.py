@@ -2,6 +2,16 @@ from __future__ import annotations
 
 from Broken import *
 
+try:
+    # Convenience: Symlink Workspace to projects data directory
+    BrokenPath.symlink(
+        virtual=BROKEN.DIRECTORIES.REPOSITORY/"Workspace",
+        real=BROKEN.DIRECTORIES.WORKSPACE.parent,
+        echo=False
+    )
+except Exception:
+    pass
+
 # -------------------------------------------------------------------------------------------------|
 
 def main():
