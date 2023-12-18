@@ -867,7 +867,7 @@ class BrokenFFmpeg:
     def popen(self) -> subprocess.stdin:
         return shell(self.command, Popen=True)
 
-    def pipe(self, open: bool=True, buffer: int=30):
+    def pipe(self, open: bool=True, buffer: int=100):
         """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
         if not open: return
 
