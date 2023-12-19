@@ -132,7 +132,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
   - Install it from the [**Microsoft Store**](https://apps.microsoft.com/detail/9NBLGGH4NNS1)
 
-  - Open a PowerShell termial and run:
+  - Open a PowerShell terminal and run:
 
   ```powershell
   Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe

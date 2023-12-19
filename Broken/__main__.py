@@ -15,6 +15,13 @@ except Exception:
 # -------------------------------------------------------------------------------------------------|
 
 def main():
+    # Expand sys.argv's ./ or .\ to full path. This is required as the working directory of projects
+    # changes, so we must expand them on the main script relative to where Broken is used as CLI
+    for i, arg in enumerate(sys.argv):
+        if any([arg.startswith(x) for x in ("./", "../", ".\\", ".\\\\")]):
+            sys.argv[i] = str(BrokenPath.true_path(arg))
+
+    # Start the main CLI
     broken = BrokenCLI()
     broken.cli()
 
