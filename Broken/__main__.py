@@ -228,7 +228,14 @@ class BrokenProjectCLI:
 
             if self.is_python:
                 venv = self.__install_venv__(reinstall=reinstall)
-                status = shell("poetry", "run", self.name.lower(), ctx.args)
+                try:
+                    status = shell("poetry", "run", self.name.lower(), ctx.args)
+                except KeyboardInterrupt:
+                    log.success(f"Project [{self.name}] finished with KeyboardInterrupt")
+                    break
+                except Exception as e:
+                    raise e
+
             if self.is_rust:
                 status = shell(
                     "cargo", "run",

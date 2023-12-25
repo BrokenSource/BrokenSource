@@ -753,27 +753,50 @@ class BrokenVsyncClient:
     - callback:   Function callable to call every syncronization
     - args:       Arguments to pass to callback
     - kwargs:     Keyword arguments to pass to callback
+    - output:     Output of callback (returned value)
     - context:    Context to use when calling callback (with statement)
 
     # Timing:
     - frequency:  Frequency of callback calls
+    - frameskip:  Constant deltatime mode (False) or real deltatime mode (True)
+    - decoupled:  "Rendering" mode, do not sleep on real time, implies frameskip False
     - enabled:    Whether to enable this client or not
     - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
     - dt:         Whether to pass dt (time since last call) to callback
     - time:       Whether to pass time (time since first call) to callback
     """
-    callback:   callable = None
-    name:       str      = None
-    args:       List[Any] = []
-    kwargs:     Dict[str, Any] = {}
-    frequency:  float    = 60
-    context:    Any      = None
-    enabled:    bool     = True
-    next_call:  float    = 0
-    dt:         bool     = False
-    time:       float    = 0
-    started:    float    = None
-    last_call:  float = None
+    callback:   callable       = None
+    name:       str            = None
+    args:       List[Any]      = attrs.Factory(list)
+    kwargs:     Dict[str, Any] = attrs.Factory(dict)
+    output:     Any            = None
+    frequency:  float          = 60
+    frameskip:  bool           = True
+    decoupled:  bool           = False
+    context:    Any            = None
+    enabled:    bool           = True
+    next_call:  float          = 0
+    dt:         bool           = False
+    time:       float          = 0
+    started:    float          = None
+    last_call:  float          = None
+
+    @property
+    def fps(self) -> Union[float, "hertz"]:
+        return self.frequency
+
+    @fps.setter
+    def fps(self, value: Union[float, "hertz"]):
+        self.frequency = value
+
+    @property
+    def period(self) -> Union[float, "seconds"]:
+        return 1/self.frequency
+
+    @period.setter
+    def period(self, value: Union[float, "seconds"]):
+        self.frequency = 1/value
+
 
 @attrs.define
 class BrokenVsync:
@@ -820,32 +843,42 @@ class BrokenVsync:
         wait = client.next_call - time.time()
 
         # Wait for next call time if blocking
-        if block:
+        if client.decoupled:
+            pass
+
+        elif block:
             time.sleep(max(0, wait))
 
         # Non blocking mode, if we are not behind do nothing
-        elif not (wait < 0):
+        elif wait > 0:
             return None
 
         # The assumed instant the code below will run instantly
-        now = time.time()
+        now = client.next_call if client.decoupled else time.time()
 
         # Delta time between last call and next call
         if client.dt:
             client.kwargs["dt"] = now - (client.last_call or now)
-            client.last_call = now
 
         # Time since client started
         if client.time:
             client.kwargs["time"] = now - client.started
 
-        # Add periods until next call is in the future
-        while client.next_call <= now:
-            client.next_call += 1/client.frequency
+        # Update last call time
+        if client.frameskip or client.decoupled:
+            client.last_call = now
+        else:
+            client.last_call = client.next_call
 
         # Enter or not the given context, call callback with args and kwargs
         with (client.context or contextlib.nullcontext()):
-            return client.callback(*client.args, **client.kwargs)
+            client.output = client.callback(*client.args, **client.kwargs)
+
+        # Add periods until next call is in the future
+        while client.next_call <= now:
+            client.next_call += client.period
+
+        return client.output
 
     # # Thread-wise wording
 
