@@ -350,6 +350,7 @@ class BrokenCLI:
         # Section: Installation
         emoji = "📦"
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.install)
+        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.submodules)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.requirements)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.link)
 
@@ -382,6 +383,69 @@ class BrokenCLI:
             )(project.cli)
 
     # # Installation commands
+
+    def submodules(self,
+        root:     Annotated[Path, typer.Option("--root",     "-r", help="Root path to search for submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
+
+        # Manual
+        auth:     Annotated[bool, typer.Option("--auth",     "-a", help="Ask for authentication to clone private submodules")]=False,
+
+        # Direct
+        username: Annotated[str,  typer.Option("--username", "-u", help="Username to use for git clone")]=None,
+        password: Annotated[str,  typer.Option("--password", "-p", help="Password to use for git clone")]=None,
+    ):
+        """
+        Safely init and clone submodules, skip private submodules
+        """
+        import configparser
+
+        # Ask credentials
+        if auth:
+            username = typer.prompt("Git Username")
+            password = typer.prompt("Git Password", hide_input=True)
+
+        # Read .gitmodules if it exists
+        if (submodules := root/".gitmodules").exists():
+            config = configparser.ConfigParser()
+            config.read(submodules)
+
+            # Get all submodules
+            for section in config.sections():
+                submodule = config[section]
+
+                # Build the absolute path
+                path = root/submodule["path"]
+                url  = submodule["url"]
+
+                # Clone with authentication
+                if username and password:
+                    url = url.replace("https://", f"https://{username}:{password}@")
+
+                # Init and clone the submodules
+                if list(path.iterdir()):
+                    log.success(f"Submodule ({path}) already contains files, skipping")
+                    self.submodules(path, username=username, password=password)
+                    continue
+
+                # Clone the submodule
+                with BrokenPath.pushd(path):
+
+                    # Set the url plus authentication
+                    shell("git", "remote", "set-url", "origin", url, echo=False)
+
+                    if shell("git", "fetch").returncode != 0:
+                        log.warning(f"Failed to fetch submodule ({path})")
+                        log.warning("• You might not have permissions to this repository")
+                        log.warning("• You might have provided wrong credentials")
+                        continue
+
+                    # Routine clone and checkout master
+                    shell("git", "submodule", "init")
+                    shell("git", "submodule", "update")
+                    shell("git", "pull")
+                    shell("git", "checkout", "Master")
+
+                self.submodules(path, username=username, password=password)
 
     def link(self, path: Path):
         """Brokenfy a Project or Folder of Projects - Be managed by Broken"""

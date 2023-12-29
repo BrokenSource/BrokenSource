@@ -124,8 +124,8 @@ try:
 except Exception:
     pass
 
-# Install scripts, desktop files
-command(POETRY + ["run", "broken", "install"])
+# Install scripts, desktop files and submodules (+ignore private infra)
+command(POETRY + ["run", "broken", "submodules", "install"])
 
 # Enter virtual environment
 command(POETRY + ["shell"])

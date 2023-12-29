@@ -59,7 +59,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 - Open a **Terminal** on some directory and run:
 
   ```bash
-  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+  git clone https://github.com/BrokenSource/BrokenSource
   ```
   ```bash
   python ./BrokenSource/brakeit
@@ -314,6 +314,8 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 - 📈 We hope that using more _"restrictive"_ licenses will keep the projects free from abuse. A feedback loop of **sharing** and **improving**.
 
+- 🍻 You may contribute or use any project as long as you adhere to the **License** and **Terms**.
+
 - There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it.
 
 <br>
@@ -355,5 +357,16 @@ Want to **use** our **Projects** for **Your Company** or **YouTube Channel**?
 - 🔏 We reserve the right to have a closed-source version of the _service_ that uses, externally, the code-bases of any Project. Something similar to what [**Stability AI**](https://stability.ai) does with [**Clipdrop**](https://clipdrop.co)
 
 <sub><b>Note:</b> Until later notice, you must contact us and work together on any SAAS derivative work ❤️‍🩹</sub>
+
+<br>
+<br>
+<br>
+
+# 👁 Privacy Policy
+- ✅ Broken Source Software, via locally executed software, **does not collect any data** from the user for Analytics, **period**<sup><i>*1</i></sup>.
+
+- 🌐 Our software **may download third-party assets** from the internet, such as **FFmpeg** binaries, **PyTorch** models, **Fonts**, **Images**. You inherently agree with the Terms of the third-parties download Servers and Software, as they are required for the Projects to work.
+
+<sub><i>*1:</i> As a consequence, we don't have any analytics or metrics to improve the software (prioritize features, fix bugs, etc), so we rely on user feedback and bug reports</sub>
 
 </div>
