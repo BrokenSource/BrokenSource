@@ -350,7 +350,6 @@ class BrokenCLI:
         # Section: Installation
         emoji = "📦"
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.install)
-        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.submodules)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.requirements)
         self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.link)
 
@@ -364,6 +363,7 @@ class BrokenCLI:
         emoji = "⚠️ "
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.pillow)
         self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.wheel)
+        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.submodules)
         # self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
 
         # Section: Projects

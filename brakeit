@@ -125,7 +125,10 @@ except Exception:
     pass
 
 # Install scripts, desktop files and submodules (+ignore private infra)
-command(POETRY + ["run", "broken", "submodules", "install"])
+if os.environ.get("EXPERIMENTAL_SUBMODULES", None) == "1":
+    command(POETRY + ["run", "broken", "submodules", "install"])
+else:
+    command(POETRY + ["run", "broken", "install"])
 
 # Enter virtual environment
 command(POETRY + ["shell"])

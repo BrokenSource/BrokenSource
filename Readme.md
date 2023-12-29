@@ -59,7 +59,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 - Open a **Terminal** on some directory and run:
 
   ```bash
-  git clone https://github.com/BrokenSource/BrokenSource
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
   ```
   ```bash
   python ./BrokenSource/brakeit
