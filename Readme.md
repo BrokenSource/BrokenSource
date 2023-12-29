@@ -39,7 +39,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 # 🔥 Running From the Source Code
 
-> Please read all instructions before executing them for tips and notes
+> **Please read all instructions** before executing them for tips, notes and troubleshooting
 
 <br>
 
@@ -104,13 +104,35 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manual install Python and Git following the links above</sub>
 
+
 <br>
 
-### 👇 **Common** Windows Troubleshooting
+## ⚠️ **Common** Troubleshooting
+
+**Generic**:
 
 <details>
   <summary>
-    ⚠️ Shell Error: <i>execution of scripts is disabled on this system</i>
+    No such command <code>(project)</code> when running <code>broken (project)</code>
+  </summary>
+  <br>
+
+  - You probably forgot to add `--recurse-submodules` when cloning the repository, or it failed for any reason
+
+  - Run the following command on the Monorepo directory:
+    ```bash
+    git submodule update --init --recursive
+    ```
+  <br>
+</details>
+
+<br>
+
+**Windows**:
+
+<details>
+  <summary>
+    Shell Error: <i>execution of scripts is disabled on this system</i>
   </summary>
   <br>
 
@@ -124,7 +146,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <details>
   <summary>
-    ⚠️ <a href="https://github.com/microsoft/winget-cli"><b>Winget</b></a> is not installed or available on your System
+    <a href="https://github.com/microsoft/winget-cli"><b>Winget</b></a> is not installed or available on your System
   </summary>
   <br>
 
