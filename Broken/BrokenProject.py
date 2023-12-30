@@ -291,20 +291,41 @@ class BrokenProject:
         self.DIRECTORIES = _BrokenProjectDirectories(BROKEN_PROJECT=self)
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
 
-        # Create default config
-        self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
-        self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP /f"{self.APP_NAME}.pickle")
-
-        # Create logger based on configuration
-        try:
-            # Fixme: Two logging instances on the same file on Windows
-            BrokenLogging().stdout(__loglevel__ := self.CONFIG.logging.default("level", "trace").upper())
-            BrokeLogging().file(BROKEN.DIRECTORIES.LOGS/"Broken.log", __loglevel__)
-        except Exception:
-            pass
-
         # Fixme: Anywhere to unify envs?
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             log.info(f"Loading environment variables ({env})")
             dotenv.load_dotenv(env)
+
+        # Create default config
+        self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
+        self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP/f"{self.APP_NAME}.pickle")
+
+        # Create logger based on configuration
+        self.__START_LOGGING__()
+
+        # Convenience: Symlink Workspace to projects data directory
+        if BROKEN_RELEASE:
+            try:
+                BrokenPath.symlink(
+                    virtual=self.DIRECTORIES.REPOSITORY/"Workspace"/self.APP_AUTHOR,
+                    real=self.DIRECTORIES.WORKSPACE.parent,
+                    echo=False
+                )
+            except Exception:
+                pass
+
+    @property
+    def LOGLEVEL(self) -> str:
+        return self.CONFIG.logging.default("level", "trace").upper()
+
+    @LOGLEVEL.setter
+    def LOGLEVEL(self, value: str):
+        self.CONFIG.logging.level = value
+        self.__START_LOGGING__()
+
+    # Fixme: Two logging instances on the same file on Windows?
+    def __START_LOGGING__(self):
+        BrokenLogging().reset()
+        BrokenLogging().stdout(self.LOGLEVEL)
+        BrokenLogging().file(self.DIRECTORIES.LOGS/"Broken.log", self.LOGLEVEL)
