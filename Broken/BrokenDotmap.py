@@ -81,7 +81,7 @@ class BrokenDotmap:
     def from_dict(self, data: dict={}) -> Self:
         """Append a dictionary to this instance"""
         for key, value in (data or {}).items():
-            self.__set__(key, self.__recurse__(value))
+            self.set(key, self.__recurse__(value))
         return self
 
     def to_dict(self) -> dict:
@@ -143,21 +143,21 @@ class BrokenDotmap:
 
     # # Patch Get methods
 
-    def __get__(self, key: str) -> Union[Self, Any]:
+    def get(self, key: str) -> Union[Self, Any]:
         """If a key doesn't exist, recurse, else return its the value"""
         return self.__dict__.setdefault(key, self.__recurse__())
 
     def __getitem__(self, key: str) -> Union[Self, Any]:
         """Handle dictionary item access using key indexing"""
-        return self.__get__(key)
+        return self.get(key)
 
     def __getattr__(self, key: str) -> Union[Self, Any]:
         """Handle attribute access using dot notation"""
-        return self.__get__(key)
+        return self.get(key)
 
     # # Patch Set methods
 
-    def __set__(self, key: str, value: Any={}) -> Any:
+    def set(self, key: str, value: Any={}) -> Any:
         """Set a key to a value, recurses on the value"""
         self.__dict__[key] = self.__recurse__(value)
         self.sync()
@@ -165,7 +165,7 @@ class BrokenDotmap:
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Handle dictionary item assignment using key indexing"""
-        self.__set__(key, value)
+        self.set(key, value)
 
     def __setattr__(self, key: str, value: Any) -> None:
         """Handle attribute assignment using dot notation"""
@@ -175,7 +175,7 @@ class BrokenDotmap:
             self.__dict__[key] = value
             return
 
-        self.__set__(key, value)
+        self.set(key, value)
 
     # # Utilities
 
@@ -187,7 +187,7 @@ class BrokenDotmap:
             return self.__dict__[key]
 
         # Set the value and sync (call it if callable - a use as a cache)
-        return self.__set__(key, value() if callable(value) else value)
+        return self.set(key, value() if callable(value) else value)
 
     def setdefault(self, key: str, value: Any) -> Any:
         """Set a default value for a key else don't change, returns it"""
