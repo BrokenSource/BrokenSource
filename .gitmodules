@@ -1,9 +1,6 @@
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url  = https://github.com/BrokenSource/ShaderFlow
-[submodule "Projects/PocketSolar"]
-	path = Projects/Others/PocketSolar
-	url  = https://github.com/BrokenSource/PocketSolar
 [submodule ".github/.github"]
 	path = .github/Organization
 	url  = https://github.com/BrokenSource/.github
@@ -13,3 +10,7 @@
 [submodule "Projects/QuadSnap"]
 	path = Projects/QuadSnap
 	url  = https://github.com/BrokenSource/QuadSnap
+[submodule "Projects/AudioSight"]
+	path    = Projects/AudioSight
+	url     = https://github.com/BrokenSource/AudioSight
+	private = true

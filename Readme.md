@@ -61,7 +61,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 - Open a **Terminal** on some directory and run:
 
   ```bash
-  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+  git clone https://github.com/BrokenSource/BrokenSource
   ```
   ```bash
   python ./BrokenSource/brakeit
@@ -119,12 +119,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   </summary>
   <br>
 
-  - You probably forgot to add `--recurse-submodules` when cloning the repository, or it failed for any reason
-
-  - Run the following command on the Monorepo directory:
-    ```bash
-    git submodule update --init --recursive
-    ```
+  - Run `broken submodules` to clone all the public projects
   <br>
 </details>
 
