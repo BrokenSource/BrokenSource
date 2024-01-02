@@ -77,10 +77,12 @@ for attempt in itertools.count(0):
         break
 
     # Install poetry and try again
-    command(PIP + ["install", "--user", "poetry"])
+    command(PIP + ["install", "--user", "poetry", "--no-warn-script-location"])
 
 # Create, install dependencies on virtual environment
-command(POETRY + ["install"])
+if command(POETRY + ["install"]).returncode != 0:
+    print("Failed to install Python Virtual Environment and Dependencies")
+    input("Press enter to continue...")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -125,8 +127,10 @@ except Exception:
     pass
 
 # Install scripts, desktop files and submodules (+ignore private infra)
-if os.environ.get("EXPERIMENTAL_SUBMODULES", None) == "1":
-    command(POETRY + ["run", "broken", "submodules"])
+if command(POETRY + ["run", "broken", "submodules"]).returncode != 0:
+    print("Failed to Clone Public Submodules")
+    input("Press enter to continue...")
+
 command(POETRY + ["run", "broken", "install"])
 
 # Enter virtual environment

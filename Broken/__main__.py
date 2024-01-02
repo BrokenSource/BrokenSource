@@ -352,8 +352,12 @@ class BrokenCLI:
         # Section: Projects
         self.add_projects_to_cli()
 
+        # Fixme: Any way to make click not SystemExit?
         # Execute the CLI
-        self.typer_app()
+        try:
+            self.typer_app()
+        except SystemExit as e:
+            pass
 
     def add_projects_to_cli(self):
         for project in self.projects:
@@ -382,18 +386,25 @@ class BrokenCLI:
         root = BrokenPath.true_path(root)
 
         # Read .gitmodules if it exists
-        if not (submodules := root/".gitmodules").exists():
+        if not (gitmodules := root/".gitmodules").exists():
             return
+
+        # Init submodules
+        with BrokenPath.pushd(root):
+            shell("git", "submodule", "init")
 
         # Ask credentials
         if auth:
             username = typer.prompt("Git Username")
             password = typer.prompt("Git Password", hide_input=True)
 
+        # Updated if authenticated
+        auth = auth or bool(username and password)
+
         # Read .gitmodules
         import configparser
         config = configparser.ConfigParser()
-        config.read(submodules)
+        config.read(gitmodules)
 
         # Get all submodules
         for section in config.sections():
@@ -404,26 +415,26 @@ class BrokenCLI:
             url  = submodule["url"]
 
             # Skip private submodule
-            if submodule.get("private", False) and not (username and password):
+            if submodule.get("private", False) and not auth:
                 log.info(f"Submodule private ({path})")
                 continue
 
             # Clone with authentication
-            if username and password:
-                url = url.replace("https://", f"https://{username}:{password}@")
+            url = url.replace("https://", f"https://{username}:{password}@") if auth else url
 
             # Init and clone the submodules
             if list(path.iterdir()):
                 log.info(f"Submodule exists  ({path})")
-                self.submodules(path, username=username, password=password)
+                self.submodules(root=path, username=username, password=password)
                 continue
 
             # Clone the submodule
             with BrokenPath.pushd(path):
 
                 # Set the url to clone this repository with authentication
-                shell("git", "remote", "set-url", "origin", url, echo=False)
+                shell("git", "remote", "set-url", "origin", url)
 
+                # Fetch the submodule's content with the credentials provided
                 if shell("git", "fetch").returncode != 0:
                     log.warning(f"Failed to Fetch Submodule ({path})")
                     log.warning("• You can safely ignore this if you don't need this submodule")
@@ -431,11 +442,11 @@ class BrokenCLI:
                     log.warning("• You might have provided wrong credentials")
                     continue
 
-                # Routine clone and checkout master
-                shell("git", "submodule", "init")
-                shell("git", "submodule", "update")
-                shell("git", "checkout",  "Master")
-                shell("git", "pull")
+                # Init and update submodule we know we have access to
+                shell("git", "submodule", "update", "--init", path)
+
+                # Checkout main branch, as detached head is clumsy
+                shell("git", "checkout", "Master")
 
                 log.success(f"Submodule cloned  ({path})")
 
@@ -451,11 +462,10 @@ class BrokenCLI:
         log.note(f"Next time, to enter Broken Development environment, run (python ./brakeit) again!")
 
     def __shortcut__(self):
-
-        # Symlink Broken Shared Directory to current root
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.REPOSITORY)
-
         if BrokenPlatform.OnUnix:
+
+            # Symlink Broken Shared Directory to current root
+            BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.REPOSITORY)
 
             # Symlink `brakeit` on local bin and make it executable
             BrokenPath.make_executable(BrokenPath.symlink(
@@ -479,7 +489,7 @@ class BrokenCLI:
                 log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
-            log.fixme("Windows installation is not supported yet")
+            log.fixme("BrokenShared and Shortcut on Windows isn't implemented")
         else:
             log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return
@@ -491,7 +501,8 @@ class BrokenCLI:
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
 
         # Get Broken virtualenv path
-        bin_path = BrokenProjectCLI(BROKEN.DIRECTORIES.PACKAGE).__install_venv__()/"bin"
+        folder = "Scripts" if BrokenPlatform.OnWindows else "bin"
+        bin_path = BrokenProjectCLI(BROKEN.DIRECTORIES.PACKAGE).__install_venv__()/folder
         log.info(f"Installing scripts on ({bin_path})")
 
         # Watermark to tag files are Broken made
@@ -516,13 +527,16 @@ class BrokenCLI:
                     f"# {WATERMARK}",
                     f"broken {project.lname} $@",
                 ]))
-                BrokenPath.make_executable(script, echo=False)
+
             elif BrokenPlatform.OnWindows:
+                script = script.with_suffix(".bat")
                 script.write_text('\n'.join([
                     f"@echo off",
                     f":: {WATERMARK}",
                     f"broken {project.lname} %*",
                 ]))
+
+            BrokenPath.make_executable(script, echo=False)
 
     def requirements(self):
         log.todo("Reimplement better requirements command")

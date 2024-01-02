@@ -817,8 +817,8 @@ class BrokenVsync:
 
     def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
         """Adds a client to the manager with immediate next call"""
-        client.next_call += time.time()
-        client.started = time.time()
+        client.next_call += time.perf_counter()
+        client.started = time.perf_counter()
         self.clients.append(client)
         return client
 
@@ -851,7 +851,7 @@ class BrokenVsync:
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = client.next_call - time.time()
+        wait = client.next_call - time.perf_counter()
 
         # Wait for next call time if blocking
         if client.decoupled:
@@ -865,7 +865,7 @@ class BrokenVsync:
             return None
 
         # The assumed instant the code below will run instantly
-        now = client.next_call if client.decoupled else time.time()
+        now = client.next_call if client.decoupled else time.perf_counter()
 
         # Delta time between last call and next call
         if client.dt:
@@ -940,7 +940,7 @@ class BrokenStopwatch:
         ```
     """
     def __init__(self):
-        self.start = time.time()
+        self.start = time.perf_counter()
 
     def __enter__(self) -> Self:
         return self
@@ -949,7 +949,7 @@ class BrokenStopwatch:
         self.stop()
 
     def stop(self) -> float:
-        self.end = time.time()
+        self.end = time.perf_counter()
         return self.took
 
     def __call__(self) -> float:
@@ -957,7 +957,7 @@ class BrokenStopwatch:
 
     @property
     def time(self) -> float:
-        return getattr(self, "end", time.time()) - self.start
+        return getattr(self, "end", time.perf_counter()) - self.start
 
     @property
     def took(self) -> float:

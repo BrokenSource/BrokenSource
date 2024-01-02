@@ -9,7 +9,7 @@
 
   <h2>Broken Source Software</h2>
 
-  <img src="https://img.shields.io/github/stars/BrokenSource/BrokenSource" alt="Stars Badge"/>
+  <img src="https://img.shields.io/github/stars/BrokenSource/BrokenSource?style=flat" alt="Stars Badge"/>
   <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json%3Fshow%3Dunique&label=Visitors&color=blue" alt="Visitors Badge"/>
   <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json&label=Page%20Views&color=blue" alt="Page Views Badge"/>
   <img src="https://img.shields.io/github/license/BrokenSource/BrokenSource?color=blue" alt="License Badge"/>
@@ -98,6 +98,8 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   winget install -e --id Python.Python.3.11
   ```
 
+- **Restart** the Terminal - First step then back here
+
 **Now**, run the same **Linux** and **MacOS** commands above
 
 <br>
@@ -105,6 +107,8 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 <sub><b>Note:</b> You might need to replace `/` with `\` on the second command and `python` to `python3` or add `.exe` to it</sub>
 
 <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manual install Python and Git following the links above</sub>
+
+<sub><b>Note:</b> Restarting the shell is only needed on the first time you install Git and Python, as the shell's PATH isn't reloaded dynamically</sub>
 
 
 <br>

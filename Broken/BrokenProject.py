@@ -324,8 +324,18 @@ class BrokenProject:
         self.CONFIG.logging.level = value
         self.__START_LOGGING__()
 
-    # Fixme: Two logging instances on the same file on Windows?
     def __START_LOGGING__(self):
         BrokenLogging().reset()
         BrokenLogging().stdout(self.LOGLEVEL)
-        BrokenLogging().file(self.DIRECTORIES.LOGS/"Broken.log", self.LOGLEVEL)
+
+        # Fixme: Two logging instances on the same file on Windows?
+        try:
+            BrokenLogging().file(self.DIRECTORIES.LOGS/"Broken.log", self.LOGLEVEL)
+        except PermissionError as e:
+            if os.name == "nt":
+                log.fixme("Two logging instances for the same file on Windows doesn't work")
+            else:
+                raise e
+        except Exception as e:
+            raise e
+
