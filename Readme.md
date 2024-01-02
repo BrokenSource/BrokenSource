@@ -122,6 +122,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
     No such command <code>(project)</code> when running <code>broken (project)</code>
   </summary>
   <br>
+  <hr>
 
   - Run `broken submodules` to clone all the public projects
   <hr>
@@ -137,6 +138,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
     Shell Error: <i>execution of scripts is disabled on this system</i>
   </summary>
   <br>
+  <hr>
 
   - This happens when activating a Python Virtual Environment - a `.ps1` script - from PowerShell
 
@@ -154,6 +156,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
     <a href="https://github.com/microsoft/winget-cli"><b>Winget</b></a> is not installed or available on your System
   </summary>
   <br>
+  <hr>
 
   As [**Microsoft**](https://learn.microsoft.com/en-us/windows/package-manager/winget/#install-winget) says in their documentation, you have options:
 
