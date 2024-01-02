@@ -124,6 +124,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   <br>
 
   - Run `broken submodules` to clone all the public projects
+  <hr>
   <br>
 </details>
 
@@ -137,11 +138,14 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   </summary>
   <br>
 
-  Following <a href="https://stackoverflow.com/a/4038991"><b>This Answer</b></a>, Open a PowerShell terminal as Administrator and run:
+  - This happens when activating a Python Virtual Environment - a `.ps1` script - from PowerShell
+
+  - Following <a href="https://stackoverflow.com/a/4038991"><b>This Answer</b></a>, Open a PowerShell terminal as <b>Administrator</b> and run:
 
   ```powershell
   Set-ExecutionPolicy RemoteSigned
   ```
+  <hr>
   <br>
 </details>
 
@@ -160,6 +164,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   ```powershell
   Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
   ```
+  <hr>
   <br>
 </details>
 
