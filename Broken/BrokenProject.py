@@ -16,7 +16,7 @@ class _BrokenProjectDirectories:
     def __attrs_post_init__(self):
         self.APP_DIRS = AppDirs(
             self.BROKEN_PROJECT.APP_AUTHOR,
-            self.BROKEN_PROJECT.APP_AUTHOR
+            self.BROKEN_PROJECT.APP_NAME
         )
 
     @property
