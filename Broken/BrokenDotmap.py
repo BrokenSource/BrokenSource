@@ -87,7 +87,7 @@ class BrokenDotmap:
     def to_dict(self) -> dict:
         """Get a dictionary from this instance downwards"""
         return {
-            k: v.to_dict() if isinstance(v, self.__class__) else v
+            k: v.to_dict() if isinstance(v, type(self)) else v
             for k, v in sorted(self.items(), key=lambda x: x[0])
             if not BrokenDotmap.is_dunder(k)
         }
@@ -99,19 +99,19 @@ class BrokenDotmap:
 
         # Load data from file
         try:
-            if format == ".toml":
-                data = toml.loads(path.read_text())
-            elif format == ".json":
-                data = json.loads(path.read_text())
-            elif format == ".yaml":
-                data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
-            # Todo: Implement a more efficient method for bytes (db?)
-            elif format == ".pickle":
-                data = pickle.loads(path.read_bytes())
-            else:
-                log.error(f"• BrokenDotmap: Unknown file format")
-                log.error(f"└─ File: [{path}]")
-                return
+            match format:
+                case ".toml":
+                    data = toml.loads(path.read_text())
+                case ".json":
+                    data = json.loads(path.read_text())
+                case ".yaml":
+                    data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
+                case ".pickle":
+                    data = pickle.loads(path.read_bytes())
+                case _:
+                    log.error(f"• BrokenDotmap: Unknown file format [{format}]")
+                    log.error(f"└─ File: [{path}]")
+                    return
 
         except Exception as e:
             log.error(f"• BrokenDotmap: Failed to load file [{path}]")
@@ -130,7 +130,7 @@ class BrokenDotmap:
     def __recurse__(self, value={}) -> Union[Self, Any]:
         """Transforms a dict-like into Self or return the value itself"""
         if isinstance(value, dict):
-            return self.__class__(super=self.__super__).from_dict(value)
+            return type(self)(super=self.__super__).from_dict(value)
         return value
 
     # # Redirect items, keys
@@ -221,14 +221,15 @@ class BrokenDotmap:
         dict   = self.to_dict()
 
         # Load file based on format
-        if self.__ext__ == ".toml":
-            self.__path__.write_text(toml.dumps(dict))
-        elif self.__ext__ == ".json":
-            self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
-        elif self.__ext__ == ".yaml":
-            self.__path__.write_text(yaml.dump(dict))
-        elif self.__ext__ == ".pickle":
-            self.__path__.write_bytes(pickle.dumps(dict))
-        else:
-            log.error(f"BrokenDotmap: Unknown file format [{self.__ext__}], cannot save to file")
-            return
+        match self.__ext__:
+            case ".toml":
+                self.__path__.write_text(toml.dumps(dict))
+            case ".json":
+                self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
+            case ".yaml":
+                self.__path__.write_text(yaml.dump(dict))
+            case ".pickle":
+                self.__path__.write_bytes(pickle.dumps(dict))
+            case _:
+                log.error(f"BrokenDotmap: Unknown file format [{self.__ext__}], cannot save to file")
+                return

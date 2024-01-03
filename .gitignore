@@ -1,5 +1,4 @@
 # Blobs and states
-Workspace
 Build
 Release
 
@@ -15,7 +14,6 @@ ___*
 .stversions
 
 # Symlinks
-Projects/**
-!Projects/Hook
-!Projects/Hook/Readme.md
+Workspace
+Projects/Hook
 .venvs

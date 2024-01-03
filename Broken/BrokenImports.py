@@ -147,6 +147,10 @@ while True:
         import toml
         import typer
         from appdirs import AppDirs
+        from attrs import Factory
+        from attrs import define
+        from attrs import field
+        from attrs import validators
         from dotmap import DotMap
         from tqdm import tqdm
 
@@ -167,7 +171,7 @@ URL = str
 # def divide(a, b) -> Option[float, ZeroDivisionError]:
 Option = Union
 
-# self.__class__ -> "Self" class
+# type(self) -> "Self" class
 Self = Any
 
 # Values might not be updated

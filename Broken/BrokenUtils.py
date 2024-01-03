@@ -181,7 +181,7 @@ class BrokenSingleton:
 
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define
+@define
 class BrokenRelay:
     """
     A class to bind some callback to many callables.
@@ -213,7 +213,7 @@ class BrokenRelay:
     self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
     ```
     """
-    callbacks: list[callable] = attrs.field(factory=list)
+    callbacks: list[callable] = field(factory=list)
 
     def __bind__(self, *callbacks: callable) -> Self:
         """Adds callbacks to the list of callables, runs on self.__call__"""
@@ -271,7 +271,7 @@ class BrokenUtils:
 
     def denum(stuff: Iterable[Any]) -> list[Any]:
         """De-enumerates enum iterables to their value"""
-        return [item.value if issubclass(item.__class__, Enum) else item for item in stuff]
+        return [item.value if issubclass(type(item), Enum) else item for item in stuff]
 
     def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
         """Fuzzy search a string in a list of strings, returns a list of matches"""
@@ -573,10 +573,10 @@ class BrokenPath:
     def pushd(path: PathLike, echo: bool=True):
         """Change directory, then change back when done"""
         cwd = os.getcwd()
-        log.info(f"Pushd [{path}]", echo=echo)
+        log.info(f"Pushd ({path})", echo=echo)
         os.chdir(path)
         yield path
-        log.info(f"Popd  [{path}]", echo=echo)
+        log.info(f"Popd  ({path})", echo=echo)
         os.chdir(cwd)
 
     @staticmethod
@@ -755,7 +755,7 @@ class BrokenBinaries:
 
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define
+@define
 class BrokenVsyncClient:
     """
     Client configuration for BrokenVsyncManager
@@ -778,8 +778,8 @@ class BrokenVsyncClient:
     """
     callback:   callable       = None
     name:       str            = None
-    args:       List[Any]      = attrs.Factory(list)
-    kwargs:     Dict[str, Any] = attrs.Factory(dict)
+    args:       List[Any]      = Factory(list)
+    kwargs:     Dict[str, Any] = Factory(dict)
     output:     Any            = None
     frequency:  float          = 60
     frameskip:  bool           = True
@@ -809,7 +809,7 @@ class BrokenVsyncClient:
         self.frequency = 1/value
 
 
-@attrs.define
+@define
 class BrokenVsync:
     clients: List[BrokenVsyncClient] = []
     __thread__: Option[Thread, None] = None
@@ -988,3 +988,57 @@ class BrokenTyper:
             ignore_unknown_options=True,
         ))
 
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenProfilerEnum(BrokenEnum):
+    """List of profilers"""
+    cprofile      = "cprofile"
+    # imports       = "imports"
+    # pyinstrument  = "pyinstrument"
+
+@define
+class BrokenProfiler:
+    name: str = "NONE"
+    profiler: BrokenProfilerEnum = BrokenProfilerEnum.cprofile
+
+    def __attrs_post_init__(self):
+        profiler = os.environ.get(f"{self.name}_PROFILER", self.profiler)
+        self.profiler = BrokenProfilerEnum.smart(profiler)
+
+    # Base properties
+
+    @property
+    def enabled(self) -> bool:
+        return os.environ.get(f"{self.name}_PROFILE", "0") == "1"
+
+    @property
+    def output(self) -> Path:
+        return BROKEN.DIRECTORIES.PROFILER/f"{BrokenLogging.project}"
+
+    # The actual profiler object
+    __profiler__: Any = None
+
+    def __enter__(self) -> Self:
+        if not self.enabled:
+            return self
+
+        match self.profiler:
+            case BrokenProfilerEnum.cprofile:
+                log.action("Profiling with cProfile")
+                import cProfile
+                self.__profiler__ = cProfile.Profile()
+                self.__profiler__.enable()
+                return self
+
+    def __exit__(self, *args) -> None:
+        if not self.enabled:
+            return
+
+        match self.profiler:
+            case BrokenProfilerEnum.cprofile:
+                log.action("Finishing cProfile")
+                output = self.output.with_suffix(".prof")
+                self.__profiler__.disable()
+                self.__profiler__.dump_stats(output)
+                shell("snakeviz", output)
+                return

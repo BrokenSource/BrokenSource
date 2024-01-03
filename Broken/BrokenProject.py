@@ -3,7 +3,7 @@ from __future__ import annotations
 from . import *
 
 
-@attrs.define(slots=False)
+@define(slots=False)
 class _BrokenProjectDirectories:
     """# Info: You shouldn't really use this class directly"""
 
@@ -11,7 +11,7 @@ class _BrokenProjectDirectories:
     BROKEN_PROJECT: BrokenProject
 
     # App basic information
-    APP_DIRS: AppDirs = attrs.field(default=None)
+    APP_DIRS: AppDirs = field(default=None)
 
     def __attrs_post_init__(self):
         self.APP_DIRS = AppDirs(
@@ -185,6 +185,11 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.WORKSPACE/"Data")
 
     @property
+    def PROFILER(self) -> Path:
+        """Profiler directory"""
+        return self.__mkdir__(self.WORKSPACE/"Profiler")
+
+    @property
     def PROJECTS(self) -> Path:
         """Projects directory (e.g. Video Editor or IDEs)"""
         return self.__mkdir__(self.WORKSPACE/"Projects")
@@ -216,7 +221,7 @@ class _BrokenProjectDirectories:
 
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define(slots=False)
+@define(slots=False)
 class _BrokenProjectResources:
     """# Info: You shouldn't really use this class directly"""
 
@@ -225,7 +230,7 @@ class _BrokenProjectResources:
 
     # # Internal states
 
-    __RESOURCES__: Path = attrs.field(default=None)
+    __RESOURCES__: Path = field(default=None)
 
     def __attrs_post_init__(self):
         if self.BROKEN_PROJECT.RESOURCES:
@@ -270,14 +275,14 @@ class _BrokenProjectResources:
 
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define(slots=False)
+@define(slots=False)
 class BrokenProject:
     # Note: Send the importer's __init__.py's __file__ variable
     PACKAGE: str
 
     # App information
-    APP_NAME:   str     = attrs.field(default="Broken")
-    APP_AUTHOR: str     = attrs.field(default="BrokenSource")
+    APP_NAME:   str = field(default="Broken")
+    APP_AUTHOR: str = field(default="BrokenSource")
 
     # Standard Broken objects for a project
     DIRECTORIES: _BrokenProjectDirectories = None

@@ -21,6 +21,12 @@
         "source.organizeImports": "explicit"
     },
 
+    "isort.args": [
+        "-sl"
+    ],
+
+    // Icons
+
     "material-icon-theme.files.associations": {
         "brakeit": "python"
     },
