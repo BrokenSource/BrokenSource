@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from . import *
 
 # -------------------------------------------------------------------------------------------------|
@@ -7,6 +9,11 @@ from . import *
 forbiddenfruit.curse(
     list, "get",
     lambda self, index, default=None: self[index] if (index < len(self)) else default
+)
+
+forbiddenfruit.curse(
+    list, "appendget",
+    lambda self, value: [self.append(value), value][1]
 )
 
 # -------------------------------------------------------------------------------------------------|
@@ -463,7 +470,7 @@ class BrokenUtils:
 
     @staticmethod
     def expand_sys_argv_relative_paths() -> None:
-        """
+        r"""
         Expand sys.argv's ./ or .\ to full path. This is required as the working directory of projects
         changes, so we must expand them on the main script relative to where Broken is used as CLI
         """
@@ -756,7 +763,7 @@ class BrokenBinaries:
 # -------------------------------------------------------------------------------------------------|
 
 @define
-class BrokenVsyncClient:
+class BrokenEvent:
     """
     Client configuration for BrokenVsyncManager
 
@@ -766,31 +773,46 @@ class BrokenVsyncClient:
     - kwargs:     Keyword arguments to pass to callback
     - output:     Output of callback (returned value)
     - context:    Context to use when calling callback (with statement)
+    - lock:       Lock to use when calling callback (with statement)
+    - enabled:    Whether to enable this client or not
+    - once:       Whether to call this client only once or not
 
-    # Timing:
+    # Syncronization
     - frequency:  Frequency of callback calls
     - frameskip:  Constant deltatime mode (False) or real deltatime mode (True)
     - decoupled:  "Rendering" mode, do not sleep on real time, implies frameskip False
-    - enabled:    Whether to enable this client or not
+
+    # Timing:
     - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
-    - dt:         Whether to pass dt (time since last call) to callback
+    - last_call:  Last time callback was called (initializes $now+last_call, value in now() seconds)
+    - started:    Time when client was started (initializes $now+started, value in now() seconds)
     - time:       Whether to pass time (time since first call) to callback
+    - dt:         Whether to pass dt (time since last call) to callback
     """
+
+    # Callback
     callback:   callable       = None
-    name:       str            = None
     args:       List[Any]      = Factory(list)
     kwargs:     Dict[str, Any] = Factory(dict)
     output:     Any            = None
+    context:    Any            = None
+    lock:       threading.Lock = None
+    enabled:    bool           = True
+    once:       bool           = False
+
+    # Syncronization
     frequency:  float          = 60
     frameskip:  bool           = True
     decoupled:  bool           = False
-    context:    Any            = None
-    enabled:    bool           = True
-    next_call:  float          = 0
+
+    # Timing:
+    next_call:  float          = Factory(lambda: time.perf_counter())
+    last_call:  float          = Factory(lambda: time.perf_counter())
+    started:    float          = Factory(lambda: time.perf_counter())
+    time:       bool           = False
     dt:         bool           = False
-    time:       float          = 0
-    started:    float          = None
-    last_call:  float          = None
+
+    # # Useful properties
 
     @property
     def fps(self) -> Union[float, "hertz"]:
@@ -808,88 +830,99 @@ class BrokenVsyncClient:
     def period(self, value: Union[float, "seconds"]):
         self.frequency = 1/value
 
+    # # Implementation
 
-@define
-class BrokenVsync:
-    clients: List[BrokenVsyncClient] = []
-    __thread__: Option[Thread, None] = None
-    __stop__:   bool = False
-
-    def add_client(self, client: BrokenVsyncClient) -> BrokenVsyncClient:
-        """Adds a client to the manager with immediate next call"""
-        client.next_call += time.perf_counter()
-        client.started = time.perf_counter()
-        self.clients.append(client)
-        return client
-
-    def get_client(self, name: str) -> Option[BrokenVsyncClient, None]:
-        """Gets a client by name"""
-        return next((client for client in self.clients if client.name == name), None)
-
-    def new(self, *args, **kwargs) -> BrokenVsyncClient:
-        """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenVsyncClient(*args, **kwargs))
-
-    @property
-    def enabled_clients(self) -> List[BrokenVsyncClient]:
-        """Returns a list of enabled clients"""
-        return [client for client in self.clients if client.enabled]
-
-    @property
-    def next_client(self) -> BrokenVsyncClient | None:
-        """Returns the next client to be called"""
-        if clients := sorted(self.enabled_clients, key=lambda item: item.next_call):
-            return clients[0]
-
-    def next(self, block=True) -> None | Any:
-        """Calls the next call client in the list"""
-
-        # Get the next client to call or return if None
-        if not (client := self.next_client):
-            return None
+    def next(self, block: bool=True) -> None | Any:
 
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = client.next_call - time.perf_counter()
+        wait = self.next_call - time.perf_counter()
 
-        # Wait for next call time if blocking
-        if client.decoupled:
+        if self.decoupled:
             pass
-
         elif block:
             time.sleep(max(0, wait))
-
-        # Non blocking mode, if we are not behind do nothing
         elif wait > 0:
             return None
 
         # The assumed instant the code below will run instantly
-        now = client.next_call if client.decoupled else time.perf_counter()
+        now = self.next_call if self.decoupled else time.perf_counter()
 
         # Delta time between last call and next call
-        if client.dt:
-            client.kwargs["dt"] = now - (client.last_call or now)
+        if self.dt: self.kwargs["dt"] = now - (self.last_call or now)
 
         # Time since client started
-        if client.time:
-            client.kwargs["time"] = now - client.started
+        if self.time: self.kwargs["time"] = now - self.started
 
         # Update last call time
-        if client.frameskip or client.decoupled:
-            client.last_call = now
+        if self.frameskip or self.decoupled:
+            self.last_call = now
         else:
-            client.last_call = client.next_call
+            self.last_call = self.next_call
 
         # Enter or not the given context, call callback with args and kwargs
-        with (client.context or contextlib.nullcontext()):
-            client.output = client.callback(*client.args, **client.kwargs)
+        with (self.lock or contextlib.nullcontext()):
+            with (self.context or contextlib.nullcontext()):
+                self.output = self.callback(*self.args, **self.kwargs)
+
+        if self.once:
+            self.enabled = False
 
         # Add periods until next call is in the future
-        while client.next_call <= now:
-            client.next_call += client.period
+        while self.next_call <= now:
+            self.next_call += self.period
 
-        return client.output
+        return self.output
+
+@define
+class BrokenEventLoop:
+    clients: List[BrokenEvent] = []
+    __thread__: Option[Thread, None] = None
+    __stop__:   bool = False
+
+    def add_client(self, client: BrokenEvent) -> BrokenEvent:
+        """Adds a client to the manager with immediate next call"""
+        self.clients.append(client)
+        return client
+
+    def get_client(self, name: str) -> Option[BrokenEvent, None]:
+        """Gets a client by name"""
+        return next((client for client in self.clients if client.name == name), None)
+
+    def new(self, *args, **kwargs) -> BrokenEvent:
+        """Wraps around BrokenVsync for convenience"""
+        return self.add_client(BrokenEvent(*args, **kwargs))
+
+    def once(self, *args, **kwargs) -> BrokenEvent:
+        """Wraps around BrokenVsync for convenience"""
+        return self.add_client(BrokenEvent(*args, once=True, **kwargs))
+
+    @property
+    def enabled_clients(self) -> List[BrokenEvent]:
+        """Returns a list of enabled clients"""
+        return [client for client in self.clients if client.enabled]
+
+    @property
+    def next_client(self) -> BrokenEvent | None:
+        """Returns the next client to be called"""
+        if clients := sorted(self.enabled_clients, key=lambda item: item.next_call):
+            return clients[0]
+
+    def __sanitize__(self) -> None:
+        delete = set()
+        for i, client in enumerate(self.clients):
+            if client.once and (not client.enabled):
+                delete.add(i)
+        for i in sorted(delete, reverse=True):
+            del self.clients[i]
+
+    def next(self, block=True) -> None | Any:
+        """Calls the next call client in the list"""
+        self.__sanitize__()
+        if not (client := self.next_client):
+            return None
+        return client.next(block=block)
 
     # # Thread-wise wording
 

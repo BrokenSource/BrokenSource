@@ -99,6 +99,7 @@ while True:
         import shutil
         import subprocess
         import tempfile
+        import threading
         import time
         import types
         import uuid
@@ -119,6 +120,7 @@ while True:
         from subprocess import check_output
         from subprocess import run
         from sys import argv
+        from threading import Lock
         from threading import Thread
         from time import time as now
         from typing import *
@@ -163,17 +165,17 @@ numpy.set_printoptions(precision=5, suppress=True)
 # # Custom types, some Rust inspiration
 
 # PIL.Image is a module, PIL.Image.Image is the class
-PilImage = PIL.Image.Image
+PilImage: TypeAlias = PIL.Image.Image
 
 # Stuff that accepts "anything that can be converted to X"
-URL = str
+URL: TypeAlias = str
 
 # def divide(a, b) -> Option[float, ZeroDivisionError]:
 Option = Union
 
 # type(self) -> "Self" class
-Self = Any
+Self: TypeAlias = Any
 
 # Values might not be updated
 # def load(a: type=Unchanged): ...
-Unchanged = None
+Unchanged: TypeAlias = None

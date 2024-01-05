@@ -460,6 +460,7 @@ class BrokenCLI:
         self.__scripts__()
         self.__shortcut__()
         log.note(f"Next time, to enter Broken Development environment, run (python ./brakeit) again!")
+        log.info("Running Broken at", BROKEN.DIRECTORIES.REPOSITORY)
 
     def __shortcut__(self):
         if BrokenPlatform.OnUnix:
