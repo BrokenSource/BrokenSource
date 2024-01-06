@@ -155,6 +155,7 @@ while True:
         from attrs import validators
         from dotmap import DotMap
         from tqdm import tqdm
+        from typer import Typer
 
         break
 

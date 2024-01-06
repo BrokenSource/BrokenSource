@@ -23,49 +23,18 @@ class ProjectLanguage(BrokenEnum):
 class BrokenProjectCLI:
     path: Path
     name: str = "Unknown"
-    typer_app: typer.Typer = None
+    broken_typer: typer.Typer = None
 
     # # Main entry point
 
     def cli(self, ctx: typer.Context) -> None:
-        self.typer_app = BrokenTyper.typer_app()
-
-        # Poetry command
-        self.typer_app.command(
-            help=f"Run poetry command",
-            add_help_option=False,
-            **BrokenTyper.with_context(),
-        )(self.poetry)
-
-        # Poe command
-        self.typer_app.command(
-            help=f"Run poethepoet command",
-            **BrokenTyper.with_context(),
-            add_help_option=False,
-        )(self.poe)
-
-        # Update command
-        self.typer_app.command(
-            help=f"Update project dependencies",
-            **BrokenTyper.with_context(),
-            add_help_option=False,
-        )(self.update)
-
-        # Run command
-        self.typer_app.command(
-            help=f"Automagically run the project",
-            **BrokenTyper.with_context(),
-            add_help_option=False,
-        )(self.run)
-
-        # Implicitly add run command by default
-        # Fixme: Automatically find valid commands
-        # Fixme: This is a recurring issue
-        if (not ctx.args) or (ctx.args[0] not in ("poetry", "poe", "update")):
-            ctx.args.insert(0, "run")
-
+        self.broken_typer = BrokenTyper(help_option=False)
+        self.broken_typer.command(self.poetry, add_help_option=False)
+        self.broken_typer.command(self.poe,    add_help_option=False)
+        self.broken_typer.command(self.update, add_help_option=False)
+        self.broken_typer.command(self.run,    add_help_option=False, default=True)
         with BrokenPath.pushd(self.path, echo=False):
-            self.typer_app(ctx.args)
+            self.broken_typer(ctx.args)
 
     # # Initialization
 
@@ -193,6 +162,7 @@ class BrokenProjectCLI:
         infinite:  Annotated[bool, typer.Option("--infinite",  help="Press Enter after each run to run again")]=False,
         clear:     Annotated[bool, typer.Option("--clear",     help="Clear terminal before running")]=False,
         debug:     Annotated[bool, typer.Option("--debug",     help="Debug mode for Rust projects")]=False,
+        echo:      Annotated[bool, typer.Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
         # Set environment variable for the project name
@@ -205,20 +175,20 @@ class BrokenProjectCLI:
                 ctx.args[i] = fix
 
         while True:
+            BrokenPlatform.clear_terminal(do=clear, echo=False)
 
-            # Optionally clear terminal
-            shell("clear" if BrokenPlatform.OnUnix else "cls", do=clear, echo=False)
-
+            # Python projects
             if self.is_python:
                 venv = self.__install_venv__(reinstall=reinstall)
                 try:
-                    status = shell("poetry", "run", self.name.lower(), ctx.args)
+                    status = shell("poetry", "run", self.name.lower(), ctx.args, echo=echo)
                 except KeyboardInterrupt:
                     log.success(f"Project [{self.name}] finished with KeyboardInterrupt")
                     break
                 except Exception as e:
                     raise e
 
+            # Rust projects
             if self.is_rust:
                 status = shell(
                     "cargo", "run",
@@ -227,6 +197,8 @@ class BrokenProjectCLI:
                     "--features", self.rust_features,
                     "--", ctx.args
                 )
+
+            # C++ projects
             if self.is_cpp:
                 log.error("C++ projects are not supported yet")
 
@@ -253,7 +225,8 @@ class BrokenProjectCLI:
 
             elif infinite:
                 log.success(f"Project [{self.name}] finished successfully")
-                rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True)
+                if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
+                    break
 
             else:
                 break
@@ -291,9 +264,9 @@ class BrokenProjectCLI:
 
 @attrs.define
 class BrokenCLI:
-    projects: list[BrokenProjectCLI] = attrs.field(factory=list)
-    directories: BrokenDirectories = None
-    typer_app: typer.Typer = None
+    projects:     list[BrokenProjectCLI] = attrs.field(factory=list)
+    directories:  BrokenDirectories      = None
+    broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
@@ -324,50 +297,38 @@ class BrokenCLI:
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
-        self.typer_app = BrokenTyper.typer_app(description=(
+        self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
             "©️  2022-2023 Broken Source Software and its authors, AGPLv3-only License."
         ))
 
-        # Section: Installation
-        emoji = "📦"
-        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.install)
-        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.requirements)
-        self.typer_app.command(rich_help_panel=f"{emoji} Installation")(self.link)
+        with self.broken_typer.panel("📦 Installation"):
+            self.broken_typer.command(self.install)
+            self.broken_typer.command(self.requirements)
+            self.broken_typer.command(self.link)
+            self.broken_typer.command(self.submodules)
 
-         # Section: Miscellaneous
-        emoji = "🛡️ "
-        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.clean)
-        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.updateall)
-        self.typer_app.command(rich_help_panel=f"{emoji} Core")(self.release)
+        with self.broken_typer.panel("🛡️ Core"):
+            self.broken_typer.command(self.clean)
+            self.broken_typer.command(self.updateall)
+            self.broken_typer.command(self.release)
 
-        # Section: Experimental
-        emoji = "⚠️ "
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.pillow)
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental", hidden=True)(self.wheel)
-        self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.submodules)
-        # self.typer_app.command(rich_help_panel=f"{emoji} Experimental")(self.docs)
+        with self.broken_typer.panel("⚠️ Experimental"):
+            self.broken_typer.command(self.pillow, hidden=True)
+            self.broken_typer.command(self.wheel, hidden=True)
 
-        # Section: Projects
-        self.add_projects_to_cli()
-
-        # Fixme: Any way to make click not SystemExit?
-        # Execute the CLI
-        try:
-            self.typer_app()
-        except SystemExit as e:
-            pass
-
-    def add_projects_to_cli(self):
         for project in self.projects:
-            self.typer_app.command(
+            self.broken_typer.command(
+                callable=project.cli,
                 name=project.name.lower(),
                 help=project.description_pretty_language,
-                rich_help_panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
+                panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
                 add_help_option=False,
-                **BrokenTyper.with_context()
-            )(project.cli)
+            )
+
+        # Execute the CLI
+        self.broken_typer(sys.argv[1:])
 
     # # Installation commands
 
