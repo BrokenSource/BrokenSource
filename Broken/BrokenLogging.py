@@ -112,6 +112,7 @@ class BrokenLogging:
         self.__add_loglevel__("NOTE",   35, "magenta"   )
         self.__add_loglevel__("MINOR",  35, "fg #777"   )
         self.__add_loglevel__("ACTION", 35, "fg #7340ff")
+        self.__add_loglevel__("SKIP",   35, "fg #777"   )
 
         return self
 

@@ -174,9 +174,6 @@ URL: TypeAlias = str
 # def divide(a, b) -> Option[float, ZeroDivisionError]:
 Option = Union
 
-# type(self) -> "Self" class
-Self: TypeAlias = Any
-
 # Values might not be updated
 # def load(a: type=Unchanged): ...
 Unchanged: TypeAlias = None

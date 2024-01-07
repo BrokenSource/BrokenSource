@@ -64,9 +64,9 @@ for attempt in itertools.count(0):
 
     # Couldn't install poetry or not available on Path
     if attempt == INSTALL_MAX_ATTEMPTS:
-        print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but failed")
+        print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but it failed")
         print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
-        print( "2) Installe it manually at (https://python-poetry.org/docs/#installation)")
+        print( "2) Install it manually at (https://python-poetry.org/docs/#installation)")
         exit(1)
 
     # Call poetry --version, command might exit status 1 if it's not installed

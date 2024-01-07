@@ -6,7 +6,7 @@ import sys
 BROKEN_PYINSTALLER: bool = getattr(sys, "frozen", False)
 BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER)
-BROKEN_VERSION:     str = "v" + (importlib.metadata.version("Broken") or "Unknown")
+BROKEN_VERSION:     str  = "v" + (importlib.metadata.version("Broken") or "Unknown")
 
 # isort: off
 from .BrokenImports import *

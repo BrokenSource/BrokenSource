@@ -2,7 +2,7 @@
 	path = Projects/ShaderFlow
 	url  = https://github.com/BrokenSource/ShaderFlow
 [submodule ".github/.github"]
-	path = .github/Organization
+	path = .github/special
 	url  = https://github.com/BrokenSource/.github
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow

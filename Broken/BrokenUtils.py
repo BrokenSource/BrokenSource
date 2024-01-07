@@ -11,9 +11,10 @@ forbiddenfruit.curse(
     lambda self, index, default=None: self[index] if (index < len(self)) else default
 )
 
+# Append and return value, a walrus .append() method on lists
 forbiddenfruit.curse(
     list, "appendget",
-    lambda self, value: [self.append(value), value][1]
+    lambda self, value: (self.append(value), value)[1]
 )
 
 # -------------------------------------------------------------------------------------------------|
@@ -42,18 +43,22 @@ def shell(
         echo:    Whether to print the command or not
         confirm: Whether to ask for confirmation before running the command or not
         do:      Whether to run the command or not, good for conditional commands
+
+    Kwargs:
+        cwd:     Current working directory for the command
+        env:     Environment variables for the command
+        *:       Any other keyword arguments are passed to subprocess.*
     """
     if output and Popen:
         raise ValueError("Cannot use output=True and Popen=True at the same time")
 
     # Flatten a list, remove falsy values, convert to strings
-    command = list(map(str, BrokenUtils.flatten(args)))
+    command = tuple(map(str, BrokenUtils.flatten(args)))
 
-    # Maybe print custom working directory
-    if (cwd := kwargs.get("cwd", "")):
-        cwd = f" @ ({cwd})"
+    # Get the current working directory
+    cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
 
-    (log.info if do else log.minor)(("Running" if do else "Skipping") + f" command {tuple(command)}{cwd}", echo=echo)
+    (log.info if do else log.minor)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
 
     if not do: return
 
@@ -62,61 +67,12 @@ def shell(
         return
 
     # Get current environment variables
-    env = os.environ.copy()
-
-    # Update environment variables with kwargs
-    env.update(**kwargs.get("env", {}))
+    env = os.environ.copy() | kwargs.get("env", {})
 
     # Run the command and return specified object
     if output: return subprocess.check_output(command, env=env, **kwargs).decode("utf-8")
     if Popen:  return subprocess.Popen(command, env=env, **kwargs)
     else:      return subprocess.run(command, env=env, **kwargs)
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenPlatform:
-
-    # Name of the current platform - (linux, windows, macos, bsd)
-    Name         = platform.system().lower().replace("darwin", "macos")
-
-    # Booleans if the current platform is the following
-    OnLinux      = (Name == "linux")
-    OnWindows    = (Name == "windows")
-    OnMacOS      = (Name == "macos")
-    OnBSD        = (Name == "bsd")
-
-    # Family of platforms
-    OnUnix       = (OnLinux or OnMacOS or OnBSD)
-
-    # Distros IDs: https://distro.readthedocs.io/en/latest/
-    LinuxDistro  = distro.id()
-
-    # Booleans if the current platform is the following
-    OnUbuntu     = (LinuxDistro == "ubuntu")
-    OnDebian     = (LinuxDistro == "debian")
-    OnArch       = (LinuxDistro == "arch")
-    OnFedora     = (LinuxDistro == "fedora")
-    OnMint       = (LinuxDistro == "linuxmint")
-    OnGentoo     = (LinuxDistro == "gentoo")
-    OnRaspberry  = (LinuxDistro == "raspbian")
-    OnOpenBSD    = (LinuxDistro == "openbsd")
-    OnNetBSD     = (LinuxDistro == "netbsd")
-
-    # Family of distros
-    OnUbuntuLike = OnUbuntu or OnDebian or OnMint or OnRaspberry
-
-    class Targets(Enum):
-        """List of common platforms targets for releases"""
-        LinuxAMD64   = "linux-amd64"
-        LinuxARM     = "linux-arm"
-        WindowsAMD64 = "windows-amd64"
-        WindowsARM   = "windows-arm"
-        MacOSAMD64   = "macos-amd64"
-        MacOSARM     = "macos-arm"
-
-    @staticmethod
-    def clear_terminal(**kwargs):
-        shell("clear" if BrokenPlatform.OnUnix else "cls", **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -179,13 +135,78 @@ class BrokenEnum(Enum):
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenSingleton:
+class BrokenPlatform:
+
+    # Name of the current platform - (linux, windows, macos, bsd)
+    Name:         str  = platform.system().lower().replace("darwin", "macos")
+
+    # Booleans if the current platform is the following
+    OnLinux:      bool = (Name == "linux")
+    OnWindows:    bool = (Name == "windows")
+    OnMacOS:      bool = (Name == "macos")
+    OnBSD:        bool = (Name == "bsd")
+
+    # Family of platforms
+    OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
+
+    # Distros IDs: https://distro.readthedocs.io/en/latest/
+    LinuxDistro:  str  = distro.id()
+
+    # # Booleans if the current platform is the following
+
+    # Ubuntu-like
+    OnUbuntu:     bool = (LinuxDistro == "ubuntu")
+    OnDebian:     bool = (LinuxDistro == "debian")
+    OnMint:       bool = (LinuxDistro == "linuxmint")
+    OnRaspberry:  bool = (LinuxDistro == "raspbian")
+    OnUbuntuLike: bool = (OnUbuntu or OnDebian or OnMint or OnRaspberry)
+
+    # Arch-like
+    OnArch:       bool = (LinuxDistro == "arch")
+    OnManjado:    bool = (LinuxDistro == "manjaro")
+    OnArchLike:   bool = (OnArch or OnManjado)
+
+    # RedHat-like
+    OnFedora:     bool = (LinuxDistro == "fedora")
+    OnCentOS:     bool = (LinuxDistro == "centos")
+    OnRedHat:     bool = (LinuxDistro == "rhel")
+    OnRedHatLike: bool = (OnFedora or OnCentOS or OnRedHat)
+
+    # Others
+    OnGentoo:     bool = (LinuxDistro == "gentoo")
+
+    # BSD - I have never used it
+    OnOpenBSD:    bool = (LinuxDistro == "openbsd")
+    OnNetBSD:     bool = (LinuxDistro == "netbsd")
+    OnBSDLike:    bool = (OnOpenBSD or OnNetBSD)
+
+    class Targets(BrokenEnum):
+        """List of common platforms targets for releases"""
+        LinuxAMD64:   str = "linux-amd64"
+        LinuxARM:     str = "linux-arm"
+        WindowsAMD64: str = "windows-amd64"
+        WindowsARM:   str = "windows-arm"
+        MacOSAMD64:   str = "macos-amd64"
+        MacOSARM:     str = "macos-arm"
+
+    @staticmethod
+    def clear_terminal(**kwargs):
+        shell("clear" if BrokenPlatform.OnUnix else "cls", **kwargs)
+
+    @staticmethod
+    def log_system_info():
+        log.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSingleton(ABC):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
             cls.__instance__ = super().__new__(cls)
             cls.__singleton__(*args, **kwargs)
         return cls.__instance__
 
+    @abstractmethod
     def __singleton__(self, *args, **kwargs):
         """__init__ but for the singleton"""
         ...
@@ -261,14 +282,18 @@ class BrokenNOP:
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenUtils:
+
+    @staticmethod
     def force_list(item: Union[Any, List[Any]]) -> List[Any]:
         """Force an item to be a list, if it's not already"""
         return item if (type(item) is list) else [item]
 
+    @staticmethod
     def truthy(items: List[Any]) -> List[Any]:
         """Transforms a list into a truthy-only values list, removing all falsy values"""
         return [item for item in BrokenUtils.force_list(items) if item]
 
+    @staticmethod
     def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
         """
         Flatten nested list like iterables to a 1D list
@@ -280,10 +305,12 @@ class BrokenUtils:
         ]
         return BrokenUtils.truthy(flatten(stuff)) if truthy else flatten(stuff)
 
+    @staticmethod
     def denum(stuff: Iterable[Any]) -> list[Any]:
         """De-enumerates enum iterables to their value"""
         return [item.value if issubclass(type(item), Enum) else item for item in stuff]
 
+    @staticmethod
     def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
         """Fuzzy search a string in a list of strings, returns a list of matches"""
         with warnings.catch_warnings():
@@ -294,7 +321,15 @@ class BrokenUtils:
                 return result[0]
             return result
 
-    def better_thread(callable, *args, start: bool=True, loop: bool=False, daemon: bool=False, **kwargs) -> Thread:
+    @staticmethod
+    def better_thread(
+        callable,
+        *args,
+        start: bool=True,
+        loop: bool=False,
+        daemon: bool=False,
+        **kwargs
+    ) -> Thread:
         """Create a thread on a callable, yeet whatever you think it works"""
 
         # Wrap callable on a loop
@@ -311,10 +346,11 @@ class BrokenUtils:
         if start: thread.start()
         return thread
 
+    @staticmethod
     def recurse(function: callable, **variables) -> Any:
         """
         Calls some function with the previous scope locals() updated by variables
-        # Note: Not the fastest method, consider convenience only
+        # Note: Not a fast method, consider using for convenience only
 
         Use case are functions that are called recursively and need to be called with the same arguments
 
@@ -340,6 +376,7 @@ class BrokenUtils:
         # Call and return the same function
         return function(**previous_locals)
 
+    @staticmethod
     def benchmark(
         function: callable,
         benchmark_name: str=None,
@@ -389,10 +426,12 @@ class BrokenUtils:
         f = lambda x: f"{x:.3f} it/s"
         log.info(f"• Benchmark Results for [{str(benchmark_name or function.__name__).ljust(20)}]: [Average {f(1.0/frametimes.mean())}] [Max {f(1.0/frametimes.min())}] [Min {f(1.0/frametimes.max())}] [Std {f((1/frametimes).std())}]")
 
+    @staticmethod
     def sublist_in_list(sublist: List[Any], list: List[Any]) -> bool:
         """Check if a sublist is in a list"""
         return all(item in list for item in sublist)
 
+    @staticmethod
     def extend(base: type, name: str=None, as_property: bool=False) -> type:
         """
         Extend a class with another classe's methods or a method directly.
@@ -438,6 +477,7 @@ class BrokenUtils:
 
         return extender
 
+    @staticmethod
     def load_image(image: PilImage | PathLike | URL, pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
         # Todo: Maybe a BrokenImage class with some utils?
@@ -479,9 +519,8 @@ class BrokenUtils:
         changes, so we must expand them on the main script relative to where Broken is used as CLI
         """
         for i, arg in enumerate(sys.argv):
-            if any([arg.startswith(x) for x in ("./", "../", ".\\", ".\\\\")]):
+            if any([arg.startswith(x) for x in ("./", "../", ".\\")]):
                 sys.argv[i] = str(BrokenPath.true_path(arg))
-
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -755,19 +794,105 @@ class BrokenPath:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenBinaries:
-    @property
-    def python(self) -> Path:
-        return Path(sys.executable)
+@define
+class BrokenTyper:
+    """
+    A wrap around Typer with goodies
 
-    @property
-    def pip(self) -> Path:
-        return BrokenPath.get_binary("pip")
+    • Why? Automation.
+    • Stupid? Absolutely.
+    • Useful? Maybe.
+    • Fun? Yes.
+    • Worth it? Probably not.
+    • Will I use it? Yes.
+    """
+    description: str         = ""
+    app:         typer.Typer = None
+    chain:       bool        = False
+    commands:    List[str]   = Factory(list)
+    default:     str         = None
+    help_option: bool        = False
+    epilog:      str         = (
+        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
+    )
+
+    def __attrs_post_init__(self):
+        self.app = typer.Typer(
+            help=self.description or "No help provided",
+            add_help_option=self.help_option,
+            pretty_exceptions_enable=False,
+            no_args_is_help=True,
+            add_completion=False,
+            rich_markup_mode="rich",
+            chain=self.chain,
+            epilog=self.epilog,
+        )
+
+    __panel__: str = None
+
+    @contextlib.contextmanager
+    def panel(self, name: str) -> None:
+        try:
+            self.__panel__ = name
+            yield
+        finally:
+            self.__panel__ = None
+
+    def command(self,
+        callable: Callable,
+        help: str=None,
+        add_help_option: bool=True,
+        name: str=None,
+        context: bool=True,
+        default: bool=False,
+        panel: str=None,
+        **kwargs,
+    ):
+        # Command must be implemented
+        if getattr(callable, "__isabstractmethod__", False):
+            return
+
+        # Maybe get callable name
+        name = name or callable.__name__
+
+        # Create Typer command
+        self.app.command(
+            help=help or callable.__doc__ or None,
+            add_help_option=add_help_option,
+            name=name,
+            rich_help_panel=panel or self.__panel__ ,
+            context_settings=dict(
+                allow_extra_args=True,
+                ignore_unknown_options=True,
+            ) if context else None,
+            **kwargs,
+        )(callable)
+
+        # Add to known commands
+        self.commands.append(name)
+
+        # Set as default command
+        self.default = name if default else self.default
+
+    def __call__(self, *args):
+        args = BrokenUtils.flatten(args)
+
+        # Insert default implied command
+        if self.default and ((not args) or (args.get(0) not in self.commands)):
+            args.insert(0, self.default)
+
+        try:
+            self.app(args)
+        except SystemExit as e:
+            pass
+        except Exception as e:
+            raise e
 
 # -------------------------------------------------------------------------------------------------|
 
 @define
-class BrokenEvent:
+class BrokenEventClient:
     """
     Client configuration for BrokenVsyncManager
 
@@ -870,6 +995,7 @@ class BrokenEvent:
             with (self.context or contextlib.nullcontext()):
                 self.output = self.callback(*self.args, **self.kwargs)
 
+        # Disabled plus Once clients gets deleted
         if self.once:
             self.enabled = False
 
@@ -881,39 +1007,40 @@ class BrokenEvent:
 
 @define
 class BrokenEventLoop:
-    clients: List[BrokenEvent] = []
+    clients:    List[BrokenEventClient] = Factory(list)
     __thread__: Option[Thread, None] = None
     __stop__:   bool = False
 
-    def add_client(self, client: BrokenEvent) -> BrokenEvent:
+    def add_client(self, client: BrokenEventClient) -> BrokenEventClient:
         """Adds a client to the manager with immediate next call"""
         self.clients.append(client)
         return client
 
-    def get_client(self, name: str) -> Option[BrokenEvent, None]:
+    def get_client(self, name: str) -> Option[BrokenEventClient, None]:
         """Gets a client by name"""
         return next((client for client in self.clients if client.name == name), None)
 
-    def new(self, *args, **kwargs) -> BrokenEvent:
+    def new(self, *args, **kwargs) -> BrokenEventClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenEvent(*args, **kwargs))
+        return self.add_client(BrokenEventClient(*args, **kwargs))
 
-    def once(self, *args, **kwargs) -> BrokenEvent:
+    def once(self, *args, **kwargs) -> BrokenEventClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenEvent(*args, once=True, **kwargs))
+        return self.add_client(BrokenEventClient(*args, once=True, **kwargs))
 
     @property
-    def enabled_clients(self) -> List[BrokenEvent]:
+    def enabled_clients(self) -> List[BrokenEventClient]:
         """Returns a list of enabled clients"""
         return [client for client in self.clients if client.enabled]
 
     @property
-    def next_client(self) -> BrokenEvent | None:
+    def next_client(self) -> BrokenEventClient | None:
         """Returns the next client to be called"""
         if clients := sorted(self.enabled_clients, key=lambda item: item.next_call):
             return clients[0]
 
     def __sanitize__(self) -> None:
+        """Removes disabled 'once' clients"""
         delete = set()
         for i, client in enumerate(self.clients):
             if client.once and (not client.enabled):
@@ -999,104 +1126,6 @@ class BrokenStopwatch:
     @property
     def took(self) -> float:
         return self.time
-
-# -------------------------------------------------------------------------------------------------|
-
-@define
-class BrokenTyper:
-    """
-    A wrap around Typer with goodies
-
-    • Why? Automation.
-    • Stupid? Absolutely.
-    • Useful? Maybe.
-    • Fun? Yes.
-    • Worth it? Probably not.
-    • Will I use it? Yes.
-    """
-    description: str         = ""
-    app:         typer.Typer = None
-    chain:       bool        = False
-    commands:    List[str]   = Factory(list)
-    default:     str         = None
-    help_option: bool        = False
-    epilog:      str         = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
-    )
-
-    def __attrs_post_init__(self):
-        self.app = typer.Typer(
-            help=self.description or "No help provided",
-            add_help_option=self.help_option,
-            pretty_exceptions_enable=False,
-            no_args_is_help=True,
-            add_completion=False,
-            rich_markup_mode="rich",
-            chain=self.chain,
-            epilog=self.epilog,
-        )
-
-    __panel__: str = None
-
-    @contextlib.contextmanager
-    def panel(self, name: str) -> None:
-        try:
-            self.__panel__ = name
-            yield
-        finally:
-            self.__panel__ = None
-
-    def command(self,
-        callable: Callable,
-        help: str=None,
-        add_help_option: bool=True,
-        name: str=None,
-        context: bool=True,
-        default: bool=False,
-        panel: str=None,
-        **kwargs,
-    ):
-        # Command must be implemented
-        if getattr(callable, "__isabstractmethod__", False):
-            return
-
-        # Maybe get callable name
-        name = name or callable.__name__
-
-        # Create Typer command
-        self.app.command(
-            help=help or callable.__doc__ or None,
-            add_help_option=add_help_option,
-            name=name,
-            rich_help_panel=panel or self.__panel__ ,
-            context_settings=dict(
-                allow_extra_args=True,
-                ignore_unknown_options=True,
-            ) if context else None,
-            **kwargs,
-        )(callable)
-
-        # Add to known commands
-        self.commands.append(name)
-
-        # Set as default command
-        self.default = name if default else self.default
-
-    def __call__(self, *args):
-        args = BrokenUtils.flatten(args)
-
-        # Insert default implied command
-        if self.default and ((not args) or (args.get(0) not in self.commands)):
-            args.insert(0, self.default)
-
-        # Fixme: Any way to make click not SystemExit?
-        try:
-            self.app(args)
-        except SystemExit as e:
-            pass
-        except Exception as e:
-            raise e
 
 # -------------------------------------------------------------------------------------------------|
 

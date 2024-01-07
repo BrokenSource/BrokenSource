@@ -6,10 +6,10 @@ from . import *
 # ----------------------------------------------|
 # Resolution
 
-@attrs.define
+@define
 class FFmpegResolution:
-    width:  int = attrs.field(converter=int)
-    height: int = attrs.field(converter=int)
+    width:  int = field(converter=int)
+    height: int = field(converter=int)
 
     @width.validator
     @height.validator
@@ -874,11 +874,11 @@ class BrokenFFmpeg:
         # Spawn subprocess
         ffmpeg = shell(self.command, Popen=True, stdin=subprocess.PIPE)
 
-        @attrs.define
+        @define
         class BrokenFFmpegBuffered:
             ffmpeg: subprocess.Popen
             buffer: int
-            frames: List[bytes] = attrs.Factory(list)
+            frames: List[bytes] = Factory(list)
             __stop__: bool = False
 
             def __attrs_post_init__(self):

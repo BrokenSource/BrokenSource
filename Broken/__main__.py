@@ -19,7 +19,7 @@ class ProjectLanguage(BrokenEnum):
     CPP     = "cpp"
     Unknown = "unknown"
 
-@attrs.define
+@define
 class BrokenProjectCLI:
     path: Path
     name: str = "Unknown"
@@ -40,7 +40,6 @@ class BrokenProjectCLI:
 
     def __attrs_post_init__(self):
         self.name = self.path.name
-        # self.config = BrokenDotmap()
 
     def __eq__(self, other: Self) -> bool:
         return self.path == other.path
@@ -262,14 +261,15 @@ class BrokenProjectCLI:
 
 # -------------------------------------------------------------------------------------------------|
 
-@attrs.define
+@define
 class BrokenCLI:
-    projects:     list[BrokenProjectCLI] = attrs.field(factory=list)
+    projects:     list[BrokenProjectCLI] = field(factory=list)
     directories:  BrokenDirectories      = None
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
         self.find_projects(Path.cwd())
 
     def find_projects(self, path: Path) -> None:
@@ -293,19 +293,16 @@ class BrokenCLI:
             if (project := BrokenProjectCLI(directory)).is_known:
                 self.projects.append(project)
 
-    # # Main entry point
-
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.broken_typer = BrokenTyper(description=(
-            "🚀 Broken Source Software manager script\n\n"
+            "🚀 Broken Source Software Monorepo manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️  2022-2023 Broken Source Software and its authors, AGPLv3-only License."
+            "©️  Broken Source Software and its authors, AGPLv3-only License."
         ))
 
         with self.broken_typer.panel("📦 Installation"):
             self.broken_typer.command(self.install)
-            self.broken_typer.command(self.requirements)
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.submodules)
 
@@ -327,7 +324,6 @@ class BrokenCLI:
                 add_help_option=False,
             )
 
-        # Execute the CLI
         self.broken_typer(sys.argv[1:])
 
     # # Installation commands
@@ -337,9 +333,12 @@ class BrokenCLI:
         root: Path=typer.Option(BROKEN.DIRECTORIES.REPOSITORY, "--root", "-r", help="Root path to search for Submodules"),
         auth: bool=typer.Option(False, "--auth", "-a", help="Prompt Username and Password privately for Private clones"),
 
-        # Direct
+        # Direct authentication
         username: str=typer.Option(None, "--username", "-u", help="Username to use for git clone"),
         password: str=typer.Option(None, "--password", "-p", help="Password to use for git clone"),
+
+        # Utilities
+        pull: bool=typer.Option(False, "--pull", "-P", help="Pull submodules"),
     ):
         """
         Safely init and clone submodules, skip private submodules
@@ -351,8 +350,9 @@ class BrokenCLI:
             return
 
         # Init submodules
-        with BrokenPath.pushd(root):
+        with BrokenPath.pushd(root, echo=False):
             shell("git", "submodule", "init")
+            shell("git", "pull", do=pull)
 
         # Ask credentials
         if auth:
@@ -377,7 +377,7 @@ class BrokenCLI:
 
             # Skip private submodule
             if submodule.get("private", False) and not auth:
-                log.info(f"Submodule private ({path})")
+                log.minor(f"Submodule private ({path})")
                 continue
 
             # Clone with authentication
@@ -390,7 +390,7 @@ class BrokenCLI:
                 continue
 
             # Clone the submodule
-            with BrokenPath.pushd(path):
+            with BrokenPath.pushd(path, echo=False):
 
                 # Set the url to clone this repository with authentication
                 shell("git", "remote", "set-url", "origin", url)
@@ -408,6 +408,7 @@ class BrokenCLI:
 
                 # Checkout main branch, as detached head is clumsy
                 shell("git", "checkout", "Master")
+                shell("git", "pull", do=pull)
 
                 log.success(f"Submodule cloned  ({path})")
 
@@ -415,13 +416,13 @@ class BrokenCLI:
 
     def link(self, path: Path):
         """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.HOOK/path.name, real=path)
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def install(self):
         self.__scripts__()
         self.__shortcut__()
-        log.note(f"Next time, to enter Broken Development environment, run (python ./brakeit) again!")
         log.info("Running Broken at", BROKEN.DIRECTORIES.REPOSITORY)
+        log.note(f"Next time, to enter the Broken development environment, run (python ./brakeit) again!")
 
     def __shortcut__(self):
         if BrokenPlatform.OnUnix:
@@ -451,13 +452,10 @@ class BrokenCLI:
                 log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
-            log.fixme("BrokenShared and Shortcut on Windows isn't implemented")
+            log.skip("Shortcut for Windows is not implemented yet")
         else:
             log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return
-
-        # Add Broken Shared Directory to PATH
-        log.todo("Add Broken Shared Directory to PATH")
 
     def __scripts__(self):
         """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
@@ -499,9 +497,6 @@ class BrokenCLI:
                 ]))
 
             BrokenPath.make_executable(script, echo=False)
-
-    def requirements(self):
-        log.todo("Reimplement better requirements command")
 
     def clean(self,
         isort: bool=True,

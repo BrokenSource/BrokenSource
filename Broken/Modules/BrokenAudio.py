@@ -1,7 +1,7 @@
 from . import *
 
 
-@attrs.define
+@define
 class BrokenNote:
     note:     int   = 60
     start:    float = 0
@@ -87,9 +87,9 @@ class BrokenNote:
         return BrokenNote.index_to_frequency(self.note)
 
 
-@attrs.define
+@define
 class BrokenPianoRoll:
-    notes: intervaltree.IntervalTree = attrs.Factory(intervaltree.IntervalTree)
+    notes: intervaltree.IntervalTree = Factory(intervaltree.IntervalTree)
 
     def add_notes(self, *notes: Union[BrokenNote, list[BrokenNote]]):
         """Add notes to the piano roll"""
@@ -107,7 +107,7 @@ class BrokenPianoRoll:
 
 
 
-@attrs.define
+@define
 class BrokenAudio:
 
     # Data buffer and its type
@@ -383,7 +383,7 @@ class BrokenAudioSpectrogramWindow:
         """Returns a hanning window of the given size"""
         return numpy.hanning(size)
 
-@attrs.define
+@define
 class BrokenAudioSpectrogram:
     audio: BrokenAudio
 

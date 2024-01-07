@@ -119,21 +119,26 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.REPOSITORY/"Projects")
 
     @property
-    def HOOK(self) -> Path:
+    def BROKEN_HOOK(self) -> Path:
         """Hook directory for other projects to be managed by Broken"""
         return self.__mkdir__(self.PROJECTS/"Hook")
+
+    @property
+    def BROKEN_META(self) -> Path:
+        """Broken Source's Monorepo Meta directory (Many submodules there)"""
+        return self.__mkdir__(self.REPOSITORY/"Meta")
 
     # # Meta directories - Broken monorepo specific
 
     @property
-    def META(self) -> Path:
-        """Broken Source's Monorepo Meta directory (Many submodules there)"""
-        return self.__mkdir__(self.REPOSITORY/"Meta")
-
-    @property
     def DOCS(self) -> Path:
         """Broken Source's Monorepo Docs directory"""
-        return self.__mkdir__(self.META/"Docs")
+        return self.__mkdir__(self.REPOSITORY/"Docs")
+
+    @property
+    def WEBSITE(self) -> Path:
+        """Broken Source's Website directory"""
+        return self.__mkdir__(self.REPOSITORY/"Website")
 
     @property
     def PAPERS(self) -> Path:
@@ -144,16 +149,6 @@ class _BrokenProjectDirectories:
     def TEMPLATES(self) -> Path:
         """Broken Source's Monorepo Templates directory"""
         return self.__mkdir__(self.META/"Templates")
-
-    @property
-    def WEBSITE(self) -> Path:
-        """Broken Source's Website directory"""
-        return self.__mkdir__(self.META/"Website")
-
-    @property
-    def _ASSETS(self) -> Path:
-        """Broken Source's Assets directory"""
-        return self.__mkdir__(self.META/"Assets")
 
     # # Workspace directories
 
