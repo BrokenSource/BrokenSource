@@ -58,7 +58,7 @@ def shell(
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
 
-    (log.info if do else log.minor)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
+    (log.info if do else log.skip)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
 
     if not do: return
 

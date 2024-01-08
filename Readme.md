@@ -67,6 +67,12 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   python ./BrokenSource/brakeit
   ```
 
+- **Alternatively**, we also support `curl` + `pipe`! 🤯
+
+  ```bash
+  curl -sSL https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit | python3 -
+  ```
+
 **And done**, you can now run `broken` and see all available commands 🚀
 
 - Head back to the *Project* you want to run for further instructions 🍷
@@ -100,7 +106,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - **Restart** the Terminal - First step then back here
 
-**Now**, run the same **Linux** and **MacOS** commands above
+- **Now**, run the same **Linux** and **MacOS** commands above
 
 <br>
 

@@ -14,10 +14,8 @@ class _BrokenProjectDirectories:
     APP_DIRS: AppDirs = field(default=None)
 
     def __attrs_post_init__(self):
-        self.APP_DIRS = AppDirs(
-            self.BROKEN_PROJECT.APP_AUTHOR,
-            self.BROKEN_PROJECT.APP_NAME
-        )
+        args = (self.BROKEN_PROJECT.APP_AUTHOR, self.BROKEN_PROJECT.APP_NAME)
+        self.APP_DIRS = AppDirs(*reversed(args) if (os.name == "nt") else args)
 
     @property
     def PACKAGE(self) -> Path:
@@ -157,7 +155,10 @@ class _BrokenProjectDirectories:
         """Root for the current Project's Workspace"""
         if (path := os.environ.get("WORKSPACE", None)):
             return self.__mkdir__(Path(path)/self.APP_AUTHOR/self.APP_NAME)
-        return self.__mkdir__(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
+        if (os.name == "nt"):
+            return self.__mkdir__(Path(self.APP_DIRS.user_data_dir))
+        else:
+            return self.__mkdir__(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
 
     @property
     def CONFIG(self) -> Path:
@@ -284,12 +285,17 @@ class BrokenProject:
     RESOURCES:   _BrokenProjectResources   = None
     CONFIG:      BrokenDotmap              = None
     CACHE:       BrokenDotmap              = None
+    VERSION:     str                       = None
 
     def __attrs_post_init__(self):
 
         # Create Directories class
         self.DIRECTORIES = _BrokenProjectDirectories(BROKEN_PROJECT=self)
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
+        self.PACKAGE     = Path(self.PACKAGE)
+
+        # Assign version - Package's parent folder name
+        self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name)
 
         # Fixme: Anywhere to unify envs?
         # Load .env files from the project
@@ -315,6 +321,23 @@ class BrokenProject:
             except Exception:
                 pass
 
+    def welcome(self):
+        """Pretty Welcome Message!"""
+        import pyfiglet
+
+        # Build message
+        message  = [""]
+        message += [line for line in pyfiglet.figlet_format(self.APP_NAME).split("\n") if line]
+        message += [""]
+        message += [f"Made with ❤️  by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
+        message += [""]
+
+        # Get longest line size for centering
+        size = max(map(len, message))
+
+        for line in message:
+            log.info(line.center(size))
+
     @property
     def LOGLEVEL(self) -> str:
         return self.CONFIG.logging.default("level", "trace").upper()
@@ -332,8 +355,9 @@ class BrokenProject:
         try:
             BrokenLogging().file(self.DIRECTORIES.LOGS/"Broken.log", self.LOGLEVEL)
         except PermissionError as e:
+            # Fixme: Two logging instances for the same file on Windows doesn't work
             if os.name == "nt":
-                log.fixme("Two logging instances for the same file on Windows doesn't work")
+                pass
             else:
                 raise e
         except Exception as e:

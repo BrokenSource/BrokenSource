@@ -377,7 +377,7 @@ class BrokenCLI:
 
             # Skip private submodule
             if submodule.get("private", False) and not auth:
-                log.minor(f"Submodule private ({path})")
+                log.skip(f"Submodule is private ({path})")
                 continue
 
             # Clone with authentication
@@ -385,7 +385,7 @@ class BrokenCLI:
 
             # Init and clone the submodules
             if list(path.iterdir()):
-                log.info(f"Submodule exists  ({path})")
+                log.info(f"Submodule is healthy ({path})")
                 self.submodules(root=path, username=username, password=password)
                 continue
 
@@ -413,10 +413,6 @@ class BrokenCLI:
                 log.success(f"Submodule cloned  ({path})")
 
             self.submodules(path, username=username, password=password)
-
-    def link(self, path: Path):
-        """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def install(self):
         self.__scripts__()
@@ -452,7 +448,7 @@ class BrokenCLI:
                 log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
-            log.skip("Shortcut for Windows is not implemented yet")
+            log.skip("Shortcut of brakeit for Windows is not implemented yet")
         else:
             log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return
@@ -497,6 +493,10 @@ class BrokenCLI:
                 ]))
 
             BrokenPath.make_executable(script, echo=False)
+
+    def link(self, path: Path):
+        """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def clean(self,
         isort: bool=True,
