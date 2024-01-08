@@ -608,7 +608,7 @@ class BrokenPath:
                     break
 
         # Print information about the binary
-        if echo: (log.warning if (binary is None) else log.success)(f"• Binary [{str(name).ljust(20)}]: [{binary}]", echo=echo)
+        if echo: (log.warning if (binary is None) else log.success)(f"• Binary ({name}) found at ({binary})", echo=echo)
 
         return binary
 
