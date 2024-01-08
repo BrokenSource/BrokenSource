@@ -58,19 +58,23 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
 
     # Brakeit might be on the current directory
     if (brakeit := cwd/"brakeit").exists():
+        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # It might be on a BrokenSource directory
     elif (brakeit := cwd/"BrokenSource"/"brakeit").exists():
+        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # It might be on the parent directory
     elif (brakeit := cwd.parent/"brakeit").exists():
+        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # Ok to clone and run automatic installation
     else:
         shell("git", "clone", "https://github.com/BrokenSource/BrokenSource")
+        os.chdir(cwd/"BrokenSource")
         shell(PYTHON, cwd/"BrokenSource/brakeit")
 
     exit(0)
