@@ -48,9 +48,12 @@ if os.name == "posix":
 
 print("🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎")
 
+PIPE_INSTALL = "BRAKEIT_OK_NON_ATTY"
+
 # If not running interactively, we might be on a pipe
-if not sys.stdin.isatty():
+if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
     print("• Detected non-interactive shell, using automatic installation mode")
+    os.environ[PIPE_INSTALL] = "1"
     cwd = Path.cwd()
 
     # Brakeit might be on the current directory
