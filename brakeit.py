@@ -219,6 +219,3 @@ shell(POETRY, "run", "broken", "install", echo=False)
 
 # Enter virtual environment
 shell(POETRY, "shell", echo=False)
-
-# Hold the terminal open for any errors
-input("Brakeit finished, press enter to continue..")
