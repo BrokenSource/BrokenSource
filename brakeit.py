@@ -121,8 +121,9 @@ for attempt in itertools.count(0):
         break
     except ImportError:
         if attempt == INSTALL_MAX_ATTEMPTS:
-            print("Failed to install pip automatically")
-            exit(1)
+            print("Failed to install pip using ensurepip")
+            input("\nPress enter to continue, things might not work..")
+            break
         print("Couldn't import pip, installing it...")
     except Exception as e:
         raise e
@@ -143,7 +144,8 @@ for attempt in itertools.count(0):
         print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but it failed")
         print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
         print( "2) Install it manually at (https://python-poetry.org/docs/#installation)")
-        exit(1)
+        input("\nPress enter to continue, things might not work..")
+        break
 
     # Call poetry --version, command might exit status 1 if it's not installed
     status = shell(POETRY, "--version", capture_output=True)
@@ -217,3 +219,6 @@ shell(POETRY, "run", "broken", "install", echo=False)
 
 # Enter virtual environment
 shell(POETRY, "shell", echo=False)
+
+# Hold the terminal open for any errors
+input("Brakeit finished, press enter to continue..")
