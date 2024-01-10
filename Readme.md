@@ -123,13 +123,6 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>
 
-### 🦀 Building Rust projects or Python releases
-
-- Install [**Microsoft C++ Build Tools**](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or with:
-  ```ps
-  winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-  ```
-
 <br>
 
 ## ⚠️ **Common** Troubleshooting

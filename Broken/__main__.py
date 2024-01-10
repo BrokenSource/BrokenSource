@@ -423,7 +423,7 @@ class BrokenCLI:
                 exit(BrokenUtils.relaunch().returncode)
 
             # Install Visual C++ Build Tools
-            log.note("You must install Microsoft Visual C++ Build Tools, will try, else see Readme")
+            log.note("You must install Microsoft Visual C++ Build Tools, will try, else try manually")
             shell((
                 'winget install Microsoft.VisualStudio.2022.BuildTools --override '
                 '"--wait --passive'
