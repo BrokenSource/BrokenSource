@@ -64,20 +64,20 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   git clone https://github.com/BrokenSource/BrokenSource
   ```
   ```bash
-  python ./BrokenSource/brakeit
+  python ./BrokenSource/brakeit.py
   ```
 
 - **Alternatively**, we also support `curl` + `pipe`! 🤯
 
   ```bash
-  curl -sSL https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit | python3 -
+  curl -sSL https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py | python3 -
   ```
 
 **And done**, you can now run `broken` and see all available commands 🚀
 
 - Head back to the *Project* you want to run for further instructions 🍷
 
-<sub><b>Note:</b> On subsequent runs, open a terminal inside `BrokenSource` folder and execute `python ./brakeit` script again</sub>
+<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>
 
 
 <br>
@@ -108,14 +108,27 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - **Now**, run the same **Linux** and **MacOS** commands above
 
+- **Alternatively**, we also support a `pipe` install! 🤯
+  ```ps
+  (Invoke-WebRequest -Uri https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py -UseBasicParsing).Content | py -
+  ```
+
 <br>
 
 <sub><b>Note:</b> You might need to replace `/` with `\` on the second command and `python` to `python3` or add `.exe` to it</sub>
 
 <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manual install Python and Git following the links above</sub>
 
-<sub><b>Note:</b> Restarting the shell is only needed on the first time you install Git and Python, as the shell's PATH isn't reloaded dynamically</sub>
+<sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as the shell's PATH isn't reloaded dynamically</sub>
 
+<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>
+
+### 🦀 Building Rust projects or Python releases
+
+- Install [**Microsoft C++ Build Tools**](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or with:
+  ```ps
+  winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+  ```
 
 <br>
 
@@ -317,6 +330,9 @@ Below a list, **not ordered by importance or relevance**, of the most notable so
 - [**SoundCard**](https://github.com/bastibe/SoundCard): A Pure-Python Real-Time Audio Library
 - [**Imageio-FFmpeg**](https://github.com/imageio/imageio-ffmpeg): Bundling FFmpeg binaries so I don't have to
 - [**mido**](https://pypi.org/project/mido): MIDI Files manipulation in Python
+- [**pyfiglet**](https://github.com/pwaller/pyfiglet): Pure Python easy Text ASCII art !
+- [**opensimplex**](https://github.com/lmas/opensimplex): Simplex Noise in Python, fast
+- [**pyapp**](https://github.com/ofek/pyapp): Bundling Python packages to installers
 
 ### Rust
 - [**Rust**](https://www.rust-lang.org): The programming language

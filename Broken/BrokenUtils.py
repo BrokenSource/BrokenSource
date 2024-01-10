@@ -23,6 +23,7 @@ def shell(
     *args: list[Any],
     output: bool=False,
     Popen: bool=False,
+    shell: bool=False,
     echo: bool=True,
     confirm: bool=False,
     do:bool =True,
@@ -54,6 +55,16 @@ def shell(
 
     # Flatten a list, remove falsy values, convert to strings
     command = tuple(map(str, BrokenUtils.flatten(args)))
+
+    if shell:
+        log.warning("Running command with shell=True, be careful")
+        kwargs["shell"] = shell
+        command = ' '.join(command)
+
+    # Assert command won't fail due unknown binary
+    if (not shell) and (not shutil.which(command[0])):
+        log.error(f"Binary doesn't exist or was not found on PATH ({command[0]})")
+        return
 
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
@@ -146,6 +157,10 @@ class BrokenPlatform:
     OnMacOS:      bool = (Name == "macos")
     OnBSD:        bool = (Name == "bsd")
 
+    # Platform release binaries extension and CPU architecture
+    Extension:    str  = ".exe" if OnWindows else ".bin"
+    Arch:         str  = platform.machine().lower()
+
     # Family of platforms
     OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
 
@@ -191,7 +206,11 @@ class BrokenPlatform:
 
     @staticmethod
     def clear_terminal(**kwargs):
-        shell("clear" if BrokenPlatform.OnUnix else "cls", **kwargs)
+        if BrokenPlatform.OnWindows:
+            if kwargs.get("do", True):
+                os.system("cls")
+        else:
+            shell("clear", **kwargs)
 
     @staticmethod
     def log_system_info():
@@ -513,14 +532,22 @@ class BrokenUtils:
         return module in sys.modules
 
     @staticmethod
-    def expand_sys_argv_relative_paths() -> None:
-        r"""
-        Expand sys.argv's ./ or .\ to full path. This is required as the working directory of projects
-        changes, so we must expand them on the main script relative to where Broken is used as CLI
+    def relaunch(*, safe: int=3, echo: bool=True) -> subprocess.CompletedProcess:
         """
-        for i, arg in enumerate(sys.argv):
-            if any([arg.startswith(x) for x in ("./", "../", ".\\")]):
-                sys.argv[i] = str(BrokenPath.true_path(arg))
+        Relaunch the current process with the same arguments up until a `safe` recursion
+        """
+        key = "BROKEN_RELAUNCH_INDEX"
+
+        # Get and assert safe recursion level
+        if (level := int(os.environ.get(key, 0))) >= safe:
+            log.error(f"Reached maximum relaunch recursion depth ({safe}), aborting")
+            exit(1)
+
+        # Increment relaunch index
+        os.environ[key] = str(level + 1)
+
+        log.info(f"Relaunching self process with arguments ({sys.argv})", echo=echo)
+        return shell(sys.executable, sys.argv, echo=echo)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -622,6 +649,7 @@ class BrokenPath:
     @contextmanager
     def pushd(path: PathLike, echo: bool=True):
         """Change directory, then change back when done"""
+        path = BrokenPath.true_path(path)
         cwd = os.getcwd()
         log.info(f"Pushd ({path})", echo=echo)
         os.chdir(path)

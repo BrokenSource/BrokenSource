@@ -97,6 +97,11 @@ class _BrokenProjectDirectories:
     # # Broken monorepo specific, potentially useful
 
     @property
+    def BROKEN_BRAKEIT(self) -> Path:
+        """Brakeit bootstrap script"""
+        return self.__mkdir__(self.REPOSITORY/"brakeit.py")
+
+    @property
     def BROKEN_RELEASES(self) -> Path:
         """Broken Source's Monorepo general Releases directory"""
         return self.__mkdir__(self.REPOSITORY/"Release")
@@ -239,6 +244,11 @@ class _BrokenProjectResources:
         """Application icon in PNG format"""
         return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.png"
 
+    @property
+    def ICON_ICO(self) -> Path:
+        """Application icon in ICO format"""
+        return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.ico"
+
     # # Shaders section
 
     @property
@@ -329,7 +339,8 @@ class BrokenProject:
         message  = [""]
         message += [line for line in pyfiglet.figlet_format(self.APP_NAME).split("\n") if line]
         message += [""]
-        message += [f"Made with ❤️  by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
+        message += [f"Made with ❤️ by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
+        message += ["Release version" if BROKEN_RELEASE else "Development version"]
         message += [""]
 
         # Get longest line size for centering

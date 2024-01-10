@@ -49,7 +49,12 @@ class BrokenDotmap:
     is_dunder = lambda key: key.startswith("__") and key.endswith("__")
     true_path = lambda path: Path(path).expanduser().resolve().absolute()
 
-    def __init__(self, path: Path=None, sync: bool=True, echo: bool=False, super: Self=None):
+    def __init__(self,
+        path: Path=None,
+        sync: bool=True,
+        echo: bool=False,
+        super: Self=None,
+    ):
 
         # A reference to the root instance of the dictionaries
         self.__super__ = super or self
@@ -135,8 +140,8 @@ class BrokenDotmap:
 
     # # Redirect items, keys
 
-    def items(self) -> list:
-        return list(self.__dict__.items())
+    def items(self) -> Dict[str, Any]:
+        return self.__dict__.items()
 
     def keys(self) -> list:
         return list(self.__dict__.keys())

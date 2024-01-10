@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import itertools
 import os
 import shutil
@@ -58,7 +58,7 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
     cwd = Path.cwd()
 
     # Install dependencies on Windows
-    if os.name == "nt":
+    if (os.name == "nt"):
 
         # User might not have winget
         try:
@@ -96,7 +96,7 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
     else:
         shell("git", "clone", "https://github.com/BrokenSource/BrokenSource")
         os.chdir(cwd/"BrokenSource")
-        shell(PYTHON, cwd/"BrokenSource/brakeit")
+        shell(PYTHON, cwd/"BrokenSource/brakeit.py")
 
     exit(0)
 
@@ -128,7 +128,10 @@ for attempt in itertools.count(0):
         raise e
 
     # Fixme: Do we need a more complex solution?
-    shell(sys.executable, "-m", "ensurepip", "--upgrade")
+    shell(PYTHON, "-m", "ensurepip", "--upgrade")
+
+# Upgrade pip
+shell(PIP, "install", "--upgrade", "pip")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -151,6 +154,10 @@ for attempt in itertools.count(0):
 
     # Install poetry and try again
     shell(PIP, "install", "--user", "poetry", "--no-warn-script-location")
+
+# Avoid connection pool is full
+shell(POETRY, "config", "installer.max-workers", "10")
+os.environ["POETRY_INSTALLER_MAX_WORKERS"] = "10"
 
 # Create, install dependencies on virtual environment
 if shell(POETRY, "install").returncode != 0:
@@ -199,11 +206,13 @@ if os.name == "nt":
 
 # -------------------------------------------------------------------------------------------------|
 
+# Welcome ✨
+shell(POETRY, "run", "broken", "welcome", echo=False)
+
 # Install scripts, desktop files and submodules (+ignore private infra)
 if shell(POETRY, "run", "broken", "submodules", echo=False).returncode != 0:
     print("Failed to clone one or many essential or not public submodules")
     input("Press enter to continue...")
-
 shell(POETRY, "run", "broken", "install", echo=False)
 
 # Enter virtual environment

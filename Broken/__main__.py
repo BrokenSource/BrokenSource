@@ -4,7 +4,6 @@ from Broken import *
 
 
 def main():
-    BrokenUtils.expand_sys_argv_relative_paths()
     broken = BrokenCLI()
     broken.cli()
 
@@ -32,6 +31,7 @@ class BrokenProjectCLI:
         self.broken_typer.command(self.poetry, add_help_option=False)
         self.broken_typer.command(self.poe,    add_help_option=False)
         self.broken_typer.command(self.update, add_help_option=False)
+        self.broken_typer.command(self.build,  add_help_option=False)
         self.broken_typer.command(self.run,    add_help_option=False, default=True)
         with BrokenPath.pushd(self.path, echo=False):
             self.broken_typer(ctx.args)
@@ -93,6 +93,14 @@ class BrokenProjectCLI:
             languages.add(ProjectLanguage.Unknown)
 
         return languages
+
+    @property
+    def pyproject(self) -> DotMap:
+        return DotMap(toml.loads((self.path/"pyproject.toml").read_text()))
+
+    @property
+    def cargotoml(self) -> DotMap:
+        return DotMap(toml.loads((self.path/"Cargo.toml").read_text()))
 
     @property
     def description_pretty_language(self) -> str:
@@ -259,6 +267,82 @@ class BrokenProjectCLI:
 
             return venv
 
+    def build(self):
+        """Build the project"""
+        if self.is_python:
+
+            # Build all path dependencies for a project recursively, return their path (wheel at dist/*.whl)
+            def convoluted_wheels(path: Path, projects: Set[Path]=None) -> Set[Path]:
+                with BrokenPath.pushd(path := BrokenPath.true_path(path)):
+                    log.info(f"Building project at ({path})")
+
+                    # Initialize empty set and add current project
+                    projects = projects or set()
+                    if path in projects:
+                        return
+                    projects.add(path)
+
+                    # Load pyproject dictionary
+                    pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
+
+                    # Iterate on all path dependencies
+                    for name, dependency in pyproject.tool.poetry["dev-dependencies"].items():
+
+                        # Find only path= dependencies
+                        if isinstance(dependency, str):
+                            continue
+                        if not dependency.path:
+                            continue
+
+                        # Recurse on the other project
+                        convoluted_wheels(path=dependency.path, projects=projects)
+
+                    # Remove previous builds
+                    BrokenPath.remove(path/"dist")
+
+                    # Build the current project
+                    shell("poetry", "build", "--format", "wheel")
+
+                return projects
+
+            # Build all projects wheels. Main project is the first returned
+            wheels = [next(project.glob("dist/*.whl")) for project in convoluted_wheels(self.path)]
+
+            for i, wheel in enumerate(wheels):
+                log.info(f"{i}: Using project wheel at ({wheel})")
+
+            raise NotImplementedError("Waiting pyapp feature request to scientifically build wheels")
+
+            # Reset previous build
+            BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
+
+            # Build the final binary
+            os.environ.update(dict(
+                PYAPP_PROJECT_PATH=str(wheels[0]),
+                PYAPP_LOCAL_DEPENDENCIES=':'.join(map(str, wheels[1:])),
+                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
+                # PYAPP_DISTRIBUTION_EMBED="1",
+                PYAPP_PASS_LOCATION="1",
+                PYAPP_PIP_EXTERNAL="1",
+            ))
+
+            # Build the final binary
+            shell("cargo", "install", "pyapp", "--root", BROKEN.DIRECTORIES.BROKEN_BUILD)
+            binary = next((BROKEN.DIRECTORIES.BROKEN_BUILD/"bin").glob("pyapp*"))
+            log.info(f"Compiled Pyapp binary at ({binary})")
+
+            # Rename project binary according to the Broken naming convention
+            version = wheels[0].name.split("-")[1]
+            release = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
+                f"{self.name}-"
+                f"{BrokenPlatform.Name}-"
+                f"{BrokenPlatform.Arch}-"
+                f"{version}"
+                f"{BrokenPlatform.Extension}"
+            )
+            binary.rename(release_name)
+            log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_name})")
+
 # -------------------------------------------------------------------------------------------------|
 
 @define
@@ -274,6 +358,7 @@ class BrokenCLI:
 
     def find_projects(self, path: Path) -> None:
         for directory in path.iterdir():
+            directory = BrokenPath.true_path(directory)
 
             if directory.is_file():
                 continue
@@ -283,7 +368,7 @@ class BrokenCLI:
                 continue
 
             # Avoid recursion
-            if directory == BROKEN.DIRECTORIES.PACKAGE:
+            if directory == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
 
             # Resolve symlinks recursively
@@ -302,14 +387,15 @@ class BrokenCLI:
         ))
 
         with self.broken_typer.panel("📦 Installation"):
-            self.broken_typer.command(self.install)
-            self.broken_typer.command(self.link)
+            self.broken_typer.command(self.welcome, hidden=True)
             self.broken_typer.command(self.submodules)
+            self.broken_typer.command(self.install)
+            self.broken_typer.command(self.rust)
+            self.broken_typer.command(self.link)
 
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
             self.broken_typer.command(self.updateall)
-            self.broken_typer.command(self.release)
 
         with self.broken_typer.panel("⚠️ Experimental"):
             self.broken_typer.command(self.pillow, hidden=True)
@@ -326,7 +412,45 @@ class BrokenCLI:
 
         self.broken_typer(sys.argv[1:])
 
+    def rust(self,
+        toolchain: Annotated[str, typer.Option("--toolchain", "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
+    ):
+        if BrokenPlatform.OnWindows:
+
+            # Install rustup
+            if not shutil.which("rustup"):
+                shell("winget", "install", "-e", "--id", "Rustlang.Rustup")
+                exit(BrokenUtils.relaunch().returncode)
+
+            # Install Visual C++ Build Tools
+            log.note("You must install Microsoft Visual C++ Build Tools, will try, else see Readme")
+            shell((
+                'winget install Microsoft.VisualStudio.2022.BuildTools --override '
+                '"--wait --passive'
+                    ' --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
+                    ' --add Microsoft.VisualStudio.Component.Windows10SDK'
+                    ' --add Microsoft.VisualStudio.Component.Windows11SDK.22000'
+                '"'
+            ), shell=True)
+
+        elif BrokenPlatform.OnLinux:
+            ...
+
+        elif BrokenPlatform.OnMacOS:
+            ...
+
+        # Install or select the correct toolchain
+        for line in shell("rustup", "toolchain", "list", output=True, echo=False).split("\n"):
+            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != toolchain)):
+                log.info(f"Defaulting Rust toolchain to ({toolchain})")
+                shell("rustup", "default", toolchain)
+        else:
+            log.info(f"Rust toolchain already default ({toolchain})")
+
     # # Installation commands
+
+    def welcome(self) -> None:
+        BROKEN.welcome()
 
     def submodules(self,
         # Basic
@@ -415,21 +539,39 @@ class BrokenCLI:
             self.submodules(path, username=username, password=password)
 
     def install(self):
+        # Big functions
         self.__scripts__()
         self.__shortcut__()
-        log.info("Running Broken at", BROKEN.DIRECTORIES.REPOSITORY)
-        log.note(f"Next time, to enter the Broken development environment, run (python ./brakeit) again!")
+
+        # Add Broken to PATH
+        import userpath
+
+        ROOT = BROKEN.DIRECTORIES.REPOSITORY
+
+        if not any([
+            ROOT == BrokenPath.true_path(path)
+            for path in os.environ.get("PATH", "").split(os.pathsep)
+        ]):
+            log.warning("Broken isn't on PATH but was added. Please, restart the Terminal to take effect")
+            userpath.append(str(ROOT))
+        else:
+            log.info("Current Broken Monorepo directory is already on PATH")
+
+        # Quality of life messages
+        log.info(F"Running Broken at ({ROOT})")
+        log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
 
     def __shortcut__(self):
         if BrokenPlatform.OnUnix:
+            log.info("Creating Broken shortcut")
 
             # Symlink Broken Shared Directory to current root
             BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.REPOSITORY)
 
             # Symlink `brakeit` on local bin and make it executable
             BrokenPath.make_executable(BrokenPath.symlink(
-                virtual=BROKEN.DIRECTORIES.HOME/".local/bin/brakeit",
-                real=BROKEN.DIRECTORIES.BROKEN_SHARED/"brakeit"
+                virtual=BROKEN.DIRECTORIES.HOME/".local/bin/brakeit.py",
+                real=BROKEN.DIRECTORIES.BROKEN_SHARED/"brakeit.py"
             ))
 
             # Create Linux .desktop file
@@ -438,17 +580,26 @@ class BrokenCLI:
                 desktop.write_text('\n'.join([
                     "[Desktop Entry]",
                     "Type=Application",
-                    "Name=Broken Shell",
-                    f"Exec={BROKEN.DIRECTORIES.BROKEN_SHARED/'brakeit'}",
-                    f"Icon={BROKEN.DIRECTORIES.PACKAGE/'Resources'/'Broken.png'}",
-                    "Comment=Broken Shell Development Environment",
+                    "Name=Brakeit",
+                    f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
+                    f"Icon={BROKEN.RESOURCES.ICON}",
+                    "Comment=Brakeit Bootstrapper",
                     "Terminal=true",
                     "Categories=Development",
                 ]))
                 log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
-            log.skip("Shortcut of brakeit for Windows is not implemented yet")
+            import pyshortcuts
+
+            pyshortcuts.make_shortcut(
+                script=str(BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
+                name="Brakeit",
+                description="Brakeit Bootstrapper",
+                icon=str(BROKEN.RESOURCES.ICON_ICO),
+            )
+
+            log.info("Created Windows shortcut for Brakeit")
         else:
             log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
             return
@@ -511,8 +662,10 @@ class BrokenCLI:
         if all or isort:
             shell("isort", BROKEN.DIRECTORIES.PACKAGE,
                 "--force-single-line-imports",
+                "--skip", BROKEN.DIRECTORIES.REPOSITORY/".venvs",
                 "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
                 "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
+                "--skip", BROKEN.DIRECTORIES.WORKSPACE,
             )
 
         # Remove all .pyc files and __pycache__ folders
@@ -531,9 +684,6 @@ class BrokenCLI:
         """Updates all projects"""
         for project in self.projects:
             project.update()
-
-    def release(self) -> None:
-        log.todo("Reimplement release command")
 
     # # Experimental
 

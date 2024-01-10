@@ -15,5 +15,5 @@ ___*
 
 # Symlinks
 Workspace
-Projects/Hook
+Projects/*
 .venvs
