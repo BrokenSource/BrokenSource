@@ -328,6 +328,7 @@ class BrokenProject:
         self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP/f"{self.APP_NAME}.pickle")
 
         # Create logger based on configuration
+        os.environ["BROKEN_CURRENT_PROJECT_NAME"] = self.APP_NAME
         self.__START_LOGGING__()
 
         # Convenience: Symlink Workspace to projects data directory

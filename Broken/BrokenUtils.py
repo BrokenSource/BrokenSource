@@ -159,7 +159,9 @@ class BrokenPlatform:
 
     # Platform release binaries extension and CPU architecture
     Extension:    str  = ".exe" if OnWindows else ".bin"
-    Arch:         str  = platform.machine().lower()
+    Architecture: str  = (platform.machine().lower()
+        .replace("x86_64", "amd64")
+    )
 
     # Family of platforms
     OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
@@ -198,11 +200,13 @@ class BrokenPlatform:
     class Targets(BrokenEnum):
         """List of common platforms targets for releases"""
         LinuxAMD64:   str = "linux-amd64"
-        LinuxARM:     str = "linux-arm"
+        LinuxARM:     str = "linux-arm64"
         WindowsAMD64: str = "windows-amd64"
-        WindowsARM:   str = "windows-arm"
+        WindowsARM:   str = "windows-arm64"
         MacOSAMD64:   str = "macos-amd64"
-        MacOSARM:     str = "macos-arm"
+        MacOSARM:     str = "macos-arm64"
+
+    CurrentTarget:    str = f"{Name}-{Architecture}"
 
     @staticmethod
     def clear_terminal(**kwargs):
@@ -860,6 +864,7 @@ class BrokenTyper:
     commands:    List[str]   = Factory(list)
     default:     str         = None
     help_option: bool        = False
+    __first__:   bool        = True
     epilog:      str         = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
@@ -923,19 +928,32 @@ class BrokenTyper:
         # Set as default command
         self.default = name if default else self.default
 
-    def __call__(self, *args):
-        args = BrokenUtils.flatten(args)
+    def __call__(self, *args, shell: bool=False):
+        while True:
+            args = BrokenUtils.flatten(args)
 
-        # Insert default implied command
-        if self.default and ((not args) or (args.get(0) not in self.commands)):
-            args.insert(0, self.default)
+            # Insert default implied command
+            if self.default and ((not args) or (args.get(0) not in self.commands)):
+                args.insert(0, self.default)
 
-        try:
-            self.app(args)
-        except SystemExit as e:
-            pass
-        except Exception as e:
-            raise e
+            # Update args to BrokenTyper
+            if not self.__first__:
+                args = shlex.split(input("\n:: BrokenShell (enter for help) $ "))
+            self.__first__ = False
+
+            try:
+                self.app(args)
+            except SystemExit:
+                pass
+            except KeyboardInterrupt:
+                log.success("BrokenTyper stopped by user")
+                pass
+            except Exception as e:
+                raise e
+
+            # Don't continue on non BrokenShell mode
+            if not shell:
+                break
 
 # -------------------------------------------------------------------------------------------------|
 

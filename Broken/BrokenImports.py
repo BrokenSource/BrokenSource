@@ -96,6 +96,7 @@ while True:
         import platform
         import random
         import re
+        import shlex
         import shutil
         import subprocess
         import tempfile

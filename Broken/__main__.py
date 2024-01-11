@@ -28,11 +28,11 @@ class BrokenProjectCLI:
 
     def cli(self, ctx: typer.Context) -> None:
         self.broken_typer = BrokenTyper(help_option=False)
-        self.broken_typer.command(self.poetry, add_help_option=False)
-        self.broken_typer.command(self.poe,    add_help_option=False)
-        self.broken_typer.command(self.update, add_help_option=False)
-        self.broken_typer.command(self.build,  add_help_option=False)
-        self.broken_typer.command(self.run,    add_help_option=False, default=True)
+        self.broken_typer.command(self.poetry,  add_help_option=False)
+        self.broken_typer.command(self.poe,     add_help_option=True)
+        self.broken_typer.command(self.update,  add_help_option=True)
+        self.broken_typer.command(self.release, add_help_option=True)
+        self.broken_typer.command(self.run,     add_help_option=False, default=True)
         with BrokenPath.pushd(self.path, echo=False):
             self.broken_typer(ctx.args)
 
@@ -172,9 +172,6 @@ class BrokenProjectCLI:
         echo:      Annotated[bool, typer.Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
-        # Set environment variable for the project name
-        os.environ["BROKEN_CURRENT_PROJECT_NAME"] = self.name
-
         # For all arguments in ctx.args, if it's a file, replace it with its path
         # This also fixes files references on the nested poetry command rebasing to its path
         for i, arg in enumerate(ctx.args):
@@ -267,8 +264,10 @@ class BrokenProjectCLI:
 
             return venv
 
-    def build(self):
-        """Build the project"""
+    def release(self,
+        target: Annotated[BrokenPlatform.Targets, typer.Option("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
+    ):
+        """Release the Project as a distributable binary"""
         if self.is_python:
 
             # Build all path dependencies for a project recursively, return their path
@@ -317,19 +316,23 @@ class BrokenProjectCLI:
             for i, wheel in enumerate(wheels):
                 log.info(f"{i}: Using project wheel at ({wheel})")
 
-            # Reset previous build
-            BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
-
-            # Build the final binary
+            # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(wheels[0]),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
-                # PYAPP_DISTRIBUTION_EMBED="1",
+                PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
             ))
 
+            # Remove previous build cache for pyapp but no other crate
+            for path in [x for x in BROKEN.DIRECTORIES.BROKEN_BUILD.glob("**") if "pyapp" in x.name]:
+                BrokenPath.remove(path)
+
+            # Cache Rust compilation across projects
+            os.environ["CARGO_TARGET_DIR"] = str(BROKEN.DIRECTORIES.BROKEN_BUILD)
+
             # Build the final binary
-            shell("cargo", "install", "pyapp", "--root", BROKEN.DIRECTORIES.BROKEN_BUILD)
+            shell("cargo", "install", "pyapp", "--force", "--root", BROKEN.DIRECTORIES.BROKEN_BUILD)
             binary = next((BROKEN.DIRECTORIES.BROKEN_BUILD/"bin").glob("pyapp*"))
             log.info(f"Compiled Pyapp binary at ({binary})")
 
@@ -345,7 +348,7 @@ class BrokenProjectCLI:
             release_name = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
                 f"{self.name.lower()}-"
                 f"{BrokenPlatform.Name}-"
-                f"{BrokenPlatform.Arch}-"
+                f"{BrokenPlatform.Architecture}-"
                 f"{version}"
                 f"{BrokenPlatform.Extension}"
             )
