@@ -3,6 +3,8 @@ import importlib.resources
 import os
 import sys
 
+import Broken.Resources as BrokenResources
+
 # Information about the release and version
 BROKEN_PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 BROKEN_PYAPP:       bool = bool(os.environ.get("PYAPP", False))
@@ -16,18 +18,6 @@ from .BrokenImports import *
 from .BrokenLogging import *
 from .BrokenDotmap import *
 from .BrokenUtils import *
-from .BrokenProject import *
-
-import Broken.Resources as BrokenResources
-
-# Create Broken monorepo project
-BROKEN = BrokenProject(
-    PACKAGE=__file__,
-    APP_NAME="Broken",
-    APP_AUTHOR="BrokenSource",
-    RESOURCES=BrokenResources,
-)
-
 from .Modules import *
 
 # Workarounds for System ARGV

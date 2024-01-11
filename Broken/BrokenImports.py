@@ -144,6 +144,8 @@ while True:
         import PIL
         import PIL.Image
         import quaternion
+        import requests
+        import requests_cache
         import rich.prompt
         import schedule
         import soundcard

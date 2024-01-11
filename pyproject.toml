@@ -40,6 +40,7 @@ moderngl       = "^5.9.0"
 poethepoet     = "^0.24.4"
 python-dotenv  = "^1.0.0"
 pyfiglet       = "^1.0.2"
+requests-cache = "^1.1.1"
 
 [tool.poetry.scripts]
 broken = "Broken.__main__:main"

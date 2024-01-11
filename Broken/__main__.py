@@ -211,10 +211,11 @@ class BrokenProjectCLI:
 
             # Detect bad return status, reinstall virtualenv and retry once
             if (status.returncode != 0) and (not reinstall):
-                log.warning(f"Detected bad return status for the Project [{self.name}]")
+                log.warning(f"Detected bad return status for the Project ({self.name}) at ({self.path})")
+                log.warning(f"- Return status: ({status.returncode})")
 
                 if self.is_python:
-                    log.warning(f"- Virtual environment path: [{venv}]")
+                    log.warning(f"- Virtual environment path: ({venv})")
 
                 # Prompt user for action
                 answer = rich.prompt.Prompt.ask(
@@ -335,6 +336,7 @@ class BrokenProjectCLI:
             shell("cargo", "install", "pyapp", "--force", "--root", BROKEN.DIRECTORIES.BROKEN_BUILD)
             binary = next((BROKEN.DIRECTORIES.BROKEN_BUILD/"bin").glob("pyapp*"))
             log.info(f"Compiled Pyapp binary at ({binary})")
+            BrokenPath.make_executable(binary)
 
             # Remove previous wheels
             for wheel in wheels:
@@ -356,7 +358,10 @@ class BrokenProjectCLI:
             binary.rename(release_name)
 
             # Create a sha265sum file for integrity verification
-            release_name.with_suffix(".sha256").write_text(BrokenUtils.sha256sum(release_name))
+            sha256sum = BrokenUtils.sha256sum(release_name)
+            release_name.with_suffix(".sha256").write_text(sha256sum)
+            log.info(f"Release SHA256: {sha256sum}")
+
             log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_name})")
 
 # -------------------------------------------------------------------------------------------------|
@@ -475,6 +480,9 @@ class BrokenCLI:
         # Direct authentication
         username: str=typer.Option(None, "--username", "-u", help="Username to use for git clone"),
         password: str=typer.Option(None, "--password", "-p", help="Password to use for git clone"),
+
+        # Git options
+        force: bool=typer.Option(False, "--force", "-f", help="Force pull (overrides local changes)"),
     ):
         """
         Safely init and clone submodules, skip private submodules
@@ -488,7 +496,7 @@ class BrokenCLI:
         # Init submodules
         with BrokenPath.pushd(root, echo=False):
             shell("git", "submodule", "init")
-            shell("git", "pull")
+            shell("git", "pull", "--force"*force)
 
         # Ask credentials
         if auth:
@@ -545,7 +553,7 @@ class BrokenCLI:
                     log.success(f"Submodule cloned  ({path})")
 
                 # Pull changes after initial clone
-                shell("git", "pull")
+                shell("git", "pull", "--force"*force)
 
             self.submodules(path, username=username, password=password)
 
