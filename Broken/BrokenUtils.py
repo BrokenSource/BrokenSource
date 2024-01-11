@@ -1334,11 +1334,6 @@ class _BrokenProjectDirectories:
         """(Unix: /tmp), (Windows: C://Windows//Temp)"""
         return self.__mkdir__(tempfile.gettempdir())
 
-    @property
-    def BROKEN_SHARED(self) -> Path:
-        """Returns the shared directory of Broken"""
-        return self.HOME/".BrokenSource"
-
     # # Broken monorepo specific, potentially useful
 
     @property

@@ -496,7 +496,7 @@ class BrokenCLI:
         # Init submodules
         with BrokenPath.pushd(root, echo=False):
             shell("git", "submodule", "init")
-            shell("git", "pull", "--force"*force)
+            shell("git", "pull", "--quiet", "--force"*force)
 
         # Ask credentials
         if auth:
@@ -553,7 +553,7 @@ class BrokenCLI:
                     log.success(f"Submodule cloned  ({path})")
 
                 # Pull changes after initial clone
-                shell("git", "pull", "--force"*force)
+                shell("git", "pull", "--quiet", "--force"*force)
 
             self.submodules(path, username=username, password=password)
 
@@ -577,25 +577,22 @@ class BrokenCLI:
             log.info("Current Broken Monorepo directory is already on PATH")
 
         # Quality of life messages
-        log.info(F"Running Broken at ({ROOT})")
+        log.info(f"Root is ({ROOT})")
         log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
 
     def __shortcut__(self):
         if BrokenPlatform.OnUnix:
-            log.info("Creating Broken shortcut")
-
-            # Symlink Broken Shared Directory to current root
-            BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_SHARED, real=BROKEN.DIRECTORIES.REPOSITORY)
 
             # Symlink `brakeit` on local bin and make it executable
             BrokenPath.make_executable(BrokenPath.symlink(
-                virtual=BROKEN.DIRECTORIES.HOME/".local/bin/brakeit.py",
-                real=BROKEN.DIRECTORIES.BROKEN_SHARED/"brakeit.py"
+                virtual=BROKEN.DIRECTORIES.HOME/".local/bin/brakeit",
+                real=BROKEN.DIRECTORIES.REPOSITORY/"brakeit.py"
             ))
 
             # Create Linux .desktop file
             if BrokenPlatform.OnLinux:
                 desktop = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
+                log.info(f"Creating Desktop file at ({desktop})")
                 desktop.write_text('\n'.join([
                     "[Desktop Entry]",
                     "Type=Application",
@@ -606,7 +603,6 @@ class BrokenCLI:
                     "Terminal=true",
                     "Categories=Development",
                 ]))
-                log.info(f"Created .desktop file [{desktop}]")
 
         elif BrokenPlatform.OnWindows:
             import pyshortcuts
