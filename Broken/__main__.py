@@ -665,25 +665,30 @@ class BrokenCLI:
         pycache: bool=True,
         build: bool=False,
         releases: bool=False,
+        wheels: bool=False,
         all: bool=False
     ) -> None:
         """Sorts imports, cleans .pyc files and __pycache__ directories"""
 
         # Sort imports, ignore "Releases" folder
         if all or isort:
-            shell("isort", BROKEN.DIRECTORIES.PACKAGE,
+            shell("isort", BROKEN.DIRECTORIES.REPOSITORY,
                 "--force-single-line-imports",
                 "--skip", BROKEN.DIRECTORIES.REPOSITORY/".venvs",
                 "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
                 "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
-                "--skip", BROKEN.DIRECTORIES.WORKSPACE,
             )
 
         # Remove all .pyc files and __pycache__ folders
         if all or pycache:
-            delete  = list(BROKEN.DIRECTORIES.PACKAGE.glob("**/*.pyc"))
-            delete += list(BROKEN.DIRECTORIES.PACKAGE.glob("**/__pycache__"))
+            delete  = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.pyc"))
+            delete += list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/__pycache__"))
+            for path in delete:
+                BrokenPath.remove(path)
 
+        # Remove all .whl files
+        if all or wheels:
+            delete = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.whl"))
             for path in delete:
                 BrokenPath.remove(path)
 

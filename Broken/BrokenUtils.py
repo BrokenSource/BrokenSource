@@ -793,7 +793,7 @@ class BrokenPath:
         BrokenPath.mkdir(virtual.parent, echo=False)
 
         # Remove old symlink if it points to a non existing directory
-        if not virtual.resolve().exists():
+        if virtual.is_symlink() and (not virtual.resolve().exists()):
             virtual.unlink()
 
         # Virtual doesn't exist, ok to create
@@ -866,7 +866,7 @@ class BrokenTyper:
     help_option: bool        = False
     __first__:   bool        = True
     epilog:      str         = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN.VERSION}[/yellow]\n\n"
+        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 

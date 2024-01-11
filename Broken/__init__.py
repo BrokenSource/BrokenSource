@@ -8,11 +8,14 @@ BROKEN_PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 BROKEN_PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
+BROKEN_DEVELOPMENT: bool = not BROKEN_RELEASE
+BROKEN_VERSION:     str  = importlib.metadata.version("Broken") or "Unknown"
 
 # isort: off
 from .BrokenImports import *
 from .BrokenLogging import *
 from .BrokenDotmap import *
+from .BrokenUtils import *
 from .BrokenProject import *
 
 import Broken.Resources as BrokenResources
@@ -25,7 +28,6 @@ BROKEN = BrokenProject(
     RESOURCES=BrokenResources,
 )
 
-from .BrokenUtils import *
 from .Modules import *
 
 # Workarounds for System ARGV

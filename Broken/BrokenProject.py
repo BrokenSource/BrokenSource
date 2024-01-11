@@ -332,15 +332,12 @@ class BrokenProject:
         self.__START_LOGGING__()
 
         # Convenience: Symlink Workspace to projects data directory
-        if BROKEN_RELEASE:
-            try:
-                BrokenPath.symlink(
-                    virtual=self.DIRECTORIES.REPOSITORY/"Workspace"/self.APP_AUTHOR,
-                    real=self.DIRECTORIES.WORKSPACE.parent,
-                    echo=False
-                )
-            except Exception:
-                pass
+        if BROKEN_DEVELOPMENT:
+            BrokenPath.symlink(
+                virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
+                real=self.DIRECTORIES.WORKSPACE,
+                echo=False
+            )
 
     def welcome(self):
         """Pretty Welcome Message!"""
@@ -358,7 +355,7 @@ class BrokenProject:
         size = max(map(len, message))
 
         for line in message:
-            log.info(line.center(size))
+            log.info(line.center(size).rstrip())
 
     @property
     def LOGLEVEL(self) -> str:
