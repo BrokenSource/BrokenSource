@@ -271,7 +271,7 @@ class BrokenProjectCLI:
         """Build the project"""
         if self.is_python:
 
-            # Build all path dependencies for a project recursively, return their path (wheel at dist/*.whl)
+            # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
                 with BrokenPath.pushd(path := BrokenPath.true_path(path)):
                     log.info(f"Building project at ({path})")
@@ -367,7 +367,6 @@ class BrokenCLI:
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
-        self.find_projects(Path.cwd())
 
     def find_projects(self, path: Path) -> None:
         for directory in path.iterdir():
