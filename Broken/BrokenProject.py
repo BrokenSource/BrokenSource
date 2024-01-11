@@ -92,7 +92,7 @@ class _BrokenProjectDirectories:
     @property
     def BROKEN_SHARED(self) -> Path:
         """Returns the shared directory of Broken"""
-        return self.__mkdir__(self.HOME/".BrokenSource", resolve=False)
+        return self.HOME/".BrokenSource"
 
     # # Broken monorepo specific, potentially useful
 
@@ -130,6 +130,11 @@ class _BrokenProjectDirectories:
     def BROKEN_META(self) -> Path:
         """Broken Source's Monorepo Meta directory (Many submodules there)"""
         return self.__mkdir__(self.REPOSITORY/"Meta")
+
+    @property
+    def BROKEN_PRIVATE(self) -> Path:
+        """Broken Source's Monorepo Private directory"""
+        return self.__mkdir__(self.REPOSITORY/"Private")
 
     # # Meta directories - Broken monorepo specific
 
@@ -250,6 +255,11 @@ class _BrokenProjectResources:
         return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.ico"
 
     # # Shaders section
+
+    @property
+    def SCENES(self) -> Path:
+        """Scenes directory"""
+        return self.__RESOURCES__/"Scenes"
 
     @property
     def SHADERS(self) -> Path:

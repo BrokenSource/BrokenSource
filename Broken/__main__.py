@@ -272,15 +272,15 @@ class BrokenProjectCLI:
         if self.is_python:
 
             # Build all path dependencies for a project recursively, return their path (wheel at dist/*.whl)
-            def convoluted_wheels(path: Path, projects: Set[Path]=None) -> Set[Path]:
+            def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
                 with BrokenPath.pushd(path := BrokenPath.true_path(path)):
                     log.info(f"Building project at ({path})")
 
                     # Initialize empty set and add current project
-                    projects = projects or set()
+                    projects = projects or list()
                     if path in projects:
                         return
-                    projects.add(path)
+                    projects.append(path)
 
                     # Load pyproject dictionary
                     pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
@@ -300,6 +300,12 @@ class BrokenProjectCLI:
                     # Remove previous builds
                     BrokenPath.remove(path/"dist")
 
+                    # Hack: Move all built wheels to the Resources folder
+                    if self.path == path:
+                        log.info(f"Moving wheels to Resources folder")
+                        for wheel in [next(project.glob("dist/*.whl")) for project in projects[1:]]:
+                            BrokenPath.copy(wheel, BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")/wheel.name)
+
                     # Build the current project
                     shell("poetry", "build", "--format", "wheel")
 
@@ -311,19 +317,15 @@ class BrokenProjectCLI:
             for i, wheel in enumerate(wheels):
                 log.info(f"{i}: Using project wheel at ({wheel})")
 
-            raise NotImplementedError("Waiting pyapp feature request to scientifically build wheels")
-
             # Reset previous build
             BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
 
             # Build the final binary
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(wheels[0]),
-                PYAPP_LOCAL_DEPENDENCIES=':'.join(map(str, wheels[1:])),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 # PYAPP_DISTRIBUTION_EMBED="1",
                 PYAPP_PASS_LOCATION="1",
-                PYAPP_PIP_EXTERNAL="1",
             ))
 
             # Build the final binary
@@ -331,16 +333,27 @@ class BrokenProjectCLI:
             binary = next((BROKEN.DIRECTORIES.BROKEN_BUILD/"bin").glob("pyapp*"))
             log.info(f"Compiled Pyapp binary at ({binary})")
 
+            # Remove previous wheels
+            for wheel in wheels:
+                BrokenPath.remove(wheel.parent)
+
+            # Remove built wheel from Resources
+            BrokenPath.remove(self.path/"Resources"/"Wheels")
+
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
-            release = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
-                f"{self.name}-"
+            release_name = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
+                f"{self.name.lower()}-"
                 f"{BrokenPlatform.Name}-"
                 f"{BrokenPlatform.Arch}-"
                 f"{version}"
                 f"{BrokenPlatform.Extension}"
             )
+            BrokenPath.remove(release_name)
             binary.rename(release_name)
+
+            # Create a sha265sum file for integrity verification
+            release_name.with_suffix(".sha256").write_text(BrokenUtils.sha256sum(release_name))
             log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_name})")
 
 # -------------------------------------------------------------------------------------------------|
@@ -460,9 +473,6 @@ class BrokenCLI:
         # Direct authentication
         username: str=typer.Option(None, "--username", "-u", help="Username to use for git clone"),
         password: str=typer.Option(None, "--password", "-p", help="Password to use for git clone"),
-
-        # Utilities
-        pull: bool=typer.Option(False, "--pull", "-P", help="Pull submodules"),
     ):
         """
         Safely init and clone submodules, skip private submodules
@@ -476,7 +486,7 @@ class BrokenCLI:
         # Init submodules
         with BrokenPath.pushd(root, echo=False):
             shell("git", "submodule", "init")
-            shell("git", "pull", do=pull)
+            shell("git", "pull")
 
         # Ask credentials
         if auth:
@@ -507,34 +517,33 @@ class BrokenCLI:
             # Clone with authentication
             url = url.replace("https://", f"https://{username}:{password}@") if auth else url
 
-            # Init and clone the submodules
-            if list(path.iterdir()):
-                log.info(f"Submodule is healthy ({path})")
-                self.submodules(root=path, username=username, password=password)
-                continue
-
             # Clone the submodule
             with BrokenPath.pushd(path, echo=False):
 
-                # Set the url to clone this repository with authentication
-                shell("git", "remote", "set-url", "origin", url)
+                # Fixme: Any better way to check if a submodule is healthy?
+                if not list(path.iterdir()):
 
-                # Fetch the submodule's content with the credentials provided
-                if shell("git", "fetch").returncode != 0:
-                    log.warning(f"Failed to Fetch Submodule ({path})")
-                    log.warning("• You can safely ignore this if you don't need this submodule")
-                    log.warning("• You might not have permissions to this repository")
-                    log.warning("• You might have provided wrong credentials")
-                    continue
+                    # Set the url to clone this repository with authentication
+                    shell("git", "remote", "set-url", "origin", url)
 
-                # Init and update submodule we know we have access to
-                shell("git", "submodule", "update", "--init", path)
+                    # Fetch the submodule's content with the credentials provided
+                    if shell("git", "fetch").returncode != 0:
+                        log.warning(f"Failed to Fetch Submodule ({path})")
+                        log.warning("• You can safely ignore this if you don't need this submodule")
+                        log.warning("• You might not have permissions to this repository")
+                        log.warning("• You might have provided wrong credentials")
+                        continue
 
-                # Checkout main branch, as detached head is clumsy
-                shell("git", "checkout", "Master")
-                shell("git", "pull", do=pull)
+                    # Init and update submodule we know we have access to
+                    shell("git", "submodule", "update", "--init", path)
 
-                log.success(f"Submodule cloned  ({path})")
+                    # Checkout main branch, as detached head is clumsy
+                    shell("git", "checkout", "Master")
+
+                    log.success(f"Submodule cloned  ({path})")
+
+                # Pull changes after initial clone
+                shell("git", "pull")
 
             self.submodules(path, username=username, password=password)
 

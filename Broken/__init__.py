@@ -9,12 +9,6 @@ BROKEN_PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
 
-# Version - a bit complex
-try:
-    BROKEN_VERSION:     str  = "v" + (importlib.metadata.version("Broken") or "Unknown")
-except Exception:
-    BROKEN_VERSION:     str  = "Unknown"
-
 # isort: off
 from .BrokenImports import *
 from .BrokenLogging import *

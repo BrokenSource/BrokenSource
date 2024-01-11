@@ -497,7 +497,13 @@ class BrokenUtils:
         return extender
 
     @staticmethod
-    def load_image(image: PilImage | PathLike | URL, pixel="RGB", cache=True, echo=True) -> Option[PilImage, None]:
+    def load_image(
+        image: PilImage | PathLike | URL,
+        pixel="RGB",
+        *,
+        cache=True,
+        echo=True
+    ) -> Option[PilImage, None]:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
         # Todo: Maybe a BrokenImage class with some utils?
 
@@ -549,6 +555,13 @@ class BrokenUtils:
         log.info(f"Relaunching self process with arguments ({sys.argv})", echo=echo)
         return shell(sys.executable, sys.argv, echo=echo)
 
+    @staticmethod
+    def sha256sum(data: Union[Path, bytes]) -> str:
+        """Get the sha256sum of a file or bytes"""
+        if isinstance(data, Path):
+            return BrokenUtils.sha256sum(data.read_bytes())
+        return hashlib.sha256(data).hexdigest()
+
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenFluentBuilder:
@@ -570,7 +583,7 @@ class BrokenFluentBuilder:
 class BrokenPath:
 
     @contextmanager
-    def PATH(
+    def PATH(*,
         directories: List[PathLike],
         recursive: bool=True,
         prepend: bool=True,
@@ -620,7 +633,7 @@ class BrokenPath:
         os.environ["PATH"] = old
 
     @staticmethod
-    def get_binary(name: str, file_not_tagged_executable_workaround=True, echo=True) -> Option[Path, None]:
+    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Option[Path, None]:
         """Get a binary from PATH"""
 
         # Get binary if on path and executable
@@ -640,14 +653,14 @@ class BrokenPath:
         return binary
 
     @staticmethod
-    def binary_exists(name: str, echo=True) -> bool:
+    def binary_exists(name: str, *, echo=True) -> bool:
         """Check if a binary exists on PATH"""
         return BrokenPath.get_binary(name, echo=echo) is not None
 
     # # Specific / "Utils"
 
     @contextmanager
-    def pushd(path: PathLike, echo: bool=True):
+    def pushd(path: PathLike, *, echo: bool=True):
         """Change directory, then change back when done"""
         path = BrokenPath.true_path(path)
         cwd = os.getcwd()
@@ -662,7 +675,7 @@ class BrokenPath:
         return Path(path).expanduser().resolve()
 
     @staticmethod
-    def make_executable(path: PathLike, echo=False) -> Path:
+    def make_executable(path: PathLike, *, echo=False) -> Path:
         """Make a file executable"""
         path = Path(path)
         if BrokenPlatform.OnUnix:
@@ -674,7 +687,7 @@ class BrokenPath:
     # # File or directory creation
 
     @staticmethod
-    def mkdir(path: PathLike, parent: bool=False, echo=True) -> Path:
+    def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath.true_path(path)
         path = path.parent if parent else path
@@ -686,17 +699,17 @@ class BrokenPath:
         return path
 
     @staticmethod
-    def resetdir(path: PathLike, echo=True) -> Path:
+    def resetdir(path: PathLike, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         BrokenPath.remove(path, echo=echo)
         return BrokenPath.mkdir(path, echo=echo)
 
     @staticmethod
-    def touch(path: PathLike, echo=True):
+    def touch(path: PathLike, *, echo=True):
         """Creates a file, fail safe™"""
         path = Path(path)
         if path.exists():
-            log.success(f"File [{path}] already exists", echo=echo)
+            log.success(f"File ({path}) already exists", echo=echo)
             return
         log.info(f"Creating file {path}", echo=echo)
         path.touch()
@@ -704,35 +717,36 @@ class BrokenPath:
     # # Data moving
 
     @staticmethod
-    def copy(source: PathLike, destination: PathLike, echo=True) -> "destination":
+    def copy(source: PathLike, destination: PathLike, *, echo=True) -> "destination":
         source, destination = Path(source), Path(destination)
         log.info(f"Copying [{source}] -> [{destination}]", echo=echo)
+        BrokenPath.mkdir(destination.parent, echo=echo)
         shutil.copy2(source, destination)
         return destination
 
     @staticmethod
-    def move(source: PathLike, destination: PathLike, echo=True) -> "destination":
+    def move(source: PathLike, destination: PathLike, *, echo=True) -> "destination":
         source, destination = Path(source), Path(destination)
-        log.info(f"Moving [{source}] -> [{destination}]", echo=echo)
+        log.info(f"Moving ({source}) -> ({destination})", echo=echo)
         shutil.move(source, destination)
         return destination
 
     @staticmethod
-    def remove(path: PathLike, confirm=False, echo=True) -> bool:
-        path = Path(path)
-        log.info(f"Removing Path [{path}]", echo=echo)
+    def remove(path: PathLike, confirm=False, *, echo=True) -> Path:
+        path = BrokenPath.true_path(path)
+        log.info(f"Removing Path ({path})", echo=echo)
 
         if not path.exists():
-            return True
+            return path
 
         # Symlinks are safe to remove
         if path.is_symlink():
             path.unlink()
-            return True
+            return path
 
         # Confirm removal: directory contains data
         if confirm and (not rich.prompt.Confirm.ask(f"• Confirm removing path ({path})")):
-            return False
+            return path
 
         # Remove the path
         if path.is_dir():
@@ -740,7 +754,7 @@ class BrokenPath:
         else:
             path.unlink()
 
-        return True
+        return path
 
     @staticmethod
     def open_in_file_explorer(path: PathLike):
@@ -754,16 +768,16 @@ class BrokenPath:
             shell("open", path)
 
     @staticmethod
-    def symlink(virtual: Path, real: Path, echo: bool=True) -> Path:
+    def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
         """
-        Symlink [where] -> [to], `where` being the symlink and `to` the target
+        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the target
 
         Args:
-            where (Path): Symlink path
-            to (Path): Target path
+            virtual (Path): Symlink path (file)
+            real (Path): Target path (real path)
 
         Returns:
-            None
+            None if it fails, else `virtual` Path
         """
         log.info(f"Symlinking ({virtual}) -> ({real})", echo=echo)
 
@@ -774,8 +788,12 @@ class BrokenPath:
         # Make Virtual's parent directory
         BrokenPath.mkdir(virtual.parent, echo=False)
 
-        # Remove old symlink if it exists
-        if not virtual.exists():
+        # Remove old symlink if it points to a non existing directory
+        if not virtual.resolve().exists():
+            virtual.unlink()
+
+        # Virtual doesn't exist, ok to create
+        elif not virtual.exists():
             pass
 
         # File exists and is a symlink - safe to remove
@@ -787,8 +805,10 @@ class BrokenPath:
             BrokenPath.remove(virtual, echo=False)
 
         else:
-            log.error(f"Path ({virtual}) is a non empty directory, cannot symlink")
-            return
+            if rich.prompt.Confirm.ask(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing it and continuing? (It might contain data or be a important symlink)"):
+                BrokenPath.remove(virtual, echo=False)
+            else:
+                return
 
         # Actually symlink
         virtual.symlink_to(real)
@@ -841,7 +861,7 @@ class BrokenTyper:
     default:     str         = None
     help_option: bool        = False
     epilog:      str         = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
+        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 
@@ -922,7 +942,7 @@ class BrokenTyper:
 @define
 class BrokenEventClient:
     """
-    Client configuration for BrokenVsyncManager
+    Client configuration for BrokenEventLoop
 
     # Function:
     - callback:   Function callable to call every syncronization

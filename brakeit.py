@@ -157,9 +157,8 @@ for attempt in itertools.count(0):
     # Install poetry and try again
     shell(PIP, "install", "--user", "poetry", "--no-warn-script-location")
 
-# Avoid connection pool is full
+# Avoid connection pool is full on many-core systems
 shell(POETRY, "config", "installer.max-workers", "10")
-os.environ["POETRY_INSTALLER_MAX_WORKERS"] = "10"
 
 # Create, install dependencies on virtual environment
 if shell(POETRY, "install").returncode != 0:

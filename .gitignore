@@ -8,6 +8,7 @@ ___*
 # Python
 **__pycache__*
 *.pyc
+*.whl
 
 # Syncthing
 .stfolder
@@ -15,5 +16,5 @@ ___*
 
 # Symlinks
 Workspace
-Projects/*
+Projects/Hook/*
 .venvs
