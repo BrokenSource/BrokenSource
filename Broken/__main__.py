@@ -219,12 +219,16 @@ class BrokenProjectCLI:
 
                 # Prompt user for action
                 answer = rich.prompt.Prompt.ask(
-                    f"• Choose action: (r)einstall venv and retry, (e)xit, (enter) to retry",
-                    choices=["r", "e", ""],
+                    f"• Choose action: Run (p)oetry install and retry, (r)einstall venv and retry, (e)xit, (enter) to retry",
+                    choices=["r", "e", "p", ""],
                     default="retry"
                 )
                 if answer == "r":
                     reinstall = True
+                elif answer == "p":
+                    shell("poetry", "install")
+                elif answer == "e":
+                    break
                 elif answer == "retry":
                     pass
 
@@ -338,12 +342,10 @@ class BrokenProjectCLI:
             log.info(f"Compiled Pyapp binary at ({binary})")
             BrokenPath.make_executable(binary)
 
-            # Remove previous wheels
+            # Remove build wheel artifacts
             for wheel in wheels:
                 BrokenPath.remove(wheel.parent)
-
-            # Remove built wheel from Resources
-            BrokenPath.remove(self.path/"Resources"/"Wheels")
+            BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")
 
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
