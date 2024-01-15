@@ -31,7 +31,7 @@ TEMP_DIR = Path(tempfile.gettempdir())
 # Binaries convenience
 PYTHON = sys.executable
 POETRY = [PYTHON, "-m", "poetry"]
-PIP    = [PYTHON, "-m", "pip"]
+PIP    = [PYTHON, "-m", "pip", "install", "--upgrade", "--no-warn-script-location"]
 
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
@@ -132,7 +132,7 @@ for attempt in itertools.count(0):
     shell(PYTHON, "-m", "ensurepip", "--upgrade")
 
 # Upgrade pip
-shell(PIP, "install", "--upgrade", "pip")
+shell(PIP, "pip")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -155,7 +155,7 @@ for attempt in itertools.count(0):
         break
 
     # Install poetry and try again
-    shell(PIP, "install", "--user", "poetry", "--no-warn-script-location")
+    shell(PIP, "poetry")
 
 # Avoid connection pool is full on many-core systems
 shell(POETRY, "config", "installer.max-workers", "10")

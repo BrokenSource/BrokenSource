@@ -8,6 +8,9 @@ license     = "AGPLv3-only"
 [[tool.poetry.packages]]
 include = "Broken"
 
+[tool.poetry.scripts]
+broken = "Broken.__main__:main"
+
 [tool.poetry.dependencies]
 python         = ">=3.10,<3.13"
 rich           = "^13.3.4"
@@ -41,9 +44,6 @@ poethepoet     = "^0.24.4"
 python-dotenv  = "^1.0.0"
 pyfiglet       = "^1.0.2"
 requests-cache = "^1.1.1"
-
-[tool.poetry.scripts]
-broken = "Broken.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
 isort                = "^5.12.0"

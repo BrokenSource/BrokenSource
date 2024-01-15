@@ -635,7 +635,7 @@ class BrokenPath:
         os.environ["PATH"] = old
 
     @staticmethod
-    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Option[Path, None]:
+    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Optional[Path]:
         """Get a binary from PATH"""
 
         # Get binary if on path and executable
@@ -653,38 +653,6 @@ class BrokenPath:
         if echo: (log.warning if (binary is None) else log.success)(f"• Binary ({name}) found at ({binary})", echo=echo)
 
         return binary
-
-    @staticmethod
-    def binary_exists(name: str, *, echo=True) -> bool:
-        """Check if a binary exists on PATH"""
-        return BrokenPath.get_binary(name, echo=echo) is not None
-
-    # # Specific / "Utils"
-
-    @contextmanager
-    def pushd(path: PathLike, *, echo: bool=True):
-        """Change directory, then change back when done"""
-        path = BrokenPath.true_path(path)
-        cwd = os.getcwd()
-        log.info(f"Pushd ({path})", echo=echo)
-        os.chdir(path)
-        yield path
-        log.info(f"Popd  ({path})", echo=echo)
-        os.chdir(cwd)
-
-    @staticmethod
-    def true_path(path: PathLike) -> Path:
-        return Path(path).expanduser().resolve()
-
-    @staticmethod
-    def make_executable(path: PathLike, *, echo=False) -> Path:
-        """Make a file executable"""
-        path = Path(path)
-        if BrokenPlatform.OnUnix:
-            shell("chmod", "+x", path, echo=echo)
-        elif BrokenPlatform.OnWindows:
-            shell("attrib", "+x", path, echo=echo)
-        return path
 
     # # File or directory creation
 
@@ -758,10 +726,37 @@ class BrokenPath:
 
         return path
 
+    # # Specific / "Utils"
+
+    @contextmanager
+    def pushd(path: PathLike, *, echo: bool=True) -> Path:
+        """Change directory, then change back when done"""
+        path = BrokenPath.true_path(path)
+        cwd = os.getcwd()
+        log.info(f"Pushd ({path})", echo=echo)
+        os.chdir(path)
+        yield path
+        log.info(f"Popd  ({path})", echo=echo)
+        os.chdir(cwd)
+
+    @staticmethod
+    def true_path(path: PathLike) -> Path:
+        return Path(path).expanduser().resolve()
+
+    @staticmethod
+    def make_executable(path: PathLike, *, echo=False) -> Path:
+        """Make a file executable"""
+        path = Path(path)
+        if BrokenPlatform.OnUnix:
+            shell("chmod", "+x", path, echo=echo)
+        elif BrokenPlatform.OnWindows:
+            shell("attrib", "+x", path, echo=echo)
+        return path
+
     @staticmethod
     def open_in_file_explorer(path: PathLike):
         """Opens a path in the file explorer"""
-        path = Path(path)
+        path = BrokenPath.true_path(path)
         if BrokenPlatform.OnWindows:
             os.startfile(str(path))
         elif BrokenPlatform.OnLinux:
@@ -841,6 +836,26 @@ class BrokenPath:
         shutil.make_archive(output.with_suffix(""), "zip", path)
 
         return output
+
+    @staticmethod
+    def on_path(path: PathLike) -> bool:
+        """Check if a path is on PATH, works with symlinks"""
+        return BrokenPath.true_path(path) in map(BrokenPath.true_path, os.environ.get("PATH", "").split(os.pathsep))
+
+    @staticmethod
+    def add_to_path(path: PathLike, *, echo: bool=True) -> Path:
+        """Add a path to PATH"""
+        path = BrokenPath.true_path(path)
+
+        # Skip already on PATH
+        if BrokenPath.on_path(path):
+            log.skip(f"Path ({path}) is already on PATH", echo=echo)
+            return path
+
+        # Actually add to PATH
+        log.warning(f"Path ({path}) was added to PATH. Please, restart the Terminal to take effect", echo=echo)
+        __import__("userpath").append(str(path))
+        return path
 
 # -------------------------------------------------------------------------------------------------|
 

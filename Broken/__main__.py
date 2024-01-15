@@ -484,6 +484,7 @@ class BrokenCLI:
         password: str=typer.Option(None, "--password", "-p", help="Password to use for git clone"),
 
         # Git options
+        pull:  bool=typer.Option(False, "--pull", "-p", help="Run git pull on all submodules"),
         force: bool=typer.Option(False, "--force", "-f", help="Force pull (overrides local changes)"),
     ):
         """
@@ -498,7 +499,7 @@ class BrokenCLI:
         # Init submodules
         with BrokenPath.pushd(root, echo=False):
             shell("git", "submodule", "init")
-            shell("git", "pull", "--quiet", "--force"*force)
+            shell("git", "pull", "--quiet", "--force"*force, do=pull)
 
         # Ask credentials
         if auth:
@@ -555,31 +556,15 @@ class BrokenCLI:
                     log.success(f"Submodule cloned  ({path})")
 
                 # Pull changes after initial clone
-                shell("git", "pull", "--quiet", "--force"*force)
+                shell("git", "pull", "--quiet", "--force"*force, do=pull)
 
             self.submodules(path, username=username, password=password)
 
     def install(self):
-        # Big functions
         self.__scripts__()
         self.__shortcut__()
-
-        # Add Broken to PATH
-        import userpath
-
-        ROOT = BROKEN.DIRECTORIES.REPOSITORY
-
-        if not any([
-            ROOT == BrokenPath.true_path(path)
-            for path in os.environ.get("PATH", "").split(os.pathsep)
-        ]):
-            log.warning("Broken isn't on PATH but was added. Please, restart the Terminal to take effect")
-            userpath.append(str(ROOT))
-        else:
-            log.info("Current Broken Monorepo directory is already on PATH")
-
-        # Quality of life messages
-        log.info(f"Root is ({ROOT})")
+        BrokenPath.add_to_path(BROKEN.DIRECTORIES.REPOSITORY)
+        log.info(f"Root is ({BROKEN.DIRECTORIES.REPOSITORY})")
         log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
 
     def __shortcut__(self):
