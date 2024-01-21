@@ -186,6 +186,11 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.WORKSPACE/"Data")
 
     @property
+    def MOCK(self) -> Path:
+        """Mock directory for testing"""
+        return self.__mkdir__(self.WORKSPACE/"Mock")
+
+    @property
     def PROJECTS(self) -> Path:
         """Projects directory (e.g. Video Editor or IDEs)"""
         return self.__mkdir__(self.WORKSPACE/"Projects")
