@@ -426,6 +426,7 @@ class BrokenCLI:
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
             self.broken_typer.command(self.updateall)
+            self.broken_typer.command(self.mock, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
             self.broken_typer.command(self.pillow, hidden=True)
@@ -441,6 +442,9 @@ class BrokenCLI:
             )
 
         self.broken_typer(sys.argv[1:])
+
+    def mock(self):
+        import Broken.Mock
 
     def rust(self,
         toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
