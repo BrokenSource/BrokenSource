@@ -11,8 +11,8 @@
 
   <img src="https://img.shields.io/github/stars/BrokenSource/BrokenSource?style=flat" alt="Stars Badge"/>
   <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json%3Fshow%3Dunique&label=Visitors&color=blue" alt="Visitors Badge"/>
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenSource.json&label=Page%20Views&color=blue" alt="Page Views Badge"/>
   <img src="https://img.shields.io/github/license/BrokenSource/BrokenSource?color=blue" alt="License Badge"/>
+  <img src="https://img.shields.io/pypi/v/broken-source"/>
   <a href="https://t.me/brokensource">
     <img src="https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram" alt="Telegram Channel Badge"/>
   </a>
@@ -66,8 +66,6 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   ```bash
   python ./BrokenSource/brakeit.py
   ```
-
-<br>
 
 - **Alternatively**, we also support `curl` + `pipe`! 🤯
 
@@ -197,11 +195,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 # 📦 Pre-compiled binaries
 
-Head over to each project's **Releases** page and download the latest version for your platform if any available
-
-Otherwise, you'll have to run from the source code
-
-- **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
+Head over to each project's **Releases** page and download the latest version for your platform, if available. Otherwise, you'll have to run directly from the Source Code
 
 Our **release binaries** follow the **naming convention** below:
 
@@ -222,6 +216,8 @@ where
 </div>
 
 We also provide a `.sha256` file for checksum for each binary for integrity verification
+
+- **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 <sub><i>*1: We don't have the hardware to test on ARM or MacOS, so we can't provide binaries for those platforms. You likely can run from the source code</i></sub>
 

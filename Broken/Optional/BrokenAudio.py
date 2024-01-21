@@ -1,3 +1,6 @@
+import numpy
+import soundcard
+
 from . import *
 
 
@@ -132,7 +135,7 @@ class BrokenAudio:
     # # Properties utils
 
     @property
-    def sample_rate(self) -> Option[int, None]:
+    def sample_rate(self) -> Optional[int]:
         """Get the current audio sample rate"""
         if self.device:
             # FIXME: Recorder doesn't have a sample rate?
@@ -142,7 +145,7 @@ class BrokenAudio:
         return None
 
     @property
-    def channels(self) -> Option[int, None]:
+    def channels(self) -> Optional[int]:
         """Get the current number of audio channels"""
         if self.device:
             return self.device.channels
@@ -151,7 +154,7 @@ class BrokenAudio:
         return None
 
     @property
-    def duration(self) -> Option[float, None]:
+    def duration(self) -> Optional[float]:
         """Get the current audio duration in seconds, infinite for Recorder"""
         if self.device:
             return math.inf
@@ -160,7 +163,7 @@ class BrokenAudio:
         return None
 
     @property
-    def data_length(self) -> Option[int, None]:
+    def data_length(self) -> Optional[int]:
         """Returns the current audio data length in samples"""
         if self.data is None:
             return None
@@ -261,7 +264,7 @@ class BrokenAudio:
 
     # # Capture audio functions
 
-    def add_data(self, data: numpy.ndarray, normalize: bool=True) -> Option[numpy.ndarray, None]:
+    def add_data(self, data: numpy.ndarray, normalize: bool=True) -> Optional[numpy.ndarray]:
         """Add data to the end of data buffer keeping the size, must be same channel dimensions"""
 
         # Check if data has same number of channels
@@ -275,7 +278,7 @@ class BrokenAudio:
 
         return self.data
 
-    def record(self, numframes: int=None) -> Option[numpy.ndarray, None]:
+    def record(self, numframes: int=None) -> Optional[numpy.ndarray]:
         """Capture all buffered audio from the recorder"""
 
         # Recorder is easy, just ask numframes
@@ -296,18 +299,18 @@ class BrokenAudio:
 
     # # Get data functions
 
-    def get_data_between_samples(self, start: int, end: int) -> Option[numpy.ndarray, None]:
+    def get_data_between_samples(self, start: int, end: int) -> Optional[numpy.ndarray]:
         """Get the audio data between two samples intervals, returns [channels][start:end], size (end - start) samples"""
         if self.data_length < end:
             log.warning(f"Audio buffer doesn't have enough data to get [{end}] samples, only has [{self.data_length}]")
             return None
         return self.data[:, int(start):int(end)]
 
-    def get_data_between_seconds(self, start: float, end: float) -> Option[numpy.ndarray, None]:
+    def get_data_between_seconds(self, start: float, end: float) -> Optional[numpy.ndarray]:
         """Get the audio data between seconds intervals, returns [channels][start:end] size int(sample_rate*(end - start)) samples"""
         return self.get_data_between_samples(*self.sample_rate*numpy.array((start, end), dtype=int))
 
-    def get_last_n_samples(self, n: int) -> Option[numpy.ndarray, None]:
+    def get_last_n_samples(self, n: int) -> Optional[numpy.ndarray]:
         """Get the last n samples from the audio buffer relative to self.end, returns [channels][-n:]"""
         # TODO: Return zeros on the start if not enough data
         if (self.end >= 0) and (self.end < n):

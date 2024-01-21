@@ -24,6 +24,9 @@ if BROKEN_PYINSTALLER:
 
 # -------------------------------------------------------------------------------------------------|
 
+# Tip: To debug import times, use:
+# • PYTHONPROFILEIMPORTTIME=1 broken 2> import_times.txt && tuna import_times.txt
+
 class BrokenImportError:
     LAST_ERROR = None
     ...
@@ -99,6 +102,7 @@ while True:
         import shlex
         import shutil
         import subprocess
+        import sys
         import tempfile
         import threading
         import time
@@ -110,7 +114,6 @@ while True:
         from abc import abstractmethod
         from dataclasses import dataclass
         from enum import Enum
-        from functools import cache
         from io import BytesIO
         from os import PathLike
         from pathlib import Path
@@ -126,11 +129,9 @@ while True:
         from time import time as now
         from typing import *
 
-        import aenum
         import attrs
         import audioread
-        import diffusers
-        import diskcache
+        import click
         import distro
         import dotenv
         import forbiddenfruit
@@ -139,32 +140,23 @@ while True:
         import intervaltree
         import loguru
         import moderngl
-        import numpy
-        import opensimplex
         import PIL
         import PIL.Image
-        import quaternion
-        import requests
-        import requests_cache
-        import rich.prompt
         import schedule
-        import soundcard
         import toml
+        import tqdm
         import typer
+        import validators as validate
         from appdirs import AppDirs
         from attrs import Factory
         from attrs import define
         from attrs import field
         from attrs import validators
         from dotmap import DotMap
-        from tqdm import tqdm
-        from typer import Typer
 
         break
 
 # -------------------------------------------------------------------------------------------------|
-
-numpy.set_printoptions(precision=5, suppress=True)
 
 # # Custom types, some Rust inspiration
 
@@ -174,7 +166,7 @@ PilImage: TypeAlias = PIL.Image.Image
 # Stuff that accepts "anything that can be converted to X"
 URL: TypeAlias = str
 
-# def divide(a, b) -> Option[float, ZeroDivisionError]:
+# Option[A, B, C] makes more sense than Union[A, B, C] for me
 Option = Union
 
 # Values might not be updated

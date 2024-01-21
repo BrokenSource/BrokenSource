@@ -12,9 +12,6 @@
         // Yeah, I know, but it's useful
         "ms-python.python",
 
-        // Blazingly fast Rust analyzer
-        "rust-lang.rust-analyzer",
-
         // Alt+B and you're good to go
         "silesky.toggle-boolean",
 

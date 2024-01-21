@@ -37,37 +37,44 @@
         "Papers": "log",
 
         // Rust
-        "Rust": "src",
+        "Rust":   "src",
         ".cargo": "config",
 
         // Other
         "Externals": "resource",
-        "Scenes": "core",
-        "Sombrero": "environment",
-        "User": "home",
-        "Premium": "admin",
-        "Default": "examples",
+        "Scenes":    "core",
+        "Sombrero":  "environment",
+        "User":      "home",
+        "Premium":   "admin",
+        "Default":   "examples",
         "Community": "shared",
         "Workspace": "container",
-        "Prompts": "log",
-        ".venvs": "python",
+        "Prompts":   "log",
+        ".venvs":    "python",
 
         // Shaders
         "Fragment": "shader",
-        "Vertex": "shader",
+        "Vertex":   "shader",
 
         // Projects
-        "Ardmin": "tools",
-        "AudioSight": "tools",
-        "DepthFlow": "tools",
-        "Harper": "tools",
-        "HypeWord": "tools",
+        "Ardmin":       "tools",
+        "AudioSight":   "tools",
+        "DepthFlow":    "tools",
+        "Harper":       "tools",
+        "HypeWord":     "tools",
         "Oscillospoor": "tools",
-        "PhasorFlow": "tools",
-        "PocketSolar": "tools",
-        "QuadSnap": "tools",
-        "ShaderFlow": "tools",
-        "Sortia": "tools",
+        "PhasorFlow":   "tools",
+        "PocketSolar":  "tools",
+        "QuadSnap":     "tools",
+        "ShaderFlow":   "tools",
+        "Sortia":       "tools",
+
+        // Sub-packages of Broken
+        "BrokenDotmap": "core",
+        "BrokenFFmpeg": "core",
+        "BrokenEnum":   "core",
+        "Optional":     "include",
+        "Pyaket":       "tools",
     },
 
     // Better comments colors

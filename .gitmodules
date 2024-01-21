@@ -15,14 +15,11 @@
 	url     = https://github.com/BrokenSource/AudioSight
 	private = true
 [submodule "Broken/Modules/BrokenDotmap"]
-	path = Packages/BrokenDotmap
+	path = Broken/BrokenDotmap
 	url  = https://github.com/BrokenSource/BrokenDotmap
 [submodule "Packages/BrokenFFmpeg"]
-	path = Packages/BrokenFFmpeg
+	path = Broken/BrokenFFmpeg
 	url  = https://github.com/BrokenSource/BrokenFFmpeg
 [submodule "Packages/BrokenEnum"]
-	path = Packages/BrokenEnum
+	path = Broken/BrokenEnum
 	url  = https://github.com/BrokenSource/BrokenEnum
-[submodule "Packages/Pyaket"]
-	path = Projects/Pyaket
-	url  = https://github.com/BrokenSource/Pyaket

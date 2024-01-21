@@ -172,6 +172,8 @@ class BrokenProjectCLI:
         echo:      Annotated[bool, typer.Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
+        import rich.prompt
+
         # For all arguments in ctx.args, if it's a file, replace it with its path
         # This also fixes files references on the nested poetry command rebasing to its path
         for i, arg in enumerate(ctx.args):
@@ -380,10 +382,16 @@ class BrokenCLI:
 
     def find_projects(self, path: Path) -> None:
         for directory in path.iterdir():
-            directory = BrokenPath.true_path(directory)
 
+            # Must be a directory
             if directory.is_file():
                 continue
+
+            # Skip workspace symlinks
+            if path.is_symlink() and (directory.name.lower() == "workspace"):
+                continue
+
+            directory = BrokenPath.true_path(directory)
 
             # Avoid hidden directories
             if any(directory.name.startswith(x) for x in (".", "_")):
@@ -435,17 +443,22 @@ class BrokenCLI:
         self.broken_typer(sys.argv[1:])
 
     def rust(self,
-        toolchain: Annotated[str, typer.Option("--toolchain", "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
+        toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
+        build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="Install Visual C++ Build Tools on Windows")]=True,
     ):
-        if BrokenPlatform.OnWindows:
-
-            # Install rustup
-            if not shutil.which("rustup"):
+        # Install rustup based on platform
+        if not shutil.which("rustup"):
+            if BrokenPlatform.OnWindows:
                 shell("winget", "install", "-e", "--id", "Rustlang.Rustup")
-                exit(BrokenUtils.relaunch().returncode)
+            elif BrokenPlatform.OnUnix:
+                shell("sh", "-c", requests.get("https://sh.rustup.rs").text, "-y", echo=False)
+            log.note(f"Please restart your shell for Rust toolchain to be on PATH")
+            log.note(f"• If this didn't work, have rustup available externally")
+            exit(0)
 
-            # Install Visual C++ Build Tools
-            log.note("You must install Microsoft Visual C++ Build Tools, will try, else try manually")
+        # Install Visual C++ Build Tools on Windows
+        if BrokenPlatform.OnWindows and build_tools:
+            log.note("You must install Microsoft Visual C++ Build Tools, we will try, else install manually")
             shell((
                 'winget install Microsoft.VisualStudio.2022.BuildTools --override '
                 '"--wait --passive'
@@ -455,19 +468,13 @@ class BrokenCLI:
                 '"'
             ), shell=True)
 
-        elif BrokenPlatform.OnLinux:
-            ...
-
-        elif BrokenPlatform.OnMacOS:
-            ...
-
         # Install or select the correct toolchain
         for line in shell("rustup", "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != toolchain)):
                 log.info(f"Defaulting Rust toolchain to ({toolchain})")
                 shell("rustup", "default", toolchain)
         else:
-            log.info(f"Rust toolchain already default ({toolchain})")
+            log.info(f"Rust toolchain is already the default ({toolchain})")
 
     # # Installation commands
 

@@ -132,7 +132,7 @@ class FFmpegVideoCodec(BrokenEnum):
 
     @staticmethod
     def is_nvenc(option: FFmpegVideoCodec):
-        option = FFmpegVideoCodec.smart(option)
+        option = FFmpegVideoCodec.get(option)
         return "nvenc" in option.value
 
 class FFmpegAudioCodec(BrokenEnum):
@@ -588,16 +588,16 @@ class BrokenFFmpeg:
     # Formats
 
     def __pixel__(self, option: FFmpegPixelFormat) -> Self:
-        return self.__smart__("-pix_fmt", FFmpegPixelFormat.smart(option), delete=self.__pixel__)
+        return self.__smart__("-pix_fmt", FFmpegPixelFormat.get(option), delete=self.__pixel__)
 
     def __format__(self, option: FFmpegFormat) -> Self:
-        return self.__smart__("-f", FFmpegFormat.smart(option), delete=self.__format__)
+        return self.__smart__("-f", FFmpegFormat.get(option), delete=self.__format__)
 
     # ---------------------------------------------------------------------------------------------|
     # Loglevel, stats
 
     def __loglevel__(self, option: FFmpegLogLevel=FFmpegLogLevel.Error) -> Self:
-        return self.__smart__("-loglevel", FFmpegLogLevel.smart(option), delete=self.__loglevel__)
+        return self.__smart__("-loglevel", FFmpegLogLevel.get(option), delete=self.__loglevel__)
 
     def __quiet__(self) -> Self:
         """Shorthand for loglevel error and hide banner"""
@@ -627,7 +627,7 @@ class BrokenFFmpeg:
     # Special
 
     def __hwaccel__(self, option: FFmpegHWAccel=FFmpegHWAccel.Auto) -> Self:
-        return self.__smart__("-hwaccel", FFmpegHWAccel.smart(option), delete=self.__hwaccel__)
+        return self.__smart__("-hwaccel", FFmpegHWAccel.get(option), delete=self.__hwaccel__)
 
     def __overwrite__(self) -> Self:
         return self.__smart__("-y", delete=self.__overwrite__)
@@ -718,7 +718,7 @@ class BrokenFFmpeg:
     # Base codecs
 
     def __video_codec__(self, codec: FFmpegVideoCodec=FFmpegVideoCodec.H264) -> Self:
-        codec = FFmpegVideoCodec.smart(codec)
+        codec = FFmpegVideoCodec.get(codec)
 
         # Add codec parameters options based on selected
         if codec == FFmpegVideoCodec.H264:
@@ -776,7 +776,7 @@ class BrokenFFmpeg:
         ))
 
     def __audio_codec__(self, codec: FFmpegAudioCodec=FFmpegAudioCodec.AAC) -> Self:
-        return self.__smart__("-c:a", FFmpegAudioCodec.smart(codec), delete=self.__audio_codec__)
+        return self.__smart__("-c:a", FFmpegAudioCodec.get(codec), delete=self.__audio_codec__)
 
     # ---------------------------------------------------------------------------------------------|
     # Generic NVENC
@@ -795,64 +795,64 @@ class BrokenFFmpeg:
 
     def __bref_mode__nvenc(self, option: FFmpegNVENC_B_Ref_Mode=FFmpegNVENC_B_Ref_Mode.Disabled) -> Self:
         log.warning("B Frames requires Turing or newer architecture (RTX 2000+)")
-        return self.__smart__("-b_ref_mode", FFmpegNVENC_B_Ref_Mode.smart(option), delete=self.__bref_mode__nvenc)
+        return self.__smart__("-b_ref_mode", FFmpegNVENC_B_Ref_Mode.get(option), delete=self.__bref_mode__nvenc)
 
     def __preset__nvenc(self, option: FFmpegNVENC_Preset=FFmpegNVENC_Preset.Slower) -> Self:
-        return self.__smart__("-preset", FFmpegNVENC_Preset.smart(option), delete=self.__preset__nvenc)
+        return self.__smart__("-preset", FFmpegNVENC_Preset.get(option), delete=self.__preset__nvenc)
 
     def __tune__nvenc(self, option: FFmpegNVENC_Tune=FFmpegNVENC_Tune.HighQuality) -> Self:
-        return self.__smart__("-tune", FFmpegNVENC_Tune.smart(option), delete=self.__tune__nvenc)
+        return self.__smart__("-tune", FFmpegNVENC_Tune.get(option), delete=self.__tune__nvenc)
 
     def __level__nvenc(self, option: FFmpegNVENC_Level=FFmpegNVENC_Level.Auto) -> Self:
-        return self.__smart__("-level", FFmpegNVENC_Level.smart(option), delete=self.__level__nvenc)
+        return self.__smart__("-level", FFmpegNVENC_Level.get(option), delete=self.__level__nvenc)
 
     def __rc__nvenc(self, option: FFmpegNVENC_RC=FFmpegNVENC_RC.VariableBitrateHighQuality) -> Self:
-        return self.__smart__("-rc", FFmpegNVENC_RC.smart(option), delete=self.__rc__nvenc)
+        return self.__smart__("-rc", FFmpegNVENC_RC.get(option), delete=self.__rc__nvenc)
 
     # ---------------------------------------------------------------------------------------------|
     # H264 NVENC
 
     def __profile__h264_nvenc(self, option: FFmpegH264_NVENC_Profile=FFmpegH264_NVENC_Profile.Main) -> Self:
-        return self.__smart__("-profile", FFmpegH264_NVENC_Profile.smart(option), delete=self.__profile__h264_nvenc)
+        return self.__smart__("-profile", FFmpegH264_NVENC_Profile.get(option), delete=self.__profile__h264_nvenc)
 
     # ---------------------------------------------------------------------------------------------|
     # H265 NVENC
 
     def __profile__h265_nvenc(self, option: FFmpegH265_NVENC_Profile=FFmpegH265_NVENC_Profile.Main) -> Self:
-        return self.__smart__("-profile", FFmpegH265_NVENC_Profile.smart(option), delete=self.__profile__h265_nvenc)
+        return self.__smart__("-profile", FFmpegH265_NVENC_Profile.get(option), delete=self.__profile__h265_nvenc)
 
     def __tier__h265_nvenc(self, option: FFmpegH265_NVENC__Tier=FFmpegH265_NVENC__Tier.Main) -> Self:
-        return self.__smart__("-tier", FFmpegH265_NVENC__Tier.smart(option), delete=self.__tier__h265_nvenc)
+        return self.__smart__("-tier", FFmpegH265_NVENC__Tier.get(option), delete=self.__tier__h265_nvenc)
 
     # ---------------------------------------------------------------------------------------------|
     # H264
 
     def __preset__h264(self, option: FFmpegH264Preset=FFmpegH264Preset.Slow) -> Self:
-        return self.__smart__("-preset", FFmpegH264Preset.smart(option), delete=self.__preset__h264)
+        return self.__smart__("-preset", FFmpegH264Preset.get(option), delete=self.__preset__h264)
 
     def __tune__h264(self, option: FFmpegH264Tune=FFmpegH264Tune.Film) -> Self:
-        return self.__smart__("-tune", FFmpegH264Tune.smart(option), delete=self.__tune__h264)
+        return self.__smart__("-tune", FFmpegH264Tune.get(option), delete=self.__tune__h264)
 
     def __profile__h264(self, option: FFmpegH264Profile=FFmpegH264Profile.Main) -> Self:
-        return self.__smart__("-profile:v", FFmpegH264Profile.smart(option), delete=self.__profile__h264)
+        return self.__smart__("-profile:v", FFmpegH264Profile.get(option), delete=self.__profile__h264)
 
     def __quality__h264(self, option: FFmpegH264Quality=FFmpegH264Quality.High) -> Self:
-        return self.__smart__("-crf", FFmpegH264Quality.smart(option), delete=self.__quality__h264)
+        return self.__smart__("-crf", FFmpegH264Quality.get(option), delete=self.__quality__h264)
 
     # ---------------------------------------------------------------------------------------------|
     # H265
 
     def __preset__h265(self, option: FFmpegH265Preset=FFmpegH265Preset.Slow) -> Self:
-        return self.__smart__("-preset", FFmpegH265Preset.smart(option), delete=self.__preset__h265)
+        return self.__smart__("-preset", FFmpegH265Preset.get(option), delete=self.__preset__h265)
 
     def __tune__h265(self, option: FFmpegH265Tune) -> Self:
-        return self.__smart__("-tune", FFmpegH265Tune.smart(option), delete=self.__tune__h265)
+        return self.__smart__("-tune", FFmpegH265Tune.get(option), delete=self.__tune__h265)
 
     def __profile__h265(self, option: FFmpegH265Profile=FFmpegH265Profile.Main) -> Self:
-        return self.__smart__("-profile:v", FFmpegH265Profile.smart(option), delete=self.__profile__h265)
+        return self.__smart__("-profile:v", FFmpegH265Profile.get(option), delete=self.__profile__h265)
 
     def __quality__h265(self, option: FFmpegH264Quality.High) -> Self:
-        return self.__smart__("-crf", FFmpegH264Quality.smart(option), delete=self.__quality__h265)
+        return self.__smart__("-crf", FFmpegH264Quality.get(option), delete=self.__quality__h265)
 
     # ---------------------------------------------------------------------------------------------|
     # End user manual actions

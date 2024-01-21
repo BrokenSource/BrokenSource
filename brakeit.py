@@ -218,3 +218,5 @@ shell(POETRY, "run", "broken", "install", echo=False)
 
 # Enter virtual environment
 shell(POETRY, "shell", echo=False)
+
+# -------------------------------------------------------------------------------------------------|
