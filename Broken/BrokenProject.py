@@ -186,11 +186,6 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.WORKSPACE/"Data")
 
     @property
-    def PROFILER(self) -> Path:
-        """Profiler directory"""
-        return self.__mkdir__(self.WORKSPACE/"Profiler")
-
-    @property
     def PROJECTS(self) -> Path:
         """Projects directory (e.g. Video Editor or IDEs)"""
         return self.__mkdir__(self.WORKSPACE/"Projects")

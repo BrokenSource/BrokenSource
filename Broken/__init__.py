@@ -30,8 +30,6 @@ BROKEN = BrokenProject(
     RESOURCES=BrokenResources,
 )
 
-from .BrokenProfiler import *
-
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!
 
