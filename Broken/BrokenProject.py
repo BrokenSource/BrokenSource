@@ -330,11 +330,14 @@ class BrokenProject:
 
         # Convenience: Symlink Workspace to projects data directory
         if BROKEN_DEVELOPMENT:
-            BrokenPath.symlink(
-                virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
-                real=self.DIRECTORIES.WORKSPACE,
-                echo=False
-            )
+            try:
+                BrokenPath.symlink(
+                    virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
+                    real=self.DIRECTORIES.WORKSPACE,
+                    echo=False
+                )
+            except Exception as e:
+                log.minor(f"Failed to symlink Workspace: {e}")
 
     def welcome(self):
         """Pretty Welcome Message!"""
