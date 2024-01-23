@@ -5,7 +5,7 @@
         "**/__pycache__": true,
 
         // Don't hide .git, it might be useful ?
-        "**/.git": true,
+        "**/.git": false,
 
         // Syncthing
         ".stignore": true,
