@@ -616,7 +616,8 @@ class BrokenUtils:
                 else:
                     log.info(f"Loading image from URL ({image})", echo=echo)
                     try:
-                        return PIL.Image.open(BytesIO(BROKEN.Requests.get(image).content)).convert(pixel)
+                        import requests
+                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
                     except Exception as e:
                         log.error(f"Failed to load image from URL or Path ({image}): {e}", echo=echo)
             else:
