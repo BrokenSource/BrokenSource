@@ -501,6 +501,9 @@ class BrokenCLI:
         """
         Safely init and clone submodules, skip private submodules
         """
+
+        # --------------------------------------| Pathing
+
         root = BrokenPath.true_path(root)
 
         # Read .gitmodules if it exists
@@ -512,14 +515,25 @@ class BrokenCLI:
             shell("git", "submodule", "init")
             shell("git", "pull", "--quiet", "--force"*force, do=pull)
 
-        # Ask credentials
-        if auth:
-            username = typer.prompt("Git Username")
-            password = typer.prompt("Git Password", hide_input=True)
+        # --------------------------------------| Authentication
 
-        # Updated if authenticated
+        # Maybe get username and password from env
+        username = os.environ.get("GIT_USERNAME", None)
+        password = os.environ.get("GIT_PASSWORD", None)
+
+        # Ask for authentication if requested but not provided yet
+        if auth and not (username and password):
+            username = username or typer.prompt("Git Username")
+            password = password or typer.prompt("Git Password", hide_input=True)
+
+        # Update credentials on env vars (it might have been just prompted)
+        os.environ["GIT_USERNAME"] = username or ""
+        os.environ["GIT_PASSWORD"] = password or ""
+
+        # `auth` now means if we have credentials
         auth = auth or bool(username and password)
 
+        # --------------------------------------| Reading dot file
         # Read .gitmodules
         import configparser
         config = configparser.ConfigParser()

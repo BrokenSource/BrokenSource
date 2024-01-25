@@ -131,6 +131,7 @@ while True:
 
         import attrs
         import audioread
+        import cattrs
         import click
         import distro
         import dotenv

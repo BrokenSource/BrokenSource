@@ -46,6 +46,7 @@ pyyaml         = "^6.0.1"
 ujson          = "^5.9.0"
 imageio        = "^2.33.1"
 validators     = "^0.22.0"
+cattrs = "^23.2.3"
 
 [tool.poetry.group.dev.dependencies]
 isort       = "^5.12.0"

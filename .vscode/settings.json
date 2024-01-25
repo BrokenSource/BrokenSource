@@ -68,6 +68,8 @@
         "QuadSnap":     "tools",
         "ShaderFlow":   "tools",
         "Sortia":       "tools",
+        "Archium":      "tools",
+        "Clipyst":      "tools",
 
         // Sub-packages of Broken
         "BrokenDotmap": "core",
@@ -75,6 +77,9 @@
         "BrokenEnum":   "core",
         "Optional":     "include",
         "Pyaket":       "tools",
+
+        // Personal
+        "Tremeschin": "home",
     },
 
     // Better comments colors

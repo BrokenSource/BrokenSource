@@ -1,3 +1,5 @@
+# # Broken Source
+
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url  = https://github.com/BrokenSource/ShaderFlow
@@ -10,7 +12,18 @@
 [submodule "Projects/QuadSnap"]
 	path = Projects/QuadSnap
 	url  = https://github.com/BrokenSource/QuadSnap
-[submodule "Projects/AudioSight"]
-	path    = Projects/AudioSight
-	url     = https://github.com/BrokenSource/AudioSight
+
+# # Private
+
+[submodule "Projects/Private/Clipyst"]
+	path    = Projects/Private/Clipyst
+	url     = https://github.com/Tremeschin/Clipyst
+	private = true
+[submodule "Projects/Private/Archium"]
+	path    = Projects/Private/Archium
+	url     = https://github.com/Tremeschin/Archium
+	private = true
+[submodule "Meta/Tremeschin"]
+	path    = Meta/Tremeschin
+	url     = https://github.com/Tremeschin/GitHub
 	private = true

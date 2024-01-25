@@ -852,6 +852,31 @@ class BrokenEventLoop:
 
 # -------------------------------------------------------------------------------------------------|
 
+class BrokenWatchdog:
+
+    @abstractmethod
+    def __changed__(self, key, value) -> None:
+        """Called when a property changes"""
+        ...
+
+    def __setattr__(self, key, value):
+        """Calls __changed__ when a property changes"""
+        super().__setattr__(key, value)
+        self.__changed__(key, value)
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSerde:
+
+    def serialize(self) -> Dict:
+        return cattrs.unstructure(self)
+
+    @classmethod
+    def deserialize(data: Dict) -> Self['cls']:
+        return cattrs.structure(data, cls)
+
+# -------------------------------------------------------------------------------------------------|
+
 class BrokenSingleton(ABC):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
