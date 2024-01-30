@@ -47,7 +47,7 @@ if os.name == "posix":
 # -------------------------------------------------------------------------------------------------|
 # Welcome! We might be on a curl install
 
-print("🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎")
+print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎\n")
 
 PIPE_INSTALL = "BRAKEIT_OK_NON_ATTY"
 

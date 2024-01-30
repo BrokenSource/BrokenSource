@@ -237,6 +237,12 @@ class _BrokenProjectResources:
         if self.BROKEN_PROJECT.RESOURCES:
             self.__RESOURCES__ = importlib.resources.files(self.BROKEN_PROJECT.RESOURCES)
 
+    def __div__(self, name: str) -> Path:
+        return self.__RESOURCES__/name
+
+    def __truediv__(self, name: str) -> Path:
+        return self.__div__(name)
+
     # # Branding section
 
     @property
@@ -276,13 +282,12 @@ class _BrokenProjectResources:
         """Vertex shaders directory"""
         return self.SHADERS/"Vertex"
 
-    # Divide operator -> Get a path relative to the root
+    # # Generic
 
-    def __div__(self, name: str) -> Path:
-        return self.__RESOURCES__/name
-
-    def __truediv__(self, name: str) -> Path:
-        return self.__div__(name)
+    @property
+    def PROMPTS(self) -> Path:
+        """Prompts directory"""
+        return self.__RESOURCES__/"Prompts"
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -314,12 +319,6 @@ class BrokenProject:
             .replace("Broken", "broken-source")
         )
 
-        # Fixme: Anywhere to unify envs?
-        # Load .env files from the project
-        for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            log.minor(f"Loading environment variables at ({env})")
-            dotenv.load_dotenv(env)
-
         # Create default config
         self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
         self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP/f"{self.APP_NAME}.pickle")
@@ -338,6 +337,12 @@ class BrokenProject:
                 )
             except Exception as e:
                 log.minor(f"Failed to symlink Workspace: {e}")
+
+        # Fixme: Anywhere to unify envs?
+        # Load .env files from the project
+        for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
+            log.minor(f"Loading environment variables at ({env})")
+            dotenv.load_dotenv(env)
 
     def welcome(self):
         """Pretty Welcome Message!"""

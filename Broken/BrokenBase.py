@@ -594,17 +594,21 @@ class BrokenUtils:
 
     @staticmethod
     def load_image(
-        image: PilImage | PathLike | URL,
+        image: Image | PathLike | URL,
         pixel="RGB",
         *,
         cache=True,
         echo=True
-    ) -> Option[PilImage, None]:
+    ) -> Option[Image, None]:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
         # Todo: Maybe a BrokenImage class with some utils?
 
+        # Can't load the Image class
+        if image is Image:
+            return None
+
         # Nothing to do if already a PIL Image
-        if isinstance(image, PilImage):
+        elif isinstance(image, Image):
             return image
 
         try:
@@ -614,18 +618,24 @@ class BrokenUtils:
                     log.info(f"Loading image from Path ({path})", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
+                    if not validate.url(str(image)):
+                        return None
+
                     log.info(f"Loading image from URL ({image})", echo=echo)
                     try:
                         import requests
                         return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
                     except Exception as e:
                         log.error(f"Failed to load image from URL or Path ({image}): {e}", echo=echo)
+                        return None
             else:
                 log.error(f"Unknown image parameter ({image}), must be a PIL Image, Path or URL", echo=echo)
+                return None
 
         # Can't open file
         except Exception as e:
             log.error(f"Failed to load image ({image}): {e}", echo=echo)
+            return None
 
     @staticmethod
     def have_import(module: str) -> bool:
@@ -852,7 +862,7 @@ class BrokenEventLoop:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenWatchdog:
+class BrokenWatchdog(ABC):
 
     @abstractmethod
     def __changed__(self, key, value) -> None:
@@ -995,7 +1005,7 @@ class BrokenTyper:
     help_option: bool        = False
     __first__:   bool        = True
     epilog:      str         = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]{BROKEN_VERSION}[/yellow]\n\n"
+        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 

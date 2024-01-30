@@ -7,8 +7,8 @@ from . import *
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 os.environ["OMP_NUM_THREADS"] = "1"
 
-# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
 # Patch torch.jit requiring inspect.getsource
+# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
 if BROKEN_PYINSTALLER:
     try:
         import torch.jit
@@ -18,8 +18,7 @@ if BROKEN_PYINSTALLER:
     except (ModuleNotFoundError, ImportError):
         pass
 
-    # Close Pyinstaller splash screen
-    import pyi_splash
+    import pyi_splash  # type: ignore
     pyi_splash.close()
 
 # -------------------------------------------------------------------------------------------------|
@@ -48,13 +47,11 @@ def BrokenImports():
         yield
 
     except (ModuleNotFoundError, ImportError) as error:
-
-        # Same error as last time, raise it (import loop?)
         if BrokenImportError.LAST_ERROR == str(error):
             raise error
         BrokenImportError.LAST_ERROR = str(error)
 
-        # Create a fake module
+        # Inject a fake module on the import error
         import_error = BrokenImportError()
         sys.modules[error.name] = import_error
         sys.modules[error.name].__spec__ = import_error
@@ -157,19 +154,8 @@ while True:
 
         break
 
-# -------------------------------------------------------------------------------------------------|
-
-# # Custom types, some Rust inspiration
-
-# PIL.Image is a module, PIL.Image.Image is the class
-PilImage: TypeAlias = PIL.Image.Image
-
-# Stuff that accepts "anything that can be converted to X"
-URL: TypeAlias = str
-
-# Option[A, B, C] makes more sense than Union[A, B, C] for me
-Option = Union
-
-# Values might not be updated
-# def load(a: type=Unchanged): ...
+# # Custom types
+Image:     TypeAlias = PIL.Image.Image
 Unchanged: TypeAlias = None
+URL:       TypeAlias = str
+Option               = Union

@@ -2,7 +2,7 @@ from . import *
 
 T = TypeVar("T")
 
-@attrs.define
+@define
 class DotmapLoader(ABC):
 
     # ------------------------------------------|
@@ -10,7 +10,6 @@ class DotmapLoader(ABC):
 
     loaders        = set()
     __acronyms__   = {}
-    __extensions__ = {}
 
     def register(cls: Type[Self]) -> None:
         """Register a new loader"""
@@ -22,66 +21,46 @@ class DotmapLoader(ABC):
                 log.warning(f"Overriding loader acronym {acronym} with {cls}")
             DotmapLoader.__acronyms__[acronym] = cls
 
-        # Add loader extensions
-        for extension in cls.extensions():
-            if extension in DotmapLoader.__extensions__:
-                log.warning(f"Overriding loader extension {extension} with {cls}")
-            DotmapLoader.__extensions__[extension] = cls
-
     # # Initialization methods
 
     def from_acronym(acronym: str) -> Optional[Self]:
         """Try finding a loader from its acronym"""
         return DotmapLoader.__acronyms__.get(acronym, None)
 
-    def from_extension(extension: str) -> Optional[Self]:
-        return DotmapLoader.__extensions__.get(extension, None)
-
-    def smart_find(key: str, value: Any=None, acronym: str=None) -> Optional[Self]:
+    def smart_find(key: str=None, value: Any=None) -> Optional[Self]:
         """Find a loader that can load the given key"""
-        if (loader := DotmapLoader.from_acronym(acronym)):
+        suffix = Path(key).suffix.replace(".", "").lower()
+
+        if (loader := DotmapLoader.from_acronym(suffix)):
             return loader
-        if (loader := DotmapLoader.from_extension(key)):
-            return loader
-        for loader in DotmapLoader.loaders:
-            if loader.can_load(key=key, value=value):
-                return loader
+        # for loader in DotmapLoader.loaders:
+        #     if loader.load(value=value):
+        #         return loader
         return None
 
     # ------------------------------------------|
-    # # Must implement own methods
+    # # Proper methods
 
-    # Self values
-    value: T = attrs.field(default=None)
+    value: Any = field(default=None)
 
     @staticmethod
     @abstractmethod
     def acronyms(self) -> Set[str]:
         ...
 
-    @staticmethod
     @abstractmethod
-    def extensions(self) -> Set[str]:
+    def load() -> T:
         ...
 
     @abstractmethod
-    def load(self) -> T:
-        ...
-
-    @abstractmethod
-    def dump(self, path: Path) -> None:
-        ...
-
-    @abstractmethod
-    def can_load(key: str, value: Any=None) -> bool:
+    def dump(path: Path) -> None:
         ...
 
     # ------------------------------------------|
 
     # # Default implementations
 
-    def __call__(self, value: Any) -> Self:
+    def __call__(self, value: Any) -> T:
         """Handle calling the instance as a function"""
-        self.value = value
-        return self
+        return type(self).load(value)
 

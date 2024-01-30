@@ -1,4 +1,4 @@
-from Broken import *
+from . import *
 
 
 # Can we initialize the module?
@@ -110,33 +110,33 @@ def test_to_dict():
 IMAGE_URL = "https://w.wallhaven.cc/full/x6/wallhaven-x6wjkv.png"
 
 def test_plain_usage():
-    image = LoaderImage(IMAGE_URL).load()
-    assert isinstance(image, PIL.Image.Image)
+    image = DotmapLoaderImage(IMAGE_URL).load()
+    assert isinstance(image, Image)
 
 def test_loader_image_assign_hinted():
     dotmap = BrokenDotmap()
     dotmap.image_png = IMAGE_URL
-    assert isinstance(dotmap.image_png, PIL.Image.Image)
+    assert isinstance(dotmap.image_png, Image)
 
 def test_loader_image_assign_unhinted():
     dotmap = BrokenDotmap()
     dotmap.image = IMAGE_URL
-    assert isinstance(dotmap.image, PIL.Image.Image)
+    assert isinstance(dotmap.image, Image)
 
 def test_loader_image_call_hinted():
     dotmap = BrokenDotmap()
     image = dotmap.image_png(IMAGE_URL)
-    assert isinstance(image, PIL.Image.Image)
+    assert isinstance(image, Image)
 
 def test_loader_image_call_unhinted():
     dotmap = BrokenDotmap()
     image = dotmap.image(IMAGE_URL)
-    assert isinstance(image, PIL.Image.Image)
+    assert isinstance(image, Image)
 
 def test_loader_image_manual():
     dotmap = BrokenDotmap()
-    dotmap.image = LoaderImage(IMAGE_URL)
-    assert isinstance(dotmap.image, PIL.Image.Image)
+    dotmap.image = DotmapLoaderImage(IMAGE_URL)
+    assert isinstance(dotmap.image, Image)
 
 # -------------------------------------------------------------------------------------------------|
 # Syncing

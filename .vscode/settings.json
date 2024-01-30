@@ -72,11 +72,13 @@
         "Clipyst":      "tools",
 
         // Sub-packages of Broken
-        "BrokenDotmap": "core",
-        "BrokenFFmpeg": "core",
-        "BrokenEnum":   "core",
-        "Optional":     "include",
-        "Pyaket":       "tools",
+        "BrokenDotmap":    "core",
+        "BrokenFFmpeg":    "core",
+        "BrokenEnum":      "core",
+        "BrokenExternals": "core",
+        "BrokenUpscaler":  "core",
+        "Optional":        "include",
+        "Pyaket":          "tools",
 
         // Personal
         "Tremeschin": "home",
