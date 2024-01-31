@@ -487,31 +487,6 @@ class BrokenUtils:
             return result
 
     @staticmethod
-    def better_thread(
-        callable,
-        *args,
-        start: bool=True,
-        loop: bool=False,
-        daemon: bool=False,
-        **kwargs
-    ) -> Thread:
-        """Create a thread on a callable, yeet whatever you think it works"""
-
-        # Wrap callable on a loop
-        if loop:
-            original = copy.copy(callable)
-
-            @functools.wraps(callable)
-            def infinite_callable(*args, **kwargs):
-                while True:
-                    original(*args, **kwargs)
-            callable = infinite_callable
-
-        thread = Thread(target=callable, daemon=daemon, args=args, kwargs=kwargs)
-        if start: thread.start()
-        return thread
-
-    @staticmethod
     def recurse(function: callable, **variables) -> Any:
         """
         Calls some function with the previous scope locals() updated by variables
@@ -670,6 +645,90 @@ class BrokenUtils:
     @staticmethod
     def is_dunder(name: str) -> bool:
         return name.startswith("__") and name.endswith("__")
+
+# -------------------------------------------------------------------------------------------------|
+
+@define
+class BrokenThreadPool:
+    threads: List[Thread] = []
+    max:     int          = 1
+
+    @property
+    def alive(self) -> List[Thread]:
+        return list(filter(lambda thread: thread.is_alive(), self.threads))
+
+    @property
+    def n_alive(self) -> int:
+        return len(self.alive)
+
+    def sanitize(self) -> None:
+        self.threads = self.alive
+
+    def append(self, thread: Thread, wait: float=0.01) -> Thread:
+        while self.n_alive >= self.max:
+            time.sleep(wait)
+        self.sanitize()
+        self.threads.append(thread)
+        return thread
+
+    def join(self) -> None:
+        for thread in self.threads:
+            thread.join()
+
+@define
+class BrokenThread:
+    pools = {}
+
+    @staticmethod
+    def pool(name: str) -> BrokenThreadPool:
+        return BrokenThread.pools.setdefault(name, BrokenThreadPool())
+
+    @staticmethod
+    def new(
+        callable,
+        *args,
+        start: bool=True,
+        loop: bool=False,
+        pool: str=None,
+        max: int=1,
+        **kwargs
+    ) -> Thread:
+        """
+        Create a thread on a callable, yeet whatever you think it works
+        • Support for a basic Thread Pool, why no native way?
+
+        Args:
+            callable: The function to call, consider using functools.partial
+            args:     Arguments to pass to the function
+            kwargs:   Keyword arguments to pass to the function
+            start:    Whether to immediately start the thread or not
+            loop:     Whether to loop the callable or not (non blocking)
+            pool:     Name of the pool to append the thread to, see BrokenThreadPool
+            max:      Maximum threads in the pool
+
+        Returns:
+            Thread: The created thread
+        """
+
+        # Wrap callable on a loop
+        if loop:
+            original = copy.copy(callable)
+
+            @functools.wraps(callable)
+            def infinite_callable(*args, **kwargs):
+                while True:
+                    original(*args, **kwargs)
+            callable = infinite_callable
+
+        # Create Thread object
+        thread = Thread(target=callable, args=args, kwargs=kwargs)
+
+        # Maybe wait for the pool to be free
+        if pool and (pool := BrokenThread.pools.setdefault(pool, BrokenThreadPool(max=max))):
+            pool.append(thread)
+
+        thread.start() if start else None
+        return thread
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -841,7 +900,7 @@ class BrokenEventLoop:
 
     def start_thread(self) -> None:
         self.__stop__   = False
-        self.__thread__ = BrokenUtils.better_thread(self.loop)
+        self.__thread__ = BrokenThread.new(self.loop)
 
     def stop_thread(self):
         self.__stop__   = True

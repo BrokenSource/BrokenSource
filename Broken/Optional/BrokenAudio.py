@@ -295,7 +295,7 @@ class BrokenAudio:
 
     def start_capture_thread(self) -> None:
         """Keep recording audio on a separate thread"""
-        BrokenUtils.better_thread(self.catch_up_recorder, daemon=True, loop=True)
+        BrokenThread.new(self.catch_up_recorder, daemon=True, loop=True)
 
     # # Get data functions
 

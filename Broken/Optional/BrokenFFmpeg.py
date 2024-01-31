@@ -883,7 +883,7 @@ class BrokenFFmpeg:
 
             def __attrs_post_init__(self):
                 """Starts worker thread"""
-                BrokenUtils.better_thread(self.__worker__)
+                BrokenThread.new(self.__worker__)
 
             def write(self, frame: bytes):
                 """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
