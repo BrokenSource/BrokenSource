@@ -153,7 +153,7 @@ class BrokenProjectCLI:
             def up_date(file: Path) -> None:
                 """Find "version=" line and set it to "version = {date}"", write back to file"""
                 if not file.exists(): return
-                log.info(f"Updating version of file [{file}]")
+                log.info(f"Updating version of file ({file})")
                 file.write_text('\n'.join(
                     [line if not line.startswith("version") else f'version = "{self.version}"'
                     for line in file.read_text().split("\n")]
@@ -189,7 +189,7 @@ class BrokenProjectCLI:
                 try:
                     status = shell("poetry", "run", self.name.lower(), ctx.args, echo=echo)
                 except KeyboardInterrupt:
-                    log.success(f"Project [{self.name}] finished with KeyboardInterrupt")
+                    log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
                     break
                 except Exception as e:
                     raise e
@@ -213,11 +213,10 @@ class BrokenProjectCLI:
 
             # Detect bad return status, reinstall virtualenv and retry once
             if (status.returncode != 0) and (not reinstall):
-                log.warning(f"Detected bad return status for the Project ({self.name}) at ({self.path})")
-                log.warning(f"- Return status: ({status.returncode})")
-
+                log.warning(f"Detected bad Return Status ({status.returncode}) for the Project ({self.name}) at ({self.path})")
                 if self.is_python:
-                    log.warning(f"- Virtual environment path: ({venv})")
+                    log.warning(f"• Python Virtual Environment: ({venv})")
+                log.warning(f"• Command: {tuple(status.args)}")
 
                 # Prompt user for action
                 answer = rich.prompt.Prompt.ask(
@@ -235,7 +234,7 @@ class BrokenProjectCLI:
                     pass
 
             elif infinite:
-                log.success(f"Project [{self.name}] finished successfully")
+                log.success(f"Project ({self.name}) finished successfully")
                 if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                     break
 
@@ -310,7 +309,7 @@ class BrokenProjectCLI:
                     if self.path == path:
                         log.info(f"Moving wheels to Resources folder")
                         for wheel in [next(project.glob("dist/*.whl")) for project in projects[1:]]:
-                            BrokenPath.copy(wheel, BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")/wheel.name)
+                            BrokenPath.copy(src=wheel, dst=BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")/wheel.name)
 
                     # Build the current project
                     shell("poetry", "build", "--format", "wheel")
@@ -628,7 +627,7 @@ class BrokenCLI:
 
             log.info("Created Windows shortcut for Brakeit")
         else:
-            log.error(f"Unknown Platform [{BrokenPlatform.Name}]")
+            log.error(f"Unknown Platform ({BrokenPlatform.Name})")
             return
 
     def __scripts__(self):

@@ -253,19 +253,24 @@ class BrokenPath:
     # # Data moving
 
     @staticmethod
-    def copy(source: PathLike, destination: PathLike, *, echo=True) -> "destination":
-        source, destination = Path(source), Path(destination)
-        log.info(f"Copying ({source}) -> ({destination})", echo=echo)
-        BrokenPath.mkdir(destination.parent, echo=echo)
-        shutil.copy2(source, destination)
-        return destination
+    def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
+        src = BrokenPath.true_path(src)
+        dst = BrokenPath.true_path(dst)
+        BrokenPath.mkdir(dst.parent, echo=echo)
+        if src.is_dir():
+            log.info(f"Copying Directory ({src}) -> ({dst})", echo=echo)
+            shutil.copytree(src, dst)
+        else:
+            log.info(f"Copying File ({src}) -> ({dst})", echo=echo)
+            shutil.copy2(src, dst)
+        return dst
 
     @staticmethod
-    def move(source: PathLike, destination: PathLike, *, echo=True) -> "destination":
-        source, destination = Path(source), Path(destination)
-        log.info(f"Moving ({source}) -> ({destination})", echo=echo)
-        shutil.move(source, destination)
-        return destination
+    def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
+        src, dst = Path(src), Path(dst)
+        log.info(f"Moving ({src}) -> ({dst})", echo=echo)
+        shutil.move(src, dst)
+        return dst
 
     @staticmethod
     def remove(path: PathLike, *, confirm=False, echo=True) -> Path:
@@ -428,6 +433,20 @@ class BrokenPath:
         log.warning(f"Path ({path}) was added to PATH. Please, restart the Terminal to take effect", echo=echo)
         __import__("userpath").append(str(path))
         return path
+
+    def read_text(self, path: Path, *, echo: bool=True) -> Optional[str]:
+        """Safe read text from a file, returns an empty string if the file doesn't exist"""
+        if (path := BrokenPath.true_path(path)).exists():
+            return path.read_text()
+        return ""
+
+    def read_bytes(self, path: Path, *, echo: bool=True) -> Optional[bytes]:
+        """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
+        if (path := BrokenPath.true_path(path)).exists():
+            return path.read_bytes()
+        return b""
+
+    # Fixme: Untested functions, needs better name
 
     @staticmethod
     def non_empty_file(path: Path) -> bool:
@@ -655,7 +674,7 @@ class BrokenThreadPool:
 
     @property
     def alive(self) -> List[Thread]:
-        return list(filter(lambda thread: thread.is_alive(), self.threads))
+        return [thread for thread in self.threads if thread.is_alive()]
 
     @property
     def n_alive(self) -> int:
@@ -684,8 +703,13 @@ class BrokenThread:
         return BrokenThread.pools.setdefault(name, BrokenThreadPool())
 
     @staticmethod
+    def join_all_pools() -> None:
+        for pool in BrokenThread.pools.values():
+            pool.join()
+
+    @staticmethod
     def new(
-        callable,
+        callable: Callable,
         *args,
         start: bool=True,
         loop: bool=False,
@@ -761,53 +785,58 @@ class BrokenEventClient:
     """
 
     # Callback
-    callback:   callable       = None
-    args:       List[Any]      = Factory(list)
-    kwargs:     Dict[str, Any] = Factory(dict)
-    output:     Any            = None
-    context:    Any            = None
-    lock:       threading.Lock = None
-    enabled:    bool           = True
-    once:       bool           = False
+    callback: callable       = None
+    args:     List[Any]      = Factory(list)
+    kwargs:   Dict[str, Any] = Factory(dict)
+    output:   Any            = None
+    context:  Any            = None
+    lock:     threading.Lock = None
+    enabled:  bool           = True
+    once:     bool           = False
 
     # Syncronization
-    frequency:  float          = 60
-    frameskip:  bool           = True
-    decoupled:  bool           = False
+    frequency:  Hertz = 60.0
+    frameskip:  bool  = True
+    decoupled:  bool  = False
 
-    # Timing:
-    next_call:  float          = Factory(lambda: time.perf_counter())
-    last_call:  float          = Factory(lambda: time.perf_counter())
-    started:    float          = Factory(lambda: time.perf_counter())
-    time:       bool           = False
-    dt:         bool           = False
+    # Timing
+    started:   Seconds = Factory(lambda: time.perf_counter())
+    next_call: Seconds = None
+    last_call: Seconds = None
+    time:      bool    = False
+    dt:        bool    = False
 
     # # Useful properties
 
     @property
-    def fps(self) -> Union[float, "hertz"]:
+    def fps(self) -> Hertz:
         return self.frequency
 
     @fps.setter
-    def fps(self, value: Union[float, "hertz"]):
+    def fps(self, value: Hertz):
         self.frequency = value
 
     @property
-    def period(self) -> Union[float, "seconds"]:
+    def period(self) -> Seconds:
         return 1/self.frequency
 
     @period.setter
-    def period(self, value: Union[float, "seconds"]):
+    def period(self, value: Seconds):
         self.frequency = 1/value
 
     # # Implementation
 
     def next(self, block: bool=True) -> None | Any:
 
+        # Sanitize for idealistic values
+        if self.decoupled: self.started = 0
+        self.last_call = self.last_call or self.started
+        self.next_call = self.next_call or self.started
+
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = self.next_call - time.perf_counter()
+        wait = (self.next_call - time.perf_counter())
 
         if self.decoupled:
             pass
@@ -820,23 +849,17 @@ class BrokenEventClient:
         now = self.next_call if self.decoupled else time.perf_counter()
 
         # Delta time between last call and next call
-        if self.dt: self.kwargs["dt"] = now - (self.last_call or now)
+        if self.dt: self.kwargs["dt"] = (now - self.last_call)
 
         # Time since client started
-        if self.time: self.kwargs["time"] = now - self.started
-
-        # Update last call time
-        if self.frameskip or self.decoupled:
-            self.last_call = now
-        else:
-            self.last_call = self.next_call
+        if self.time: self.kwargs["time"] = (now - self.started)
 
         # Enter or not the given context, call callback with args and kwargs
         with (self.lock or contextlib.nullcontext()):
             with (self.context or contextlib.nullcontext()):
                 self.output = self.callback(*self.args, **self.kwargs)
 
-        # Disabled plus Once clients gets deleted
+        # (Disabled && Once) clients gets deleted
         if self.once:
             self.enabled = False
 
@@ -844,7 +867,10 @@ class BrokenEventClient:
         while self.next_call <= now:
             self.next_call += self.period
 
-        return self.output
+        # Update last call time
+        self.last_call = now# if (self.frameskip or self.decoupled) else self.next_call
+
+        return self
 
 @define
 class BrokenEventLoop:

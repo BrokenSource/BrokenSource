@@ -33,15 +33,24 @@ class BrokenImportError:
 @contextmanager
 def BrokenImports():
     """
-    Ignore import errors inside this context, replaces the module with BrokenImportError class
+    Ignore import errors inside a context;
+    replaces the module with a BrokenImportError class
 
     Usage:
-    | while True:
-    |     with BrokenImports():
-    |         import A
-    |         import B
-    |         import C
-    |         break
+        ```python
+        while True:
+            with BrokenImports():
+                import A
+                import B
+                import DNE
+                import C
+                break
+
+        # A = <module 'A' from '...'>
+        # B = <module 'B' from '...'>
+        # C = <module 'C' from '...'>
+        # DNE = <class 'Broken.BrokenImportError'>
+        ```
     """
     try:
         yield
@@ -159,3 +168,7 @@ Image:     TypeAlias = PIL.Image.Image
 Unchanged: TypeAlias = None
 URL:       TypeAlias = str
 Option               = Union
+
+# Units
+Seconds:   TypeAlias = float
+Hertz:     TypeAlias = float

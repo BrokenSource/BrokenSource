@@ -364,7 +364,10 @@ class BrokenProject:
 
     @property
     def LOGLEVEL(self) -> str:
-        return self.CONFIG.logging.default("level", "trace").upper()
+        return (
+            os.environ.get("LOGLEVEL", "").upper()
+            or self.CONFIG.logging.default("level", "info").upper()
+        )
 
     @LOGLEVEL.setter
     def LOGLEVEL(self, value: str):

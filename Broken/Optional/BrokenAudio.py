@@ -177,7 +177,7 @@ class BrokenAudio:
 
     def open_file(self, file: Path) -> numpy.ndarray:
         """Opens an audio file and reads its contents into memory self.data"""
-        log.info(f"Reading audio file [{file}] contents, might take some seconds on bigger files")
+        log.info(f"Reading audio file ({file}) contents, might take some seconds on bigger files")
 
         if file is None:
             log.warning("No file provided on BrokenAudio")
@@ -199,7 +199,7 @@ class BrokenAudio:
         self.data = self.data.astype(self.dtype) / 2**15
 
         # About 700 MB for 1 hour of 48 kHz stereo audio, do we need to make it better?
-        log.fixme(f"Loaded full audio file [{file}] into memory [Size: {self.data.nbytes/1024/1024:.2f} MB], maybe implement progressive mode")
+        log.fixme(f"Loaded full audio file ({file}) into memory [Size: {self.data.nbytes/1024/1024:.2f} MB], maybe implement progressive mode")
 
         return self.data
 
@@ -227,7 +227,7 @@ class BrokenAudio:
             for device in self.devices:
                 if not device.isloopback:
                     continue
-                log.success(f"Found loopback device [{device.name}]")
+                log.success(f"Found loopback device ({device.name})")
                 self.device = device
                 break
             else:
@@ -236,11 +236,11 @@ class BrokenAudio:
 
         # Fuzzy find device name string
         else:
-            log.info(f"Fuzzy string searching for audio capture device with name [{name}]")
+            log.info(f"Fuzzy string searching for audio capture device with name ({name})")
             fuzzy_name, confidence = BrokenUtils.fuzzy_string_search(name, self.devices_names)
 
             if fuzzy_name is None:
-                log.error(f"Couldn't find any device with name [{name}] out of devices:")
+                log.error(f"Couldn't find any device with name ({name}) out of devices:")
                 self.log_available_devices()
                 return None
 
@@ -248,7 +248,7 @@ class BrokenAudio:
             self.device = next((device for device in self.devices if device.name == fuzzy_name), None)
 
         # Open the recorder
-        log.info(f"Opening recorder with device [{self.device}]")
+        log.info(f"Opening recorder with device ({self.device})")
         self.recorder = self.device.recorder(
             samplerate=self.sample_rate,
             channels=self.channels,
@@ -269,7 +269,7 @@ class BrokenAudio:
 
         # Check if data has same number of channels
         if data.shape[0] != self.channels:
-            log.error(f"Data shape [{data.shape}] doesn't match data buffer shape [{self.data.shape}]")
+            log.error(f"Data shape ({data.shape}) doesn't match data buffer shape ({self.data.shape})")
             return None
 
         # Now we have to roll the data buffer and add the new data to the end
@@ -302,7 +302,7 @@ class BrokenAudio:
     def get_data_between_samples(self, start: int, end: int) -> Optional[numpy.ndarray]:
         """Get the audio data between two samples intervals, returns [channels][start:end], size (end - start) samples"""
         if self.data_length < end:
-            log.warning(f"Audio buffer doesn't have enough data to get [{end}] samples, only has [{self.data_length}]")
+            log.warning(f"Audio buffer doesn't have enough data to get ({end}) samples, only has ({self.data_length})")
             return None
         return self.data[:, int(start):int(end)]
 
@@ -324,9 +324,9 @@ class BrokenAudio:
         return None
 
     def info(self):
-        log.info(f"Type:        [{self.type}]")
-        log.info(f"Sample Rate: [{self.sample_rate}]")
-        log.info(f"Channels:    [{self.channels}]")
+        log.info(f"Type:        ({self.type})")
+        log.info(f"Sample Rate: ({self.sample_rate})")
+        log.info(f"Channels:    ({self.channels})")
 
 # -------------------------------------------------------------------------------------------------|
 

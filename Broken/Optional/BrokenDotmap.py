@@ -114,12 +114,12 @@ class BrokenDotmap:
                 case ".pickle":
                     data = pickle.loads(path.read_bytes())
                 case _:
-                    log.error(f"• BrokenDotmap: Unknown file format [{format}]")
-                    log.error(f"└─ File: [{path}]")
+                    log.error(f"• BrokenDotmap: Unknown file format ({format})")
+                    log.error(f"└─ File: ({path})")
                     return
 
         except Exception as e:
-            log.error(f"• BrokenDotmap: Failed to load file [{path}]")
+            log.error(f"• BrokenDotmap: Failed to load file ({path})")
             log.error(f"└─ {e}")
             return
 
@@ -236,5 +236,5 @@ class BrokenDotmap:
             case ".pickle":
                 self.__path__.write_bytes(pickle.dumps(dict))
             case _:
-                log.error(f"BrokenDotmap: Unknown file format [{self.__ext__}], cannot save to file")
+                log.error(f"BrokenDotmap: Unknown file format ({self.__ext__}), cannot save to file")
                 return

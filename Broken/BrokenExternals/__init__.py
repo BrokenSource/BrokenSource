@@ -12,4 +12,5 @@ class BrokenExternalManager:
     def get(self, external: Type[BrokenExternal]) -> BrokenExternal:
         ...
 
+from .BrokenFFmpeg import *
 from .BrokenUpscaler import *

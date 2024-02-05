@@ -67,10 +67,10 @@ class BrokenLogging:
             path,
             level=loglevel,
             format=(
-                f"[{self.project}]"
-                "[{time:YYYY-MM-DD HH:mm:ss}]-"
-                "[{elapsed.milliseconds}ms]-"
-                "[{level:7}]"
+                f"({self.project})"
+                "({time:YYYY-MM-DD HH:mm:ss})-"
+                "({elapsed.milliseconds}ms)-"
+                "({level:7})"
                 " ▸ {message}"
             )
         )
