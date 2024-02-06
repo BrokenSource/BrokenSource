@@ -807,6 +807,11 @@ class BrokenEventClient:
     time:      bool    = False
     dt:        bool    = False
 
+    def __attrs_post_init__(self):
+        signature = inspect.signature(self.callback)
+        self.dt = ("dt" in signature.parameters)
+        self.time = ("time" in signature.parameters)
+
     # # Useful properties
 
     @property
@@ -861,8 +866,7 @@ class BrokenEventClient:
                 self.output = self.callback(*self.args, **self.kwargs)
 
         # (Disabled && Once) clients gets deleted
-        if self.once:
-            self.enabled = False
+        self.enabled = not self.once
 
         # Add periods until next call is in the future
         while self.next_call <= now:
@@ -894,7 +898,11 @@ class BrokenEventLoop:
 
     def once(self, *args, **kwargs) -> BrokenEventClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenEventClient(*args, once=True, **kwargs))
+        return self.add_client(BrokenEventClient(*args, **kwargs, once=True))
+
+    def partial(self, callable: Callable, *args, **kwargs) -> BrokenEventClient:
+        """Wraps around BrokenVsync for convenience"""
+        return self.once(callable=functools.partial(callable, *args, **kwargs))
 
     @property
     def enabled_clients(self) -> List[BrokenEventClient]:
@@ -1045,7 +1053,7 @@ class BrokenRelay:
     self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
     ```
     """
-    callbacks: list[callable] = field(factory=list)
+    callbacks: list[callable] = Factory(list)
 
     def __bind__(self, *callbacks: callable) -> Self:
         """Adds callbacks to the list of callables, runs on self.__call__"""

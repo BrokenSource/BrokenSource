@@ -371,7 +371,7 @@ class BrokenProjectCLI:
 
 @define
 class BrokenCLI:
-    projects:     list[BrokenProjectCLI] = field(factory=list)
+    projects:     list[BrokenProjectCLI] = Factory(list)
     directories:  BrokenDirectories      = None
     broken_typer: BrokenTyper            = None
 
