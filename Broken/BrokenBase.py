@@ -594,7 +594,7 @@ class BrokenUtils:
         *,
         cache=True,
         echo=True
-    ) -> Option[Image, None]:
+    ) -> Optional[Image]:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
         # Todo: Maybe a BrokenImage class with some utils?
 
@@ -880,7 +880,7 @@ class BrokenEventClient:
 @define
 class BrokenEventLoop:
     clients:    List[BrokenEventClient] = Factory(list)
-    __thread__: Option[Thread, None] = None
+    __thread__: Optional[Thread] = None
     __stop__:   bool = False
 
     def add_client(self, client: BrokenEventClient) -> BrokenEventClient:
@@ -888,7 +888,7 @@ class BrokenEventLoop:
         self.clients.append(client)
         return client
 
-    def get_client(self, name: str) -> Option[BrokenEventClient, None]:
+    def get_client(self, name: str) -> Optional[BrokenEventClient]:
         """Gets a client by name"""
         return next((client for client in self.clients if client.name == name), None)
 

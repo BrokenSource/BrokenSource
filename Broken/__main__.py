@@ -275,6 +275,7 @@ class BrokenProjectCLI:
     ):
         """Release the Project as a distributable binary"""
         if self.is_python:
+            BrokenCLI.rust()
 
             # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
@@ -445,7 +446,8 @@ class BrokenCLI:
     def mock(self):
         import Broken.Mock
 
-    def rust(self,
+    @staticmethod
+    def rust(
         toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
         build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="Install Visual C++ Build Tools on Windows")]=True,
     ):

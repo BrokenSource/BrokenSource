@@ -7,6 +7,7 @@ ___*
 
 # Python
 **__pycache__*
+dist
 *.pyc
 *.whl
 
