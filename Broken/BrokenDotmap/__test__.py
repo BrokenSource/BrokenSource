@@ -51,7 +51,7 @@ def test_nesting():
     dotmap["other"]["nested"] = 5
     assert dotmap.other.nested == 5
 
-# Dictionaires .keys, .items, .values
+# Dictionaries .keys, .items, .values
 def test_dictionary_methods():
     dotmap = BrokenDotmap()
     dotmap.loglevel = 5

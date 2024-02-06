@@ -38,7 +38,7 @@ class BrokenLogging:
         """Reset logger bindings"""
         loguru.logger.remove()
         self.logger = loguru.logger.bind()
-        self.__loglevels__()
+        self.__loglevel__()
 
     def stdout(self, loglevel: str) -> Self:
         """Add stdout logging"""
@@ -93,7 +93,7 @@ class BrokenLogging:
         setattr(self.logger, name.lower(), log)
         return self
 
-    def __loglevels__(self) -> Self:
+    def __loglevel__(self) -> Self:
         """Bootstrap better log levels"""
 
         # Override default ones for echo= argument

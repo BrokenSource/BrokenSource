@@ -452,7 +452,7 @@ class BrokenFFmpeg:
     binary:      Path      = None
 
     def __private_to_option__(self, string: str) -> str:
-        """Option commands are the string between the first two dunders"""
+        """Option commands are the string between the first two dunder"""
         if "__" not in string:
             return string
         return string.split("__")[1]
@@ -616,7 +616,7 @@ class BrokenFFmpeg:
         return self.__smart__("-hide_banner", delete=self.hide_banner)
 
     # ---------------------------------------------------------------------------------------------|
-    # Bitrates
+    # Bitrate
 
     def audio_bitrate(self, option: int) -> Self:
         return self.__smart__("-b:a", str(option), delete=self.audio_bitrate)
@@ -894,11 +894,11 @@ class BrokenFFmpeg:
                 self.__stop__ = True
                 with halo.Halo() as spinner:
                     while self.frames:
-                        spinner.text = f"Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
+                        spinner.text = f"BrokenFFmpeg: Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
                         time.sleep(0.016)
-                with halo.Halo("Waiting FFmpeg process to finish rendering") as spinner:
+                with halo.Halo("BrokenFFmpeg: Waiting FFmpeg process to finish rendering") as spinner:
                     while not self.ffmpeg.stdin.closed:
-                        time.sleep(0.05)
+                        time.sleep(0.016)
 
             def __worker__(self):
                 while self.frames or (not self.__stop__):

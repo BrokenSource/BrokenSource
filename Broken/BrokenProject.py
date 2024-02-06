@@ -389,3 +389,13 @@ class BrokenProject:
                 raise e
         except Exception as e:
             raise e
+
+# -------------------------------------------------------------------------------------------------|
+
+@define
+class BrokenApp(ABC):
+    broken_typer: BrokenTyper = None
+
+    @abstractmethod
+    def cli(self) -> None:
+        pass

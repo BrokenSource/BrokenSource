@@ -99,7 +99,7 @@ class BrokenProjectCLI:
         return DotMap(toml.loads((self.path/"pyproject.toml").read_text()))
 
     @property
-    def cargotoml(self) -> DotMap:
+    def cargo_toml(self) -> DotMap:
         return DotMap(toml.loads((self.path/"Cargo.toml").read_text()))
 
     @property
@@ -412,7 +412,7 @@ class BrokenCLI:
         self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software Monorepo manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️  Broken Source Software and its authors, AGPLv3-only License."
+            "©️ Broken Source Software and its authors, AGPLv3-only License."
         ))
 
         with self.broken_typer.panel("📦 Installation"):
@@ -424,7 +424,7 @@ class BrokenCLI:
 
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
-            self.broken_typer.command(self.updateall)
+            self.broken_typer.command(self.update_all)
             self.broken_typer.command(self.mock, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
@@ -672,7 +672,7 @@ class BrokenCLI:
             BrokenPath.make_executable(script, echo=False)
 
     def link(self, path: Path):
-        """Brokenfy a Project or Folder of Projects - Be managed by Broken"""
+        """Link a Project directory or Directory of Projects to be available on `broken`"""
         BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def clean(self,
@@ -711,7 +711,7 @@ class BrokenCLI:
         if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
         if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
-    def updateall(self) -> None:
+    def update_all(self) -> None:
         """Updates all projects"""
         for project in self.projects:
             project.update()

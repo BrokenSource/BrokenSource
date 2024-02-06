@@ -14,6 +14,62 @@ class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
     tta:          bool = field(default=0, converter=bool)
     passes:       int  = field(default=1, converter=int)
 
+    @property
+    def n(self) -> int:
+        return self.noise_level
+    @n.setter
+    def n(self, value: int):
+        self.noise_level = value
+
+    @property
+    def s(self) -> int:
+        return self.scale
+    @s.setter
+    def s(self, value: int):
+        self.scale = value
+
+    @property
+    def t(self) -> int:
+        return self.tile_size
+    @t.setter
+    def t(self, value: int):
+        self.tile_size = value
+
+    @property
+    def g(self) -> int:
+        return self.gpu
+    @g.setter
+    def g(self, value: int):
+        self.gpu = value
+
+    @property
+    def j(self) -> str:
+        return f"{self.load_threads}:{self.proc_threads}:{self.save_threads}"
+    @j.setter
+    def j(self, value: str):
+        self.load_threads, self.proc_threads, self.save_threads = map(int, value.split(":"))
+
+    @property
+    def c(self) -> bool:
+        return self.cpu
+    @c.setter
+    def c(self, value: bool):
+        self.cpu = value
+
+    @property
+    def x(self) -> bool:
+        return self.tta
+    @x.setter
+    def x(self, value: bool):
+        self.tta = value
+
+    @property
+    def p(self) -> int:
+        return self.passes
+    @p.setter
+    def p(self, value: int):
+        self.passes = value
+
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenWaifu2xModel(BrokenEnum):

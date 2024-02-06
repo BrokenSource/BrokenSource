@@ -92,7 +92,7 @@ class BrokenPlatform:
     # Family of platforms
     OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
 
-    # Distros IDs: https://distro.readthedocs.io/en/latest/
+    # Distro IDs: https://distro.readthedocs.io/en/latest/
     LinuxDistro:  str  = distro.id()
 
     # # Booleans if the current platform is the following
@@ -106,8 +106,8 @@ class BrokenPlatform:
 
     # Arch-like
     OnArch:       bool = (LinuxDistro == "arch")
-    OnManjado:    bool = (LinuxDistro == "manjaro")
-    OnArchLike:   bool = (OnArch or OnManjado)
+    OnManjaro:    bool = (LinuxDistro == "manjaro")
+    OnArchLike:   bool = (OnArch or OnManjaro)
 
     # RedHat-like
     OnFedora:     bool = (LinuxDistro == "fedora")
@@ -129,8 +129,8 @@ class BrokenPlatform:
         LinuxARM:     str = "linux-arm64"
         WindowsAMD64: str = "windows-amd64"
         WindowsARM:   str = "windows-arm64"
-        MacOSAMD64:   str = "macos-amd64"
-        MacOSARM:     str = "macos-arm64"
+        MacosAMD64:   str = "macos-amd64"
+        MacosARM:     str = "macos-arm64"
 
     CurrentTarget:    str = f"{Name}-{Architecture}"
 
@@ -486,8 +486,9 @@ class BrokenUtils:
         flatten = lambda stuff: [
             item for subitem in stuff for item in
             (flatten(subitem) if isinstance(subitem, (list, tuple)) else [subitem])
+            if (not truthy) or item
         ]
-        return BrokenUtils.truthy(flatten(stuff)) if truthy else flatten(stuff)
+        return flatten(stuff)
 
     @staticmethod
     def denum(stuff: Iterable[Any]) -> list[Any]:
@@ -543,7 +544,7 @@ class BrokenUtils:
     @staticmethod
     def extend(base: type, name: str=None, as_property: bool=False) -> type:
         """
-        Extend a class with another classe's methods or a method directly.
+        Extend a class with another class's methods or a method directly.
 
         # Usage:
         Decorator of the class or method, class to extend as argument
@@ -762,7 +763,7 @@ class BrokenEventClient:
     Client configuration for BrokenEventLoop
 
     # Function:
-    - callback:   Function callable to call every syncronization
+    - callback:   Function callable to call every synchronization
     - args:       Arguments to pass to callback
     - kwargs:     Keyword arguments to pass to callback
     - output:     Output of callback (returned value)
@@ -771,7 +772,7 @@ class BrokenEventClient:
     - enabled:    Whether to enable this client or not
     - once:       Whether to call this client only once or not
 
-    # Syncronization
+    # Synchronization
     - frequency:  Frequency of callback calls
     - frameskip:  Constant deltatime mode (False) or real deltatime mode (True)
     - decoupled:  "Rendering" mode, do not sleep on real time, implies frameskip False
@@ -794,7 +795,7 @@ class BrokenEventClient:
     enabled:  bool           = True
     once:     bool           = False
 
-    # Syncronization
+    # Synchronization
     frequency:  Hertz = 60.0
     frameskip:  bool  = True
     decoupled:  bool  = False

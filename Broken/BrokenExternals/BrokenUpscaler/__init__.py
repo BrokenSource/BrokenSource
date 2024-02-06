@@ -3,6 +3,26 @@ from .. import *
 
 @define
 class BrokenUpscaler(BrokenExternal, ABC):
+    width:  int = field(default=0, converter=int)
+    height: int = field(default=0, converter=int)
+
+    @property
+    def w(self) -> int:
+        return self.width
+
+    @w.setter
+    def w(self, value: int):
+        self.width = value
+
+    @property
+    def h(self) -> int:
+        return self.height
+
+    @h.setter
+    def h(self, value: int):
+        self.height = value
+
+    # # Implementations
 
     @abstractmethod
     def __upscale__(self, input: Path, output: Path):
@@ -31,6 +51,8 @@ class BrokenUpscaler(BrokenExternal, ABC):
         Returns:
             The upscaled image as a PIL Image object if `output` is `Image`, else the output Path
         """
+        width  = self.width  or width
+        height = self.height or height
         target = (width, height) if (width and height) else None
         self.__validate__()
 

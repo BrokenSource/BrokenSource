@@ -12,6 +12,9 @@
 [submodule "Projects/QuadSnap"]
 	path = Projects/QuadSnap
 	url  = https://github.com/BrokenSource/QuadSnap
+[submodule "Projects/Upscalin"]
+	path = Projects/Upscalin
+	url  = https://github.com/BrokenSource/Upscalin
 
 # # Private
 

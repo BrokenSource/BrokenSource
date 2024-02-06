@@ -29,7 +29,7 @@ class BrokenNote:
 
     # # Conversions
 
-    # We map (index) -> {name, frequency} and the opposite first (they are own implemntation)
+    # We map (index) -> {name, frequency} and the opposite first (they are own implementations)
 
     def index_to_name(note: int) -> str:
         """Convert a MIDI note index to a key name, eg (60 -> C4) (69 -> A4)"""
@@ -105,7 +105,7 @@ class BrokenPianoRoll:
         return list(self.notes[start:end])
 
     def get_notes_at(self, time: float) -> list[BrokenNote]:
-        """Get all notes playing at a givenl time"""
+        """Get all notes playing at a given time"""
         return self.get_notes_between(time, time)
 
 

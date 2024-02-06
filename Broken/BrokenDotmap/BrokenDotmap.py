@@ -158,8 +158,8 @@ class BrokenDotmap(
 
     def pretty_print(self, indent: int=4) -> None:
         try:
-            from rich import print as rprint
-            rprint(self.as_dict)
+            from rich import print as rich_print
+            rich_print(self.as_dict)
         except ImportError:
             print(json.dumps(self.as_dict, indent=indent, ensure_ascii=False))
 
