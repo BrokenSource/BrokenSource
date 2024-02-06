@@ -214,9 +214,16 @@ shell(POETRY, "run", "broken", "welcome", echo=False)
 if shell(POETRY, "run", "broken", "submodules", echo=False).returncode != 0:
     print("Failed to clone one or many essential or not public submodules")
     input("Press enter to continue...")
+
 shell(POETRY, "run", "broken", "install", echo=False)
 
-# Enter virtual environment
-shell(POETRY, "shell", echo=False)
+# Directly execute a command
+if len(sys.argv) > 1:
+    shell(POETRY, "run", sys.argv[1:], echo=False)
+    exit(0)
+
+# Interactive shell
+if os.environ.get("BRAKEIT_NO_SHELL", False) != "1":
+    shell(POETRY, "shell", echo=False)
 
 # -------------------------------------------------------------------------------------------------|

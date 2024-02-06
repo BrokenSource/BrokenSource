@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        // Installation
+        {
+            "label": "brakeit",
+            "type": "shell",
+            "command": "BRAKEIT_NO_SHELL=1 python3 ${workspaceFolder}/brakeit.py",
+        },
+
+        // Releases
+        {
+            "label": "release-depthflow",
+            "type": "shell",
+            "command": "python3 -m poetry run broken depthflow release",
+        },
+        {
+            "label": "release-quadsnap",
+            "type": "shell",
+            "command": "python3 -m poetry run broken quadsnap release",
+        },
+        {
+            "label": "release-shaderflow",
+            "type": "shell",
+            "command": "python3 -m poetry run broken shaderflow release",
+        },
+        {
+            "label": "release-upscalin",
+            "type": "shell",
+            "command": "python3 -m poetry run broken upscalin release",
+        },
+    ]
+}

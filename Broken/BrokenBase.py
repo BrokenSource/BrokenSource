@@ -710,12 +710,13 @@ class BrokenThread:
 
     @staticmethod
     def new(
-        callable: Callable,
+        target: Callable,
         *args,
         start: bool=True,
         loop: bool=False,
         pool: str=None,
         max: int=1,
+        daemon: bool=False,
         **kwargs
     ) -> Thread:
         """
@@ -723,37 +724,46 @@ class BrokenThread:
         • Support for a basic Thread Pool, why no native way?
 
         Args:
-            callable: The function to call, consider using functools.partial
-            args:     Arguments to pass to the function
-            kwargs:   Keyword arguments to pass to the function
-            start:    Whether to immediately start the thread or not
-            loop:     Whether to loop the callable or not (non blocking)
-            pool:     Name of the pool to append the thread to, see BrokenThreadPool
-            max:      Maximum threads in the pool
+            target:  The function to call, consider using functools.partial
+            args:    Arguments to pass to the function
+            kwargs:  Keyword arguments to pass to the function
+            daemon:  Whether to set the thread as daemon or not
+            start:   Whether to immediately start the thread or not
+            loop:    Whether to loop the callable or not (non blocking)
+            pool:    Name of the pool to append the thread to, see BrokenThreadPool
+            max:     Maximum threads in the pool
 
         Returns:
-            Thread: The created thread
+            The created Thread object
         """
 
         # Wrap callable on a loop
         if loop:
-            original = copy.copy(callable)
+            original = copy.copy(target)
 
-            @functools.wraps(callable)
+            @functools.wraps(target)
             def infinite_callable(*args, **kwargs):
                 while True:
                     original(*args, **kwargs)
-            callable = infinite_callable
+            target = infinite_callable
 
         # Create Thread object
-        thread = Thread(target=callable, args=args, kwargs=kwargs)
+        parallel = Thread(
+            target=target,
+            daemon=daemon,
+            args=args,
+            kwargs=kwargs
+        )
 
         # Maybe wait for the pool to be free
-        if pool and (pool := BrokenThread.pools.setdefault(pool, BrokenThreadPool(max=max))):
-            pool.append(thread)
+        if pool and (pool := BrokenThread.pools.setdefault(pool, BrokenThreadPool())):
+            pool.max = max
+            pool.append(parallel)
 
-        thread.start() if start else None
-        return thread
+        if start:
+            parallel.start()
+
+        return parallel
 
 # -------------------------------------------------------------------------------------------------|
 
