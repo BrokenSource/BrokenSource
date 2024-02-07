@@ -670,8 +670,9 @@ class BrokenUtils:
 
     # Todo: Move this to a proper class
     PRECISE_SLEEP_AHEAD_SECONDS     = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
-    PRECISE_SLEEP_LATE_MULTIPLIER   = (10 if BrokenPlatform.OnWindows else 5)
+    PRECISE_SLEEP_LATE_MULTIPLIER   = 10
     PRECISE_SLEEP_INTERPOLATE_RATIO = 0.05
+    PRECISE_SLEEP_MAX_AHEAD_SECONDS = 0.1
 
     @staticmethod
     def precise_sleep(seconds: float) -> None:
@@ -715,6 +716,12 @@ class BrokenUtils:
         # Adjust future sleeps based on the error
         BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS += BrokenUtils.PRECISE_SLEEP_INTERPOLATE_RATIO * \
             (late - BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS)
+
+        # Clamp the ahead time: 0 <= ahead <= max
+        BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS = min(
+            max(0, BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS),
+            BrokenUtils.PRECISE_SLEEP_MAX_AHEAD_SECONDS
+        )
 
         # Spin the thread until the time is up (precise Sleep)
         while (time.perf_counter() - start) < seconds:
