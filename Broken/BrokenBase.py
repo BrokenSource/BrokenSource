@@ -668,8 +668,10 @@ class BrokenUtils:
     def is_dunder(name: str) -> bool:
         return name.startswith("__") and name.endswith("__")
 
-    # Maximum scheduler error, (Thread will be 100% for this time)
-    PRECISE_SLEEP_AHEAD = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
+    # Todo: Move this to a proper class
+    PRECISE_SLEEP_AHEAD_SECONDS     = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
+    PRECISE_SLEEP_LATE_MULTIPLIER   = (10 if BrokenPlatform.OnWindows else 5)
+    PRECISE_SLEEP_INTERPOLATE_RATIO = 0.05
 
     @staticmethod
     def precise_sleep(seconds: float) -> None:
@@ -703,15 +705,18 @@ class BrokenUtils:
             return
 
         # Sleep close to the due time
-        ahead = max(0, seconds - BrokenUtils.PRECISE_SLEEP_AHEAD)
+        ahead = max(0, seconds - BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS)
         start = time.perf_counter()
         time.sleep(max(0, ahead))
 
-        # How much error the last sleep() just did, and adjust the next sleeps
-        late = (time.perf_counter() - start) - ahead
-        BrokenUtils.PRECISE_SLEEP_AHEAD += (5*late - BrokenUtils.PRECISE_SLEEP_AHEAD)*0.05
+        # How much error the last sleep() just did
+        late = ((time.perf_counter() - start) - ahead) * BrokenUtils.PRECISE_SLEEP_LATE_MULTIPLIER
 
-        # Spin the thread until the time is up
+        # Adjust future sleeps based on the error
+        BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS += BrokenUtils.PRECISE_SLEEP_INTERPOLATE_RATIO * \
+            (late - BrokenUtils.PRECISE_SLEEP_AHEAD_SECONDS)
+
+        # Spin the thread until the time is up (precise Sleep)
         while (time.perf_counter() - start) < seconds:
             pass
 
