@@ -48,7 +48,7 @@ class BrokenLogging:
             colorize=True,
             level=loglevel,
             format=(
-                f"│<{self.project_color}>{self.project.ljust(10)}</{self.project_color}>├"
+                f"\r│<{self.project_color}>{self.project.ljust(10)}</{self.project_color}>├"
                 "┤<green>{elapsed.milliseconds}ms</green>├"
                 "┤<level>{level:7}</level>"
                 "│ ▸ <level>{message}</level>"

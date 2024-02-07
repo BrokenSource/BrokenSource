@@ -417,7 +417,6 @@ class BrokenCLI:
         ))
 
         with self.broken_typer.panel("📦 Installation"):
-            self.broken_typer.command(self.welcome, hidden=True)
             self.broken_typer.command(self.submodules)
             self.broken_typer.command(self.install)
             self.broken_typer.command(self.rust)
@@ -483,21 +482,13 @@ class BrokenCLI:
 
     # # Installation commands
 
-    def welcome(self) -> None:
-        BROKEN.welcome()
-
     def submodules(self,
-        # Basic
-        root: Path=typer.Option(BROKEN.DIRECTORIES.REPOSITORY, "--root", "-r", help="Root path to search for Submodules"),
-        auth: bool=typer.Option(False, "--auth", "-a", help="Prompt Username and Password privately for Private clones"),
-
-        # Direct authentication
-        username: str=typer.Option(None, "--username", "-u", help="Username to use for git clone"),
-        password: str=typer.Option(None, "--password", "-p", help="Password to use for git clone"),
-
-        # Git options
-        pull:  bool=typer.Option(False, "--pull", "-p", help="Run git pull on all submodules"),
-        force: bool=typer.Option(False, "--force", "-f", help="Force pull (overrides local changes)"),
+        root:     Annotated[Path, typer.Option("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
+        auth:     Annotated[bool, typer.Option("--auth",     "-a", help="(Basic ) Prompt Username and Password privately for Private clones")]=False,
+        username: Annotated[str,  typer.Option("--username", "-u", help="(Direct) Username to use for git clone")]=None,
+        password: Annotated[str,  typer.Option("--password", "-p", help="(Direct) Password to use for git clone")]=None,
+        pull:     Annotated[bool, typer.Option("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
+        force:    Annotated[bool, typer.Option("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
     ):
         """
         Safely init and clone submodules, skip private submodules
@@ -587,8 +578,13 @@ class BrokenCLI:
             self.submodules(path, username=username, password=password)
 
     def install(self):
-        self.__scripts__()
-        self.__shortcut__()
+        BROKEN.welcome()
+        with halo.Halo("Cloning submodules"):
+            self.submodules()
+        with halo.Halo("Installing Direct Scripts"):
+            self.__scripts__()
+        with halo.Halo("Creating Desktop Brakeit Shortcut"):
+            self.__shortcut__()
         BrokenPath.add_to_path(BROKEN.DIRECTORIES.REPOSITORY)
         log.note(f"Running BrokenSource Monorepo at ({BROKEN.DIRECTORIES.REPOSITORY})")
         log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")

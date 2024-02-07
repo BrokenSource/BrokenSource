@@ -189,15 +189,10 @@ except Exception:
 
 # -------------------------------------------------------------------------------------------------|
 
-# Welcome ✨
-shell(POETRY, "run", "broken", "welcome", echo=False)
-
 # Install scripts, desktop files and submodules (+ignore private infra)
-if shell(POETRY, "run", "broken", "submodules", echo=False).returncode != 0:
-    print("Failed to clone one or many essential or not public submodules")
+if shell(POETRY, "run", "broken", "install", echo=False).returncode != 0:
+    print("Failed to clone one or many essential public or private submodules, or install brakeit")
     input("Press enter to continue...")
-
-shell(POETRY, "run", "broken", "install", echo=False)
 
 # Directly execute a command
 if len(sys.argv) > 1:
