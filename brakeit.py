@@ -224,6 +224,10 @@ if len(sys.argv) > 1:
 
 # Interactive shell
 if os.environ.get("BRAKEIT_NO_SHELL", False) != "1":
-    shell(POETRY, "shell", echo=False)
+    if os.name == "nt":
+        shell("cmd", "/k", (venv_path/"Scripts"/"Activate"), echo=False)
+        os.system("pause")
+    else:
+        shell(POETRY, "shell", echo=False)
 
 # -------------------------------------------------------------------------------------------------|

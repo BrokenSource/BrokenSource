@@ -9,11 +9,12 @@ def shell(
     output:  bool=False,
     Popen:   bool=False,
     shell:   bool=False,
+    env:     dict[str, str]=None,
     echo:    bool=True,
     confirm: bool=False,
     do:      bool=True,
     **kwargs
-) -> None | str | subprocess.Popen | subprocess.CompletedProcess:
+) -> Option[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
 
@@ -24,25 +25,26 @@ def shell(
 
     Args:
         `args`:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
-        `output`:  Whether to return the output of the command or not
-        `Popen`:   Whether to run and return the Popen object or not
-        `echo`:    Whether to print the command or not
-        `confirm`: Whether to ask for confirmation before running the command or not
-        `do`:      Whether to run the command or not, good for conditional commands
+        `output`:  Return the process's stdout as a decoded string
+        `Popen`:   Run the process with subprocess.Popen
+        `shell`:   (discouraged) Run the command with shell=True, occasionally useful
+        `echo`:    Log the command being run or not
+        `confirm`: Ask for confirmation before running the command or not
+        `do`:      Inverse of `skip`, do not run the command, but log it as minor
 
-    Kwargs:
+    Kwargs (subprocess.* arguments):
         `cwd`: Current working directory for the command
         `env`: Environment variables for the command
-        `*:`   Any other keyword arguments are passed to subprocess.*
+        `*`:   Any other keyword arguments are passed to subprocess.*
     """
     if output and Popen:
-        raise ValueError("Cannot use output=True and Popen=True at the same time")
+        raise ValueError("Cannot use (output=True) and (Popen=True) at the same time")
 
     # Flatten a list, remove falsy values, convert to strings
     command = tuple(map(str, BrokenUtils.flatten(args)))
 
     if shell:
-        log.warning("Running command with shell=True, be careful")
+        log.warning("Running command with (shell=True), be careful." + " Consider using (confirm=True)"*(not confirm))
         kwargs["shell"] = shell
         command = ' '.join(command)
 
@@ -53,9 +55,7 @@ def shell(
 
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-
     (log.info if do else log.skip)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
-
     if not do: return
 
     # Confirm running command or not
@@ -63,7 +63,7 @@ def shell(
         return
 
     # Get current environment variables
-    env = os.environ.copy() | kwargs.get("env", {})
+    env = os.environ.copy() | (env or {})
 
     # Run the command and return specified object
     if output: return subprocess.check_output(command, env=env, **kwargs).decode("utf-8")
@@ -136,9 +136,11 @@ class BrokenPlatform:
 
     @staticmethod
     def clear_terminal(**kwargs):
+        if not kwargs.get("do", True):
+            return
+
         if BrokenPlatform.OnWindows:
-            if kwargs.get("do", True):
-                os.system("cls")
+            os.system("cls")
         else:
             shell("clear", **kwargs)
 
