@@ -709,7 +709,7 @@ class BrokenUtils:
 
         # How much error the last sleep() just did, and adjust the next sleeps
         late = (time.perf_counter() - start) - ahead
-        BrokenUtils.PRECISE_SLEEP_AHEAD += (2*late - BrokenUtils.PRECISE_SLEEP_AHEAD)*0.05
+        BrokenUtils.PRECISE_SLEEP_AHEAD += (5*late - BrokenUtils.PRECISE_SLEEP_AHEAD)*0.05
 
         # Spin the thread until the time is up
         while (time.perf_counter() - start) < seconds:
