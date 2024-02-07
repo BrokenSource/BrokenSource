@@ -668,6 +668,53 @@ class BrokenUtils:
     def is_dunder(name: str) -> bool:
         return name.startswith("__") and name.endswith("__")
 
+    # Maximum scheduler error, (Thread will be 100% for this time)
+    PRECISE_SLEEP_AHEAD = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
+
+    @staticmethod
+    def precise_sleep(seconds: float) -> None:
+        """
+        Sleep for a precise amount of time. This function is very interesting for some reasons:
+        - time.sleep() obviously uses syscalls, and it's up to the OS to implement it
+        - This is usually done by scheduling the thread to wake up after the time has passed
+        - On Windows, this precision was 15ms (terrible), and on Python 3.11+ was optimized to 100ns
+        - On Unix, the precision is great with nanosleep() or usleep() (1ms or less)
+
+        So, in practice, the best ever precision time sleep function would be:
+        ```python
+        while (now - start) < wait:
+            now = time.perf_counter()
+        ```
+
+        As evident, this spins the thread full time due the .perf_counter() and conditional, which
+        is not wanted on a sleep function (to use 100% of a thread)
+
+        Taking advantage of the fact that time.sleep() is usually precise enough, and always will
+        overshoot the time, we can sleep close to the time and apply the previous spinning method
+        to achieve a very precise sleep, with a low enough overhead, relatively speaking.
+
+        Args:
+            seconds: Precise time to sleep
+
+        Returns:
+            None
+        """
+        if seconds < 0:
+            return
+
+        # Sleep close to the due time
+        ahead = max(0, seconds - BrokenUtils.PRECISE_SLEEP_AHEAD)
+        start = time.perf_counter()
+        time.sleep(max(0, ahead))
+
+        # How much error the last sleep() just did, and adjust the next sleeps
+        late = (time.perf_counter() - start) - ahead
+        BrokenUtils.PRECISE_SLEEP_AHEAD += (2*late - BrokenUtils.PRECISE_SLEEP_AHEAD)*0.05
+
+        # Spin the thread until the time is up
+        while (time.perf_counter() - start) < seconds:
+            pass
+
 # -------------------------------------------------------------------------------------------------|
 
 @define
@@ -811,6 +858,7 @@ class BrokenEventClient:
     frequency:  Hertz = 60.0
     frameskip:  bool  = True
     decoupled:  bool  = False
+    precise:    bool  = False
 
     # Timing
     started:   Seconds = Factory(lambda: time.perf_counter())
@@ -854,12 +902,15 @@ class BrokenEventClient:
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = (self.next_call - time.perf_counter())
+        wait  = (self.next_call - time.perf_counter())
 
         if self.decoupled:
             pass
         elif block:
-            time.sleep(max(0, wait))
+            if self.precise:
+                BrokenUtils.precise_sleep(wait)
+            else:
+                time.sleep(max(0, wait))
         elif wait > 0:
             return None
 

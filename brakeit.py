@@ -49,8 +49,7 @@ if os.name == "posix":
 # -------------------------------------------------------------------------------------------------|
 # Welcome! We might be on a curl install
 
-if not os.environ.get("VIRTUAL_ENV"):
-    print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎\n")
+print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎\n")
 
 PIPE_INSTALL_FLAG = "BRAKEIT_OK_NON_ATTY"
 
@@ -153,27 +152,22 @@ for attempt in itertools.count(0):
         input("\nPress enter to continue, things might not work..")
         break
 
-# Call Brakeit inside the installed Virtual Environment
-if not os.environ.get("VIRTUAL_ENV"):
+# Enable execution of scripts if on PowerShell
+if os.name == "nt":
+    shell("powershell", "-Command",
+        "Set-ExecutionPolicy", "RemoteSigned", "-Scope", "CurrentUser",
+        echo=False, Popen=True
+    )
 
-    # Enable execution of scripts if on PowerShell
-    if os.name == "nt":
-        shell("powershell", "-Command",
-            "Set-ExecutionPolicy", "RemoteSigned", "-Scope", "CurrentUser",
-            echo=False, Popen=True
-        )
-
-    # Create, install dependencies on virtual environment
-    if shell(POETRY, "install", echo=False).returncode != 0:
-        print("Failed to install Python Virtual Environment and Dependencies")
-        input("Press enter to continue...")
-
-    shell(POETRY, "run", "python", BRAKEIT, echo=False)
-    exit(0)
+# Create, install dependencies on virtual environment
+if shell(POETRY, "install", echo=False).returncode != 0:
+    print("Failed to install Python Virtual Environment and Dependencies")
+    input("Press enter to continue...")
 
 # -------------------------------------------------------------------------------------------------|
 
-venv_path = Path(os.environ["VIRTUAL_ENV"])
+# Get the virtual environment path
+venv_path = Path(shell(POETRY, "env", "info", "-p", echo=False, capture_output=True).stdout.decode().strip())
 
 try:
     # Bonus: Symlink the venv path to the current directory
