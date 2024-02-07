@@ -17,9 +17,11 @@ flatten = lambda stuff: [
 ]
 
 # Simple wrapper on subprocess.run to print and flatten commands
-def shell(*args, echo: bool=True, **kwargs):
-    args = tuple(flatten(args))
+def shell(*args, echo: bool=True, Popen: bool=False, **kwargs):
+    args = tuple(map(str, flatten(args)))
     print(f"• Running command {args}") if echo else None
+    if Popen:
+        return subprocess.Popen(args, **kwargs)
     return subprocess.run(args, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
@@ -47,14 +49,15 @@ if os.name == "posix":
 # -------------------------------------------------------------------------------------------------|
 # Welcome! We might be on a curl install
 
-print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎\n")
+if not os.environ.get("VIRTUAL_ENV"):
+    print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Bootstrapper Script 💎\n")
 
-PIPE_INSTALL = "BRAKEIT_OK_NON_ATTY"
+PIPE_INSTALL_FLAG = "BRAKEIT_OK_NON_ATTY"
 
 # If not running interactively, we might be on a pipe
-if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
+if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
     print("• Detected non-interactive shell, using automatic installation mode")
-    os.environ[PIPE_INSTALL] = "1"
+    os.environ[PIPE_INSTALL_FLAG] = "1"
     cwd = Path.cwd()
 
     # Install dependencies on Windows
@@ -105,11 +108,11 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL, False)):
 # Path to this script
 BRAKEIT = Path(__file__).absolute()
 
-# Change directory to where the script is from anywhere
+# Change directory to where the script is from, anywhere
 os.chdir(BRAKEIT.parent)
 
 # Make the script executable (runnable if on PATH)
-if os.name in ["posix", "mac"]:
+if os.name != "nt":
     os.chmod(BRAKEIT, 0o755)
 
 # -------------------------------------------------------------------------------------------------|
@@ -131,13 +134,16 @@ for attempt in itertools.count(0):
     # Fixme: Do we need a more complex solution?
     shell(PYTHON, "-m", "ensurepip", "--upgrade")
 
-# Upgrade pip
-shell(PIP, "pip")
-
 # -------------------------------------------------------------------------------------------------|
 
 # Install poetry
 for attempt in itertools.count(0):
+    try:
+        import poetry
+        break
+    except ImportError:
+        print("Couldn't import Poetry, installing it...")
+        shell(PIP, "poetry")
 
     # Couldn't install poetry or not available on Path
     if attempt == INSTALL_MAX_ATTEMPTS:
@@ -147,48 +153,31 @@ for attempt in itertools.count(0):
         input("\nPress enter to continue, things might not work..")
         break
 
-    # Call poetry --version, command might exit status 1 if it's not installed
-    status = shell(POETRY, "--version", capture_output=True)
+# Call Brakeit inside the installed Virtual Environment
+if not os.environ.get("VIRTUAL_ENV"):
 
-    # Poetry is installed, break
-    if status.returncode == 0:
-        break
-
-    # Install poetry and try again
-    shell(PIP, "poetry")
-
-# Avoid connection pool is full on many-core systems
-shell(POETRY, "config", "installer.max-workers", "10")
-
-# Create, install dependencies on virtual environment
-if shell(POETRY, "install").returncode != 0:
-    print("Failed to install Python Virtual Environment and Dependencies")
-    input("Press enter to continue...")
-
-# -------------------------------------------------------------------------------------------------|
-
-# # Hot patch Poetry to allow for expanduser and symlinks on path dependencies
-# Note: This shouldn't break this repo, as relative paths are used, is a fix for private infra
-
-# Find the virtual environment path
-venv_path = Path(shell(POETRY, "env", "info", "-p", capture_output=True).stdout.decode().strip())
-
-# Find and patch the file, fail safe
-if (path_dependency := next(venv_path.glob("**/*/path_dependency.py"))):
-    path_dependency.write_text(
-        path_dependency.read_text().replace(
-            "self._path = path\n",
-            "self._path = (path := path.expanduser())\n"
+    # Enable execution of scripts if on PowerShell
+    if os.name == "nt":
+        shell("powershell", "-Command",
+            "Set-ExecutionPolicy", "RemoteSigned", "-Scope", "CurrentUser",
+            echo=False, Popen=True
         )
-    )
+
+    # Create, install dependencies on virtual environment
+    if shell(POETRY, "install", echo=False).returncode != 0:
+        print("Failed to install Python Virtual Environment and Dependencies")
+        input("Press enter to continue...")
+
+    shell(POETRY, "run", "python", BRAKEIT, echo=False)
+    exit(0)
 
 # -------------------------------------------------------------------------------------------------|
 
-# Bonus: Symlink the venv path to the current directory
-# Do that on the installer script as `poetry env info -p` is slow
-# Note: This is not a crucial step
+venv_path = Path(os.environ["VIRTUAL_ENV"])
+
 try:
-    # Remove previous symlink if exists
+    # Bonus: Symlink the venv path to the current directory
+    # Note: This is not a crucial step
     if (dot_venv := BRAKEIT.parent/".venvs").exists():
         dot_venv.unlink()
 
@@ -197,13 +186,6 @@ try:
 
 except Exception:
     print("Couldn't symlink .venvs to the virtual environment path, skipping")
-
-# -------------------------------------------------------------------------------------------------|
-
-# Enable execution of scripts if on PowerShell
-if os.name == "nt":
-    if shell("powershell", "-Command", "Set-ExecutionPolicy", "RemoteSigned", "-Scope", "CurrentUser").returncode != 0:
-        print("Failed to enable execution of scripts for PowerShell, it might fail to activate Virtual Environments")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -225,8 +207,7 @@ if len(sys.argv) > 1:
 # Interactive shell
 if os.environ.get("BRAKEIT_NO_SHELL", False) != "1":
     if os.name == "nt":
-        shell("cmd", "/k", (venv_path/"Scripts"/"Activate"), echo=False)
-        os.system("pause")
+        shell("powershell", "-NoLogo", "-NoExit", "-File", (venv_path/"Scripts"/"Activate.ps1"), echo=False)
     else:
         shell(POETRY, "shell", echo=False)
 

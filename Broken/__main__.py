@@ -590,8 +590,9 @@ class BrokenCLI:
         self.__scripts__()
         self.__shortcut__()
         BrokenPath.add_to_path(BROKEN.DIRECTORIES.REPOSITORY)
-        log.info(f"Root is ({BROKEN.DIRECTORIES.REPOSITORY})")
+        log.note(f"Running BrokenSource Monorepo at ({BROKEN.DIRECTORIES.REPOSITORY})")
         log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
+        print()
 
     def __shortcut__(self):
         if BrokenPlatform.OnUnix:
@@ -618,6 +619,10 @@ class BrokenCLI:
                 ]))
 
         elif BrokenPlatform.OnWindows:
+
+            # Workaround: Do not print KeyError of `pyshortcuts.windows.get_conda_active_env`
+            os.environ["CONDA_DEFAULT_ENV"] = "base"
+
             import pyshortcuts
 
             pyshortcuts.make_shortcut(
@@ -626,8 +631,6 @@ class BrokenCLI:
                 description="Brakeit Bootstrapper",
                 icon=str(BROKEN.RESOURCES.ICON_ICO),
             )
-
-            log.info("Created Windows shortcut for Brakeit")
         else:
             log.error(f"Unknown Platform ({BrokenPlatform.Name})")
             return
@@ -637,7 +640,7 @@ class BrokenCLI:
 
         # Get Broken virtualenv path
         folder = "Scripts" if BrokenPlatform.OnWindows else "bin"
-        bin_path = BrokenProjectCLI(BROKEN.DIRECTORIES.PACKAGE).__install_venv__()/folder
+        bin_path = Path(os.environ["VIRTUAL_ENV"])/folder
         log.info(f"Installing scripts on ({bin_path})")
 
         # Watermark to tag files are Broken made
