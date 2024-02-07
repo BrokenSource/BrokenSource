@@ -252,23 +252,23 @@ class BrokenProjectCLI:
         while True:
             venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
-            # Virtualenv is not created if command errors or if it's empty
-            if (venv.returncode == 1) or (not venv.stdout.strip()):
+            # Install if virtualenv is not found
+            if (venv.returncode != 0):
                 log.info(f"Installing virtual environment for {self.name} project")
                 shell("poetry", "install")
                 continue
 
-            # Get and return virtualenv path
-            venv = Path(venv.stdout.decode("utf-8").strip())
+            # Convert to Path
+            venv_path = Path(venv.stdout.decode().strip())
 
             # Reinstall virtualenv if requested
             if reinstall:
                 reinstall = False
-                BrokenPath.remove(venv)
+                BrokenPath.remove(venv_path)
                 BrokenPath.remove(self.path/"poetry.lock")
                 continue
 
-            return venv
+            return venv_path
 
     def release(self,
         target: Annotated[BrokenPlatform.Targets, typer.Option("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
@@ -579,8 +579,7 @@ class BrokenCLI:
 
     def install(self):
         BROKEN.welcome()
-        with halo.Halo("Cloning submodules"):
-            self.submodules()
+        self.submodules()
         with halo.Halo("Installing Direct Scripts"):
             self.__scripts__()
         with halo.Halo("Creating Desktop Brakeit Shortcut"):

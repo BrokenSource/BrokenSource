@@ -84,10 +84,8 @@ class BrokenPlatform:
     OnBSD:        bool = (Name == "bsd")
 
     # Platform release binaries extension and CPU architecture
-    Extension:    str  = ".exe" if OnWindows else ".bin"
-    Architecture: str  = (platform.machine().lower()
-        .replace("x86_64", "amd64")
-    )
+    Extension:    str  = (".exe" if OnWindows else ".bin")
+    Architecture: str  = (platform.machine().lower().replace("x86_64", "amd64"))
 
     # Family of platforms
     OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
