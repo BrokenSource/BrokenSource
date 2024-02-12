@@ -917,33 +917,10 @@ class BrokenFFmpeg:
     # High level functions
 
     @staticmethod
-    def get_total_frames(path: PathLike) -> Optional[int]:
-        """Count the total frames of a video FAST, returns int if video exists"""
-        if not (path := BrokenPath.true_path(path)).exists():
-            return log.error(f"Get video total frames Path ({path}) does not exist")
-        log.minor(f"Finding Frame Count of video ({path}), might take a while..")
-
-        # Read all frames from the video but don't process them
-        info = shell((
-                BrokenFFmpeg()
-                .vsync(FFmpegVsync.ConstantFramerate)
-                .input(path)
-                .format(FFmpegFormat.Null)
-                .output("-")
-            ).command,
-            stderr=PIPE
-        ).stderr.decode()
-
-        # Search for the last frame=(number)
-        return int(re.compile(r"frame=\s*(\d+)").findall(info)[-1])
-
-    @staticmethod
-    def get_resolution(path: Path) -> Optional[Tuple[int, int]]:
+    def get_resolution(path: Path, *, echo: bool=True) -> Tuple[int, int]:
         """Get the resolution of a video in a smart way"""
-        if not (path := BrokenPath.true_path(path)).exists():
-            return log.error(f"Get video resolution Path ({path}) does not exist")
-        log.info(f"Finding Resolution of video ({path}), might take a while..")
-
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting video resolution of ({path})")
         return PIL.Image.open(io.BytesIO(
             shell((
                 BrokenFFmpeg()
@@ -954,15 +931,15 @@ class BrokenFFmpeg:
                 .output("-")
             ).command,
             stdout=PIPE,
-            stderr=PIPE).stdout
-        ), formats=["jpeg"]).size
+            stderr=PIPE,
+            echo=echo,
+        ).stdout), formats=["jpeg"]).size
 
     @staticmethod
-    def get_frames(path: PathLike) -> Iterable[numpy.ndarray]:
+    def get_frames(path: PathLike, *, echo: bool=True) -> Iterable[numpy.ndarray]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
-        if not Path(path).exists():
-            log.error(f"Get video frames Path ({path}) does not exist")
-            return None
+        path = BrokenPath.true_path(path)
+        log.minor(f"Yielding video frames of ({path})")
 
         import numpy
 
@@ -984,9 +961,49 @@ class BrokenFFmpeg:
             ).command,
             Popen=True,
             stdout=PIPE,
+            echo=echo,
         )
 
         # Keep reading frames until we run out (should be equal to video_total_frames)
         while (raw := ffmpeg.stdout.read(width * height * 3)):
             yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
 
+    @staticmethod
+    def get_total_frames(path: PathLike, *, echo: bool=True) -> int:
+        """Count the total frames of a video"""
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting video total frames of ({path})")
+
+        # Read all frames from the video but don't process them
+        info = shell((
+                BrokenFFmpeg()
+                .vsync(FFmpegVsync.ConstantFramerate)
+                .input(path)
+                .format(FFmpegFormat.Null)
+                .output("-")
+            ).command,
+            stderr=PIPE,
+            echo=echo,
+        ).stderr.decode()
+
+        # Search for the last frame=(number)
+        return int(re.compile(r"frame=\s*(\d+)").findall(info)[-1])
+
+    @staticmethod
+    def get_duration(path: PathLike, *, echo: bool=True) -> float:
+        """Get the duration of a video"""
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting video duration of ({path})")
+        return float(shell("ffprobe",
+            "-i", path,
+            "-show_entries", "format=duration",
+            "-v", "quiet", "-of", "csv=p=0",
+            output=True, echo=echo
+        ))
+
+    @staticmethod
+    def get_framerate(path: PathLike, *, echo: bool=True) -> float:
+        """Get the framerate of a video"""
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting video framerate of ({path})", echo=echo)
+        return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_duration(path, echo=False)

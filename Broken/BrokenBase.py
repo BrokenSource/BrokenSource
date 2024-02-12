@@ -483,10 +483,11 @@ class BrokenUtils:
         Flatten nested list like iterables to a 1D list
         [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
         """
+        # Fixme: Add allow_none argument
         flatten = lambda stuff: [
             item for subitem in stuff for item in
             (flatten(subitem) if isinstance(subitem, (list, tuple)) else [subitem])
-            if (not truthy) or item
+            if (truthy and item is not None)
         ]
         return flatten(stuff)
 
@@ -589,7 +590,7 @@ class BrokenUtils:
 
     @staticmethod
     def load_image(
-        image: Image | PathLike | URL,
+        image: Union[Image, PathLike, URL, numpy.ndarray],
         pixel="RGB",
         *,
         cache=True,
@@ -598,6 +599,8 @@ class BrokenUtils:
         """Smartly load 'SomeImage', a path, url or PIL Image"""
         # Todo: Maybe a BrokenImage class with some utils?
 
+        import numpy
+
         # Can't load the Image class
         if image is Image:
             return None
@@ -605,6 +608,9 @@ class BrokenUtils:
         # Nothing to do if already a PIL Image
         elif isinstance(image, Image):
             return image
+
+        elif isinstance(image, numpy.ndarray):
+            return PIL.Image.fromarray(image)
 
         try:
             # Load image if a path or url is supplied
@@ -725,6 +731,23 @@ class BrokenUtils:
         while (time.perf_counter() - start) < seconds:
             pass
 
+    @staticmethod
+    def locals(level: int=1, self: bool=True) -> dict:
+        locals = inspect.currentframe()
+
+        # Keep getting the previous's frame
+        for _ in range(level):
+            locals = locals.f_back
+
+        # Get the locals
+        locals = locals.f_locals
+
+        # Remove self from locals
+        if self:
+            locals.pop("self", None)
+
+        return locals
+
 # -------------------------------------------------------------------------------------------------|
 
 @define
@@ -772,10 +795,11 @@ class BrokenThread:
         target: Callable,
         *args,
         start: bool=True,
-        loop: bool=False,
         pool: str=None,
         max: int=1,
         daemon: bool=False,
+        locals: bool=False,
+        self: bool=False,
         **kwargs
     ) -> Thread:
         """
@@ -783,28 +807,24 @@ class BrokenThread:
         • Support for a basic Thread Pool, why no native way?
 
         Args:
-            target:  The function to call, consider using functools.partial
-            args:    Arguments to pass to the function
-            kwargs:  Keyword arguments to pass to the function
-            daemon:  Whether to set the thread as daemon or not
-            start:   Whether to immediately start the thread or not
-            loop:    Whether to loop the callable or not (non blocking)
-            pool:    Name of the pool to append the thread to, see BrokenThreadPool
-            max:     Maximum threads in the pool
+            target: The function to call, consider using functools.partial or this kwargs
+            args:   Arguments to pass to the function (positional, unnamed)
+            kwargs: Keyword arguments to pass to the function
+            daemon: Whether to set the thread as daemon or not
+            start:  Whether to immediately start the thread or not
+            pool:   Name of the pool to append the thread to, see BrokenThreadPool
+            max:    Maximum threads in the pool
+
+        Advanced:
+            locals: Whether to pass the current scope locals to the callable or not
+            self:   Include "self" in the locals
 
         Returns:
             The created Thread object
         """
 
-        # Wrap callable on a loop
-        if loop:
-            original = copy.copy(target)
-
-            @functools.wraps(target)
-            def infinite_callable(*args, **kwargs):
-                while True:
-                    original(*args, **kwargs)
-            target = infinite_callable
+        # Update kwargs with locals
+        if locals: kwargs.update(BrokenUtils.locals(level=2, self=self))
 
         # Create Thread object
         parallel = Thread(

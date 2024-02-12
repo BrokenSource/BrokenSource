@@ -349,8 +349,7 @@ class BrokenProject:
         import pyfiglet
 
         # Build message
-        message  = [""]
-        message += [line for line in pyfiglet.figlet_format(self.APP_NAME).split("\n") if line]
+        message  = [line for line in pyfiglet.figlet_format(self.APP_NAME).split("\n") if line.strip()]
         message += [""]
         message += [f"Made with ❤️ by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
         message += [("Release version." if BROKEN_RELEASE else "Development version") + f" @ Python {sys.version.split()[0]}"]

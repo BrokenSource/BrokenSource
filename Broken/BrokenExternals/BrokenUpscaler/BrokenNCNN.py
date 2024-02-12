@@ -4,15 +4,23 @@ from . import *
 @define
 class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
     noise_level:  int  = field(default=1, converter=int)
-    scale:        int  = field(default=2, converter=int)
     tile_size:    int  = field(default=0, converter=int)
     gpu:          int  = field(default=0, converter=int)
     load_threads: int  = field(default=1, converter=int)
-    proc_threads: int  = field(default=2, converter=int)
-    save_threads: int  = field(default=2, converter=int)
+    proc_threads: int  = field(default=1, converter=int)
+    save_threads: int  = field(default=1, converter=int)
     cpu:          bool = field(default=0, converter=bool)
     tta:          bool = field(default=0, converter=bool)
-    passes:       int  = field(default=1, converter=int)
+
+    def preexec_fn(self):
+        import os
+        import random
+        import resource
+
+        # Make the process only use one random core
+        core = random.choice(range(os.cpu_count()))
+        os.sched_setaffinity(0, {core})
+        resource.setrlimit(resource.RLIMIT_CPU, (1, 1))
 
     @property
     def n(self) -> int:
@@ -20,13 +28,6 @@ class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
     @n.setter
     def n(self, value: int):
         self.noise_level = value
-
-    @property
-    def s(self) -> int:
-        return self.scale
-    @s.setter
-    def s(self, value: int):
-        self.scale = value
 
     @property
     def t(self) -> int:
@@ -101,7 +102,7 @@ class BrokenWaifu2x(BrokenUpscalerNCNN):
         )):
             raise ValueError(f"Invalid parameters for {self.__class__.__name__}: {things}")
 
-    def __upscale__(self, input: Path, output: Path):
+    def __upscale__(self, input: Path, output: Path, *, echo: bool=True):
         shell(
             self.binary,
             "-i", input,
@@ -114,6 +115,8 @@ class BrokenWaifu2x(BrokenUpscalerNCNN):
             "-x"*self.tta,
             # "-m", self.model.value, # Fixme: Doko?
             stderr=subprocess.DEVNULL,
+            preexec_fn=self.preexec_fn,
+            echo=echo,
         )
 
 # -------------------------------------------------------------------------------------------------|
@@ -148,7 +151,7 @@ class BrokenRealEsrgan(BrokenUpscalerNCNN):
         )):
             raise ValueError(f"Invalid parameters for {self.__class__.__name__}: {things}")
 
-    def __upscale__(self, input: Path, output: Path):
+    def __upscale__(self, input: Path, output: Path, *, echo: bool=True):
         shell(
             self.binary,
             "-i", input,
@@ -160,6 +163,8 @@ class BrokenRealEsrgan(BrokenUpscalerNCNN):
             "-j", f"{self.load_threads}:{self.proc_threads}:{self.save_threads}",
             "-x"*self.tta,
             stderr=subprocess.DEVNULL,
+            preexec_fn=self.preexec_fn,
+            echo=echo,
         )
 
 # -------------------------------------------------------------------------------------------------|

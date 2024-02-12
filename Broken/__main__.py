@@ -187,7 +187,7 @@ class BrokenProjectCLI:
             if self.is_python:
                 venv = self.__install_venv__(reinstall=reinstall)
                 try:
-                    status = shell("poetry", "run", self.name.lower(), ctx.args, echo=echo)
+                    status = shell("poetry", "run", "main", ctx.args, echo=echo)
                 except KeyboardInterrupt:
                     log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
                     break
