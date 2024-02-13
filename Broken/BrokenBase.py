@@ -1193,7 +1193,7 @@ class BrokenTyper:
     __first__:   bool        = True
     epilog:      str         = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://github.com/sponsors/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
+        "→ [italic grey53]Consider [blue][link=https://www.patreon.com/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 
     def __attrs_post_init__(self):

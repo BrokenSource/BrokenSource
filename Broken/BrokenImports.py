@@ -174,3 +174,7 @@ Option               = Union
 # Units
 Seconds:   TypeAlias = float
 Hertz:     TypeAlias = float
+
+# Fix: typing.Self was implemented in Python 3.11
+if sys.version_info < (3, 11):
+    Self = TypeVar("Self")
