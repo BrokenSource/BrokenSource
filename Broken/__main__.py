@@ -418,7 +418,7 @@ class BrokenCLI:
 
         with self.broken_typer.panel("📦 Installation"):
             self.broken_typer.command(self.submodules)
-            self.broken_typer.command(self.install)
+            self.broken_typer.command(self.install, hidden=True)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
 
@@ -429,7 +429,6 @@ class BrokenCLI:
 
         with self.broken_typer.panel("⚠️ Experimental"):
             self.broken_typer.command(self.pillow, hidden=True)
-            self.broken_typer.command(self.wheel, hidden=True)
 
         for project in self.projects:
             self.broken_typer.command(
@@ -447,9 +446,10 @@ class BrokenCLI:
 
     @staticmethod
     def rust(
-        toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="Rust toolchain to use (stable, nightly)")]="stable",
-        build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="Install Visual C++ Build Tools on Windows")]=True,
+        toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
+        build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
+        """Install or select a Rust Toolchain"""
         # Install rustup based on platform
         if not shutil.which("rustup"):
             if BrokenPlatform.OnWindows:
@@ -485,8 +485,8 @@ class BrokenCLI:
     def submodules(self,
         root:     Annotated[Path, typer.Option("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
         auth:     Annotated[bool, typer.Option("--auth",     "-a", help="(Basic ) Prompt Username and Password privately for Private clones")]=False,
-        username: Annotated[str,  typer.Option("--username", "-u", help="(Direct) Username to use for git clone")]=None,
-        password: Annotated[str,  typer.Option("--password", "-p", help="(Direct) Password to use for git clone")]=None,
+        username: Annotated[str,  typer.Option("--username", "-u", help="(Auth  ) Username to use for git clone")]=None,
+        password: Annotated[str,  typer.Option("--password", "-p", help="(Auth  ) Password to use for git clone")]=None,
         pull:     Annotated[bool, typer.Option("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
         force:    Annotated[bool, typer.Option("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
     ):
@@ -717,21 +717,6 @@ class BrokenCLI:
             project.update()
 
     # # Experimental
-
-    def wheel(self):
-        """Builds a Python wheel for Broken"""
-        BrokenPath.mkdir(BROKEN.DIRECTORIES.BROKEN_BUILD)
-        dist = BrokenPath.resetdir(BROKEN.DIRECTORIES.PACKAGE/"dist")
-
-        # Make Python Wheel
-        shell("poetry", "build", "--format", "wheel", f"--directory={BROKEN.DIRECTORIES.BROKEN_BUILD}")
-
-        # Get the wheel file, move to Build dir
-        wheel = next(dist.glob("*.whl"))
-        wheel = BrokenPath.move(wheel, BROKEN.DIRECTORIES.BROKEN_BUILD/wheel.name)
-        BrokenPath.remove(dist)
-
-        log.info(f"Python wheel built at {wheel}")
 
     def pillow(self):
         """Use Pillow-SIMD. Requires AVX2 CPU and dependencies"""
