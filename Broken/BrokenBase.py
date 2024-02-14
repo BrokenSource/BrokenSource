@@ -795,6 +795,7 @@ class BrokenThread:
         target: Callable,
         *args,
         start: bool=True,
+        loop: bool=False,
         pool: str=None,
         max: int=1,
         daemon: bool=False,
@@ -810,14 +811,15 @@ class BrokenThread:
             target: The function to call, consider using functools.partial or this kwargs
             args:   Arguments to pass to the function (positional, unnamed)
             kwargs: Keyword arguments to pass to the function
-            daemon: Whether to set the thread as daemon or not
-            start:  Whether to immediately start the thread or not
+            start:  Start the thread immediately after creation
+            loop:   Wrap the target callable in a loop
             pool:   Name of the pool to append the thread to, see BrokenThreadPool
             max:    Maximum threads in the pool
+            daemon: When the main thread exits, daemon threads are also terminated
 
         Advanced:
             locals: Whether to pass the current scope locals to the callable or not
-            self:   Include "self" in the locals
+            self:   Include "self" in the locals if locals=True
 
         Returns:
             The created Thread object
@@ -826,9 +828,15 @@ class BrokenThread:
         # Update kwargs with locals
         if locals: kwargs.update(BrokenUtils.locals(level=2, self=self))
 
+        # Wrap the callback in a loop
+        @functools.wraps(target)
+        def looped(*args, **kwargs):
+            while True:
+                target(*args, **kwargs)
+
         # Create Thread object
         parallel = Thread(
-            target=target,
+            target=looped if loop else target,
             daemon=daemon,
             args=args,
             kwargs=kwargs

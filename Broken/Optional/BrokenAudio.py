@@ -289,13 +289,9 @@ class BrokenAudio:
         # Capture pending data, add to self.data return it
         return self.add_data(self.recorder.record(numframes=None).T.astype(self.dtype))
 
-    def catch_up_recorder(self) -> numpy.ndarray:
-        """Record everything that is pending on the recorder"""
-        return self.record(numframes=None)
-
     def start_capture_thread(self) -> None:
         """Keep recording audio on a separate thread"""
-        BrokenThread.new(self.catch_up_recorder, daemon=True, loop=True)
+        BrokenThread.new(self.record, daemon=True, loop=True)
 
     # # Get data functions
 
@@ -455,7 +451,7 @@ class BrokenAudioSpectrogram:
 
         # Returns (Frequencies, Transformation matrix)
         """
-        log.info(f"Making Spectrogram Matrix ({minimum_frequency:.2f}Hz - {maximum_frequency:.2f}Hz) with {bins} bins)")
+        log.info(f"Making Spectrogram Matrix ({minimum_frequency:.2f}Hz -> {maximum_frequency:.2f}Hz) with {bins} bins)")
 
         # Get the linear space on the custom scale -> "frequencies to scale"
         transform_linspace = numpy.linspace(
