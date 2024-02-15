@@ -78,7 +78,7 @@ class BrokenLogging:
 
     # # Add new log levels
 
-    def __add_loglevel__(self, name: str, loglevel: int = 0, color: str = None) -> Self:
+    def __add_loglevel__(self, name: str, loglevel: int=0, color: str=None) -> Self:
         """Create a new loglevel `.{name.lower()}` on the logger"""
         def log(*args, echo=True, **kwargs):
             if echo: self.logger.log(name, " ".join(map(str, args)), **kwargs)
@@ -118,3 +118,10 @@ class BrokenLogging:
 
 # Initialize logging class
 log = BrokenLogging().stdout("CRITICAL").logger
+
+# -------------------------------------------------------------------------------------------------|
+
+# I hope one day to implement a log-able pretty exceptions
+class BrokenExceptions:
+    def hook(self, exception_type, value, traceback) -> None:
+        ...

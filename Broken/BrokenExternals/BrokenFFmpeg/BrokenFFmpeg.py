@@ -146,6 +146,29 @@ class FFmpegAudioCodec(BrokenEnum):
     AC3    = "ac3"
     Copy   = "copy"
 
+    # Raw pcm formats `ffmpeg -formats | grep PCM`
+    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "pcm_f32be"
+    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "pcm_f32le"
+    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "pcm_f64be"
+    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "pcm_f64le"
+    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "pcm_s16be"
+    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "pcm_s16le"
+    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "pcm_s24be"
+    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "pcm_s24le"
+    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "pcm_s32be"
+    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "pcm_s32le"
+    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "pcm_u16be"
+    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "pcm_u16le"
+    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "pcm_u24be"
+    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "pcm_u24le"
+    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "pcm_u32be"
+    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "pcm_u32le"
+    PCM_UNSIGNED_8_BITS                = "pcm_u8"
+    PCM_SIGNED_8_BITS                  = "pcm_s8"
+    PCM_MULAW                          = "pcm_mulaw"
+    PCM_ALAW                           = "pcm_alaw"
+    PCM_VIDC                           = "pcm_vidc"
+
 # ----------------------------------------------|
 # H264
 

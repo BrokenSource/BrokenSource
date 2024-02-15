@@ -379,7 +379,7 @@ class BrokenProject:
 
         # Fixme: Two logging instances on the same file on Windows?
         try:
-            BrokenLogging().file(self.DIRECTORIES.LOGS/"Broken.log", self.LOGLEVEL)
+            BrokenLogging().file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
         except PermissionError as e:
             # Fixme: Two logging instances for the same file on Windows doesn't work
             if os.name == "nt":

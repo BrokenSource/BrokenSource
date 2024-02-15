@@ -1,6 +1,4 @@
-<div align="right">
 【☰】Table of Contents 👆
-</div>
 
 <div align="justify">
 
@@ -257,13 +255,6 @@ Thanks for taking your time to contribute to Broken Source Software projects!!
 ## • Help Needed
 - Designer needed for the logos and consistent art
 - Packaging binaries on Linux and MacOS - package managers
-
-## • Reporting Issues
-- **We do not** test enough or at all the code on Windows or MacOS
-- Always give **minimal steps** to reproduce the error (instructions or code)
-- Most projects deal with Audio or Video, issues may be file-specific
-- **We only support the latest versions of any given project**, we are rolling-release
-  - <sub>We'll still help troubleshooting older code or releases, just don't except back-porting</sub>
 
 ## • Suggesting Enhancements
 - Rejection of ideas on Free and Open Source Software is a common and intimidating problem to newcomers, so we want to reduce the fear and cooperate with you
