@@ -136,6 +136,27 @@ class FFmpegVideoCodec(BrokenEnum):
         option = FFmpegVideoCodec.get(option)
         return "nvenc" in option.value
 
+class FFmpegPCM(BrokenEnum):
+    # Raw pcm formats `ffmpeg -formats | grep PCM`
+    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "f32be"
+    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "f32le"
+    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "f64be"
+    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "f64le"
+    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "s16be"
+    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "s16le"
+    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "s24be"
+    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "s24le"
+    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "s32be"
+    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "s32le"
+    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "u16be"
+    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "u16le"
+    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "u24be"
+    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "u24le"
+    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "u32be"
+    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "u32le"
+    PCM_UNSIGNED_8_BITS                = "u8"
+    PCM_SIGNED_8_BITS                  = "s8"
+
 class FFmpegAudioCodec(BrokenEnum):
     """-c:a ffmpeg option"""
     AAC    = "aac"
@@ -165,9 +186,6 @@ class FFmpegAudioCodec(BrokenEnum):
     PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "pcm_u32le"
     PCM_UNSIGNED_8_BITS                = "pcm_u8"
     PCM_SIGNED_8_BITS                  = "pcm_s8"
-    PCM_MULAW                          = "pcm_mulaw"
-    PCM_ALAW                           = "pcm_alaw"
-    PCM_VIDC                           = "pcm_vidc"
 
 # ----------------------------------------------|
 # H264
@@ -369,6 +387,26 @@ class FFmpegFormat(BrokenEnum):
     Rawvideo   = "rawvideo"
     Null       = "null"
     Image2pipe = "image2pipe"
+
+    # Raw pcm formats `ffmpeg -formats | grep PCM`
+    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "f32be"
+    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "f32le"
+    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "f64be"
+    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "f64le"
+    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "s16be"
+    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "s16le"
+    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "s24be"
+    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "s24le"
+    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "s32be"
+    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "s32le"
+    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "u16be"
+    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "u16le"
+    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "u24be"
+    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "u24le"
+    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "u32be"
+    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "u32le"
+    PCM_UNSIGNED_8_BITS                = "u8"
+    PCM_SIGNED_8_BITS                  = "s8"
 
 # ----------------------------------------------|
 # Loglevel
@@ -699,6 +737,7 @@ class BrokenFFmpeg:
             self.video_bitrate,
             self.map,
             self.pixel_format,
+            self.no_video
         ))
         return self
 
@@ -737,6 +776,10 @@ class BrokenFFmpeg:
 
     def vsync(self, option: FFmpegVsync=FFmpegVsync.ConstantFramerate) -> Self:
         return self.__smart__("-vsync", option, delete=self.vsync)
+
+    def no_video(self) -> Self:
+        """More like NVIDIA"""
+        return self.__smart__("-vn", delete=self.no_video)
 
     # ---------------------------------------------------------------------------------------------|
     # Base codecs
@@ -885,11 +928,11 @@ class BrokenFFmpeg:
     def command(self) -> List[str]:
         return BrokenUtils.denum(BrokenUtils.flatten(self.binary, self.__command__))
 
-    def run(self) -> subprocess.CompletedProcess:
-        return shell(self.command)
+    def run(self, **kwargs) -> subprocess.CompletedProcess:
+        return shell(self.command, **kwargs)
 
-    def popen(self) -> subprocess.stdin:
-        return shell(self.command, Popen=True)
+    def popen(self, **kwargs) -> subprocess.Popen:
+        return shell(self.command, Popen=True, **kwargs)
 
     def pipe(self, buffer: int=100) -> BrokenFFmpegPopenBuffered:
         """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
@@ -940,7 +983,7 @@ class BrokenFFmpeg:
     # High level functions
 
     @staticmethod
-    def get_resolution(path: Path, *, echo: bool=True) -> Tuple[int, int]:
+    def get_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
         path = BrokenPath.true_path(path)
         log.minor(f"Getting video resolution of ({path})")
@@ -992,7 +1035,7 @@ class BrokenFFmpeg:
             yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
 
     @staticmethod
-    def get_total_frames(path: PathLike, *, echo: bool=True) -> int:
+    def get_total_frames(path: PathLike, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video"""
         path = BrokenPath.true_path(path)
         log.minor(f"Getting video total frames of ({path})")
@@ -1013,10 +1056,10 @@ class BrokenFFmpeg:
         return int(re.compile(r"frame=\s*(\d+)").findall(info)[-1])
 
     @staticmethod
-    def get_duration(path: PathLike, *, echo: bool=True) -> float:
+    def get_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
         """Get the duration of a video"""
         path = BrokenPath.true_path(path)
-        log.minor(f"Getting video duration of ({path})")
+        log.minor(f"Getting Video Duration of ({path})")
         return float(shell("ffprobe",
             "-i", path,
             "-show_entries", "format=duration",
@@ -1025,8 +1068,98 @@ class BrokenFFmpeg:
         ))
 
     @staticmethod
-    def get_framerate(path: PathLike, *, echo: bool=True) -> float:
+    def get_framerate(path: PathLike, *, echo: bool=True) -> Optional[Hertz]:
         """Get the framerate of a video"""
         path = BrokenPath.true_path(path)
-        log.minor(f"Getting video framerate of ({path})", echo=echo)
+        log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
         return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_duration(path, echo=False)
+
+    @staticmethod
+    def get_samplerate(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[Hertz]:
+        """Get the samplerate of a audio file"""
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
+        return int(shell("ffprobe",
+            "-i", path,
+            "-show_entries", "stream=sample_rate",
+            "-v", "quiet", "-of", "csv=p=0",
+            output=True, echo=echo
+        ).strip().splitlines()[stream])
+
+    @staticmethod
+    def get_audio_channels(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[int]:
+        """Get the number of channels of a audio file"""
+        path = BrokenPath.true_path(path)
+        log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
+        return int(shell("ffprobe",
+            "-i", path,
+            "-show_entries", "stream=channels",
+            "-v", "quiet", "-of", "csv=p=0",
+            output=True, echo=echo
+        ).strip().splitlines()[stream])
+
+    @staticmethod
+    def get_raw_audio(
+        path: PathLike,
+        *,
+        format: FFmpegPCM=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN,
+        chunk: Seconds=0.1,
+        echo: bool=True
+    ) -> Iterable[numpy.ndarray]:
+
+        import numpy
+
+        # Get basic information
+        channels   = BrokenFFmpeg.get_audio_channels(path, echo=echo)
+        samplerate = BrokenFFmpeg.get_samplerate(path, echo=echo)
+
+        # An example format of "f32le" will have:
+        # • Size, Endian, Type, dtype = 4, "<", "f", "<f4"
+        format = FFmpegPCM.get(format)
+        size   = int(re.sub(r"\D", "", format.value)) // 8
+        endian = re.sub(r".*\d", "", format.value).replace("le", "<").replace("be", ">")
+        type   = re.match(r"[^\d]+", format.value).group(0)
+        dtype  = f"{endian}{type}{size}"
+
+        # Build FFmpeg command
+        ffmpeg = (
+            BrokenFFmpeg()
+            .quiet()
+            .input(path)
+            .audio_codec(f"pcm_{format.value}")
+            .format(format.value)
+            .no_video("-vn")
+            .custom("-ar", samplerate)
+            .custom("-ac", channels)
+            .output("-")
+        ).popen(stdout=PIPE)
+
+        """
+        You would think the following code is the way, but it is not
+        • Small reads yields time imprecision on sample domain vs time domain
+        • Must keep track of theoretical time and real time of the read
+
+        ```python
+        while (data := ffmpeg.stdout.read(chunk*samplerate)):
+            yield numpy.frombuffer(data, dtype=dtype).reshape(-1, channels)
+        ```
+        """
+
+        # Keep track of theoretical and read time
+        bytes_per_second = (size * channels * samplerate)
+        bytes_per_sample = (size * channels)
+        real_time        = 0
+
+        for target_time in itertools.count(chunk, chunk):
+
+            # Calculate the length of the next read to best match the target time
+            length = (target_time - real_time) * bytes_per_second
+            length = BrokenUtils.nearest_multiple_of(length, bytes_per_sample)
+
+            # The next chunk might overshoot or undershoot, and it's ok
+            if not (data := ffmpeg.stdout.read(length)):
+                break
+
+            # Increment precise time and read time
+            real_time += len(data)/bytes_per_second
+            yield numpy.frombuffer(data, dtype=dtype).reshape(-1, channels)

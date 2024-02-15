@@ -256,19 +256,19 @@ class BrokenPath:
     def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
         src = BrokenPath.true_path(src)
         dst = BrokenPath.true_path(dst)
-        BrokenPath.mkdir(dst.parent, echo=echo)
+        BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
-            log.info(f"Copying Directory ({src}) -> ({dst})", echo=echo)
+            log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
-            log.info(f"Copying File ({src}) -> ({dst})", echo=echo)
+            log.info(f"Copying File ({src}) → ({dst})", echo=echo)
             shutil.copy2(src, dst)
         return dst
 
     @staticmethod
     def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
         src, dst = Path(src), Path(dst)
-        log.info(f"Moving ({src}) -> ({dst})", echo=echo)
+        log.info(f"Moving ({src}) → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
@@ -353,7 +353,7 @@ class BrokenPath:
         Returns:
             None if it fails, else `virtual` Path
         """
-        log.info(f"Symlinking ({virtual}) -> ({real})", echo=echo)
+        log.info(f"Symlinking ({virtual}) → ({real})", echo=echo)
 
         # Return if already symlinked
         if (BrokenPath.true_path(virtual) == BrokenPath.true_path(real)):
@@ -409,7 +409,7 @@ class BrokenPath:
         BrokenPath.remove(output, echo=echo)
 
         # Make the new zip
-        log.info(f"Zipping ({path}) -> ({output})", echo=echo)
+        log.info(f"Zipping ({path}) → ({output})", echo=echo)
         shutil.make_archive(output.with_suffix(""), "zip", path)
 
         return output
@@ -484,9 +484,10 @@ class BrokenUtils:
         [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
         """
         # Fixme: Add allow_none argument
+        iterables = (list, tuple, Generator)
         flatten = lambda stuff: [
             item for subitem in stuff for item in
-            (flatten(subitem) if isinstance(subitem, (list, tuple)) else [subitem])
+            (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
             if (truthy and item is not None)
         ]
         return flatten(stuff)
@@ -747,6 +748,11 @@ class BrokenUtils:
             locals.pop("self", None)
 
         return locals
+
+    @staticmethod
+    def nearest_multiple_of(number: float, multiple: float) -> float:
+        """Get the nearest multiple of a number"""
+        return round(number / multiple) * multiple
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -1219,7 +1225,7 @@ class BrokenTyper:
     __panel__: str = None
 
     @contextlib.contextmanager
-    def panel(self, name: str) -> None:
+    def panel(self, name: str) -> Generator[None, None, None]:
         try:
             self.__panel__ = name
             yield

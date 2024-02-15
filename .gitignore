@@ -1,9 +1,6 @@
-# Blobs and states
-Build
-Release
+# # Common
 
-# Temp unwanted files
-___*
+*.env
 
 # Python
 **__pycache__*
@@ -15,10 +12,16 @@ dist
 .stfolder
 .stversions
 
+# # Custom
+
+# Blobs
+Build
+Release
+
 # Symlinks
 Workspace
 Projects/Hook/*
 .venvs
 
-# Mock
-Broken/Mock/*
+# Temporary files
+___*

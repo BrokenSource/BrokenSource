@@ -1,5 +1,5 @@
 ---
-name: "New Feature Request 🚀"
+name: "🚀 New Feature Request"
 about: "Suggest your idea for a new Feature, Improvement or User Experience Enhancements"
 title: "(REQUEST) A descriptive enough title, with all the main important points of the request"
 labels: ''

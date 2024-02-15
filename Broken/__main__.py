@@ -423,8 +423,9 @@ class BrokenCLI:
             self.broken_typer.command(self.link)
 
         with self.broken_typer.panel("🛡️ Core"):
-            self.broken_typer.command(self.clean)
             self.broken_typer.command(self.update_all)
+            self.broken_typer.command(self.clean)
+            self.broken_typer.command(self.sync)
             self.broken_typer.command(self.mock, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
@@ -711,6 +712,20 @@ class BrokenCLI:
         if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
         if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
+    def sync(self) -> None:
+        """Synchronize common resources files across all projects"""
+        root = BROKEN.DIRECTORIES.REPOSITORY
+
+        for project in self.projects:
+            for file in BrokenUtils.flatten(
+                (root/"poetry.toml"),
+                (root/".gitignore"),
+                (root/".github"/"Funding.yml"),
+                (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
+            ):
+                target = project.path/file.relative_to(root)
+                BrokenPath.copy(src=file, dst=target)
+
     def update_all(self) -> None:
         """Updates all projects"""
         for project in self.projects:
@@ -719,7 +734,7 @@ class BrokenCLI:
     # # Experimental
 
     def pillow(self):
-        """Use Pillow-SIMD. Requires AVX2 CPU and dependencies"""
-        shell(PIP, "uninstall", "pillow-simd", "-y")
-        os.environ["CC"] = "cc -mavx2"
-        shell(PIP, "install", "-U", "--force-reinstall", "pillow-simd")
+        """Use Pillow-SIMD for faster Image processing"""
+        os.environ["CC"] = f"cc -mavx2"
+        shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")
+

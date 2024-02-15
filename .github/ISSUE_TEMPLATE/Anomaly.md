@@ -1,5 +1,5 @@
 ---
-name: "New Bug Report 🐞"
+name: "🐞 New Bug Report"
 about: "Facing some unexpected behavior or error? Let us help you!"
 title: "(BUG) A descriptive enough title, with all the main important points of the issue"
 labels: ''
