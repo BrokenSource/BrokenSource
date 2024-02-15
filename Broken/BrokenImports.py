@@ -170,6 +170,7 @@ Image:     TypeAlias = PIL.Image.Image
 Unchanged: TypeAlias = None
 URL:       TypeAlias = str
 Option               = Union
+Range:     TypeAlias = range
 
 # Units
 Seconds:   TypeAlias = float

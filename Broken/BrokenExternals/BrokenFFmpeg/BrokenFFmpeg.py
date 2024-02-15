@@ -854,10 +854,10 @@ class BrokenFFmpeg:
     def __rate_control_lookahead__nvenc(self, option: int=0) -> Self:
         return self.__smart__("-rc-lookahead", option, delete=self.__rate_control_lookahead__nvenc)
 
-    def __surfaces__nvenc(self, option: Union[int, range(0, 65)]=0) -> Self:
+    def __surfaces__nvenc(self, option: Union[int, Range(0, 65)]=0) -> Self:
         return self.__smart__("-surfaces", min(max(option, 0), 64), delete=self.__surfaces__nvenc)
 
-    def __qp__nvenc(self, option: Union[int, range(-1, 51)]=-1) -> Self:
+    def __qp__nvenc(self, option: Union[int, Range(-1, 51)]=-1) -> Self:
         return self.__smart__("-qp", option, delete=self.__qp__nvenc)
 
     def __bref_mode__nvenc(self, option: FFmpegNVENC_B_Ref_Mode=FFmpegNVENC_B_Ref_Mode.Disabled) -> Self:

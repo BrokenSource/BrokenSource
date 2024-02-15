@@ -54,7 +54,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
 
-- **Install** [**Git**](https://git-scm.com/downloads) and [**Python**](https://www.python.org/downloads) for your platform
+- **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10+**](https://www.python.org/downloads) for your platform
 
 - Open a **Terminal** on some directory and run:
 
@@ -94,12 +94,12 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
 
-- **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command:
+- **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
   ```ps
   winget install -e --id Git.Git --source winget
   ```
 
-- **Install** [**Python**](https://www.python.org/downloads) with the command:
+- **Install** [**Python 3.10+**](https://www.python.org/downloads) with the command (once):
   ```ps
   winget install -e --id Python.Python.3.11
   ```
@@ -110,7 +110,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <br>
 
-- **Alternatively**, we also support a `pipe` install on PowerShell! 🤯
+**Alternatively**, we also support a `pipe` install on PowerShell! 🤯
   ```ps
   (Invoke-WebRequest -Uri https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py -UseBasicParsing).Content | py -
   ```
@@ -217,11 +217,31 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 
 - **Help needed**: Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
+<br>
+
 <sub><i>*1: We don't have the hardware to test on ARM or MacOS, so we can't provide binaries for those platforms. You likely can run from the source code</i></sub>
 
-<sub><i>*2: Our versioning is based on a date format since most code is rolling release; we don't plan to have that many releases; they encode the rough timespan where the project was at and gets neatly sorted by name on file explorers</i></sub>
+<sub><i>*2: We use date versioning as we are rolling release and is neatly sorted by name on file explorers</i></sub>
 
-<sub><i><b>Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
+<sub><i><b>⚠️ Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
+
+
+
+<br>
+<br>
+<br>
+
+# ❤️‍🩹 Contributing
+Thanks for taking your time for contributing to Broken Source Software Projects!!
+
+**Main ways to contribute**:
+- _Reporting issues_: See the Issue Template when creating a new Issue
+- _Suggesting Features_: See the Feature Template when creating a new Issue
+- _Pull Requests_: Code itself is the best way to contribute to the projects
+- _Design and Art_: We need logos, icons, and consistent art for the projects
+- _Package Maintainers_: Help us packaging the binaries for any platform
+- **Get in Touch**: Contact us on [Discord](https://discord.com/invite/KjqvcYwRHm) or [Telegram](https://t.me/brokensource) to see how you can help!
+
 
 
 <br>
@@ -232,7 +252,7 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 
 <sup><b>Note</b>: This section is under construction</sup>
 
-The faster the hardware (CPU, GPU, RAM), the faster the code will run.
+**Golden Rule:** The faster the hardware (CPU, GPU, RAM), the faster the code will run.
 
 Apart from memory restrictions your hardware should support some minimum technologies:
 
@@ -242,38 +262,29 @@ Apart from memory restrictions your hardware should support some minimum technol
 
 
 
-
-<br>
-<br>
-<br>
-
-# ❤️‍🩹 Contributing
-Thanks for taking your time to contribute to Broken Source Software projects!!
-
-- Apart from the usual "be nice", "be respectful", we have some guidelines to help you get started
-
-## • Help Needed
-- Designer needed for the logos and consistent art
-- Packaging binaries on Linux and MacOS - package managers
-
-## • Suggesting Enhancements
-- Rejection of ideas on Free and Open Source Software is a common and intimidating problem to newcomers, so we want to reduce the fear and cooperate with you
-- Not all suggestions matches the project original idea
-- No commentaries are criticizing your person, rather your *work*
-- **Stuff needs time and effort to be implemented**
-- Feel absolutely free to debate on choices and ideas for the projects
-- Do not be afraid to ask for help or guidance
-
-
 <br>
 <br>
 <br>
 
 # 💎 Acknowledgements
 
-All the infrastructure in **Broken Source Software's Framework** and **Projects** wouldn't be possible without many programming language packages, software we use and exponentially more **Open Source Contributors** that made it possible. **To all of you**, an **uncountable list of direct and indirect contributors**, we thank you for your time and effort to make the world a better place ❤️‍🩹
+All the infrastructure in **Broken Source Software's Framework** and **Projects** wouldn't be possible without many Programming Language Packages, Software we use and exponentially more **Open Source Contributors** that made it possible. **To all of you**, an **uncountable list of direct and indirect contributors**, we thank you for your time and effort to make the world a better place ❤️‍🩹
 
 Below a list, **not ordered by importance or relevance**, of the most notable software and people.
+
+Some of them were once used, or learned from, yet are a token of gratitude and recommendation!
+
+<br>
+
+### Sponsorships
+Be part of the **Explorers** and **Shining Stars** by sponsoring us! 🌟
+
+<br>
+
+### Package Maintainers
+Package managers for Linux and MacOS are welcome, you'll be credited ❤️
+
+<br>
 
 ### General
 - [**FFmpeg**](https://ffmpeg.org): _"A complete, cross-platform solution to record, convert and stream audio and video."_ - and they are not lying!!
@@ -285,6 +296,7 @@ Below a list, **not ordered by importance or relevance**, of the most notable so
 - [**NVIDIA**](https://www.nvidia.com): Bittersweet one, but CUDA and the GPU's technology are undeniably amazing
 - [**GitHub Copilot**](https://copilot.github.com): Spend more time thinking architecture than implementation
 
+<br>
 
 ### Python
 - [**Python**](https://www.python.org): The programming language
@@ -294,7 +306,7 @@ Below a list, **not ordered by importance or relevance**, of the most notable so
 - [**ModernGL**](https://github.com/moderngl/moderngl): OpenGL made-easy wrapper
 - [**GLFW**](https://www.glfw.org): Easy OpenGL window and input manager
 - [**NumPy**](https://numpy.org): Numerical Python, the math behind the scenes
-- [**Quaternion**](https://github.com/moble/quaternion): Built-in NumPy support for [Quaternions](https://www.youtube.com/watch?v=d4EgbgTm0Bg)<sup>Ew <a href="https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible">Euler Angles</a></sup>
+- [**NumPy Quaternion**](https://github.com/moble/quaternion): Built-in NumPy support for [Quaternions](https://www.youtube.com/watch?v=d4EgbgTm0Bg)<sup>Ew <a href="https://github.com/moble/quaternion/wiki/Euler-angles-are-horrible">Euler Angles</a></sup>
 - [**DotMap**](https://github.com/drgrib/dotmap): Great and simple dot notation for dynamic dictionaries
 - [**tqdm**](https://github.com/tqdm/tqdm): Progress bar for the terminal
 - [**Rich**](https://github.com/Textualize/rich): Beautiful formatting in Python
@@ -320,12 +332,11 @@ Below a list, **not ordered by importance or relevance**, of the most notable so
 - [**opensimplex**](https://github.com/lmas/opensimplex): Simplex Noise in Python, fast
 - [**pyapp**](https://github.com/ofek/pyapp): Bundling Python packages to installers
 
+<br>
+
 ### Rust
 - [**Rust**](https://www.rust-lang.org): The programming language
 - _Incomplete list_
-
-### Package Maintainers
-Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 <br>
 <sub><i><b>Note:</b> It is very likely that I've missed someone, contact me if you feel something should be here!</i></sub>
