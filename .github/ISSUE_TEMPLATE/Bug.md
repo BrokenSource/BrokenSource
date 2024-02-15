@@ -1,14 +1,14 @@
 ---
-name: "📜 Issue Template: Bug Report"
+name: "New Bug Report 🐞"
 about: "Facing some unexpected behavior or error? Let us help you!"
-title: "A descriptive enough title, with all the main important points of the issue."
+title: "(BUG) A descriptive enough title, with all the main important points of the issue"
 labels: ''
 assignees: 'Tremeschin'
 
 ---
 
 <!--
-Note: Remove this comment of extra information before submitting
+Note: Remove this comment of extra information before submitting the issue
 
 - This template is information-dense. Most of it are known/common sense, but will help with better communication
 
