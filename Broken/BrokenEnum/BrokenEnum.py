@@ -198,7 +198,7 @@ class BrokenEnum(Enum):
     @lru_cache(typed=True)
     def next(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
         """
-        Get the next enum member (in positon) from their value, name or themselves
+        Get the next enum member (in position) from their value, name or themselves
 
         Example:
             ```python
@@ -228,7 +228,7 @@ class BrokenEnum(Enum):
     @lru_cache(typed=True)
     def previous(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
         """
-        Get the previous enum member (in positon) from their value, name or themselves
+        Get the previous enum member (in position) from their value, name or themselves
 
         Example:
             ```python

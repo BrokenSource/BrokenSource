@@ -751,8 +751,16 @@ class BrokenUtils:
 
     @staticmethod
     def nearest_multiple_of(number: float, multiple: float) -> float:
-        """Get the nearest multiple of a number"""
         return round(number / multiple) * multiple
+
+    @staticmethod
+    def rms_stdlib(data) -> float:
+        return math.sqrt(sum(x**2 for x in data) / len(data))
+
+    @staticmethod
+    def rms(data) -> float:
+        import numpy
+        return numpy.sqrt(numpy.mean(numpy.square(data)))
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -946,7 +954,7 @@ class BrokenEventClient:
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait  = (self.next_call - time.perf_counter())
+        wait = (self.next_call - time.perf_counter())
 
         if self.decoupled:
             pass
@@ -980,7 +988,7 @@ class BrokenEventClient:
             self.next_call += self.period
 
         # Update last call time
-        self.last_call = now# if (self.frameskip or self.decoupled) else self.next_call
+        self.last_call = now # if (self.frameskip or self.decoupled) else self.next_call
 
         return self
 

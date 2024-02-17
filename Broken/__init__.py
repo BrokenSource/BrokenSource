@@ -47,6 +47,9 @@ from .BrokenExternals import *
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!
 
+# Ignore mostly NumPy warnings
+warnings.filterwarnings('ignore')
+
 # Add a list.get(index, default=None)
 forbiddenfruit.curse(
     list, "get",

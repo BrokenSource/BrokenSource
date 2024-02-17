@@ -74,9 +74,10 @@
 
         // Sub-packages of Broken
         "BrokenDotmap":    "core",
-        "BrokenFFmpeg":    "core",
         "BrokenEnum":      "core",
         "BrokenExternals": "core",
+        "BrokenFFmpeg":    "core",
+        "BrokenLoaders":   "core",
         "BrokenUpscaler":  "core",
         "Optional":        "include",
         "Pyaket":          "tools",
@@ -155,6 +156,7 @@
         "flac",
         "forbiddenfruit",
         "framebuffer",
+        "frameperiod",
         "framerates",
         "frameskip",
         "frametime",
@@ -270,6 +272,7 @@
         "snakeviz",
         "soundcard",
         "spacebar",
+        "SQRTPI",
         "srmd",
         "ssaa",
         "ssim",

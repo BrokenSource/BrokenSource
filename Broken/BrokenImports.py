@@ -175,7 +175,16 @@ Range:     TypeAlias = range
 # Units
 Seconds:   TypeAlias = float
 Hertz:     TypeAlias = float
+Samples:   TypeAlias = int
 
 # Fix: typing.Self was implemented in Python 3.11
 if sys.version_info < (3, 11):
     Self = TypeVar("Self")
+
+# Recurring math constants
+PI      = math.pi
+TAU     = 2 * PI
+SQRT2   = math.sqrt(2)
+SQRT3   = math.sqrt(3)
+SQRT_PI = math.sqrt(PI)
+

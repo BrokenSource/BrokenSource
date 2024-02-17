@@ -550,13 +550,13 @@ class BrokenFFmpeg:
     def set_ffmpeg_binary(self, binary: Path=None) -> Self:
         """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
         if binary:
-            log.info(f"Using custom FFmpeg binary {binary}")
+            log.debug(f"Using custom FFmpeg binary at ({binary})")
         elif (binary := shutil.which("ffmpeg")):
-            log.info(f"Using system FFmpeg binary at ({binary})")
+            log.debug(f"Using system FFmpeg binary at ({binary})")
         if not binary:
             import imageio_ffmpeg
             binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
-            log.info(f"Using ImageIO FFmpeg binary at ({binary})")
+            log.debug(f"Using ImageIO FFmpeg binary at ({binary})")
         if not binary:
             log.error(f"Could not find (FFmpeg) binary on PATH and don't have (ImageIO FFmpeg) package, please install it")
             exit(1)
@@ -603,7 +603,7 @@ class BrokenFFmpeg:
     ) -> Self:
         """Append items to the command, maybe delete or add new callbacks to the options"""
         log.debug(f"BrokenFFmpeg Append: {items}")
-        self.__command__ += items
+        self.__command__ = BrokenUtils.flatten(self.__command__, items)
         self.__del_option__(delete)
         self.__add_option__(add)
         return self
@@ -713,6 +713,12 @@ class BrokenFFmpeg:
         """Add an custom advanced command on the pipeline"""
         self.__command__ += command
         return self
+
+    def empty_audio_track(self, samplerate: Hertz) -> Self:
+        return self.__smart__(
+            "-f", "lavfi",
+            "-i", f"anullsrc=channel_layout=stereo:sample_rate={samplerate}",
+        )
 
     # ---------------------------------------------------------------------------------------------|
     # Input, output
@@ -983,6 +989,7 @@ class BrokenFFmpeg:
     # High level functions
 
     @staticmethod
+    @functools.lru_cache
     def get_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
         path = BrokenPath.true_path(path)
@@ -1002,6 +1009,7 @@ class BrokenFFmpeg:
         ).stdout), formats=["jpeg"]).size
 
     @staticmethod
+    @functools.lru_cache
     def get_frames(path: PathLike, *, echo: bool=True) -> Iterable[numpy.ndarray]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
         path = BrokenPath.true_path(path)
@@ -1035,6 +1043,7 @@ class BrokenFFmpeg:
             yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
 
     @staticmethod
+    @functools.lru_cache
     def get_total_frames(path: PathLike, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video"""
         path = BrokenPath.true_path(path)
@@ -1056,10 +1065,11 @@ class BrokenFFmpeg:
         return int(re.compile(r"frame=\s*(\d+)").findall(info)[-1])
 
     @staticmethod
-    def get_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
+    @functools.lru_cache
+    def get_video_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
         """Get the duration of a video"""
         path = BrokenPath.true_path(path)
-        log.minor(f"Getting Video Duration of ({path})")
+        log.minor(f"Getting Video Duration of file ({path})")
         return float(shell("ffprobe",
             "-i", path,
             "-show_entries", "format=duration",
@@ -1068,13 +1078,15 @@ class BrokenFFmpeg:
         ))
 
     @staticmethod
+    @functools.lru_cache
     def get_framerate(path: PathLike, *, echo: bool=True) -> Optional[Hertz]:
         """Get the framerate of a video"""
         path = BrokenPath.true_path(path)
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
-        return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_duration(path, echo=False)
+        return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_video_duration(path, echo=False)
 
     @staticmethod
+    @functools.lru_cache
     def get_samplerate(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[Hertz]:
         """Get the samplerate of a audio file"""
         path = BrokenPath.true_path(path)
@@ -1087,6 +1099,7 @@ class BrokenFFmpeg:
         ).strip().splitlines()[stream])
 
     @staticmethod
+    @functools.lru_cache
     def get_audio_channels(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[int]:
         """Get the number of channels of a audio file"""
         path = BrokenPath.true_path(path)
@@ -1105,55 +1118,57 @@ class BrokenFFmpeg:
         format: FFmpegPCM=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN,
         chunk: Seconds=0.1,
         echo: bool=True
-    ) -> Iterable[numpy.ndarray]:
+    ) -> Generator[numpy.ndarray, None, Seconds]:
 
         import numpy
 
         # Get basic information
-        channels   = BrokenFFmpeg.get_audio_channels(path, echo=echo)
-        samplerate = BrokenFFmpeg.get_samplerate(path, echo=echo)
+        channels:   int = BrokenFFmpeg.get_audio_channels(path, echo=echo)
+        samplerate: int = BrokenFFmpeg.get_samplerate(path, echo=echo)
 
         # An example format of "f32le" will have:
         # • Size, Endian, Type, dtype = 4, "<", "f", "<f4"
-        format = FFmpegPCM.get(format)
-        size   = int(re.sub(r"\D", "", format.value)) // 8
-        endian = re.sub(r".*\d", "", format.value).replace("le", "<").replace("be", ">")
-        type   = re.match(r"[^\d]+", format.value).group(0)
-        dtype  = f"{endian}{type}{size}"
+        format: str = FFmpegPCM.get(format).value
+        size:   int = int(re.sub(r"\D", "", format)) // 8
+        endian: str = re.sub(r".*\d", "", format).replace("le", "<").replace("be", ">")
+        type:   str = re.match(r"[^\d]+", format).group(0)
+        dtype:  str = f"{endian}{type}{size}"
 
-        # Build FFmpeg command
+        # Note: Stderr to null as we might not read all the audio
         ffmpeg = (
             BrokenFFmpeg()
             .quiet()
             .input(path)
-            .audio_codec(f"pcm_{format.value}")
-            .format(format.value)
-            .no_video("-vn")
+            .audio_codec(f"pcm_{format}")
+            .format(format)
+            .no_video()
             .custom("-ar", samplerate)
             .custom("-ac", channels)
             .output("-")
-        ).popen(stdout=PIPE)
+        ).popen(stdout=PIPE, stderr=DEVNULL)
 
         """
-        You would think the following code is the way, but it is not
-        • Small reads yields time imprecision on sample domain vs time domain
-        • Must keep track of theoretical time and real time of the read
+        One would think the following code is the way, but it is not
 
         ```python
         while (data := ffmpeg.stdout.read(chunk*samplerate)):
-            yield numpy.frombuffer(data, dtype=dtype).reshape(-1, channels)
+            yield (...)
         ```
+
+        Reason being:
+        • Small reads yields time imprecision on sample domain vs time domain
+        • Must keep track of theoretical time and real time of the read
         """
 
         # Keep track of theoretical and read time
-        bytes_per_second = (size * channels * samplerate)
-        bytes_per_sample = (size * channels)
-        real_time        = 0
+        bytes_per_second: int = (size * channels * samplerate)
+        bytes_per_sample: int = (size * channels)
+        stream_time:    float = 0
 
         for target_time in itertools.count(chunk, chunk):
 
             # Calculate the length of the next read to best match the target time
-            length = (target_time - real_time) * bytes_per_second
+            length = (target_time - stream_time) * bytes_per_second
             length = BrokenUtils.nearest_multiple_of(length, bytes_per_sample)
 
             # The next chunk might overshoot or undershoot, and it's ok
@@ -1161,5 +1176,15 @@ class BrokenFFmpeg:
                 break
 
             # Increment precise time and read time
-            real_time += len(data)/bytes_per_second
+            stream_time += len(data)/bytes_per_second
             yield numpy.frombuffer(data, dtype=dtype).reshape(-1, channels)
+
+        return stream_time
+
+    @staticmethod
+    def get_audio_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
+        try:
+            generator = BrokenFFmpeg.get_raw_audio(path, chunk=10, echo=echo)
+            while next(generator) is not None: ...
+        except StopIteration as result:
+            return result.value

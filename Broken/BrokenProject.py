@@ -220,6 +220,11 @@ class _BrokenProjectDirectories:
         """Dump directory for debugging (e.g. Shaders)"""
         return self.__mkdir__(self.WORKSPACE/"Dump")
 
+    @property
+    def SCREENSHOTS(self) -> Path:
+        """Screenshots directory"""
+        return self.__mkdir__(self.WORKSPACE/"Screenshots")
+
 # -------------------------------------------------------------------------------------------------|
 
 @define(slots=False)
