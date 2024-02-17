@@ -868,6 +868,11 @@ class BrokenThread:
 
 # -------------------------------------------------------------------------------------------------|
 
+# Count time since.. the big bang with the bang counter. Shebang #!
+# Serious note, a Decoupled client starts at the Python's time origin, others on OS perf counter
+BIG_BANG: Seconds = time.perf_counter()
+time.bang_counter = (lambda: time.perf_counter() - BIG_BANG)
+
 @define
 class BrokenEventClient:
     """
@@ -913,16 +918,24 @@ class BrokenEventClient:
     precise:    bool  = False
 
     # Timing
-    started:   Seconds = Factory(lambda: time.perf_counter())
+    started:   Seconds = Factory(lambda: time.bang_counter())
     next_call: Seconds = None
     last_call: Seconds = None
-    time:      bool    = False
-    dt:        bool    = False
+    _time:     bool    = False
+    _dt:       bool    = False
 
     def __attrs_post_init__(self):
         signature = inspect.signature(self.callback)
-        self.dt = ("dt" in signature.parameters)
-        self.time = ("time" in signature.parameters)
+        self._dt   = ("dt"   in signature.parameters)
+        self._time = ("time" in signature.parameters)
+
+        # Assign idealistic values for decoupled
+        if self.decoupled: self.started = BIG_BANG
+        self.last_call = (self.last_call or self.started)
+        self.next_call = (self.next_call or self.started)
+
+        # Note: We could use numpy.float128 for the most frametime precision on the above..
+        #       .. But the Client code is smart enough to auto adjust itself to sync
 
     # # Useful properties
 
@@ -942,19 +955,26 @@ class BrokenEventClient:
     def period(self, value: Seconds):
         self.frequency = 1/value
 
+    @property
+    def should_delete(self) -> bool:
+        return self.once and (not self.enabled)
+
+    # # Sorting
+
+    def __lt__(self, other: Self) -> bool:
+        return self.next_call < other.next_call
+
+    def __gt__(self, other: Self) -> bool:
+        return self.next_call > other.next_call
+
     # # Implementation
 
     def next(self, block: bool=True) -> None | Any:
 
-        # Sanitize for idealistic values
-        if self.decoupled: self.started = 0
-        self.last_call = self.last_call or self.started
-        self.next_call = self.next_call or self.started
-
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = (self.next_call - time.perf_counter())
+        wait = (self.next_call - time.bang_counter())
 
         if self.decoupled:
             pass
@@ -967,13 +987,13 @@ class BrokenEventClient:
             return None
 
         # The assumed instant the code below will run instantly
-        now = self.next_call if self.decoupled else time.perf_counter()
+        now = self.next_call if self.decoupled else time.bang_counter()
 
         # Delta time between last call and next call
-        if self.dt: self.kwargs["dt"] = (now - self.last_call)
+        if self._dt: self.kwargs["dt"] = (now - self.last_call)
 
         # Time since client started
-        if self.time: self.kwargs["time"] = (now - self.started)
+        if self._time: self.kwargs["time"] = (now - self.started)
 
         # Enter or not the given context, call callback with args and kwargs
         with (self.lock or contextlib.nullcontext()):
@@ -994,9 +1014,10 @@ class BrokenEventClient:
 
 @define
 class BrokenEventLoop:
-    clients:    List[BrokenEventClient] = Factory(list)
-    __thread__: Optional[Thread] = None
-    __stop__:   bool = False
+    clients: List[BrokenEventClient] = Factory(list)
+    thread:  Optional[Thread]        = None
+
+    # # Management
 
     def add_client(self, client: BrokenEventClient) -> BrokenEventClient:
         """Adds a client to the manager with immediate next call"""
@@ -1007,67 +1028,88 @@ class BrokenEventLoop:
         """Gets a client by name"""
         return next((client for client in self.clients if client.name == name), None)
 
-    def new(self, *args, **kwargs) -> BrokenEventClient:
-        """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenEventClient(*args, **kwargs))
+    # # Creation
 
-    def once(self, *args, **kwargs) -> BrokenEventClient:
+    def new(self, *a, **k) -> BrokenEventClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_client(BrokenEventClient(*args, **kwargs, once=True))
+        return self.add_client(BrokenEventClient(*a, **k))
 
-    def partial(self, callable: Callable, *args, **kwargs) -> BrokenEventClient:
+    def once(self, *a, **k) -> BrokenEventClient:
         """Wraps around BrokenVsync for convenience"""
-        return self.once(callable=functools.partial(callable, *args, **kwargs))
+        return self.add_client(BrokenEventClient(*a, **k, once=True))
+
+    def partial(self, callable: Callable, *a, **k) -> BrokenEventClient:
+        """Wraps around BrokenVsync for convenience"""
+        return self.once(callable=functools.partial(callable, *a, **k))
+
+    # # Filtering
 
     @property
-    def enabled_clients(self) -> List[BrokenEventClient]:
+    def enabled_clients(self) -> Iterable[BrokenEventClient]:
         """Returns a list of enabled clients"""
-        return [client for client in self.clients if client.enabled]
+        for client in self.clients:
+            if client.enabled:
+                yield client
 
     @property
     def next_client(self) -> BrokenEventClient | None:
         """Returns the next client to be called"""
-        if clients := sorted(self.enabled_clients, key=lambda item: item.next_call):
-            return clients[0]
+        return min(self.enabled_clients)
 
     def __sanitize__(self) -> None:
         """Removes disabled 'once' clients"""
-        delete = set()
-        for i, client in enumerate(self.clients):
-            if client.once and (not client.enabled):
-                delete.add(i)
-        for i in sorted(delete, reverse=True):
-            del self.clients[i]
+        length = len(self.clients)
+        for i, client in enumerate(reversed(self.clients)):
+            if client.should_delete:
+                del self.clients[length - i - 1]
+
+    # # Actions
 
     def next(self, block=True) -> None | Any:
-        """Calls the next call client in the list"""
-        self.__sanitize__()
-        if not (client := self.next_client):
-            return None
-        return client.next(block=block)
+        try:
+            if (client := self.next_client):
+                return client.next(block=block)
+        finally:
+            self.__sanitize__()
+
+    # # Block-free next
+
+    __work__: bool = False
+
+    def smart_next(self) -> None | Any:
+        # Note: Proof of concept. The frametime Ticking might be enough for ShaderFlow
+
+        # Too close to the next known call, call blocking
+        if abs(time.bang_counter() - self.next_client.next_call) < 0.005:
+            return self.next(block=True)
+
+        # By chance any "recently added" client was added
+        if (call := self.next(block=False)):
+            self.__work__ = True
+            return call
+
+        # Next iteration, wait for work but don't spin lock
+        if not self.__work__:
+            time.sleep(0.001)
+
+        # Flag that there was not work done
+        self.__work__ = False
 
     # # Thread-wise wording
 
-    def start_thread(self) -> None:
-        self.__stop__   = False
-        self.__thread__ = BrokenThread.new(self.loop)
+    __stop__: bool = False
 
-    def stop_thread(self):
-        self.__stop__   = True
-        self.__thread__._stop()
-
-    # # "Natural" wording?
-
-    def loop(self) -> None:
+    def __loop__(self):
         while not self.__stop__:
             self.next()
 
-    def stop(self):
-        self.__stop__ = True
+    def start_thread(self) -> None:
+        self.thread = BrokenThread.new(self.next)
 
-    def start(self):
+    def stop_thread(self):
+        self.__stop__ = True
+        self.thread.join()
         self.__stop__ = False
-        self.loop()
 
 # -------------------------------------------------------------------------------------------------|
 
