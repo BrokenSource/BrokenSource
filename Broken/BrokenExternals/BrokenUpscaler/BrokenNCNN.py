@@ -80,10 +80,7 @@ class BrokenWaifu2xModel(BrokenEnum):
 
 @define
 class BrokenWaifu2x(BrokenUpscalerNCNN):
-    model: BrokenWaifu2xModel = field(
-        default  =BrokenWaifu2xModel.Cunet,
-        converter=BrokenWaifu2xModel.get
-    )
+    model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.field()
 
     @property
     def binary(self) -> str:
@@ -129,10 +126,7 @@ class BrokenRealEsrganModel(BrokenEnum):
 
 @define
 class BrokenRealEsrgan(BrokenUpscalerNCNN):
-    model: BrokenRealEsrganModel = field(
-        default=  BrokenRealEsrganModel.AnimeVideoV3,
-        converter=BrokenRealEsrganModel.get
-    )
+    model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.field()
 
     @property
     def binary(self) -> str:

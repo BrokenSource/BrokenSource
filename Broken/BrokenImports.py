@@ -119,19 +119,14 @@ while True:
         import zipfile
         from abc import ABC
         from abc import abstractmethod
-        from dataclasses import dataclass
         from enum import Enum
         from io import BytesIO
         from multiprocessing import Process
+        from numbers import *
         from os import PathLike
         from pathlib import Path
-        from shutil import which as find_binary
         from subprocess import DEVNULL
         from subprocess import PIPE
-        from subprocess import Popen
-        from subprocess import check_output
-        from subprocess import run
-        from sys import argv
         from threading import Lock
         from threading import Thread
         from time import time as now
@@ -149,6 +144,7 @@ while True:
         import intervaltree
         import loguru
         import moderngl
+        import numpy
         import PIL
         import PIL.Image
         import schedule
@@ -162,8 +158,11 @@ while True:
         from attrs import field
         from attrs import validators
         from dotmap import DotMap
+        from numpy import pi as PI
 
         break
+
+# -------------------------------------------------------------------------------------------------|
 
 # # Custom types
 Image:     TypeAlias = PIL.Image.Image
@@ -182,9 +181,7 @@ if sys.version_info < (3, 11):
     Self = TypeVar("Self")
 
 # Recurring math constants
-PI      = math.pi
-TAU     = 2 * PI
-SQRT2   = math.sqrt(2)
-SQRT3   = math.sqrt(3)
-SQRT_PI = math.sqrt(PI)
-
+TAU     = (2 * PI)
+SQRT2   = numpy.sqrt(2)
+SQRT3   = numpy.sqrt(3)
+SQRT_PI = numpy.sqrt(PI)

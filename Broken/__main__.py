@@ -187,7 +187,12 @@ class BrokenProjectCLI:
             if self.is_python:
                 venv = self.__install_venv__(reinstall=reinstall)
                 try:
-                    status = shell("poetry", "run", "main", ctx.args, echo=echo)
+                    # Todo: Test if the `else` works on Windows
+                    if BrokenPlatform.OnWindows:
+                        status = shell("poetry", "run", "main", ctx.args, echo=echo)
+                    else:
+                        script = (venv/"Scripts"/"main") if BrokenPlatform.OnWindows else (venv/"bin"/"main")
+                        status = shell(script, ctx.args, echo=echo)
                 except KeyboardInterrupt:
                     log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
                     break

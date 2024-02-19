@@ -3,21 +3,6 @@
 <div align="center">
   <h1>♻️ BrokenEnum ♻️</h1>
 
-  <img src="https://img.shields.io/github/stars/BrokenSource/BrokenEnum?style=flat" alt="Stars Badge"/>
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FBrokenSource%2FBrokenEnum.json%3Fshow%3Dunique&label=Visitors&color=blue"/>
-  <img src="https://img.shields.io/github/license/BrokenSource/BrokenEnum?color=blue" alt="License Badge"/>
-  <img src="https://img.shields.io/pypi/v/broken-source"/>
-  <a href="https://t.me/brokensource">
-    <img src="https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram" alt="Telegram Channel Badge"/>
-  </a>
-  <a href="https://discord.gg/KjqvcYwRHm">
-    <img src="https://img.shields.io/discord/1184696441298485370?label=Discord&color=blue" alt="Discord Badge"/>
-  </a>
-
-  <sub> 👆 Out of the many **Explorers**, you can be among the **Shining** stars who support us! ⭐️ </sub>
-
-  <br>
-
   **Smarter** Python **Enum classes** with builtin **Automation** and **Safety**
 </div>
 
@@ -30,13 +15,6 @@ This package adds lots of utilities to the standard `Enum` class in Python
 - **Convenient**: Find members by name or value (or both)
 - **Cycling**: You can cycle through the options of an enum
 - **Fast**: Functions are cached with `functools.lru_cache`
-
-<br>
-
-# 📦 Installation
-**BrokenEnum** is part of [**❤️‍🩹 Broken**](https://github.com/BrokenSource/BrokenSource):
-- **Poetry**: `poetry add broken-source`
-- **Pip**: `pip install broken-source`
 
 <br>
 
@@ -96,10 +74,5 @@ assert Quality.items == (
 # Get options as a dictionary
 assert Quality.dict == dict(Low=0, Medium=1, High=2)
 ```
-
-<br>
-
-# ⚖️ License
-**[Check Here](https://github.com/BrokenSource/BrokenSource)** for the License of the Projects, Code, Assets and User Generated Content
 
 </div>

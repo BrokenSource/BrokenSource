@@ -932,7 +932,7 @@ class BrokenFFmpeg:
 
     @property
     def command(self) -> List[str]:
-        return BrokenUtils.denum(BrokenUtils.flatten(self.binary, self.__command__))
+        return list(map(BrokenUtils.denum, BrokenUtils.flatten(self.binary, self.__command__)))
 
     def run(self, **kwargs) -> subprocess.CompletedProcess:
         return shell(self.command, **kwargs)

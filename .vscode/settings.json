@@ -165,6 +165,7 @@
         "fromarray",
         "frombuffer",
         "fullscreen",
+        "functools",
         "genai",
         "getbands",
         "gitmodules",

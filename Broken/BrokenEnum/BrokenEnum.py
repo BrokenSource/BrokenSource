@@ -225,6 +225,10 @@ class BrokenEnum(Enum):
         value = cls.get(value or self)
         return cls.options[(cls.options.index(value) + offset) % len(cls)]
 
+    def __next__(self) -> Self:
+        """Alias for .next, but as a method"""
+        return self.next()
+
     @lru_cache(typed=True)
     def previous(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
         """
@@ -283,3 +287,24 @@ class BrokenEnum(Enum):
             Fluent interface, the class that was extended
         """
         raise NotImplementedError("This method is not implemented yet")
+
+    def field(self, **kwargs) -> attrs.Attribute:
+        """
+        Make a attrs.field() with this member as default and enum class's get method as converter
+
+        Example:
+            ```python
+            class Platform(BrokenEnum):
+                Linux   = "linux"
+                Windows = "windows"
+                MacOS   = "macos"
+
+            @define
+            class Computer:
+                os: Platform = Platform.Linux.field()
+            ```
+
+        Args:
+            `kwargs`: Keyword arguments to pass to the field, may override default and converter
+        """
+        return field(default=self, converter=self.__class__.get, **kwargs)

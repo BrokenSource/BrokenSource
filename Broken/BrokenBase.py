@@ -3,6 +3,11 @@ from __future__ import annotations
 from . import *
 
 # -------------------------------------------------------------------------------------------------|
+# Lazy Bastard methods
+
+inverse = lambda x: 1 / x
+
+# -------------------------------------------------------------------------------------------------|
 
 def shell(
     *args:   list[Any],
@@ -493,9 +498,11 @@ class BrokenUtils:
         return flatten(stuff)
 
     @staticmethod
-    def denum(stuff: Iterable[Any]) -> list[Any]:
+    def denum(item: Any) -> Any:
         """De-enumerates enum iterables to their value"""
-        return [item.value if issubclass(type(item), Enum) else item for item in stuff]
+        if issubclass(type(item), Enum):
+            return item.value
+        return item
 
     @staticmethod
     def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
