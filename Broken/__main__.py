@@ -4,8 +4,9 @@ from Broken import *
 
 
 def main():
-    broken = BrokenCLI()
-    broken.cli()
+    with BrokenProfiler("BROKEN"):
+        broken = BrokenCLI()
+        broken.cli()
 
 if __name__ == "__main__":
     main()
@@ -172,8 +173,6 @@ class BrokenProjectCLI:
         echo:      Annotated[bool, typer.Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
-        import rich.prompt
-
         while True:
             BrokenPlatform.clear_terminal(do=clear, echo=False)
 
@@ -185,13 +184,10 @@ class BrokenProjectCLI:
                     if BrokenPlatform.OnWindows:
                         status = shell("poetry", "run", "main", ctx.args, echo=echo)
                     else:
-                        script = (venv/"Scripts"/"main") if BrokenPlatform.OnWindows else (venv/"bin"/"main")
-                        status = shell(script, ctx.args, echo=echo)
+                        status = shell((venv/BrokenPlatform.PyScripts/"main"), ctx.args, echo=echo)
                 except KeyboardInterrupt:
                     log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
                     break
-                except Exception as e:
-                    raise e
 
             # Rust projects
             if self.is_rust:
@@ -218,6 +214,7 @@ class BrokenProjectCLI:
                 log.warning(f"• Command: {tuple(status.args)}")
 
                 # Prompt user for action
+                import rich.prompt
                 answer = rich.prompt.Prompt.ask(
                     f"• Choose action: Run (p)oetry install and retry, (r)einstall venv and retry, (e)xit, (enter) to retry",
                     choices=["r", "e", "p", ""],
@@ -233,6 +230,7 @@ class BrokenProjectCLI:
                     pass
 
             elif infinite:
+                import rich.prompt
                 log.success(f"Project ({self.name}) finished successfully")
                 if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                     break
@@ -246,7 +244,7 @@ class BrokenProjectCLI:
         """Install and get a virtual environment path for Python project"""
 
         # Unset virtualenv else the nested poetry will use it
-        os.environ.pop("VIRTUAL_ENV", None)
+        old_venv = BrokenPath.get(os.environ.pop("VIRTUAL_ENV", None))
 
         with BrokenPath.pushd(self.path, echo=False):
             while True:
@@ -275,6 +273,17 @@ class BrokenProjectCLI:
                     BrokenPath.remove(venv_path)
                     BrokenPath.remove(self.path/"poetry.lock")
                     continue
+
+                # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
+                direct = f"{self.name.lower()}er"
+                old = (old_venv/BrokenPlatform.PyScripts/direct)
+                new = (venv_path/BrokenPlatform.PyScripts/"main")
+
+                if not BrokenPath.get(old) == BrokenPath.get(new):
+                    log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
+                    BrokenPath.remove(old, echo=False)
+                    BrokenPath.symlink(virtual=old, real=new, echo=False)
+                    BrokenPath.make_executable(new, echo=False)
 
                 return venv_path
 
@@ -385,25 +394,26 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
+        with halo.Halo(text="Finding Projects"):
+            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+            self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path) -> None:
         for directory in path.iterdir():
+
+            # Don't follow workspace
+            if (directory.name.lower() == "workspace"):
+                break
+
+            # Avoid hidden directories
+            if any(directory.name.startswith(x) for x in (".", "_")):
+                continue
 
             # Must be a directory
             if directory.is_file():
                 continue
 
-            # Skip workspace symlinks
-            if path.is_symlink() and (directory.name.lower() == "workspace"):
-                continue
-
             directory = BrokenPath.get(directory)
-
-            # Avoid hidden directories
-            if any(directory.name.startswith(x) for x in (".", "_")):
-                continue
 
             # Avoid recursion
             if directory == BROKEN.DIRECTORIES.REPOSITORY:
@@ -452,8 +462,48 @@ class BrokenCLI:
 
         self.broken_typer(sys.argv[1:])
 
-    def mock(self):
-        import Broken.Mock
+    # ---------------------------------------------------------------------------------------------|
+    # Core section
+
+    def clean(self,
+        isort: bool=True,
+        pycache: bool=True,
+        build: bool=False,
+        releases: bool=False,
+        wheels: bool=False,
+        all: bool=False
+    ) -> None:
+        """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
+
+        # Sort imports, ignore "Releases" folder
+        if all or isort:
+            shell("isort", BROKEN.DIRECTORIES.REPOSITORY,
+                "--force-single-line-imports",
+                "--skip", BROKEN.DIRECTORIES.REPOSITORY/".venvs",
+                "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
+                "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
+            )
+
+        # Remove all .pyc files and __pycache__ folders
+        if all or pycache:
+            delete  = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.pyc"))
+            delete += list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/__pycache__"))
+            for path in delete:
+                BrokenPath.remove(path)
+
+        # Remove all .whl files
+        if all or wheels:
+            delete = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.whl"))
+            for path in delete:
+                BrokenPath.remove(path)
+
+        # Remove build and releases folders if requested
+        if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
+        if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
+
+    def link(self, path: Path):
+        """📌 Link a {Project directory} or {Directory of Projects} to be Managed"""
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     @staticmethod
     def rust(
@@ -498,7 +548,107 @@ class BrokenCLI:
         else:
             log.info(f"Rust toolchain is already the default ({toolchain})")
 
-    # # Installation commands
+    def sync(self) -> None:
+        """♻️  Synchronize common Resources Files across all Projects"""
+        root = BROKEN.DIRECTORIES.REPOSITORY
+
+        for project in self.projects:
+            for file in BrokenUtils.flatten(
+                (root/"poetry.toml"),
+                (root/".gitignore"),
+                (root/".github"/"Funding.yml"),
+                (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
+            ):
+                target = project.path/file.relative_to(root)
+                BrokenPath.copy(src=file, dst=target)
+
+    # ---------------------------------------------------------------------------------------------|
+    # Installation section
+
+    def install(self):
+        """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
+        BROKEN.welcome()
+        self.submodules()
+        self.scripts()
+        if BrokenPlatform.OnWindows:
+            self.shortcut()
+        log.note(f"Running BrokenSource Monorepo at ({BROKEN.DIRECTORIES.REPOSITORY})")
+        log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
+        print()
+
+    def scripts(self):
+        """⚡️ Write quite scripts for starting Projects, ($ broken command -> $ command)"""
+
+        # Get Broken virtualenv path
+        bin_path = Path(os.environ["VIRTUAL_ENV"])/BrokenPlatform.PyScripts
+        log.info(f"Installing scripts on ({bin_path})")
+
+        # Watermark to tag files are Broken made
+        WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
+
+        # Remove old script files (commands can be removed or renamed)
+        for file in bin_path.glob("*"):
+            if file.is_symlink():
+                continue
+            try:
+                if WATERMARK in file.read_text():
+                    BrokenPath.remove(file, echo=False)
+            except UnicodeDecodeError:
+                pass
+            except Exception as e:
+                raise e
+
+        for project in self.projects:
+            script = bin_path/project.lname
+
+            if BrokenPlatform.OnUnix:
+                script.write_text('\n'.join([
+                    f"#!/bin/bash",
+                    f"# {WATERMARK}",
+                    f"broken {project.lname} $@",
+                ]))
+
+            elif BrokenPlatform.OnWindows:
+                script = script.with_suffix(".bat")
+                script.write_text('\n'.join([
+                    f"@echo off",
+                    f":: {WATERMARK}",
+                    f"broken {project.lname} %*",
+                ]))
+
+            BrokenPath.make_executable(script, echo=False)
+
+    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
+
+    def shortcut(self):
+        """🧿 Creates a Desktop shortcut to run {brakeit.py} directly"""
+        if BrokenPlatform.OnUnix:
+            if BrokenPlatform.OnLinux:
+                log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
+                BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
+                    "[Desktop Entry]",
+                    "Type=Application",
+                    "Name=Brakeit",
+                    f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
+                    f"Icon={BROKEN.RESOURCES.ICON}",
+                    "Comment=Brakeit Bootstrapper",
+                    "Terminal=true",
+                    "Categories=Development",
+                )))
+
+        # Workaround: Do not print KeyError of `pyshortcuts.windows.get_conda_active_env`
+        elif BrokenPlatform.OnWindows:
+            os.environ["CONDA_DEFAULT_ENV"] = "base"
+            import pyshortcuts
+            pyshortcuts.make_shortcut(
+                script=str(BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
+                name="Brakeit",
+                description="Broken Source Software Development Environment Entry Script",
+                icon=str(BROKEN.RESOURCES.ICON_ICO),
+            )
+        else:
+            log.error(f"Unknown Platform ({BrokenPlatform.Name})")
+            return
 
     def submodules(self,
         root:     Annotated[Path, typer.Option("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
@@ -593,24 +743,11 @@ class BrokenCLI:
 
             self.submodules(path, username=username, password=password)
 
-    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
-
-    def install(self):
-        """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
-        BROKEN.welcome()
-        self.submodules()
-        self.scripts()
-        if BrokenPlatform.OnWindows:
-            self.shortcut()
-        log.note(f"Running BrokenSource Monorepo at ({BROKEN.DIRECTORIES.REPOSITORY})")
-        log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
-        print()
-
     def uninstall(self):
         """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
         log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
 
-        if BrokenPlatform.OnLinux and (desktop := BrokenPath.get(self.LINUX_DESKTOP_FILE, valid=True)):
+        if BrokenPlatform.OnLinux and LINUX_DESKTOP_FILE.exists():
             log.minor("Now deleting Linux dot Desktop Shortcut file")
             BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE, echo=False, confirm=True)
 
@@ -629,134 +766,6 @@ class BrokenCLI:
                 log.minor("Now removing the Project Workspace directory")
                 BrokenPath.remove(workspace, echo=False, confirm=True)
 
-    def shortcut(self):
-        """🧿 Creates a Desktop shortcut to run {brakeit.py} directly"""
-        if BrokenPlatform.OnUnix:
-            if BrokenPlatform.OnLinux:
-                log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
-                BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
-                    "[Desktop Entry]",
-                    "Type=Application",
-                    "Name=Brakeit",
-                    f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
-                    f"Icon={BROKEN.RESOURCES.ICON}",
-                    "Comment=Brakeit Bootstrapper",
-                    "Terminal=true",
-                    "Categories=Development",
-                )))
-
-        elif BrokenPlatform.OnWindows:
-
-            # Workaround: Do not print KeyError of `pyshortcuts.windows.get_conda_active_env`
-            os.environ["CONDA_DEFAULT_ENV"] = "base"
-
-            import pyshortcuts
-
-            pyshortcuts.make_shortcut(
-                script=str(BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
-                name="Brakeit",
-                description="Brakeit Bootstrapper",
-                icon=str(BROKEN.RESOURCES.ICON_ICO),
-            )
-        else:
-            log.error(f"Unknown Platform ({BrokenPlatform.Name})")
-            return
-
-    def scripts(self):
-        """⚡️ Makes convenience scripts for Projects on current Virtual Environment, ($ broken command -> $ command)"""
-
-        # Get Broken virtualenv path
-        folder = "Scripts" if BrokenPlatform.OnWindows else "bin"
-        bin_path = Path(os.environ["VIRTUAL_ENV"])/folder
-        log.info(f"Installing scripts on ({bin_path})")
-
-        # Watermark to tag files are Broken made
-        WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
-
-        # Remove old script files (commands can be removed or renamed)
-        for file in bin_path.glob("*"):
-            try:
-                if WATERMARK in file.read_text():
-                    BrokenPath.remove(file, echo=False)
-            except UnicodeDecodeError:
-                pass
-            except Exception as e:
-                raise e
-
-        for project in self.projects:
-            script = bin_path/project.lname
-
-            if BrokenPlatform.OnUnix:
-                script.write_text('\n'.join([
-                    f"#!/bin/bash",
-                    f"# {WATERMARK}",
-                    f"broken {project.lname} $@",
-                ]))
-
-            elif BrokenPlatform.OnWindows:
-                script = script.with_suffix(".bat")
-                script.write_text('\n'.join([
-                    f"@echo off",
-                    f":: {WATERMARK}",
-                    f"broken {project.lname} %*",
-                ]))
-
-            BrokenPath.make_executable(script, echo=False)
-
-    def link(self, path: Path):
-        """📌 Link a {Project directory} or {Directory of Projects} to be Managed"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
-
-    def clean(self,
-        isort: bool=True,
-        pycache: bool=True,
-        build: bool=False,
-        releases: bool=False,
-        wheels: bool=False,
-        all: bool=False
-    ) -> None:
-        """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
-
-        # Sort imports, ignore "Releases" folder
-        if all or isort:
-            shell("isort", BROKEN.DIRECTORIES.REPOSITORY,
-                "--force-single-line-imports",
-                "--skip", BROKEN.DIRECTORIES.REPOSITORY/".venvs",
-                "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
-                "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
-            )
-
-        # Remove all .pyc files and __pycache__ folders
-        if all or pycache:
-            delete  = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.pyc"))
-            delete += list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/__pycache__"))
-            for path in delete:
-                BrokenPath.remove(path)
-
-        # Remove all .whl files
-        if all or wheels:
-            delete = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.whl"))
-            for path in delete:
-                BrokenPath.remove(path)
-
-        # Remove build and releases folders if requested
-        if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
-        if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
-
-    def sync(self) -> None:
-        """♻️  Synchronize common resources files across all projects"""
-        root = BROKEN.DIRECTORIES.REPOSITORY
-
-        for project in self.projects:
-            for file in BrokenUtils.flatten(
-                (root/"poetry.toml"),
-                (root/".gitignore"),
-                (root/".github"/"Funding.yml"),
-                (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
-            ):
-                target = project.path/file.relative_to(root)
-                BrokenPath.copy(src=file, dst=target)
-
     # # Experimental
 
     def pillow(self):
@@ -764,3 +773,5 @@ class BrokenCLI:
         os.environ["CC"] = f"cc -mavx2"
         shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")
 
+    def mock(self):
+        import Broken.Mock

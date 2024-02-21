@@ -75,6 +75,8 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 **And done**, you can now run `broken` and see all available commands 🚀
 
+- **Tip**: Avoid using `poetry run (broken | project)`, just `broken`, it's faster 😉
+
 - Head back to the *Project* you want to run for further instructions 🍷
 
 <sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>

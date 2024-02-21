@@ -24,6 +24,10 @@ BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
 BROKEN_DEVELOPMENT: bool = not BROKEN_RELEASE
 BROKEN_VERSION:     str  = importlib.metadata.version("broken-source")
 
+import halo
+
+__HALO__ = halo.Halo(text="Initializing Broken", spinner="dots").start()
+
 # isort: off
 from .BrokenImports import *
 from .BrokenEnum    import *
@@ -74,3 +78,5 @@ for i, arg in enumerate(sys.argv):
 
 # Safer measures: Store the first cwd that Broken is run, always start from there
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
+
+__HALO__.stop()
