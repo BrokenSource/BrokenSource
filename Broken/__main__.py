@@ -610,16 +610,22 @@ class BrokenCLI:
         """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
         log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
 
-        BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE)
+        if BrokenPlatform.OnLinux and (desktop := BrokenPath.get(self.LINUX_DESKTOP_FILE, valid=True)):
+            log.minor("Now deleting Linux dot Desktop Shortcut file")
+            BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE, echo=False, confirm=True)
 
         # Remove all known projects stuff
         for project in self.projects:
+            log.note()
+            log.note(f"Project: {project.name}")
+            log.note(f"• Path: {project.path}")
+
             if (venv := project.get_virtualenv(install=False)):
                 log.minor("Now removing the Poetry's Python Virtual environment")
                 BrokenPath.remove(venv, echo=False, confirm=True)
 
             # Follow Project's Workspace folder
-            if (workspace := BrokenPath.get(project.path/"Workspace")).exists():
+            if (workspace := BrokenPath.get(project.path/"Workspace", valid=True)):
                 log.minor("Now removing the Project Workspace directory")
                 BrokenPath.remove(workspace, echo=False, confirm=True)
 
