@@ -968,8 +968,8 @@ class BrokenFFmpeg:
                     while self.frames:
                         spinner.text = f"BrokenFFmpeg: Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
                         time.sleep(0.016)
-                with halo.Halo("BrokenFFmpeg: Waiting FFmpeg process to finish rendering") as spinner:
-                    while not self.ffmpeg.stdin.closed:
+                    spinner.text = f"BrokenFFmpeg: Waiting FFmpeg process to Finish"
+                    while self.ffmpeg.poll() is None:
                         time.sleep(0.016)
 
             def __worker__(self):
@@ -992,7 +992,7 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
         log.minor(f"Getting video resolution of ({path})")
         return PIL.Image.open(io.BytesIO(
             shell((
@@ -1012,7 +1012,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_frames(path: PathLike, *, echo: bool=True) -> Iterable[numpy.ndarray]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Yielding video frames of ({path})")
 
         import numpy
@@ -1046,7 +1047,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_total_frames(path: PathLike, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Getting video total frames of ({path})")
 
         # Read all frames from the video but don't process them
@@ -1068,7 +1070,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_video_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
         """Get the duration of a video"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Getting Video Duration of file ({path})")
         return float(shell("ffprobe",
             "-i", path,
@@ -1081,7 +1084,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_framerate(path: PathLike, *, echo: bool=True) -> Optional[Hertz]:
         """Get the framerate of a video"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
         return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_video_duration(path, echo=False)
 
@@ -1089,7 +1093,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_samplerate(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[Hertz]:
         """Get the samplerate of a audio file"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
         return int(shell("ffprobe",
             "-i", path,
@@ -1102,7 +1107,8 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_audio_channels(path: PathLike, *, stream: int=0, echo: bool=True) -> Optional[int]:
         """Get the number of channels of a audio file"""
-        path = BrokenPath.true_path(path)
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
         return int(shell("ffprobe",
             "-i", path,
@@ -1118,7 +1124,9 @@ class BrokenFFmpeg:
         format: FFmpegPCM=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN,
         chunk: Seconds=0.1,
         echo: bool=True
-    ) -> Generator[numpy.ndarray, None, Seconds]:
+    ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
 
         import numpy
 
@@ -1183,6 +1191,8 @@ class BrokenFFmpeg:
 
     @staticmethod
     def get_audio_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
+        if not (path := BrokenPath.get(path, valid=True)):
+            return
         try:
             generator = BrokenFFmpeg.get_raw_audio(path, chunk=10, echo=echo)
             while next(generator) is not None: ...

@@ -106,7 +106,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - **Restart** the Terminal - First step then back here
 
-- **Now**, run the same **Linux** and **MacOS** commands above
+- **Now**, run and follow the same **Linux** and **MacOS** commands above<sup> Except <code>curl + pipe</code></sup>
 
 <br>
 
@@ -117,13 +117,11 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <br>
 
-<sub><b>Note:</b> You might need to replace `/` with `\` on the second command and `python` to `python3` or add `.exe` to it</sub>
+<sub><b>Note:</b> You might need to replace `/` with `\` on the second command, `python` to `python3` or add `.exe` to it</sub>
 
-<sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manual install Python and Git following the links above</sub>
+<sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
 
-<sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as the shell's PATH isn't reloaded dynamically</sub>
-
-<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>
+<sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as its PATH isn't reloaded dynamically</sub>
 
 <br>
 

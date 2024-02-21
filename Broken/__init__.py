@@ -62,8 +62,15 @@ forbiddenfruit.curse(
     lambda self, value: self.append(value) or value
 )
 
-# Expand sys.argv's ./ or .\ to the full path. This is required as the working directory of projects
-# changes, so we must expand them on the main script relative to where Broken is used as CLI
+# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
+# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
+# • File name collisions are unlikely with any Monorepo path (?)
 for i, arg in enumerate(sys.argv):
-    if any([arg.startswith(x) for x in ("./", "../", ".\\", "..\\")]):
-        sys.argv[i] = str(BrokenPath.true_path(arg))
+    if any((
+        any((arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
+        bool(Path(arg).suffix) and Path(arg).exists(),
+    )):
+        sys.argv[i] = str(BrokenPath.get(arg))
+
+# Safer measures: Store the first cwd that Broken is run, always start from there
+os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))

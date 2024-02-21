@@ -174,18 +174,12 @@ class BrokenProjectCLI:
 
         import rich.prompt
 
-        # For all arguments in ctx.args, if it's a file, replace it with its path
-        # This also fixes files references on the nested poetry command rebasing to its path
-        for i, arg in enumerate(ctx.args):
-            if (fix := BrokenPath.true_path(arg)).exists():
-                ctx.args[i] = fix
-
         while True:
             BrokenPlatform.clear_terminal(do=clear, echo=False)
 
             # Python projects
             if self.is_python:
-                venv = self.__install_venv__(reinstall=reinstall)
+                venv = self.get_virtualenv(reinstall=reinstall)
                 try:
                     # Todo: Test if the `else` works on Windows
                     if BrokenPlatform.OnWindows:
@@ -248,32 +242,41 @@ class BrokenProjectCLI:
 
     # # Python shenanigans
 
-    def __install_venv__(self, reinstall: bool=False) -> Path:
+    def get_virtualenv(self, install: bool=True, reinstall: bool=False) -> Optional[Path]:
         """Install and get a virtual environment path for Python project"""
 
         # Unset virtualenv else the nested poetry will use it
         os.environ.pop("VIRTUAL_ENV", None)
 
-        while True:
-            venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
+        with BrokenPath.pushd(self.path, echo=False):
+            while True:
+                venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
-            # Install if virtualenv is not found
-            if (venv.returncode != 0):
-                log.info(f"Installing virtual environment for {self.name} project")
-                shell("poetry", "install")
-                continue
+                # Install if virtualenv is not found
+                if (venv.returncode != 0):
+                    if install:
+                        log.info(f"Installing virtual environment for Project ({self.name})")
+                        shell("poetry", "install")
+                    else:
+                        log.minor(f"Virtual environment doesn't exist for Project ({self.name})")
+                        return None
+                    continue
 
-            # Convert to Path
-            venv_path = Path(venv.stdout.decode().strip())
+                # Convert to Path
+                venv_path = Path(venv.stdout.decode().strip())
 
-            # Reinstall virtualenv if requested
-            if reinstall:
-                reinstall = False
-                BrokenPath.remove(venv_path)
-                BrokenPath.remove(self.path/"poetry.lock")
-                continue
+                if not install:
+                    log.info(f"Found virtual environment for Project at ({venv_path})")
+                    return venv_path
 
-            return venv_path
+                # Reinstall virtualenv if requested
+                if reinstall:
+                    reinstall = False
+                    BrokenPath.remove(venv_path)
+                    BrokenPath.remove(self.path/"poetry.lock")
+                    continue
+
+                return venv_path
 
     def release(self,
         target: Annotated[BrokenPlatform.Targets, typer.Option("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
@@ -284,7 +287,7 @@ class BrokenProjectCLI:
 
             # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
-                with BrokenPath.pushd(path := BrokenPath.true_path(path)):
+                with BrokenPath.pushd(path := BrokenPath.get(path)):
                     log.info(f"Building project at ({path})")
 
                     # Initialize empty set and add current project
@@ -396,7 +399,7 @@ class BrokenCLI:
             if path.is_symlink() and (directory.name.lower() == "workspace"):
                 continue
 
-            directory = BrokenPath.true_path(directory)
+            directory = BrokenPath.get(directory)
 
             # Avoid hidden directories
             if any(directory.name.startswith(x) for x in (".", "_")):
@@ -418,19 +421,21 @@ class BrokenCLI:
         self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software Monorepo manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️ Broken Source Software and its authors, AGPLv3-only License."
+            "©️ Broken Source Software, AGPLv3-only License."
         ))
 
         with self.broken_typer.panel("📦 Installation"):
+            self.broken_typer.command(self.install)
+            self.broken_typer.command(self.uninstall)
             self.broken_typer.command(self.submodules)
-            self.broken_typer.command(self.install, hidden=True)
-            self.broken_typer.command(self.rust)
-            self.broken_typer.command(self.link)
+            self.broken_typer.command(self.scripts)
+            self.broken_typer.command(self.shortcut)
 
         with self.broken_typer.panel("🛡️ Core"):
-            self.broken_typer.command(self.update_all)
             self.broken_typer.command(self.clean)
             self.broken_typer.command(self.sync)
+            self.broken_typer.command(self.rust)
+            self.broken_typer.command(self.link)
             self.broken_typer.command(self.mock, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
@@ -455,7 +460,8 @@ class BrokenCLI:
         toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
         build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
-        """Install or select a Rust Toolchain"""
+        """🦀 Installs dependencies and some Default Rust Toolchain"""
+
         # Install rustup based on platform
         if not shutil.which("rustup"):
             if BrokenPlatform.OnWindows:
@@ -478,6 +484,12 @@ class BrokenCLI:
                 '"'
             ), shell=True)
 
+        class RustToolchain(BrokenEnum):
+            Stable  = "stable"
+            Nightly = "nightly"
+
+        toolchain = RustToolchain.get(toolchain).value
+
         # Install or select the correct toolchain
         for line in shell("rustup", "toolchain", "list", output=True, echo=False).split("\n"):
             if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != toolchain)):
@@ -496,13 +508,11 @@ class BrokenCLI:
         pull:     Annotated[bool, typer.Option("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
         force:    Annotated[bool, typer.Option("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
     ):
-        """
-        Safely init and clone submodules, skip private submodules
-        """
+        """🔽 Safely init and clone submodules, skip private submodules"""
 
         # --------------------------------------| Pathing
 
-        root = BrokenPath.true_path(root)
+        root = BrokenPath.get(root)
 
         # Read .gitmodules if it exists
         if not (gitmodules := root/".gitmodules").exists():
@@ -583,32 +593,42 @@ class BrokenCLI:
 
             self.submodules(path, username=username, password=password)
 
+    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
+
     def install(self):
+        """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
         BROKEN.welcome()
         self.submodules()
-        with halo.Halo("Installing Direct Scripts"):
-            self.__scripts__()
-        with halo.Halo("Creating Desktop Brakeit Shortcut"):
-            self.__shortcut__()
-        BrokenPath.add_to_path(BROKEN.DIRECTORIES.REPOSITORY)
+        self.scripts()
+        if BrokenPlatform.OnWindows:
+            self.shortcut()
         log.note(f"Running BrokenSource Monorepo at ({BROKEN.DIRECTORIES.REPOSITORY})")
         log.note(f"To enter the development environment again, run (python ./brakeit.py) or click the Desktop Icon!")
         print()
 
-    def __shortcut__(self):
+    def uninstall(self):
+        """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
+        log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
+
+        BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE)
+
+        # Remove all known projects stuff
+        for project in self.projects:
+            if (venv := project.get_virtualenv(install=False)):
+                log.minor("Now removing the Poetry's Python Virtual environment")
+                BrokenPath.remove(venv, echo=False, confirm=True)
+
+            # Follow Project's Workspace folder
+            if (workspace := BrokenPath.get(project.path/"Workspace")).exists():
+                log.minor("Now removing the Project Workspace directory")
+                BrokenPath.remove(workspace, echo=False, confirm=True)
+
+    def shortcut(self):
+        """🧿 Creates a Desktop shortcut to run {brakeit.py} directly"""
         if BrokenPlatform.OnUnix:
-
-            # Symlink `brakeit` on local bin and make it executable
-            BrokenPath.make_executable(BrokenPath.symlink(
-                virtual=BROKEN.DIRECTORIES.HOME/".local/bin/brakeit",
-                real=BROKEN.DIRECTORIES.REPOSITORY/"brakeit.py"
-            ))
-
-            # Create Linux .desktop file
             if BrokenPlatform.OnLinux:
-                desktop = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
-                log.info(f"Creating Desktop file at ({desktop})")
-                desktop.write_text('\n'.join([
+                log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
+                BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
                     "[Desktop Entry]",
                     "Type=Application",
                     "Name=Brakeit",
@@ -617,7 +637,7 @@ class BrokenCLI:
                     "Comment=Brakeit Bootstrapper",
                     "Terminal=true",
                     "Categories=Development",
-                ]))
+                )))
 
         elif BrokenPlatform.OnWindows:
 
@@ -636,8 +656,8 @@ class BrokenCLI:
             log.error(f"Unknown Platform ({BrokenPlatform.Name})")
             return
 
-    def __scripts__(self):
-        """Creates direct called scripts for every Broken command on venv/bin, [$ broken command -> $ command]"""
+    def scripts(self):
+        """⚡️ Makes convenience scripts for Projects on current Virtual Environment, ($ broken command -> $ command)"""
 
         # Get Broken virtualenv path
         folder = "Scripts" if BrokenPlatform.OnWindows else "bin"
@@ -678,7 +698,7 @@ class BrokenCLI:
             BrokenPath.make_executable(script, echo=False)
 
     def link(self, path: Path):
-        """Link a Project directory or Directory of Projects to be available on `broken`"""
+        """📌 Link a {Project directory} or {Directory of Projects} to be Managed"""
         BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def clean(self,
@@ -689,7 +709,7 @@ class BrokenCLI:
         wheels: bool=False,
         all: bool=False
     ) -> None:
-        """Sorts imports, cleans .pyc files and __pycache__ directories"""
+        """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
 
         # Sort imports, ignore "Releases" folder
         if all or isort:
@@ -718,7 +738,7 @@ class BrokenCLI:
         if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
     def sync(self) -> None:
-        """Synchronize common resources files across all projects"""
+        """♻️  Synchronize common resources files across all projects"""
         root = BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:
@@ -730,11 +750,6 @@ class BrokenCLI:
             ):
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
-
-    def update_all(self) -> None:
-        """Updates all projects"""
-        for project in self.projects:
-            project.update()
 
     # # Experimental
 

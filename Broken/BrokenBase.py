@@ -230,7 +230,7 @@ class BrokenPath:
     @staticmethod
     def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
         path = path.parent if parent else path
         if path.exists():
             log.success(f"Directory ({path}) already exists", echo=echo)
@@ -259,8 +259,8 @@ class BrokenPath:
 
     @staticmethod
     def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
-        src = BrokenPath.true_path(src)
-        dst = BrokenPath.true_path(dst)
+        src = BrokenPath.get(src)
+        dst = BrokenPath.get(dst)
         BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
             log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
@@ -279,7 +279,7 @@ class BrokenPath:
 
     @staticmethod
     def remove(path: PathLike, *, confirm=False, echo=True) -> Path:
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
         log.info(f"Removing Path ({path})", echo=echo)
 
         # Safety: Must not be common
@@ -311,9 +311,9 @@ class BrokenPath:
     # # Specific / "Utils"
 
     @contextmanager
-    def pushd(path: PathLike, *, echo: bool=True) -> Path:
+    def pushd(path: PathLike, *, echo: bool=True) -> Generator[Path, None, None]:
         """Change directory, then change back when done"""
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
         cwd = os.getcwd()
         log.info(f"Pushd ({path})", echo=echo)
         os.chdir(path)
@@ -322,8 +322,11 @@ class BrokenPath:
         os.chdir(cwd)
 
     @staticmethod
-    def true_path(path: PathLike) -> Optional[Path]:
-        return Path(path).expanduser().resolve() if path else None
+    def get(path: PathLike=None, *, valid: bool=False) -> Optional[Path]:
+        if not path: return None
+        path = Path(path).expanduser().resolve()
+        if valid and (not path.exists()): return None
+        return path
 
     @staticmethod
     def make_executable(path: PathLike, *, echo=False) -> Path:
@@ -338,7 +341,7 @@ class BrokenPath:
     @staticmethod
     def open_in_file_explorer(path: PathLike):
         """Opens a path in the file explorer"""
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
         if BrokenPlatform.OnWindows:
             os.startfile(str(path))
         elif BrokenPlatform.OnLinux:
@@ -361,7 +364,7 @@ class BrokenPath:
         log.info(f"Symlinking ({virtual}) → ({real})", echo=echo)
 
         # Return if already symlinked
-        if (BrokenPath.true_path(virtual) == BrokenPath.true_path(real)):
+        if (BrokenPath.get(virtual) == BrokenPath.get(real)):
             return virtual
 
         # Make Virtual's parent directory
@@ -422,12 +425,12 @@ class BrokenPath:
     @staticmethod
     def on_path(path: PathLike) -> bool:
         """Check if a path is on PATH, works with symlinks"""
-        return BrokenPath.true_path(path) in map(BrokenPath.true_path, os.environ.get("PATH", "").split(os.pathsep))
+        return BrokenPath.get(path) in map(BrokenPath.get, os.environ.get("PATH", "").split(os.pathsep))
 
     @staticmethod
     def add_to_path(path: PathLike, *, echo: bool=True) -> Path:
         """Add a path to PATH"""
-        path = BrokenPath.true_path(path)
+        path = BrokenPath.get(path)
 
         # Skip already on PATH
         if BrokenPath.on_path(path):
@@ -441,13 +444,13 @@ class BrokenPath:
 
     def read_text(self, path: Path, *, echo: bool=True) -> Optional[str]:
         """Safe read text from a file, returns an empty string if the file doesn't exist"""
-        if (path := BrokenPath.true_path(path)).exists():
+        if (path := BrokenPath.get(path)).exists():
             return path.read_text()
         return ""
 
     def read_bytes(self, path: Path, *, echo: bool=True) -> Optional[bytes]:
         """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
-        if (path := BrokenPath.true_path(path)).exists():
+        if (path := BrokenPath.get(path)).exists():
             return path.read_bytes()
         return b""
 
@@ -623,7 +626,7 @@ class BrokenUtils:
         try:
             # Load image if a path or url is supplied
             if isinstance(image, (PathLike, str)):
-                if (path := BrokenPath.true_path(image)).exists():
+                if (path := BrokenPath.get(image)).exists():
                     log.info(f"Loading image from Path ({path})", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
