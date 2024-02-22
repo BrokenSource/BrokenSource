@@ -216,16 +216,18 @@ class BrokenProjectCLI:
                 # Prompt user for action
                 import rich.prompt
                 answer = rich.prompt.Prompt.ask(
-                    f"• Choose action: Run (p)oetry install and retry, (r)einstall venv and retry, (e)xit, (enter) to retry",
-                    choices=["r", "e", "p", ""],
+                    f"• Action: Run poetry (i)nstall, poetry (l)ock, (r)einstall venv, (e)xit or nothing (enter), then retry",
+                    choices=["r", "e", "p", "l", ""],
                     default="retry"
                 )
                 if answer == "r":
                     reinstall = True
-                elif answer == "p":
-                    shell("poetry", "install")
                 elif answer == "e":
                     break
+                elif answer == "i":
+                    shell("poetry", "install")
+                elif answer == "l":
+                    shell("poetry", "lock")
                 elif answer == "retry":
                     pass
 

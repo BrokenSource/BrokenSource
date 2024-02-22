@@ -1020,15 +1020,16 @@ class BrokenEventClient:
             with (self.context or contextlib.nullcontext()):
                 self.output = self.callback(*self.args, **self.kwargs)
 
-        # (Disabled && Once) clients gets deleted
-        self.enabled = not self.once
+        # Fixme: This is a better way to do it, but on decoupled it's not "dt perfect"
+        # self.next_call = self.period * (math.floor(now/self.period) + 1)
 
-        # Add periods until next call is in the future
+        # Update future and past states
+        self.last_call = now
         while self.next_call <= now:
             self.next_call += self.period
 
-        # Update last call time
-        self.last_call = now # if (self.frameskip or self.decoupled) else self.next_call
+        # (Disabled && Once) clients gets deleted
+        self.enabled = not self.once
 
         return self
 

@@ -225,6 +225,7 @@
         "ndarray",
         "noperspective",
         "nproc",
+        "nstall",
         "nuitka",
         "numframes",
         "numpad",
