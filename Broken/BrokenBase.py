@@ -382,13 +382,15 @@ class BrokenPath(Path):
         __import__("userpath").append(str(path))
         return path
 
-    def read_text(self, path: Path, *, echo: bool=True) -> Optional[str]:
+    @staticmethod
+    def read_text(path: Path, *, encoding: str="utf8", echo: bool=True) -> Optional[str]:
         """Safe read text from a file, returns an empty string if the file doesn't exist"""
         if (path := BrokenPath(path)).exists():
-            return path.read_text()
+            return path.read_text(encoding=encoding)
         return ""
 
-    def read_bytes(self, path: Path, *, echo: bool=True) -> Optional[bytes]:
+    @staticmethod
+    def read_bytes(path: Path, *, echo: bool=True) -> Optional[bytes]:
         """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
         if (path := BrokenPath(path)).exists():
             return path.read_bytes()

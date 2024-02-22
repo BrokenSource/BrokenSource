@@ -302,9 +302,14 @@ class BrokenEnum(Enum):
             @define
             class Computer:
                 os: Platform = Platform.Linux.field()
+
+            # Any setattr will be redirected to the enum's get method
+            computer = Computer()
+            computer.os = "linux" # Ok
+            computer.os = "dne"   # Not ok
             ```
 
         Args:
             `kwargs`: Keyword arguments to pass to the field, may override default and converter
         """
-        return field(default=self, converter=self.__class__.get, **kwargs)
+        return attrs.field(default=self, converter=self.__class__.get, **kwargs)

@@ -1138,6 +1138,7 @@ class BrokenFFmpeg:
         chunk: Seconds=0.1,
         echo: bool=True
     ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
+
         if not (path := BrokenPath(path, valid=True)):
             return
 

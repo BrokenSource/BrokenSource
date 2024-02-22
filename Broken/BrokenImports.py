@@ -121,7 +121,6 @@ from time import time as now
 from typing import *
 
 import attrs
-import audioread
 import cachetools
 import cattrs
 import click
@@ -129,10 +128,8 @@ import distro
 import dotenv
 import forbiddenfruit
 import halo
-import imgui
 import intervaltree
 import loguru
-import moderngl
 import numpy
 import PIL
 import PIL.Image
@@ -146,7 +143,6 @@ from attrs import define
 from attrs import field
 from dotmap import DotMap
 from numpy import pi as PI
-# import typer
 from typer import Context as TyperContext
 from typer import Option as TyperOption
 from typer import Typer as TyperApp
@@ -166,6 +162,10 @@ from typer import Typer as TyperApp
 
 while True:
     with BrokenImports():
+        import imgui
+        import moderngl
+        import torch
+        import transformers
         break
 
 # -------------------------------------------------------------------------------------------------|
