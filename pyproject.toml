@@ -49,6 +49,7 @@ validators     = "^0.22.0"
 cattrs         = "^23.2.3"
 requests-cache = "^1.1.1"
 pretty-errors  = "^1.2.25"
+cachetools     = "^5.3.2"
 
 [tool.poetry.group.dev.dependencies]
 isort       = "^5.12.0"

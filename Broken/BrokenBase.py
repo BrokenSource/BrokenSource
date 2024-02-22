@@ -22,6 +22,7 @@ def shell(
 ) -> Option[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
+    • This is arguably the most important function in Broken 🙈
 
     Example:
         ```python
@@ -49,9 +50,8 @@ def shell(
     command = tuple(map(str, BrokenUtils.flatten(args)))
 
     if shell:
-        log.warning("Running command with (shell=True), be careful." + " Consider using (confirm=True)"*(not confirm))
-        kwargs["shell"] = shell
-        command = ' '.join(command)
+        log.warning("Running command with (shell=True), be careful.." + " Consider using (confirm=True)"*(not confirm))
+        command = '"' + '" "'.join(command) + '"'
 
     # Assert command won't fail due unknown binary
     if (not shell) and (not shutil.which(command[0])):
@@ -60,7 +60,7 @@ def shell(
 
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-    (log.info if do else log.skip)(("Running" if do else "Skipping") + f" command {command}{cwd}", echo=echo)
+    (log.info if do else log.skip)(("Running" if do else "Skipping") + f" Command {command}{cwd}", echo=echo)
     if not do: return
 
     # Confirm running command or not
@@ -71,13 +71,16 @@ def shell(
     env = os.environ.copy() | (env or {})
 
     # Run the command and return specified object
-    if output: return subprocess.check_output(command, env=env, **kwargs).decode("utf-8")
-    if Popen:  return subprocess.Popen(command, env=env, **kwargs)
-    else:      return subprocess.run(command, env=env, **kwargs)
+    if output: return subprocess.check_output(command, env=env, shell=shell, **kwargs).decode("utf-8")
+    if Popen:  return subprocess.Popen(command, env=env, shell=shell, **kwargs)
+    else:      return subprocess.run(command, env=env, shell=shell, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenPlatform:
+    """
+    Host Platform information, Cross Compilation targets and some utilities
+    """
 
     # Name of the current platform - (linux, windows, macos, bsd)
     Name:         str  = platform.system().lower().replace("darwin", "macos")
@@ -157,7 +160,256 @@ class BrokenPlatform:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenPath:
+class BrokenPath(Path):
+    """
+    BrokenPath is not supposed to be instantiated as a class but used as a namespace (static class)
+    • The __new__ method returns the value of .get method, which is pathlib.Path
+    • Many Path utilities as staticmethod and contextmanager
+    """
+    def __new__(cls, path: PathLike=None, **kwargs) -> Optional[Path]:
+        return cls.get(path, **kwargs)
+
+    @staticmethod
+    def get(path: PathLike=None, *, valid: bool=False) -> Optional[Path]:
+        if not path: return None
+        path = Path(path).expanduser().resolve()
+        if valid and (not path.exists()): return None
+        return path
+
+    @staticmethod
+    def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
+        src = BrokenPath(src)
+        dst = BrokenPath(dst)
+        BrokenPath.mkdir(dst.parent, echo=False)
+        if src.is_dir():
+            log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
+            shutil.copytree(src, dst)
+        else:
+            log.info(f"Copying File ({src}) → ({dst})", echo=echo)
+            shutil.copy2(src, dst)
+        return dst
+
+    @staticmethod
+    def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
+        src, dst = Path(src), Path(dst)
+        log.info(f"Moving ({src}) → ({dst})", echo=echo)
+        shutil.move(src, dst)
+        return dst
+
+    @staticmethod
+    def remove(path: PathLike, *, confirm=False, echo=True) -> Path:
+        path = BrokenPath(path)
+        log.info(f"Removing Path ({path})", echo=echo)
+
+        # Safety: Must not be common
+        if path in (Path.cwd(), Path.home()):
+            log.error(f"Avoided catastrophic failure by not removing ({path})")
+            exit(1)
+
+        # Already removed
+        if not path.exists():
+            return path
+
+        # Symlinks are safe to remove
+        if path.is_symlink():
+            path.unlink()
+            return path
+
+        # Confirm removal: directory contains data
+        if confirm and (not click.confirm(f"• Confirm removing path ({path})")):
+            return path
+
+        # Remove the path
+        if path.is_dir():
+            shutil.rmtree(path, ignore_errors=True)
+        else:
+            path.unlink()
+
+        return path
+
+    @staticmethod
+    def touch(path: PathLike, *, echo=True):
+        """Creates a file, fail safe™"""
+        path = Path(path)
+        if path.exists():
+            log.success(f"File ({path}) already exists", echo=echo)
+            return
+        log.info(f"Creating file {path}", echo=echo)
+        path.touch()
+
+    @staticmethod
+    def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
+        """Creates a directory and its parents, fail safe™"""
+        path = BrokenPath(path)
+        path = path.parent if parent else path
+        if path.exists():
+            log.success(f"Directory ({path}) already exists", echo=echo)
+            return path
+        log.info(f"Creating directory {path}", echo=echo)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @staticmethod
+    def resetdir(path: PathLike, *, echo=True) -> Path:
+        """Creates a directory and its parents, fail safe™"""
+        BrokenPath.remove(path, echo=echo)
+        return BrokenPath.mkdir(path, echo=echo)
+
+    @contextmanager
+    def pushd(path: PathLike, *, echo: bool=True) -> Generator[Path, None, None]:
+        """Change directory, then change back when done"""
+        path = BrokenPath(path)
+        cwd = os.getcwd()
+        log.info(f"Pushd ({path})", echo=echo)
+        os.chdir(path)
+        yield path
+        log.info(f"Popd  ({path})", echo=echo)
+        os.chdir(cwd)
+
+    @staticmethod
+    def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
+        """
+        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the target
+
+        Args:
+            virtual (Path): Symlink path (file)
+            real (Path): Target path (real path)
+
+        Returns:
+            None if it fails, else `virtual` Path
+        """
+        log.info(f"Symlinking ({virtual}) → ({real})", echo=echo)
+
+        # Return if already symlinked
+        if (BrokenPath(virtual) == BrokenPath(real)):
+            return virtual
+
+        # Make Virtual's parent directory
+        BrokenPath.mkdir(virtual.parent, echo=False)
+
+        # Remove old symlink if it points to a non existing directory
+        if virtual.is_symlink() and (not virtual.resolve().exists()):
+            virtual.unlink()
+
+        # Virtual doesn't exist, ok to create
+        elif not virtual.exists():
+            pass
+
+        # File exists and is a symlink - safe to remove
+        elif virtual.is_symlink():
+            virtual.unlink()
+
+        # Virtual is a directory and not empty
+        elif virtual.is_dir() and (not os.listdir(virtual)):
+            BrokenPath.remove(virtual, echo=False)
+
+        else:
+            if click.confirm(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing it and continuing? (It might contain data or be a important symlink)"):
+                BrokenPath.remove(virtual, echo=False)
+            else:
+                return
+
+        # Actually symlink
+        virtual.symlink_to(real)
+        return virtual
+
+    @staticmethod
+    def make_executable(path: PathLike, *, echo=False) -> Path:
+        """Make a file executable"""
+        path = BrokenPath(path)
+        if BrokenPlatform.OnUnix:
+            shell("chmod", "+x", path, echo=echo)
+        elif BrokenPlatform.OnWindows:
+            shell("attrib", "+x", path, echo=echo)
+        return path
+
+    @staticmethod
+    def zip(path: Path, output: Path=None, echo: bool=True) -> Path:
+        """
+        Zip a directory
+
+        Args:
+            path (Path): Path to zip
+            output (Path): Output path, defaults to path with .zip extension
+
+        Returns:
+            Path: The zipped file's path
+        """
+        path = Path(path)
+
+        # Default output to path with .zip extension
+        output = (Path(output) if output else path).with_suffix(".zip")
+
+        # Remove old zip
+        BrokenPath.remove(output, echo=echo)
+
+        # Make the new zip
+        log.info(f"Zipping ({path}) → ({output})", echo=echo)
+        shutil.make_archive(output.with_suffix(""), "zip", path)
+
+        return output
+
+    # # Specific / "Utils"
+
+    @staticmethod
+    def open_in_file_explorer(path: PathLike):
+        """Opens a path in the file explorer"""
+        path = BrokenPath(path)
+        if BrokenPlatform.OnWindows:
+            os.startfile(str(path))
+        elif BrokenPlatform.OnLinux:
+            shell("xdg-open", path)
+        elif BrokenPlatform.OnMacOS:
+            shell("open", path)
+
+    @staticmethod
+    def on_path(path: PathLike) -> bool:
+        """Check if a path is on PATH, works with symlinks"""
+        return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
+
+    @staticmethod
+    def add_to_path(path: PathLike, *, echo: bool=True) -> Path:
+        """Add a path to PATH"""
+        path = BrokenPath(path)
+
+        # Skip already on PATH
+        if BrokenPath.on_path(path):
+            log.skip(f"Path ({path}) is already on PATH", echo=echo)
+            return path
+
+        # Actually add to PATH
+        log.warning(f"Path ({path}) was added to PATH. Please, restart the Terminal to take effect", echo=echo)
+        __import__("userpath").append(str(path))
+        return path
+
+    def read_text(self, path: Path, *, echo: bool=True) -> Optional[str]:
+        """Safe read text from a file, returns an empty string if the file doesn't exist"""
+        if (path := BrokenPath(path)).exists():
+            return path.read_text()
+        return ""
+
+    def read_bytes(self, path: Path, *, echo: bool=True) -> Optional[bytes]:
+        """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
+        if (path := BrokenPath(path)).exists():
+            return path.read_bytes()
+        return b""
+
+    # Fixme: Untested functions, needs better name; are these useful?
+
+    @staticmethod
+    def non_empty_file(path: Path) -> bool:
+        return path.exists() and path.is_file() and path.stat().st_size > 0
+
+    @staticmethod
+    def empty_file(path: Path, create: bool=True) -> bool:
+        if create and not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+        return path.exists() and path.is_file() and len(path.read_text()) == 0
+
+    @staticmethod
+    def empty_path(path: Path) -> bool:
+        return not path.exists()
 
     @contextmanager
     def PATH(*,
@@ -229,252 +481,6 @@ class BrokenPath:
 
         return binary
 
-    # # File or directory creation
-
-    @staticmethod
-    def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
-        """Creates a directory and its parents, fail safe™"""
-        path = BrokenPath.get(path)
-        path = path.parent if parent else path
-        if path.exists():
-            log.success(f"Directory ({path}) already exists", echo=echo)
-            return path
-        log.info(f"Creating directory {path}", echo=echo)
-        path.mkdir(parents=True, exist_ok=True)
-        return path
-
-    @staticmethod
-    def resetdir(path: PathLike, *, echo=True) -> Path:
-        """Creates a directory and its parents, fail safe™"""
-        BrokenPath.remove(path, echo=echo)
-        return BrokenPath.mkdir(path, echo=echo)
-
-    @staticmethod
-    def touch(path: PathLike, *, echo=True):
-        """Creates a file, fail safe™"""
-        path = Path(path)
-        if path.exists():
-            log.success(f"File ({path}) already exists", echo=echo)
-            return
-        log.info(f"Creating file {path}", echo=echo)
-        path.touch()
-
-    # # Data moving
-
-    @staticmethod
-    def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
-        src = BrokenPath.get(src)
-        dst = BrokenPath.get(dst)
-        BrokenPath.mkdir(dst.parent, echo=False)
-        if src.is_dir():
-            log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
-            shutil.copytree(src, dst)
-        else:
-            log.info(f"Copying File ({src}) → ({dst})", echo=echo)
-            shutil.copy2(src, dst)
-        return dst
-
-    @staticmethod
-    def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
-        src, dst = Path(src), Path(dst)
-        log.info(f"Moving ({src}) → ({dst})", echo=echo)
-        shutil.move(src, dst)
-        return dst
-
-    @staticmethod
-    def remove(path: PathLike, *, confirm=False, echo=True) -> Path:
-        path = BrokenPath.get(path)
-        log.info(f"Removing Path ({path})", echo=echo)
-
-        # Safety: Must not be common
-        if path in (Path.cwd(), Path.home()):
-            log.error(f"Avoided catastrophic failure by not removing ({path})")
-            exit(1)
-
-        # Already removed
-        if not path.exists():
-            return path
-
-        # Symlinks are safe to remove
-        if path.is_symlink():
-            path.unlink()
-            return path
-
-        # Confirm removal: directory contains data
-        if confirm and (not click.confirm(f"• Confirm removing path ({path})")):
-            return path
-
-        # Remove the path
-        if path.is_dir():
-            shutil.rmtree(path, ignore_errors=True)
-        else:
-            path.unlink()
-
-        return path
-
-    # # Specific / "Utils"
-
-    @contextmanager
-    def pushd(path: PathLike, *, echo: bool=True) -> Generator[Path, None, None]:
-        """Change directory, then change back when done"""
-        path = BrokenPath.get(path)
-        cwd = os.getcwd()
-        log.info(f"Pushd ({path})", echo=echo)
-        os.chdir(path)
-        yield path
-        log.info(f"Popd  ({path})", echo=echo)
-        os.chdir(cwd)
-
-    @staticmethod
-    def get(path: PathLike=None, *, valid: bool=False) -> Optional[Path]:
-        if not path: return None
-        path = Path(path).expanduser().resolve()
-        if valid and (not path.exists()): return None
-        return path
-
-    @staticmethod
-    def make_executable(path: PathLike, *, echo=False) -> Path:
-        """Make a file executable"""
-        path = Path(path)
-        if BrokenPlatform.OnUnix:
-            shell("chmod", "+x", path, echo=echo)
-        elif BrokenPlatform.OnWindows:
-            shell("attrib", "+x", path, echo=echo)
-        return path
-
-    @staticmethod
-    def open_in_file_explorer(path: PathLike):
-        """Opens a path in the file explorer"""
-        path = BrokenPath.get(path)
-        if BrokenPlatform.OnWindows:
-            os.startfile(str(path))
-        elif BrokenPlatform.OnLinux:
-            shell("xdg-open", path)
-        elif BrokenPlatform.OnMacOS:
-            shell("open", path)
-
-    @staticmethod
-    def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
-        """
-        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the target
-
-        Args:
-            virtual (Path): Symlink path (file)
-            real (Path): Target path (real path)
-
-        Returns:
-            None if it fails, else `virtual` Path
-        """
-        log.info(f"Symlinking ({virtual}) → ({real})", echo=echo)
-
-        # Return if already symlinked
-        if (BrokenPath.get(virtual) == BrokenPath.get(real)):
-            return virtual
-
-        # Make Virtual's parent directory
-        BrokenPath.mkdir(virtual.parent, echo=False)
-
-        # Remove old symlink if it points to a non existing directory
-        if virtual.is_symlink() and (not virtual.resolve().exists()):
-            virtual.unlink()
-
-        # Virtual doesn't exist, ok to create
-        elif not virtual.exists():
-            pass
-
-        # File exists and is a symlink - safe to remove
-        elif virtual.is_symlink():
-            virtual.unlink()
-
-        # Virtual is a directory and not empty
-        elif virtual.is_dir() and (not os.listdir(virtual)):
-            BrokenPath.remove(virtual, echo=False)
-
-        else:
-            if click.confirm(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing it and continuing? (It might contain data or be a important symlink)"):
-                BrokenPath.remove(virtual, echo=False)
-            else:
-                return
-
-        # Actually symlink
-        virtual.symlink_to(real)
-        return virtual
-
-    @staticmethod
-    def zip(path: Path, output: Path=None, echo: bool=True) -> Path:
-        """
-        Zip a directory
-
-        Args:
-            path (Path): Path to zip
-            output (Path): Output path, defaults to path with .zip extension
-
-        Returns:
-            Path: The zipped file's path
-        """
-        path = Path(path)
-
-        # Default output to path with .zip extension
-        output = (Path(output) if output else path).with_suffix(".zip")
-
-        # Remove old zip
-        BrokenPath.remove(output, echo=echo)
-
-        # Make the new zip
-        log.info(f"Zipping ({path}) → ({output})", echo=echo)
-        shutil.make_archive(output.with_suffix(""), "zip", path)
-
-        return output
-
-    @staticmethod
-    def on_path(path: PathLike) -> bool:
-        """Check if a path is on PATH, works with symlinks"""
-        return BrokenPath.get(path) in map(BrokenPath.get, os.environ.get("PATH", "").split(os.pathsep))
-
-    @staticmethod
-    def add_to_path(path: PathLike, *, echo: bool=True) -> Path:
-        """Add a path to PATH"""
-        path = BrokenPath.get(path)
-
-        # Skip already on PATH
-        if BrokenPath.on_path(path):
-            log.skip(f"Path ({path}) is already on PATH", echo=echo)
-            return path
-
-        # Actually add to PATH
-        log.warning(f"Path ({path}) was added to PATH. Please, restart the Terminal to take effect", echo=echo)
-        __import__("userpath").append(str(path))
-        return path
-
-    def read_text(self, path: Path, *, echo: bool=True) -> Optional[str]:
-        """Safe read text from a file, returns an empty string if the file doesn't exist"""
-        if (path := BrokenPath.get(path)).exists():
-            return path.read_text()
-        return ""
-
-    def read_bytes(self, path: Path, *, echo: bool=True) -> Optional[bytes]:
-        """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
-        if (path := BrokenPath.get(path)).exists():
-            return path.read_bytes()
-        return b""
-
-    # Fixme: Untested functions, needs better name
-
-    @staticmethod
-    def non_empty_file(path: Path) -> bool:
-        return path.exists() and path.is_file() and path.stat().st_size > 0
-
-    @staticmethod
-    def empty_file(path: Path, create: bool=True) -> bool:
-        if create and not path.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.touch()
-        return path.exists() and path.is_file() and len(path.read_text()) == 0
-
-    @staticmethod
-    def empty_path(path: Path) -> bool:
-        return not path.exists()
-
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenUtils:
@@ -507,7 +513,7 @@ class BrokenUtils:
     @staticmethod
     def denum(item: Any) -> Any:
         """De-enumerates enum iterables to their value"""
-        if issubclass(type(item), Enum):
+        if isinstance(item, Enum):
             return item.value
         return item
 
@@ -630,11 +636,11 @@ class BrokenUtils:
         try:
             # Load image if a path or url is supplied
             if isinstance(image, (PathLike, str)):
-                if (path := BrokenPath.get(image)).exists():
+                if (path := BrokenPath(image)).exists():
                     log.info(f"Loading image from Path ({path})", echo=echo)
                     return PIL.Image.open(path).convert(pixel)
                 else:
-                    if not validate.url(str(image)):
+                    if not validators.url(str(image)):
                         return None
 
                     log.info(f"Loading image from URL ({image})", echo=echo)
@@ -764,8 +770,8 @@ class BrokenUtils:
         return locals
 
     @staticmethod
-    def nearest_multiple_of(number: float, multiple: float) -> float:
-        return round(number / multiple) * multiple
+    def round(number: Number, multiple: Number, *, type=int) -> Number:
+        return type(multiple * round(number/multiple))
 
     @staticmethod
     def rms_stdlib(data) -> float:
@@ -1127,129 +1133,6 @@ class BrokenEventLoop:
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenWatchdog(ABC):
-
-    @abstractmethod
-    def __changed__(self, key, value) -> None:
-        """Called when a property changes"""
-        ...
-
-    def __setattr__(self, key, value):
-        """Calls __changed__ when a property changes"""
-        super().__setattr__(key, value)
-        self.__changed__(key, value)
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenSerde:
-
-    def serialize(self) -> Dict:
-        return cattrs.unstructure(self)
-
-    @classmethod
-    def deserialize(data: Dict) -> Self['cls']:
-        return cattrs.structure(data, cls)
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenSingleton(ABC):
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "__instance__"):
-            cls.__instance__ = super().__new__(cls)
-            cls.__singleton__(*args, **kwargs)
-        return cls.__instance__
-
-    @abstractmethod
-    def __singleton__(self, *args, **kwargs):
-        """__init__ but for the singleton"""
-        ...
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenFluentBuilder:
-    """
-    Do you ever feel like using a builder-like fluent syntax for changing attributes of an object?
-    """
-    def __call__(self, **kwargs) -> Self:
-        """Updates the instance with the provided kwargs"""
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-        return self
-
-    def copy(self) -> Self:
-        """Returns a copy of this instance"""
-        return copy.deepcopy(self)
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenNOP:
-    """A class that does nothing"""
-    def __nop__(self, *args, **kwargs) -> Self:
-        return self
-
-    def __getattr__(self, _):
-        return self.__nop__
-
-# -------------------------------------------------------------------------------------------------|
-
-@define
-class BrokenRelay:
-    """
-    A class to bind some callback to many callables.
-
-    Useful for ModernGL window function, eg pseudocode:
-
-    ```python
-    window = moderngl_window(...)
-
-    # Create BrokenRelay instance
-    scroll_callbacks = BrokenRelay()
-
-    # Map window scroll func callback to this class
-    window.mouse_scroll_event_func = scroll_callbacks
-
-    # Define many callbacks that should be called on window resize
-    def log_scroll(x, y):
-        ...
-
-    camera2d = Camera2D(...)
-
-    # Add callbacks
-    scroll_callbacks.bind(log_scroll, camera2d.resize)
-
-    # Or with @ syntax
-    scroll_callbacks @ (log_scroll, camera2d.resize)
-
-    # It also returns self when binding
-    self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
-    ```
-    """
-    callbacks: list[callable] = Factory(list)
-
-    def __bind__(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        self.callbacks += BrokenUtils.flatten(callbacks)
-        return self
-
-    def bind(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        return self.__bind__(callbacks)
-
-    def subscribe(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        return self.__bind__(callbacks)
-
-    def __matmul__(self, *callbacks: callable) -> Self:
-        """Convenience syntax for binding"""
-        return self.__bind__(callbacks)
-
-    def __call__(self, *args, **kwargs):
-        """Pass through all callbacks to who called "us" (self)"""
-        for callback in self.callbacks:
-            callback(*args, **kwargs)
-
-# -------------------------------------------------------------------------------------------------|
-
 @define
 class BrokenTyper:
     """
@@ -1262,20 +1145,20 @@ class BrokenTyper:
     • Worth it? Probably not.
     • Will I use it? Yes.
     """
-    description: str         = ""
-    app:         typer.Typer = None
-    chain:       bool        = False
-    commands:    List[str]   = Factory(list)
-    default:     str         = None
-    help_option: bool        = False
-    __first__:   bool        = True
-    epilog:      str         = (
+    description: str       = ""
+    app:         TyperApp  = None
+    chain:       bool      = False
+    commands:    List[str] = Factory(list)
+    default:     str       = None
+    help_option: bool      = False
+    __first__:   bool      = True
+    epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://www.patreon.com/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 
     def __attrs_post_init__(self):
-        self.app = typer.Typer(
+        self.app = TyperApp(
             help=self.description or "No help provided",
             add_help_option=self.help_option,
             pretty_exceptions_enable=False,
@@ -1358,6 +1241,131 @@ class BrokenTyper:
             # Don't continue on non BrokenShell mode
             if not shell:
                 break
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenWatchdog(ABC):
+
+    @abstractmethod
+    def __changed__(self, key, value) -> None:
+        """Called when a property changes"""
+        ...
+
+    def __setattr__(self, key, value):
+        """Calls __changed__ when a property changes"""
+        super().__setattr__(key, value)
+        self.__changed__(key, value)
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSerde:
+    def serialize(self) -> Dict:
+        return cattrs.unstructure(self)
+
+    @classmethod
+    def deserialize(data: Dict) -> Self['cls']:
+        return cattrs.structure(data, cls)
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenSingleton(ABC):
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "__instance__"):
+            cls.__instance__ = super().__new__(cls)
+            cls.__singleton__(*args, **kwargs)
+        return cls.__instance__
+
+    @abstractmethod
+    def __singleton__(self, *args, **kwargs):
+        """__init__ but for the singleton"""
+        ...
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenFluentBuilder:
+    """
+    Do you ever feel like using a builder-like fluent syntax for changing attributes of an object?
+    """
+    def __call__(self, **kwargs) -> Self:
+        """Updates the instance with the provided kwargs"""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return self
+
+    def copy(self) -> Self:
+        """Returns a copy of this instance"""
+        return copy.deepcopy(self)
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenNOP:
+    """A class that does nothing"""
+    def __nop__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __call__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __getattr__(self, _):
+        return self.__nop__
+
+# -------------------------------------------------------------------------------------------------|
+
+@define
+class BrokenRelay:
+    """
+    A class to bind some callback to many callables.
+
+    Useful for ModernGL window function, eg pseudocode:
+
+    ```python
+    window = moderngl_window(...)
+
+    # Create BrokenRelay instance
+    scroll_callbacks = BrokenRelay()
+
+    # Map window scroll func callback to this class
+    window.mouse_scroll_event_func = scroll_callbacks
+
+    # Define many callbacks that should be called on window resize
+    def log_scroll(x, y):
+        ...
+
+    camera2d = Camera2D(...)
+
+    # Add callbacks
+    scroll_callbacks.bind(log_scroll, camera2d.resize)
+
+    # Or with @ syntax
+    scroll_callbacks @ (log_scroll, camera2d.resize)
+
+    # It also returns self when binding
+    self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
+    ```
+    """
+    callbacks: list[callable] = Factory(list)
+
+    def __bind__(self, *callbacks: callable) -> Self:
+        """Adds callbacks to the list of callables, runs on self.__call__"""
+        self.callbacks += BrokenUtils.flatten(callbacks)
+        return self
+
+    def bind(self, *callbacks: callable) -> Self:
+        """Adds callbacks to the list of callables, runs on self.__call__"""
+        return self.__bind__(callbacks)
+
+    def subscribe(self, *callbacks: callable) -> Self:
+        """Adds callbacks to the list of callables, runs on self.__call__"""
+        return self.__bind__(callbacks)
+
+    def __matmul__(self, *callbacks: callable) -> Self:
+        """Convenience syntax for binding"""
+        return self.__bind__(callbacks)
+
+    def __call__(self, *args, **kwargs):
+        """Pass through all callbacks to who called "us" (self)"""
+        for callback in self.callbacks:
+            callback(*args, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 

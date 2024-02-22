@@ -74,7 +74,7 @@ for i, arg in enumerate(sys.argv):
         any((arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
         bool(Path(arg).suffix) and Path(arg).exists(),
     )):
-        sys.argv[i] = str(BrokenPath.get(arg))
+        sys.argv[i] = str(BrokenPath(arg))
 
 # Safer measures: Store the first cwd that Broken is run, always start from there
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))

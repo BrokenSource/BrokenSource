@@ -64,7 +64,7 @@ class BrokenDotmap:
 
         # Load or create from file
         if self.__path__ is not None:
-            self.__path__ = BrokenPath.get(self.__path__)
+            self.__path__ = BrokenPath(self.__path__)
 
             log.info(f"• New BrokenDotmap @ ({self.__path__})", echo=echo)
 
@@ -98,7 +98,7 @@ class BrokenDotmap:
 
     def from_file(self, path: Path) -> Self:
         """Load a file into this dotmap instance"""
-        path   = BrokenPath.get(path)
+        path   = BrokenPath(path)
         format = path.suffix.lower()
 
         # Load data from file

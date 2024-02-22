@@ -27,7 +27,7 @@ class BrokenDotmap(
     ):
 
         # Initialize attributes
-        self.__path__   = BrokenPath.get(path)
+        self.__path__   = BrokenPath(path)
         self.__disk__   = bool(self.__path__)
         self.__sync__   = sync
         self.__auto__   = auto

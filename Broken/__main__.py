@@ -23,11 +23,11 @@ class ProjectLanguage(BrokenEnum):
 class BrokenProjectCLI:
     path: Path
     name: str = "Unknown"
-    broken_typer: typer.Typer = None
+    broken_typer: TyperApp = None
 
     # # Main entry point
 
-    def cli(self, ctx: typer.Context) -> None:
+    def cli(self, ctx: TyperContext) -> None:
         self.broken_typer = BrokenTyper(help_option=False)
         self.broken_typer.command(self.poetry,  add_help_option=False)
         self.broken_typer.command(self.poe,     add_help_option=True)
@@ -130,11 +130,11 @@ class BrokenProjectCLI:
 
     # # Commands
 
-    def poetry(self, ctx: typer.Context) -> None:
+    def poetry(self, ctx: TyperContext) -> None:
         """Run poetry command"""
         shell("poetry", *ctx.args)
 
-    def poe(self, ctx: typer.Context) -> None:
+    def poe(self, ctx: TyperContext) -> None:
         """Run poethepoet command"""
         shell("poe", *ctx.args)
 
@@ -165,12 +165,12 @@ class BrokenProjectCLI:
             up_date(self.path/"pyproject.toml")
 
     def run(self,
-        ctx:       typer.Context,
-        reinstall: Annotated[bool, typer.Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
-        infinite:  Annotated[bool, typer.Option("--infinite",  help="Press Enter after each run to run again")]=False,
-        clear:     Annotated[bool, typer.Option("--clear",     help="Clear terminal before running")]=False,
-        debug:     Annotated[bool, typer.Option("--debug",     help="Debug mode for Rust projects")]=False,
-        echo:      Annotated[bool, typer.Option("--echo",      help="Echo command")]=False,
+        ctx:       TyperContext,
+        reinstall: Annotated[bool, TyperOption("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
+        infinite:  Annotated[bool, TyperOption("--infinite",  help="Press Enter after each run to run again")]=False,
+        clear:     Annotated[bool, TyperOption("--clear",     help="Clear terminal before running")]=False,
+        debug:     Annotated[bool, TyperOption("--debug",     help="Debug mode for Rust projects")]=False,
+        echo:      Annotated[bool, TyperOption("--echo",      help="Echo command")]=False,
     ) -> None:
 
         while True:
@@ -244,7 +244,7 @@ class BrokenProjectCLI:
         """Install and get a virtual environment path for Python project"""
 
         # Unset virtualenv else the nested poetry will use it
-        old_venv = BrokenPath.get(os.environ.pop("VIRTUAL_ENV", None))
+        old_venv = BrokenPath(os.environ.pop("VIRTUAL_ENV", None))
 
         with BrokenPath.pushd(self.path, echo=False):
             while True:
@@ -275,20 +275,21 @@ class BrokenProjectCLI:
                     continue
 
                 # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
-                direct = f"{self.name.lower()}er"
-                old = (old_venv/BrokenPlatform.PyScripts/direct)
-                new = (venv_path/BrokenPlatform.PyScripts/"main")
+                if old_venv is not None:
+                    direct = f"{self.name.lower()}er"
+                    old = (old_venv/BrokenPlatform.PyScripts/direct)
+                    new = (venv_path/BrokenPlatform.PyScripts/"main")
 
-                if not BrokenPath.get(old) == BrokenPath.get(new):
-                    log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
-                    BrokenPath.remove(old, echo=False)
-                    BrokenPath.symlink(virtual=old, real=new, echo=False)
-                    BrokenPath.make_executable(new, echo=False)
+                    if not BrokenPath(old) == BrokenPath(new):
+                        log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
+                        BrokenPath.remove(old, echo=False)
+                        BrokenPath.symlink(virtual=old, real=new, echo=False)
+                        BrokenPath.make_executable(new, echo=False)
 
                 return venv_path
 
     def release(self,
-        target: Annotated[BrokenPlatform.Targets, typer.Option("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
+        target: Annotated[BrokenPlatform.Targets, TyperOption("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
     ):
         """Release the Project as a distributable binary"""
         if self.is_python:
@@ -296,7 +297,7 @@ class BrokenProjectCLI:
 
             # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
-                with BrokenPath.pushd(path := BrokenPath.get(path)):
+                with BrokenPath.pushd(path := BrokenPath(path)):
                     log.info(f"Building project at ({path})")
 
                     # Initialize empty set and add current project
@@ -413,7 +414,7 @@ class BrokenCLI:
             if directory.is_file():
                 continue
 
-            directory = BrokenPath.get(directory)
+            directory = BrokenPath(directory)
 
             # Avoid recursion
             if directory == BROKEN.DIRECTORIES.REPOSITORY:
@@ -502,15 +503,15 @@ class BrokenCLI:
         if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
     def link(self, path: Path):
-        """📌 Link a {Project directory} or {Directory of Projects} to be Managed"""
+        """📌 Link a {Directory} or {Directory of Projects} to be Managed by Broken"""
         BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     @staticmethod
     def rust(
-        toolchain:   Annotated[str,  typer.Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
-        build_tools: Annotated[bool, typer.Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
+        toolchain:   Annotated[str,  TyperOption("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
+        build_tools: Annotated[bool, TyperOption("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
-        """🦀 Installs dependencies and some Default Rust Toolchain"""
+        """🦀 Installs Build Dependencies and a Rust Toolchain"""
 
         # Install rustup based on platform
         if not shutil.which("rustup"):
@@ -577,7 +578,7 @@ class BrokenCLI:
         print()
 
     def scripts(self):
-        """⚡️ Write quite scripts for starting Projects, ($ broken command -> $ command)"""
+        """⚡️ Write short scripts for starting Projects, ($ broken command -> $ command)"""
 
         # Get Broken virtualenv path
         bin_path = Path(os.environ["VIRTUAL_ENV"])/BrokenPlatform.PyScripts
@@ -621,7 +622,7 @@ class BrokenCLI:
     LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
 
     def shortcut(self):
-        """🧿 Creates a Desktop shortcut to run {brakeit.py} directly"""
+        """🧿 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
         if BrokenPlatform.OnUnix:
             if BrokenPlatform.OnLinux:
                 log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
@@ -651,18 +652,18 @@ class BrokenCLI:
             return
 
     def submodules(self,
-        root:     Annotated[Path, typer.Option("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
-        auth:     Annotated[bool, typer.Option("--auth",     "-a", help="(Basic ) Prompt Username and Password privately for Private clones")]=False,
-        username: Annotated[str,  typer.Option("--username", "-u", help="(Auth  ) Username to use for git clone")]=None,
-        password: Annotated[str,  typer.Option("--password", "-p", help="(Auth  ) Password to use for git clone")]=None,
-        pull:     Annotated[bool, typer.Option("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
-        force:    Annotated[bool, typer.Option("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
+        root:     Annotated[Path, TyperOption("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
+        auth:     Annotated[bool, TyperOption("--auth",     "-a", help="(Basic ) Prompt Username and Password privately for Private clones")]=False,
+        username: Annotated[str,  TyperOption("--username", "-u", help="(Auth  ) Username to use for git clone")]=None,
+        password: Annotated[str,  TyperOption("--password", "-p", help="(Auth  ) Password to use for git clone")]=None,
+        pull:     Annotated[bool, TyperOption("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
+        force:    Annotated[bool, TyperOption("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
     ):
-        """🔽 Safely init and clone submodules, skip private submodules"""
+        """🔽 Safely init and clone submodules, skip private ones, optional authentication"""
 
         # --------------------------------------| Pathing
 
-        root = BrokenPath.get(root)
+        root = BrokenPath(root)
 
         # Read .gitmodules if it exists
         if not (gitmodules := root/".gitmodules").exists():
@@ -762,7 +763,7 @@ class BrokenCLI:
                 BrokenPath.remove(venv, echo=False, confirm=True)
 
             # Follow Project's Workspace folder
-            if (workspace := BrokenPath.get(project.path/"Workspace", valid=True)):
+            if (workspace := BrokenPath(project.path/"Workspace", valid=True)):
                 log.minor("Now removing the Project Workspace directory")
                 BrokenPath.remove(workspace, echo=False, confirm=True)
 

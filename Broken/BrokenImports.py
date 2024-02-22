@@ -23,9 +23,6 @@ if BROKEN_PYINSTALLER:
 
 # -------------------------------------------------------------------------------------------------|
 
-# Tip: To debug import times, use:
-# • PYTHONPROFILEIMPORTTIME=1 broken 2> import_times.txt && tuna import_times.txt
-
 class BrokenImportError:
     LAST_ERROR = None
     ...
@@ -71,7 +68,92 @@ def BrokenImports():
 
 # -------------------------------------------------------------------------------------------------|
 
-# Note: List of modules that take a bit import:
+# Tip: To debug import times, use:
+# • PYTHONPROFILEIMPORTTIME=1 broken 2> import_times.txt && tuna import_times.txt
+
+# Standard imports
+import ast
+import collections
+import contextlib
+import copy
+import ctypes
+import datetime
+import enum
+import functools
+import hashlib
+import importlib
+import inspect
+import io
+import itertools
+import json
+import math
+import multiprocessing
+import operator
+import os
+import pickle
+import platform
+import random
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import types
+import uuid
+import warnings
+import zipfile
+from abc import ABC
+from abc import abstractmethod
+from enum import Enum
+from io import BytesIO
+from multiprocessing import Process
+from numbers import *
+from os import PathLike
+from pathlib import Path
+from subprocess import DEVNULL
+from subprocess import PIPE
+from threading import Lock
+from threading import Thread
+from time import time as now
+from typing import *
+
+import attrs
+import audioread
+import cachetools
+import cattrs
+import click
+import distro
+import dotenv
+import forbiddenfruit
+import halo
+import imgui
+import intervaltree
+import loguru
+import moderngl
+import numpy
+import PIL
+import PIL.Image
+import schedule
+import toml
+import tqdm
+import validators
+from appdirs import AppDirs
+from attrs import Factory
+from attrs import define
+from attrs import field
+from dotmap import DotMap
+from numpy import pi as PI
+# import typer
+from typer import Context as TyperContext
+from typer import Option as TyperOption
+from typer import Typer as TyperApp
+
+# -------------------------------------------------------------------------------------------------|
+
+# Note: List of modules that take a bit to import:
 # Fixme: typer, rich, soundcard
 # - imageio_ffmpeg
 # - moderngl_window
@@ -84,82 +166,6 @@ def BrokenImports():
 
 while True:
     with BrokenImports():
-        import ast
-        import collections
-        import contextlib
-        import copy
-        import ctypes
-        import datetime
-        import enum
-        import functools
-        import hashlib
-        import importlib
-        import inspect
-        import io
-        import itertools
-        import json
-        import math
-        import multiprocessing
-        import operator
-        import os
-        import pickle
-        import platform
-        import random
-        import re
-        import shlex
-        import shutil
-        import subprocess
-        import sys
-        import tempfile
-        import threading
-        import time
-        import types
-        import uuid
-        import warnings
-        import zipfile
-        from abc import ABC
-        from abc import abstractmethod
-        from enum import Enum
-        from io import BytesIO
-        from multiprocessing import Process
-        from numbers import *
-        from os import PathLike
-        from pathlib import Path
-        from subprocess import DEVNULL
-        from subprocess import PIPE
-        from threading import Lock
-        from threading import Thread
-        from time import time as now
-        from typing import *
-
-        import attrs
-        import audioread
-        import cattrs
-        import click
-        import distro
-        import dotenv
-        import forbiddenfruit
-        import halo
-        import imgui
-        import intervaltree
-        import loguru
-        import moderngl
-        import numpy
-        import PIL
-        import PIL.Image
-        import schedule
-        import toml
-        import tqdm
-        import typer
-        import validators as validate
-        from appdirs import AppDirs
-        from attrs import Factory
-        from attrs import define
-        from attrs import field
-        from attrs import validators
-        from dotmap import DotMap
-        from numpy import pi as PI
-
         break
 
 # -------------------------------------------------------------------------------------------------|
@@ -175,6 +181,8 @@ Range:     TypeAlias = range
 Seconds:   TypeAlias = float
 Hertz:     TypeAlias = float
 Samples:   TypeAlias = int
+Degrees:   TypeAlias = float
+Radians:   TypeAlias = float
 
 # Fix: typing.Self was implemented in Python 3.11
 if sys.version_info < (3, 11):

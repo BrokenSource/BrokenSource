@@ -132,7 +132,7 @@ class BrokenUpscaler(BrokenExternal, ABC):
         image = BrokenUtils.load_image(image) or image
 
         with tempfile.NamedTemporaryFile(suffix=f".{format}") as file:
-            file = BrokenPath.get(file.name)
+            file = BrokenPath(file.name)
 
             if isinstance(image, Image):
                 image.save(file, quality=95)

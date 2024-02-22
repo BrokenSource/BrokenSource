@@ -25,7 +25,7 @@ class DotmapLoaderImage(DotmapLoader):
             log.debug(f"  :: Using path")
             return PIL.Image.open(self.value)
 
-        elif BrokenUtils.have_import("requests") and validate.url(self.value):
+        elif BrokenUtils.have_import("requests") and validators.url(self.value):
             log.debug(f"  :: Using requests")
             return PIL.Image.open(io.BytesIO(requests.get(self.value).content))
 
