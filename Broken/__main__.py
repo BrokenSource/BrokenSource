@@ -752,7 +752,7 @@ class BrokenCLI:
         """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
         log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
 
-        if BrokenPlatform.OnLinux and LINUX_DESKTOP_FILE.exists():
+        if BrokenPlatform.OnLinux and BrokenCLI.LINUX_DESKTOP_FILE.exists():
             log.minor("Now deleting Linux dot Desktop Shortcut file")
             BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE, echo=False, confirm=True)
 
