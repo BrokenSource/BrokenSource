@@ -66,15 +66,11 @@
 
 **And done**, now run `broken` for a Command List 🚀
 
-- Head back to the *Project* you want to run for further instructions 🍷
-
-<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py`</sub>
-
 <br>
 
 <details>
   <summary>
-    <b>Traditional Method</b> Alternative
+    <b>Traditional Method</b> - Alternative
   </summary>
   <br>
 
@@ -108,15 +104,11 @@
 
 **And done**, now run `broken` for a Command List 🚀
 
-- Head back to the *Project* you want to run for further instructions 🍷
-
-<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop App</sub>
-
 <br>
 
 <details>
   <summary>
-    <b>Traditional Method</b> Alternative
+    <b>Traditional Method</b> - Alternative
   </summary>
   <br>
 
