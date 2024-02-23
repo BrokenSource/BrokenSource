@@ -15,6 +15,9 @@
 [submodule "Projects/Upscalin"]
 	path = Projects/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
+[submodule "Website"]
+	path = Website
+	url  = https://github.com/brokenSource/brokensource.github.io
 
 # # Private
 

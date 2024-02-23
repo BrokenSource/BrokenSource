@@ -22,15 +22,17 @@
 
   <!-- <a href="Readme pt-BR.md"><img src="https://hatscripts.github.io/circle-flags/flags/br.svg" style="vertical-align: middle;" width="50"></a> -->
   <!-- <a href="Readme.md">      <img src="https://hatscripts.github.io/circle-flags/flags/us.svg" style="vertical-align: middle;" width="50"></a> -->
+
+  <br>
+
+  Here lies **❤️‍🩹 Broken** (The **📚 Shared Library** and **🎩 Manager**) + **📦 Submodules** of all our **💎 Projects**
 </div>
 
 <br>
 
-This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 Broken**, a **🎩 Manager Tool** of the same name, and **📦 Submodules** of all our **💎 Projects**. User first, trust and quality are our core values.
+- **🌟 Framework**: A solution for Unification and Consistency
 
-- **Framework**: A solution for project unification and consistency 🌟
-
-- **Automation**: Easy deploy, spend more time **using** the Projects 🚀
+- **🚀 Automation**: Spend more time **using** the Projects
 
 
 <br>
@@ -56,7 +58,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 - **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10+**](https://www.python.org/downloads) for your platform
 
-- Open a **Terminal** on some directory and run:
+- Open a **Terminal** on some directory and run
 
   ```bash
   git clone https://github.com/BrokenSource/BrokenSource
@@ -65,10 +67,10 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
   python ./BrokenSource/brakeit.py
   ```
 
-- **Alternatively**, we also support `curl` + `pipe`! 🤯
+- **Alternatively**, we also support `curl` + `pipe`
 
   ```bash
-  curl -sSL https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py | python3 -
+  curl -sSL https://brokensource.github.io/get.py | python3 -
   ```
 
 <br>
@@ -112,7 +114,7 @@ This _mono_-repository hosts the **📚 Shared Library** called **❤️‍🩹 
 
 <br>
 
-**Alternatively**, we also support a `pipe` install on PowerShell! 🤯
+**Alternatively**, we also support a `pipe` install on PowerShell
   ```ps
   (Invoke-WebRequest -Uri https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py -UseBasicParsing).Content | py -
   ```

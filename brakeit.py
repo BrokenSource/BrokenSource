@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# Warn: Remember to sync with Website on any changes
+
 import itertools
 import os
 import shutil
