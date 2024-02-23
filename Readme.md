@@ -96,36 +96,43 @@
 
 **Open** some folder you want to download the code to on **Windows Explorer**
 
-- Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal
+- Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal and run
 
-- **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
   ```ps
-  winget install -e --id Git.Git --source winget
+  irm https://brokensource.github.io/get.ps1 | iex
   ```
 
-- **Install** [**Python 3.10+**](https://www.python.org/downloads) with the command (once):
-  ```ps
-  winget install -e --id Python.Python.3.11
-  ```
-
-- **Restart** the Terminal - First step then back here
-
-- **Now**, run and follow the same **Linux** and **MacOS** commands above<sup> Except <code>curl + pipe</code></sup>
+<sub><b>Note:</b> This automatic method is ⚠️ Experimental</sub>
 
 <br>
 
-**Alternatively**, we also support a `pipe` install on PowerShell
-  ```ps
-  (Invoke-WebRequest -Uri https://github.com/BrokenSource/BrokenSource/raw/Master/brakeit.py -UseBasicParsing).Content | py -
-  ```
+<details>
+  <summary>
+    <b>Manual Method</b> (Recommended)
+  </summary>
 
-<br>
+  - **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
+    ```ps
+    winget install -e --id Git.Git --source winget
+    ```
 
-<sub><b>Note:</b> You might need to replace `/` with `\` on the second command, `python` to `python3` or add `.exe` to it</sub>
+  - **Install** [**Python 3.10+**](https://www.python.org/downloads) with the command (once):
+    ```ps
+    winget install -e --id Python.Python.3.11
+    ```
 
-<sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
+  - **Restart** the Terminal - First step then back here
 
-<sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as its PATH isn't reloaded dynamically</sub>
+  - **Now**, run and follow the same **Linux** and **MacOS** commands above<sup> Except <code>curl + pipe</code></sup>
+
+  <br>
+
+  <sub><b>Note:</b> You might need to replace `/` with `\` on the second command, `python` to `python3` or add `.exe` to it</sub>
+
+  <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
+
+  <sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as its PATH isn't reloaded dynamically</sub>
+</details>
 
 <br>
 
