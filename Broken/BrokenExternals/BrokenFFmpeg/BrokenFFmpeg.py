@@ -959,7 +959,7 @@ class BrokenFFmpeg:
         @define
         class BrokenFFmpegPopenBuffered:
             ffmpeg: subprocess.Popen
-            buffer: int          = 30
+            buffer: int          = 50
             frames: Deque[bytes] = Factory(collections.deque)
             thread: Thread       = None
 
@@ -975,7 +975,6 @@ class BrokenFFmpeg:
                 return (self.zmq_socket is not None)
 
             def __attrs_post_init__(self):
-                self.thread = BrokenThread.new(self.__worker__)
                 command = self.ffmpeg.command
 
                 # Todo: Test on Windows
@@ -991,6 +990,7 @@ class BrokenFFmpeg:
 
                 # Start FFmpeg subprocess
                 self.ffmpeg = shell(command, Popen=True, stdin=PIPE)
+                self.thread = BrokenThread.new(self.__worker__)
 
             def write(self, frame: bytes):
                 """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
