@@ -565,6 +565,7 @@ class BrokenCLI:
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
 
+        # Brakeit on the Website
         BrokenPath.copy(root/"brakeit.py", BROKEN.DIRECTORIES.WEBSITE/"public"/"get.py")
 
     # ---------------------------------------------------------------------------------------------|
@@ -578,7 +579,7 @@ class BrokenCLI:
         if BrokenPlatform.OnWindows:
             self.shortcut()
         log.note(f"Running BrokenSource Monorepo at directory ({BROKEN.DIRECTORIES.REPOSITORY})")
-        log.note("• Tip: To enter the Development Environment again, run {python ./brakeit.py} again or click the Desktop App Icon")
+        log.note("• Tip: To enter the Development Environment again, run {python ./brakeit.py} or click the Desktop App Icon")
         log.note("• Tip: Avoid {poetry run (broken | project)}, prefer {broken}, and {project}er after the first run, it's faster 😉")
         print()
 

@@ -380,7 +380,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 - ☑️ There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it
 
-- ☑️ We may change this **License** and **Terms** at any time. It will **not** change substantially. Any changes apply to the Previous and Future Code, Binaries, Assets, UGC. We reserve this for our security and integrity on urgent matters
+- ☑️ We may change this **License** and **Terms** at any time. It will **not** change substantially. Any changes apply to the Previous and Future Code, Binaries, Assets, UGC. For our security and integrity on urgent matters
 
 <br>
 
