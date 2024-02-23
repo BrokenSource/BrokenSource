@@ -61,29 +61,33 @@
 - Open a **Terminal** on some directory and run
 
   ```bash
-  git clone https://github.com/BrokenSource/BrokenSource
-  ```
-  ```bash
-  python ./BrokenSource/brakeit.py
-  ```
-
-- **Alternatively**, we also support `curl` + `pipe`
-
-  ```bash
   curl -sSL https://brokensource.github.io/get.py | python3 -
   ```
 
-<br>
-
-**And done**, you can now run `broken` and see all available commands 🚀
-
-- **Tip**: Avoid using `poetry run (broken | project)`, just `broken`, it's faster 😉
+**And done**, now run `broken` for a Command List 🚀
 
 - Head back to the *Project* you want to run for further instructions 🍷
 
-<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop Icon!</sub>
+<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py`</sub>
 
+<br>
 
+<details>
+  <summary>
+    <b>Traditional Method</b> Alternative
+  </summary>
+  <br>
+
+  Run these commands on a Terminal
+
+  ```bash
+  git clone https://github.com/BrokenSource/BrokenSource
+  ```
+
+  ```bash
+  python ./BrokenSource/brakeit.py
+  ```
+</details>
 <br>
 
 ## ✅ Windows
@@ -102,14 +106,19 @@
   irm https://brokensource.github.io/get.ps1 | iex
   ```
 
-<sub><b>Note:</b> This automatic method is ⚠️ Experimental</sub>
+**And done**, now run `broken` for a Command List 🚀
+
+- Head back to the *Project* you want to run for further instructions 🍷
+
+<sub><b>Note:</b> To enter the development environment again, run `python ./brakeit.py` or click the Desktop App</sub>
 
 <br>
 
 <details>
   <summary>
-    <b>Manual Method</b> (Recommended)
+    <b>Traditional Method</b> Alternative
   </summary>
+  <br>
 
   - **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
     ```ps
@@ -133,6 +142,7 @@
 
   <sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as its PATH isn't reloaded dynamically</sub>
 </details>
+
 
 <br>
 
