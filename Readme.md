@@ -298,10 +298,10 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 <br>
 
 ### General
-- [**FFmpeg**](https://ffmpeg.org): _"A complete, cross-platform solution to record, convert and stream audio and video."_ - and they are not lying!!
+- [**FFmpeg**](https://ffmpeg.org): _"A complete, cross-platform solution to record, convert and stream audio and video."_
 - [**Linux**](https://www.linux.org): Father of Open Source and all the things
 - [**Visual Studio Code**](https://code.visualstudio.com): _"Code editing. Redefined."_
-- [**Stability AI**](https://stability.ai): AI by the people for the people. Many products
+- [**Stability AI**](https://stability.ai): AI by the people for the people<sup>(Citation needed?)</sup>. Many products
 - [**Huggingface 🤗**](https://huggingface.co): Central repository for AI models made easy with Diffusers, Gradio, Transformers
 - [**Khronos Group**](https://www.khronos.org): For OpenGL, GLSL, Vulkan
 - [**NVIDIA**](https://www.nvidia.com): Bittersweet one, but CUDA and the GPU's technology are undeniably amazing
@@ -322,10 +322,10 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 - [**tqdm**](https://github.com/tqdm/tqdm): Progress bar for the terminal
 - [**Rich**](https://github.com/Textualize/rich): Beautiful formatting in Python
 - [**Loguru**](https://github.com/Delgan/loguru): Python logging made stupidly simple
-- [**Forbiddenfruit**](https://github.com/clarete/forbiddenfruit): Monkey patching for builtins in Python
+- [**Forbiddenfruit**](https://github.com/clarete/forbiddenfruit): Monkey patching for built-ins in Python
 - [**Typer**](https://github.com/tiangolo/typer): Great Command Line Interfaces made easy
 - [**Halo**](https://github.com/manrajgrover/halo): Beautiful spinners on the terminal
-- [**Appdirs**](https://github.com/ActiveState/appdirs): Platform specific user directories
+- [**AppDirs**](https://github.com/ActiveState/appdirs): Platform specific user directories
 - [**Pillow**](https://github.com/python-pillow/Pillow): Complete Imaging Library for Python
 - [**Aenum**](https://github.com/ethanfurman/aenum): Advanced enums in python
 - [**TOML**](https://github.com/uiri/toml): Python [TOML](https://toml.io/en/) file support
@@ -342,6 +342,7 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 - [**pyfiglet**](https://github.com/pwaller/pyfiglet): Pure Python easy Text ASCII art !
 - [**opensimplex**](https://github.com/lmas/opensimplex): Simplex Noise in Python, fast
 - [**pyapp**](https://github.com/ofek/pyapp): Bundling Python packages to installers
+- [**ZeroMQ**](https://zeromq.org) and [**PyZMQ**](https://github.com/zeromq/pyzmq): Fastest pipes in the west
 
 <br>
 
@@ -358,46 +359,48 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 # ⚖️ License and Fair Use
 
-> **We are not** _"Source Available"_ or _"Open Core"_ software. **We are** _**Free and Open Source Software**_.
+> **We are not** _"Source Available"_ or _"Open Core"_ software. **We are** _**Free and Open Source Software**_
 
-- By contributing to the Projects, you inherently agree to the **License** and **Terms** below.
+- By contributing to the Projects, you inherently agree to the **License** and **Terms** below
 
-- We deeply trust the user and community, but there is no free lunch. Please read carefully.
+- We Deeply Trust the **User** and **Community**, but there is no free lunch. Please read carefully
 
 <br>
 
-**The terms below** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and **retribute** the favor if you can, only sell stuff you own, independent SAAS derivative work is not allowed for now.
+**The terms below** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and **retribute** the favor if you can, only sell stuff you own, independent SAAS derivative work is not allowed for now
 
 <br>
 
 ## 🎓 Basic Terms
-- 📝 **All Projects have their own License**; unless specified in the Code or `Readme.md` on the Project's Root or Subdirectories, all Files are subject to the `License.md` and `Readme.md` on the respective Repository and current terms. **Additional terms below apply** for the **Usage** of all the Projects.
+- 📝 **All Projects have their own License**; unless specified in the Code or `Readme.md` on the Project's Root or Subdirectories, all Files are subject to the `License.md` and `Readme.md` on the respective Repository and current terms. **Additional terms below apply** for the **Usage** of all the Projects
 
-- 📈 We hope that using more _"restrictive"_ licenses will keep the projects free from abuse. A feedback loop of **sharing** and **improving**.
+- 📈 We hope that using more _"restrictive"_ licenses will keep the projects free from abuse. A feedback loop of **sharing** and **improving**
 
-- 🍻 You may contribute or use any project as long as you adhere to the **License** and **Terms**.
+- 🍻 You may contribute or use any project as long as you adhere to the **License** and **Terms**
 
-- There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it.
+- There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it
+
+- We may change this **License** and **Terms** at any time. It will **not** change substantially. Any changes apply to the Previous and Future Code, Binaries, Assets, UGC.
 
 <br>
 
 ## 👤 User Generated Content
-- 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are your own responsibility. You must own the assets you use.
+- 🖋 You are responsible for the **User Generated Content** you create, any copyright or law infringements are your own responsibility. You must own the assets you use
 
-- 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly. May it be a _broken_ system, hardware damage, social damage, etc.
+- 🧨 We take **no responsibility** for any **damage** caused by the use of our projects on you or others, directly or indirectly. May it be a _broken_ system, hardware damage, social damage, etc
 
-- ⚠️ By default, all **User Generated Content** follows under the [**CC-BY 4.0 License**](https://creativecommons.org/licenses/by/4.0/).
+- ⚠️ By default, all **User Generated Content** follows under the [**CC-BY 4.0 License**](https://creativecommons.org/licenses/by/4.0/)
 
-<sub><b>Note:</b> While we won't enforce punishments for failed attributions, we would appreciate if you could credit us.</sub>
+<sub><b>Note:</b> While we won't enforce punishments for failed attributions, we would appreciate if you could credit us</sub>
 
 <br>
 
 ## 🤝 Fair Use
-- 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others.
+- 💝 Projects takes many human-hours to be created, consider retributing the favor by **donating** if you can or made money with them, do **share** the projects with others
 
-- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow.
+- 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow
 
-- 🚫 We **do not allow selling** assets you **do not own**, you must distribute them freely for demonstration, research and/or educational purposes. External copyright laws apply.
+- 🚫 We **do not allow selling** assets you **do not own**, you must distribute them freely for demonstration, research and/or educational purposes. External copyright laws apply
 
 <br>
 
@@ -409,24 +412,24 @@ Want to **use** our **Projects** for **Your Company** or **YouTube Channel**?
 <br>
 
 ## 📚 Software as a Service
-- 📡 We are **actively looking** for ways to transform our **Projects** into a **Software as a Service** (SAAS) model for the user's convenience. **Contact us** if you are interested in **collaborating**.
+- 📡 We are **actively looking** for ways to transform our **Projects** into a **Software as a Service** (SAAS) model for the user's convenience. **Contact us** if you are interested in **collaborating**
 
-- ✅ No, we are not closing the Source Sode, nor the service shall receive any special(er) treatment.
+- ✅ No, we are not closing the Source Code, nor the service shall receive any special(er) treatment
 
-- ✅ The service won't be greedy, but also can't be entirely free (due computational costs).
+- ✅ The service won't be greedy, but also can't be entirely free (due computational costs)
 
 - 🔏 We reserve the right to have a closed-source version of the _service_ that uses, externally, the code-bases of any Project. Something similar to what [**Stability AI**](https://stability.ai) does with [**Clipdrop**](https://clipdrop.co)
 
-<sub><b>Note:</b> Until later notice, you must contact us and work together on any SAAS derivative work ❤️‍🩹</sub>
+<sub><b>Note:</b> Until further notice, you must contact us and work together on any SAAS derivative work ❤️‍🩹</sub>
 
 <br>
 <br>
 <br>
 
 # 👁 Privacy Policy
-- ✅ Broken Source Software, via locally executed software, **does not collect any data** from the user for Analytics, **period**<sup><i>*1</i></sup>.
+- ✅ Broken Source Software, via locally executed software, **does not collect any data** from the user for Analytics, **period**<sup><i>*1</i></sup>
 
-- 🌐 Our software **may download third-party assets** from the internet, such as **FFmpeg** binaries, **PyTorch** models, **Fonts**, **Images**. You inherently agree with the Terms of the third-parties download Servers and Software, as they are required for the Projects to work.
+- 🌐 Our software **may download third-party assets** from the internet, such as **FFmpeg** binaries, **PyTorch** models, **Fonts**, **Images**. You inherently agree with the Terms of the third-parties download Servers and Software, as they are required for the Projects to work
 
 <sub><i>*1:</i> As a consequence, we don't have any analytics or metrics to improve the software (prioritize features, fix bugs, etc), so we rely on user feedback and bug reports</sub>
 
