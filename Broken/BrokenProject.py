@@ -309,6 +309,11 @@ class _BrokenProjectResources:
         """Prompts directory"""
         return self.__RESOURCES__/"Prompts"
 
+    @property
+    def FONTS(self) -> Path:
+        """Fonts directory"""
+        return self.__RESOURCES__/"Fonts"
+
 # -------------------------------------------------------------------------------------------------|
 
 @define(slots=False)
