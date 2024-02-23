@@ -520,6 +520,15 @@ class BrokenUtils:
         return item
 
     @staticmethod
+    def get_free_tcp_port():
+        import socket
+        temp_socket = socket.socket()
+        temp_socket.bind(('', 0))
+        port = temp_socket.getsockname()[1]
+        temp_socket.close()
+        return port
+
+    @staticmethod
     def fuzzy_string_search(string: str, choices: List[str], many: int=1, minimum_score: int=0) -> list[tuple[str, int]]:
         """Fuzzy search a string in a list of strings, returns a list of matches"""
         with warnings.catch_warnings():
@@ -664,7 +673,7 @@ class BrokenUtils:
     @staticmethod
     def have_import(module: str) -> bool:
         """Check if a module has been imported"""
-        return module in sys.modules
+        return not isinstance(sys.modules.get(module), BrokenImportError)
 
     @staticmethod
     def relaunch(*, safe: int=3, echo: bool=True) -> subprocess.CompletedProcess:

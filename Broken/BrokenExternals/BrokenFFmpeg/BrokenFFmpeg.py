@@ -953,24 +953,50 @@ class BrokenFFmpeg:
     def popen(self, **kwargs) -> subprocess.Popen:
         return shell(self.command, Popen=True, **kwargs)
 
-    def pipe(self, buffer: int=100) -> BrokenFFmpegPopenBuffered:
+    def pipe(self, *args, **kwargs) -> BrokenFFmpegPopenBuffered:
         """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
 
         @define
         class BrokenFFmpegPopenBuffered:
             ffmpeg: subprocess.Popen
-            buffer: int
+            buffer: int          = 30
             frames: Deque[bytes] = Factory(collections.deque)
             thread: Thread       = None
 
+            # ZeroMQ
+            zmq_enable:    bool  = (os.environ.get('ZMQ', '1') == '1')
+            zmq_context:   Any   = None
+            zmq_socket:    Any   = None
+            zmq_tcp:       str   = None
+            zmq_socket_id: bytes = None
+
+            @property
+            def zmq(self) -> bool:
+                return (self.zmq_socket is not None)
+
             def __attrs_post_init__(self):
                 self.thread = BrokenThread.new(self.__worker__)
+                command = self.ffmpeg.command
+
+                # Todo: Test on Windows
+                # Configure FFmpeg command to read from a ZeroMQ socket
+                if BrokenPlatform.OnLinux and self.zmq_enable and BrokenUtils.have_import("zmq"):
+                    self.zmq_context = zmq.Context()
+                    self.zmq_socket = self.zmq_context.socket(zmq.STREAM)
+                    self.zmq_tcp = f"tcp://127.0.0.1:{BrokenUtils.get_free_tcp_port()}"
+                    self.zmq_socket.connect(self.zmq_tcp)
+                    self.zmq_socket.setsockopt(zmq.SNDHWM, self.buffer)
+                    self.zmq_socket_id = self.zmq_socket.getsockopt(zmq.IDENTITY)
+                    command = list(map(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command))
+
+                # Start FFmpeg subprocess
+                self.ffmpeg = shell(command, Popen=True, stdin=PIPE)
 
             def write(self, frame: bytes):
                 """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
                 self.frames.append(frame)
-                while len(self.frames) > self.buffer:
-                    time.sleep(0.01)
+                while len(self.frames) >= self.buffer:
+                    time.sleep(0.001)
 
             __stop__: bool = False
 
@@ -988,15 +1014,18 @@ class BrokenFFmpeg:
             def __worker__(self):
                 while self.frames or (not self.__stop__):
                     try:
-                        self.ffmpeg.stdin.write(self.frames.popleft())
+                        frame = self.frames.popleft()
+                        if not self.zmq:
+                            self.ffmpeg.stdin.write(frame)
+                        else:
+                            self.zmq_socket.send(self.zmq_socket_id, zmq.SNDMORE)
+                            self.zmq_socket.send(frame)
                     except IndexError:
                         time.sleep(0.01)
-                self.ffmpeg.stdin.close()
 
-        return BrokenFFmpegPopenBuffered(
-            ffmpeg=shell(self.command, Popen=True, stdin=PIPE),
-            buffer=buffer
-        )
+                (self.zmq_socket or self.ffmpeg.stdin).close()
+
+        return BrokenFFmpegPopenBuffered(ffmpeg=self, *args, **kwargs)
 
     # ---------------------------------------------------------------------------------------------|
     # High level functions

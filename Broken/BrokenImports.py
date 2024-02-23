@@ -166,6 +166,7 @@ while True:
         import moderngl
         import torch
         import transformers
+        import zmq
         break
 
 # -------------------------------------------------------------------------------------------------|
