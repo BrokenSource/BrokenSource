@@ -166,20 +166,19 @@ class BrokenPath(Path):
     • The __new__ method returns the value of .get method, which is pathlib.Path
     • Many Path utilities as staticmethod and contextmanager
     """
-    def __new__(cls, path: PathLike=None, **kwargs) -> Optional[Path]:
-        return cls.get(path, **kwargs)
+    def __new__(cls, *paths: PathLike, valid: bool=False) -> Optional[Path]:
+        return cls.get(*paths, valid=valid)
 
     @staticmethod
-    def get(path: PathLike=None, *, valid: bool=False) -> Optional[Path]:
-        if not path: return None
-        path = Path(path).expanduser().resolve()
-        if valid and (not path.exists()): return None
-        return path
+    def get(*paths: PathLike, valid: bool=False) -> Optional[Path] | List[Optional[Path]]:
+        """Resolve paths to absolute None-safe, optionally verify their existence, None if invalid"""
+        paths = map(lambda path: Path(path).expanduser().resolve() if path else None, paths)
+        paths = map(lambda path: (path if (path and path.exists()) else None) if valid else path, paths)
+        return paths[0] if (len(paths := list(paths)) == 1) else paths
 
     @staticmethod
     def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
-        src = BrokenPath(src)
-        dst = BrokenPath(dst)
+        src, dst = BrokenPath(src, dst)
         BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
             log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
@@ -191,7 +190,7 @@ class BrokenPath(Path):
 
     @staticmethod
     def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
-        src, dst = Path(src), Path(dst)
+        src, dst = BrokenPath(src, dst)
         log.info(f"Moving ({src}) → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
@@ -230,8 +229,7 @@ class BrokenPath(Path):
     @staticmethod
     def touch(path: PathLike, *, echo=True):
         """Creates a file, fail safe™"""
-        path = Path(path)
-        if path.exists():
+        if (path := BrokenPath(path)).exists():
             log.success(f"File ({path}) already exists", echo=echo)
             return
         log.info(f"Creating file {path}", echo=echo)
@@ -671,8 +669,14 @@ class BrokenUtils:
             return None
 
     @staticmethod
-    def have_import(module: str) -> bool:
+    def have_import(module: str, *, load: bool=False) -> bool:
         """Check if a module has been imported"""
+        if load:
+            try:
+                __import__(module)
+                return True
+            except ImportError:
+                return False
         return not isinstance(sys.modules.get(module), BrokenImportError)
 
     @staticmethod

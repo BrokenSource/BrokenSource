@@ -51,6 +51,7 @@
         "Workspace": "container",
         "Prompts":   "log",
         ".venvs":    "python",
+        "Staging":   "temp",
 
         // Shaders
         "Fragment": "shader",

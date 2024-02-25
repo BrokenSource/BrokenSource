@@ -173,8 +173,7 @@ class BrokenProjectCLI:
         echo:      Annotated[bool, TyperOption("--echo",      help="Echo command")]=False,
     ) -> None:
 
-        while True:
-            BrokenPlatform.clear_terminal(do=clear, echo=False)
+        while BrokenPlatform.clear_terminal(do=clear, echo=False) or True:
 
             # Python projects
             if self.is_python:
@@ -252,7 +251,10 @@ class BrokenProjectCLI:
 
         with BrokenPath.pushd(self.path, echo=False):
             while True:
-                venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
+
+                # Fixme: Poetry has a very slow startup time, more than Broken
+                with Halo(text=f"Finding Virtual Environment"):
+                    venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
                 # Install if virtualenv is not found
                 if (venv.returncode != 0):
@@ -280,12 +282,11 @@ class BrokenProjectCLI:
 
                 # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
                 if BrokenPlatform.OnLinux and (old_venv is not None):
-                    direct = f"{self.name.lower()}er"
-                    log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
-                    BrokenPath.symlink(
-                        virtual=(old_venv/BrokenPlatform.PyScripts/direct),
-                        real=(venv_path/BrokenPlatform.PyScripts/"main"),
-                    )
+                    virtual = (old_venv /BrokenPlatform.PyScripts/(direct := f"{self.name.lower()}er"))
+                    real    = (venv_path/BrokenPlatform.PyScripts/"main")
+                    if BrokenPath(virtual) != BrokenPath(real):
+                        log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
+                        BrokenPath.symlink(virtual=real, real=virtual)
 
                 return venv_path
 
@@ -558,6 +559,7 @@ class BrokenCLI:
             for file in BrokenUtils.flatten(
                 (root/"poetry.toml"),
                 (root/".gitignore"),
+                (root/".gitattributes"),
                 (root/".github"/"Funding.yml"),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
             ):

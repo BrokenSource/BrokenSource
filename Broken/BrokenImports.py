@@ -134,6 +134,7 @@ import loguru
 import numpy
 import PIL
 import PIL.Image
+import requests
 import schedule
 import toml
 import tqdm
@@ -172,6 +173,7 @@ while True:
 
 # # Custom types
 Image:     TypeAlias = PIL.Image.Image
+ImagePIL:  TypeAlias = PIL.Image.Image
 Unchanged: TypeAlias = None
 URL:       TypeAlias = str
 Option               = Union

@@ -43,13 +43,14 @@ from .BrokenProject import *
 
 import Broken.Resources as BrokenResources
 
-BROKEN = BrokenProject(
+BROKEN = PROJECT = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
     RESOURCES=BrokenResources,
 )
 
+from .BrokenLoaders import *
 from .BrokenExternals import *
 
 # -------------------------------------------------------------------------------------------------|

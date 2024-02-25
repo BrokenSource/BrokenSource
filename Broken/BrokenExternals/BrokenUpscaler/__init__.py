@@ -67,8 +67,8 @@ class BrokenUpscaler(BrokenExternal, ABC):
 
         # Load a Image out of the input or output, else Empty image
         Empty  = PIL.Image.new("RGB", (1, 1))
-        iimage = BrokenUtils.load_image(input ) or Empty
-        oimage = BrokenUtils.load_image(output) or Empty
+        iimage = LoaderImage(input ) or Empty
+        oimage = LoaderImage(output) or Empty
 
         # Get the upscaled size of the input image
         target = self.output_size(iimage.width, iimage.height)
@@ -129,7 +129,7 @@ class BrokenUpscaler(BrokenExternal, ABC):
         Returns:
             The Path to the temporary file, deleted on context exit
         """
-        image = BrokenUtils.load_image(image) or image
+        image = LoaderImage(image) or image
 
         with tempfile.NamedTemporaryFile(suffix=f".{format}") as file:
             file = BrokenPath(file.name)
