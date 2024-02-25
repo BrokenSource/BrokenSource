@@ -577,8 +577,9 @@ class BrokenCLI:
         if BrokenPlatform.OnWindows:
             self.shortcut()
         log.note(f"Running BrokenSource Monorepo at directory ({BROKEN.DIRECTORIES.REPOSITORY})")
-        log.note("• Tip: To enter the Development Environment again, run {python ./brakeit.py} or click the Desktop App Icon")
-        log.note("• Tip: Avoid {poetry run (broken | project)}, prefer {broken}, and {project}er after the first run, it's faster 😉")
+        log.note("• Tip: To enter the Development Environment again, run {python ./brakeit.py}" + BrokenPlatform.OnWindows*" or click the Desktop App Icon")
+        log.note("• Tip: Avoid {poetry run (broken | project)}, prefer {broken}, it's faster 😉")
+        log.note("• Now run {broken} for the full command list")
         print()
 
     def scripts(self):
