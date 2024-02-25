@@ -977,9 +977,9 @@ class BrokenFFmpeg:
             def __attrs_post_init__(self):
                 command = self.ffmpeg.command
 
-                # Todo: Test on Windows
                 # Configure FFmpeg command to read from a ZeroMQ socket
                 if BrokenPlatform.OnLinux and self.zmq_enable and BrokenUtils.have_import("zmq"):
+                    log.success("ZeroMQ is Enabled. Fastest Pipes in the West 🌵")
                     self.zmq_context = zmq.Context()
                     self.zmq_socket = self.zmq_context.socket(zmq.STREAM)
                     self.zmq_tcp = f"tcp://127.0.0.1:{BrokenUtils.get_free_tcp_port()}"

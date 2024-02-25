@@ -62,26 +62,6 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
     os.environ[PIPE_INSTALL_FLAG] = "1"
     cwd = Path.cwd()
 
-    # Install dependencies on Windows
-    if (os.name == "nt"):
-
-        # User might not have winget
-        try:
-            if not shutil.which("winget"):
-                shell("powershell", "-Command", "Add-AppxPackage",
-                    "-RegisterByFamilyName", "-MainPackage",
-                    "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
-                )
-        except Exception:
-            print("Failed to find or install winget, this might cause problems")
-
-        # User might not have git
-        try:
-            if not shutil.which("git"):
-                shell("winget", "install", "-e", "--id", "Git.Git", "--source", "winget")
-        except Exception:
-            print("Failed to find or install git, this might cause problems")
-
     # Brakeit might be on the current directory
     if (brakeit := cwd/"brakeit").exists():
         os.chdir(brakeit.parent)
@@ -199,7 +179,7 @@ if len(sys.argv) > 1:
 # Interactive shell
 if os.environ.get("BRAKEIT_NO_SHELL", False) != "1":
     if os.name == "nt":
-        shell("powershell", "-NoLogo", "-NoExit", "-File", (venv_path/"Scripts"/"Activate.ps1"), echo=False)
+        shell("powershell", "-NoLogo", "-NoExit", "-File", (venv_path/"Scripts"/"activate.ps1"), echo=False)
     else:
         shell(POETRY, "shell", echo=False)
 
