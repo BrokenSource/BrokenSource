@@ -8,8 +8,8 @@ from . import *
 
 @define
 class FFmpegResolution:
-    width:  int = field(converter=int)
-    height: int = field(converter=int)
+    width:  int = Field(converter=int)
+    height: int = Field(converter=int)
 
     @width.validator
     @height.validator
@@ -960,7 +960,7 @@ class BrokenFFmpeg:
         class BrokenFFmpegPopenBuffered:
             ffmpeg: subprocess.Popen
             buffer: int          = 50
-            frames: Deque[bytes] = Factory(collections.deque)
+            frames: Deque[bytes] = Factory(deque)
             thread: Thread       = None
 
             # ZeroMQ

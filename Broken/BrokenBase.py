@@ -55,8 +55,7 @@ def shell(
 
     # Assert command won't fail due unknown binary
     if (not shell) and (not shutil.which(command[0])):
-        log.error(f"Binary doesn't exist or was not found on PATH ({command[0]})")
-        return
+        raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({command[0]})"))
 
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
@@ -156,7 +155,8 @@ class BrokenPlatform:
 
     # Simply, why Windows/Python have different directory names for scripts? ...
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1
-    PyScripts = ("Scripts" if OnWindows else "bin")
+    PyScripts         = ("Scripts" if OnWindows else "bin")
+    PyScriptExtension = (".cmd" if OnWindows else "")
 
 # -------------------------------------------------------------------------------------------------|
 

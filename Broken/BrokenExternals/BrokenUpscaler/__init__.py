@@ -3,10 +3,10 @@ from .. import *
 
 @define
 class BrokenUpscaler(BrokenExternal, ABC):
-    scale:  int = field(default=2, converter=int)
-    width:  int = field(default=0, converter=int)
-    height: int = field(default=0, converter=int)
-    passes: int = field(default=1, converter=int)
+    scale:  int = Field(default=2, converter=int)
+    width:  int = Field(default=0, converter=int)
+    height: int = Field(default=0, converter=int)
+    passes: int = Field(default=1, converter=int)
 
     @property
     def s(self) -> int:

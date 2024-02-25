@@ -227,6 +227,7 @@
         "ncols",
         "ndarray",
         "noperspective",
+        "nore",
         "nproc",
         "nstall",
         "nuitka",

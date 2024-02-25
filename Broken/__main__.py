@@ -180,14 +180,16 @@ class BrokenProjectCLI:
             if self.is_python:
                 venv = self.get_virtualenv(reinstall=reinstall)
                 try:
-                    # Todo: Test if the `else` works on Windows
-                    if BrokenPlatform.OnWindows:
-                        status = shell("poetry", "run", "main", ctx.args, echo=echo)
-                    else:
-                        status = shell((venv/BrokenPlatform.PyScripts/"main"), ctx.args, echo=echo)
+                    status = shell(
+                        (venv/BrokenPlatform.PyScripts/("main"+BrokenPlatform.PyScriptExtension)),
+                        ctx.args, echo=echo
+                    )
                 except KeyboardInterrupt:
                     log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
                     break
+                except FileNotFoundError:
+                    log.warning(f"Potential partial installation detected for the Project ({self.name}), a installation retry is recommended {{(r) option}}")
+                    status = DotMap(returncode=1, args=ctx.args)
 
             # Rust projects
             if self.is_rust:
@@ -211,12 +213,12 @@ class BrokenProjectCLI:
                 log.warning(f"Detected bad Return Status ({status.returncode}) for the Project ({self.name}) at ({self.path})")
                 if self.is_python:
                     log.warning(f"• Python Virtual Environment: ({venv})")
-                log.warning(f"• Command: {tuple(status.args)}")
+                log.warning(f"• Arguments: {tuple(status.args)}", echo=bool(status.args))
 
                 # Prompt user for action
                 import rich.prompt
                 answer = rich.prompt.Prompt.ask(
-                    f"• Action: Run poetry (i)nstall, poetry (l)ock, (r)einstall venv, (e)xit or nothing (enter), then retry",
+                    "• Action: Run {poetry (i)nstall}, {poetry (l)ock}, {(r)einstall venv}, {(e)xit} or {(enter) nothing}, then retry",
                     choices=["r", "e", "p", "l", ""],
                     default="retry"
                 )
@@ -277,16 +279,12 @@ class BrokenProjectCLI:
                     continue
 
                 # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
-                if old_venv is not None:
-                    direct = f"{self.name.lower()}er"
-                    old = (old_venv/BrokenPlatform.PyScripts/direct)
-                    new = (venv_path/BrokenPlatform.PyScripts/"main")
-
-                    if not BrokenPath(old) == BrokenPath(new):
-                        log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
-                        BrokenPath.remove(old, echo=False)
-                        BrokenPath.symlink(virtual=old, real=new, echo=False)
-                        BrokenPath.make_executable(new, echo=False)
+                if BrokenPlatform.OnLinux and (old_venv is not None):
+                    log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
+                    BrokenPath.symlink(
+                        virtual=(old_venv/BrokenPlatform.PyScripts/f"{self.name.lower()}er"),
+                        real=(venv_path/BrokenPlatform.PyScripts/"main"),
+                    )
 
                 return venv_path
 

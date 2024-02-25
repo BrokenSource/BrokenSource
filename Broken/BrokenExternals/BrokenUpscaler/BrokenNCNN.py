@@ -3,14 +3,14 @@ from . import *
 
 @define
 class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
-    noise_level:  int  = field(default=1, converter=int)
-    tile_size:    int  = field(default=0, converter=int)
-    gpu:          int  = field(default=0, converter=int)
-    load_threads: int  = field(default=1, converter=int)
-    proc_threads: int  = field(default=1, converter=int)
-    save_threads: int  = field(default=1, converter=int)
-    cpu:          bool = field(default=0, converter=bool)
-    tta:          bool = field(default=0, converter=bool)
+    noise_level:  int  = Field(default=1, converter=int)
+    tile_size:    int  = Field(default=0, converter=int)
+    gpu:          int  = Field(default=0, converter=int)
+    load_threads: int  = Field(default=1, converter=int)
+    proc_threads: int  = Field(default=1, converter=int)
+    save_threads: int  = Field(default=1, converter=int)
+    cpu:          bool = Field(default=0, converter=bool)
+    tta:          bool = Field(default=0, converter=bool)
 
     def preexec_fn(self):
         import os
@@ -80,7 +80,7 @@ class BrokenWaifu2xModel(BrokenEnum):
 
 @define
 class BrokenWaifu2x(BrokenUpscalerNCNN):
-    model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.field()
+    model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.Field()
 
     @property
     def binary(self) -> str:
@@ -126,7 +126,7 @@ class BrokenRealEsrganModel(BrokenEnum):
 
 @define
 class BrokenRealEsrgan(BrokenUpscalerNCNN):
-    model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.field()
+    model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.Field()
 
     @property
     def binary(self) -> str:

@@ -288,7 +288,7 @@ class BrokenEnum(Enum):
         """
         raise NotImplementedError("This method is not implemented yet")
 
-    def field(self, **kwargs) -> attrs.Attribute:
+    def Field(self, **kwargs) -> attrs.Attribute:
         """
         Make a attrs.field() with this member as default and enum class's get method as converter
 
@@ -301,7 +301,7 @@ class BrokenEnum(Enum):
 
             @define
             class Computer:
-                os: Platform = Platform.Linux.field()
+                os: Platform = Platform.Linux.Field()
 
             # Any setattr will be redirected to the enum's get method
             computer = Computer()

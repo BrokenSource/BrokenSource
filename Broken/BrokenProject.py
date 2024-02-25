@@ -11,7 +11,7 @@ class _BrokenProjectDirectories:
     BROKEN_PROJECT: BrokenProject
 
     # App basic information
-    APP_DIRS: AppDirs = field(default=None)
+    APP_DIRS: AppDirs = Field(default=None)
 
     def __attrs_post_init__(self):
         args = (self.BROKEN_PROJECT.APP_AUTHOR, self.BROKEN_PROJECT.APP_NAME)
@@ -236,7 +236,7 @@ class _BrokenProjectResources:
 
     # # Internal states
 
-    __RESOURCES__: Path = field(default=None)
+    __RESOURCES__: Path = Field(default=None)
 
     def __attrs_post_init__(self):
         if self.BROKEN_PROJECT.RESOURCES:
@@ -322,8 +322,8 @@ class BrokenProject:
     PACKAGE: str
 
     # App information
-    APP_NAME:   str = field(default="Broken")
-    APP_AUTHOR: str = field(default="BrokenSource")
+    APP_NAME:   str = Field(default="Broken")
+    APP_AUTHOR: str = Field(default="BrokenSource")
 
     # Standard Broken objects for a project
     DIRECTORIES: _BrokenProjectDirectories = None

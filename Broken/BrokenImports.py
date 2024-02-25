@@ -107,6 +107,7 @@ import warnings
 import zipfile
 from abc import ABC
 from abc import abstractmethod
+from collections import deque
 from enum import Enum
 from io import BytesIO
 from multiprocessing import Process
@@ -140,7 +141,7 @@ import validators
 from appdirs import AppDirs
 from attrs import Factory
 from attrs import define
-from attrs import field
+from attrs import field as Field
 from dotmap import DotMap
 from numpy import pi as PI
 from typer import Context as TyperContext
@@ -162,11 +163,15 @@ from typer import Typer as TyperApp
 
 while True:
     with BrokenImports():
+        import glfw
         import imgui
         import moderngl
+        import quaternion
+        import soundcard
         import torch
         import transformers
         import zmq
+
         break
 
 # -------------------------------------------------------------------------------------------------|

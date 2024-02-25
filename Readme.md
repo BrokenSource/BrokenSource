@@ -58,32 +58,18 @@
 
 - **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10+**](https://www.python.org/downloads) for your platform
 
-- Open a **Terminal** on some directory and run
+- Open a **Terminal** on some directory and run either command
 
   ```bash
   curl -sSL https://brokensource.github.io/get.py | python3 -
   ```
 
+  ```bash
+  git clone https://github.com/BrokenSource/BrokenSource && python ./BrokenSource/brakeit.py
+  ```
+
 **And done**, now run `broken` for a Command List 🚀
 
-<br>
-
-<details>
-  <summary>
-    <b>Traditional Method</b> - Alternative
-  </summary>
-  <br>
-
-  Run these commands on a Terminal
-
-  ```bash
-  git clone https://github.com/BrokenSource/BrokenSource
-  ```
-
-  ```bash
-  python ./BrokenSource/brakeit.py
-  ```
-</details>
 <br>
 
 ## ✅ Windows
@@ -96,7 +82,7 @@
 
 **Open** some folder you want to download the code to on **Windows Explorer**
 
-- Press `Ctrl+L` to focus the address bar and type `cmd` to open a terminal and run
+- Press `Ctrl+L` to focus the address bar and type `powershell` to open a Terminal and run
 
   ```ps
   irm https://brokensource.github.io/get.ps1 | iex
@@ -423,14 +409,12 @@ Want to **use** our **Projects** for **Your Company** or **YouTube Channel**?
 <sub><b>Note:</b> Until further notice, you must contact us and work together on any SAAS derivative work ❤️‍🩹</sub>
 
 <br>
-<br>
-<br>
 
-# 👁 Privacy Policy
+## 👁 Privacy Policy
 - ✅ Broken Source Software, via locally executed software, **does not collect any data** from the user for Analytics, **period**<sup><i>*1</i></sup>
 
 - 🌐 Our software **may download third-party assets** from the internet, such as **FFmpeg** binaries, **PyTorch** models, **Fonts**, **Images**. You inherently agree with the Terms of the third-parties download Servers and Software, as they are required for the Projects to work
 
-<sub><i>*1:</i> As a consequence, we don't have any analytics or metrics to improve the software (prioritize features, fix bugs, etc), so we rely on user feedback and bug reports</sub>
+<sub><i>*1:</i> As a consequence, we don't have any analytics or metrics to improve the software, so we rely on user feedback and bug reports</sub>
 
 </div>

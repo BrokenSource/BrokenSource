@@ -41,7 +41,7 @@ class DotmapLoader(ABC):
     # ------------------------------------------|
     # # Proper methods
 
-    value: Any = field(default=None)
+    value: Any = Field(default=None)
 
     @staticmethod
     @abstractmethod
