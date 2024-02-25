@@ -28,8 +28,6 @@
   Here lies **❤️‍🩹 Broken** (The **📚 Shared Library** and **🎩 Manager**) + **📦 Submodules** of all our **💎 Projects**
 </div>
 
-<br>
-
 - **🌟 Framework**: A solution for Unification and Consistency
 
 - **🚀 Automation**: Spend more time **using** the Projects
@@ -90,6 +88,8 @@
 
 **And done**, now run `broken` for a Command List 🚀
 
+<sub><b>Note:</b> You <i>might</i> need to restart the Terminal if PATH wasn't refreshed automatically</sub>
+
 <br>
 
 <details>
@@ -110,15 +110,15 @@
 
   - **Restart** the Terminal - First step then back here
 
-  - **Now**, run and follow the same **Linux** and **MacOS** commands above<sup> Except <code>curl + pipe</code></sup>
-
+  - **Run** the command:
+    ```bash
+    git clone https://github.com/BrokenSource/BrokenSource && python ./BrokenSource/brakeit.py
+    ```
   <br>
 
   <sub><b>Note:</b> You might need to replace `/` with `\` on the second command, `python` to `python3` or add `.exe` to it</sub>
 
   <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
-
-  <sub><b>Note:</b> Restarting the shell is only needed on the first time you install anything, as its PATH isn't reloaded dynamically</sub>
 </details>
 
 
