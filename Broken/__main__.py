@@ -280,9 +280,10 @@ class BrokenProjectCLI:
 
                 # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
                 if BrokenPlatform.OnLinux and (old_venv is not None):
+                    direct = f"{self.name.lower()}er"
                     log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
                     BrokenPath.symlink(
-                        virtual=(old_venv/BrokenPlatform.PyScripts/f"{self.name.lower()}er"),
+                        virtual=(old_venv/BrokenPlatform.PyScripts/direct),
                         real=(venv_path/BrokenPlatform.PyScripts/"main"),
                     )
 
@@ -395,7 +396,7 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        with halo.Halo(text="Finding Projects"):
+        with Halo(text="Finding Projects"):
             self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
             self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 

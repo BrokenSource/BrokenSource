@@ -1,3 +1,10 @@
+from halo import Halo
+
+__HALO__ = Halo(text="Initializing Broken").start()
+
+# -------------------------------------------------------------------------------------------------|
+# Pretty... Errors !
+
 import pretty_errors
 
 pretty_errors.configure(
@@ -10,6 +17,7 @@ pretty_errors.configure(
 )
 
 # -------------------------------------------------------------------------------------------------|
+# Broken Library
 
 import importlib.metadata
 import importlib.resources
@@ -23,10 +31,6 @@ BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
 BROKEN_DEVELOPMENT: bool = not BROKEN_RELEASE
 BROKEN_VERSION:     str  = importlib.metadata.version("broken-source")
-
-import halo
-
-__HALO__ = halo.Halo(text="Initializing Broken", spinner="dots").start()
 
 # isort: off
 from .BrokenImports import *

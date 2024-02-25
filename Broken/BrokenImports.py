@@ -151,7 +151,6 @@ from typer import Typer as TyperApp
 # -------------------------------------------------------------------------------------------------|
 
 # Note: List of modules that take a bit to import:
-# Fixme: typer, rich, soundcard
 # - imageio_ffmpeg
 # - moderngl_window
 # - transformers
@@ -160,18 +159,13 @@ from typer import Typer as TyperApp
 # - gradio
 # - requests
 # - arrow
+# - typer
+# - rich
+# - numpy
 
 while True:
     with BrokenImports():
-        import glfw
-        import imgui
-        import moderngl
-        import quaternion
-        import soundcard
-        import torch
-        import transformers
         import zmq
-
         break
 
 # -------------------------------------------------------------------------------------------------|
