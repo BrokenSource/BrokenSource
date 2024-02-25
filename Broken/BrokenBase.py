@@ -508,7 +508,7 @@ class BrokenUtils:
         flatten = lambda stuff: [
             item for subitem in stuff for item in
             (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
-            if (truthy and item is not None)
+            if (not truthy) or (truthy and item)
         ]
         return flatten(stuff)
 
