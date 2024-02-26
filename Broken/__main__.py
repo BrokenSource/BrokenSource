@@ -286,7 +286,7 @@ class BrokenProjectCLI:
                     real    = (venv_path/BrokenPlatform.PyScripts/"main")
                     if BrokenPath(virtual) != BrokenPath(real):
                         log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
-                        BrokenPath.symlink(virtual=real, real=virtual)
+                        BrokenPath.symlink(virtual=virtual, real=real)
 
                 return venv_path
 
@@ -397,34 +397,30 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        with Halo(text="Finding Projects"):
-            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-            self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
-    def find_projects(self, path: Path) -> None:
+    def find_projects(self, path: Path, *, _depth: int=0) -> None:
+        if _depth > 4:
+            return
+
         for directory in path.iterdir():
 
-            # Don't follow workspace
-            if (directory.name.lower() == "workspace"):
-                break
-
-            # Avoid hidden directories
-            if any(directory.name.startswith(x) for x in (".", "_")):
+            # Avoid hidden directories and workspace
+            if any(directory.name.startswith(x) for x in ("workspace", ".", "_")):
                 continue
 
             # Must be a directory
             if directory.is_file():
                 continue
 
-            directory = BrokenPath(directory)
-
             # Avoid recursion
-            if directory == BROKEN.DIRECTORIES.REPOSITORY:
+            if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
 
             # Resolve symlinks recursively
             if directory.is_symlink() or directory.is_dir():
-                self.find_projects(path=directory.resolve())
+                self.find_projects(path=BrokenPath(directory), _depth=_depth+1)
 
             if (project := BrokenProjectCLI(directory)).is_known:
                 self.projects.append(project)
@@ -449,9 +445,9 @@ class BrokenCLI:
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
-            self.broken_typer.command(self.mock, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
+            self.broken_typer.command(self.mock,   hidden=True)
             self.broken_typer.command(self.pillow, hidden=True)
 
         for project in self.projects:

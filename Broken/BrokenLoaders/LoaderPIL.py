@@ -29,10 +29,11 @@ class LoaderImage(BrokenLoader):
         elif (path := BrokenPath(value, valid=True)):
             return PIL.Image.open(path, **kwargs)
 
-        elif validators.url(value) and LoaderImage.cache():
-            return PIL.Image.open(io.BytesIO(LoaderImage.cache().get(value).content), **kwargs)
-
         elif validators.url(value):
+            if LoaderImage.cache():
+                return PIL.Image.open(io.BytesIO(LoaderImage.cache().get(value).content), **kwargs)
+
+            import requests
             return PIL.Image.open(io.BytesIO(requests.get(value).content), **kwargs)
 
         elif isinstance(value, numpy.ndarray):

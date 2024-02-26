@@ -13,3 +13,4 @@ class BrokenLoader(ABC):
         ...
 
 from .LoaderPIL import *
+from .LoaderString import *

@@ -302,7 +302,7 @@ class BrokenPath(Path):
             BrokenPath.remove(virtual, echo=False)
 
         else:
-            if click.confirm(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing it and continuing? (It might contain data or be a important symlink)"):
+            if click.confirm(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing the 'virtual' path and continuing? (It might contain data or be a important symlink)"):
                 BrokenPath.remove(virtual, echo=False)
             else:
                 return
@@ -619,56 +619,6 @@ class BrokenUtils:
         return extender
 
     @staticmethod
-    def load_image(
-        image: Union[Image, PathLike, URL, numpy.ndarray],
-        pixel="RGB",
-        *,
-        cache=True,
-        echo=True
-    ) -> Optional[Image]:
-        """Smartly load 'SomeImage', a path, url or PIL Image"""
-        # Todo: Maybe a BrokenImage class with some utils?
-
-        import numpy
-
-        # Can't load the Image class
-        if image is Image:
-            return None
-
-        # Nothing to do if already a PIL Image
-        elif isinstance(image, Image):
-            return image
-
-        elif isinstance(image, numpy.ndarray):
-            return PIL.Image.fromarray(image)
-
-        try:
-            # Load image if a path or url is supplied
-            if isinstance(image, (PathLike, str)):
-                if (path := BrokenPath(image)).exists():
-                    log.info(f"Loading image from Path ({path})", echo=echo)
-                    return PIL.Image.open(path).convert(pixel)
-                else:
-                    if not validators.url(str(image)):
-                        return None
-
-                    log.info(f"Loading image from URL ({image})", echo=echo)
-                    try:
-                        import requests
-                        return PIL.Image.open(BytesIO(requests.get(image).content)).convert(pixel)
-                    except Exception as e:
-                        log.error(f"Failed to load image from URL or Path ({image}): {e}", echo=echo)
-                        return None
-            else:
-                log.error(f"Unknown image parameter ({image}), must be a PIL Image, Path or URL", echo=echo)
-                return None
-
-        # Can't open file
-        except Exception as e:
-            log.error(f"Failed to load image ({image}): {e}", echo=echo)
-            return None
-
-    @staticmethod
     def have_import(module: str, *, load: bool=False) -> bool:
         """Check if a module has been imported"""
         if load:
@@ -710,7 +660,7 @@ class BrokenUtils:
 
     # Todo: Move this to a proper class
     PRECISE_SLEEP_AHEAD_SECONDS     = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
-    PRECISE_SLEEP_LATE_MULTIPLIER   = 10
+    PRECISE_SLEEP_LATE_MULTIPLIER   = 4
     PRECISE_SLEEP_INTERPOLATE_RATIO = 0.05
     PRECISE_SLEEP_MAX_AHEAD_SECONDS = 0.1
 

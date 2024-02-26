@@ -134,7 +134,6 @@ import loguru
 import numpy
 import PIL
 import PIL.Image
-import requests
 import schedule
 import toml
 import tqdm
@@ -166,7 +165,6 @@ from typer import Typer as TyperApp
 
 while True:
     with BrokenImports():
-        import zmq
         break
 
 # -------------------------------------------------------------------------------------------------|
