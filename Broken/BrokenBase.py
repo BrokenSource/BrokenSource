@@ -180,7 +180,8 @@ class BrokenPath(Path):
         """Resolve paths to absolute None-safe, optionally verify their existence, None if invalid"""
         paths = map(lambda path: Path(path).expanduser().resolve() if path else None, paths)
         paths = map(lambda path: (path if (path and path.exists()) else None) if valid else path, paths)
-        return paths[0] if (len(paths := list(paths)) == 1) else paths
+        paths = list(paths)
+        return paths[0] if (len(paths) == 1) else paths
 
     @staticmethod
     def copy(src: PathLike, dst: PathLike, *, echo=True) -> "destination":

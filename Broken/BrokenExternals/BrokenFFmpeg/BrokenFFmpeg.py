@@ -743,8 +743,8 @@ class BrokenFFmpeg:
         if path == "-":
             pass
 
-        elif not (path := Path(path)).exists():
-            log.error(f"Input file {path} does not exist")
+        elif not (path := BrokenPath(path)).exists():
+            log.error(f"Input file ({path}) does not exist")
             return self
 
         # Add command
