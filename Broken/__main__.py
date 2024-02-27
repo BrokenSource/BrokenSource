@@ -736,11 +736,9 @@ class BrokenCLI:
                         continue
 
                     # Init and update submodule we know we have access to
+                    # Switch to main branch, as detached head is clumsy
                     shell("git", "submodule", "update", "--init", path)
-
-                    # Checkout main branch, as detached head is clumsy
                     shell("git", "checkout", "Master")
-
                     log.success(f"Submodule cloned  ({path})")
 
                 # Pull changes after initial clone

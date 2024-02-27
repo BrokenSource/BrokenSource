@@ -7,6 +7,12 @@ from . import *
 
 inverse = lambda x: 1 / x
 
+@contextlib.contextmanager
+def LazyCounter():
+    start = time.perf_counter()
+    yield None
+    log.info(f"Took: {time.perf_counter() - start:.4f} seconds")
+
 # -------------------------------------------------------------------------------------------------|
 
 def shell(
