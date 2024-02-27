@@ -132,10 +132,12 @@ class BrokenProjectCLI:
 
     def poetry(self, ctx: TyperContext) -> None:
         """Run poetry command"""
+        self.pop_venv()
         shell("poetry", *ctx.args)
 
     def poe(self, ctx: TyperContext) -> None:
         """Run poethepoet command"""
+        self.pop_venv()
         shell("poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
@@ -243,11 +245,14 @@ class BrokenProjectCLI:
 
     # # Python shenanigans
 
+    def pop_venv(self) -> Optional[Path]:
+        return BrokenPath(os.environ.pop("VIRTUAL_ENV", None))
+
     def get_virtualenv(self, install: bool=True, reinstall: bool=False) -> Optional[Path]:
         """Install and get a virtual environment path for Python project"""
 
         # Unset virtualenv else the nested poetry will use it
-        old_venv = BrokenPath(os.environ.pop("VIRTUAL_ENV", None))
+        old_venv = self.pop_venv()
 
         with BrokenPath.pushd(self.path, echo=False):
             while True:
