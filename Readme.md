@@ -54,7 +54,7 @@
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
 
-- **Install** [**Git**](https://git-scm.com/downloads), [**Python 3.10+**](https://www.python.org/downloads) and [FFmpeg](https://www.ffmpeg.org/download.html)<sup>*</sup> for your platform
+- **Install** [**Git**](https://git-scm.com/downloads), [**Python 3.10 or 3.11**](https://www.python.org/downloads) and [FFmpeg](https://www.ffmpeg.org/download.html)<sup>*</sup> for your platform
 
 - Open a **Terminal** on some directory and run either command
 
@@ -105,7 +105,7 @@
     winget install -e --id Git.Git --source winget
     ```
 
-  - **Install** [**Python 3.10+**](https://www.python.org/downloads) with the command (once):
+  - **Install** [**Python 3.11**](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe) with the command (once):
     ```ps
     winget install -e --id Python.Python.3.11
     ```

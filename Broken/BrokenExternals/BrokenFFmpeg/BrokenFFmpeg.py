@@ -981,16 +981,16 @@ class BrokenFFmpeg:
                 try:
                     if BrokenPlatform.OnLinux and self.zmq_enable:
                         globals()['zmq'] = __import__('zmq')
-                    log.success("ZeroMQ is Enabled. Behold Fastest Pipes in the West 🌵")
-                    self.zmq_context = zmq.Context()
-                    self.zmq_socket = self.zmq_context.socket(zmq.STREAM)
-                    self.zmq_tcp = f"tcp://127.0.0.1:{BrokenUtils.get_free_tcp_port()}"
-                    self.zmq_socket.connect(self.zmq_tcp)
-                    self.zmq_socket.setsockopt(zmq.SNDHWM, self.buffer)
-                    self.zmq_socket_id = self.zmq_socket.getsockopt(zmq.IDENTITY)
-                    command = list(map(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command))
-                except ImportError:
-                    log.minor("ZeroMQ is not supported or installed, fallback to normal pipe")
+                        log.success("ZeroMQ is Enabled. Behold Fastest Pipes in the West 🌵")
+                        self.zmq_context = zmq.Context()
+                        self.zmq_socket = self.zmq_context.socket(zmq.STREAM)
+                        self.zmq_tcp = f"tcp://127.0.0.1:{BrokenUtils.get_free_tcp_port()}"
+                        self.zmq_socket.connect(self.zmq_tcp)
+                        self.zmq_socket.setsockopt(zmq.SNDHWM, self.buffer)
+                        self.zmq_socket_id = self.zmq_socket.getsockopt(zmq.IDENTITY)
+                        command = list(map(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command))
+                except Exception:
+                    log.minor("ZeroMQ is not supported, installed, or failed. Falling back to normal pipes")
 
                 # Start FFmpeg subprocess
                 self.ffmpeg = shell(command, Popen=True, stdin=PIPE)
