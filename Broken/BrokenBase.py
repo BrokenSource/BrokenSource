@@ -1265,9 +1265,12 @@ class BrokenFluentBuilder:
             setattr(self, key, value)
         return self
 
-    def copy(self) -> Self:
+    def copy(self, **kwargs) -> Self:
         """Returns a copy of this instance"""
-        return copy.deepcopy(self)
+        new = copy.deepcopy(self)
+        for key, value in kwargs.items():
+            setattr(new, key, value)
+        return new
 
 # -------------------------------------------------------------------------------------------------|
 
