@@ -3,7 +3,7 @@
 <div align="justify">
 
 <div align="center">
-  <img src="./Broken/Resources/Broken.png" width="200">
+  <img src="./Broken/Resources/Images/Broken.png" width="200">
 
   <h2>Broken Source Software</h2>
 
