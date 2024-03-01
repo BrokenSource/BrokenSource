@@ -788,6 +788,9 @@ class BrokenThreadPool:
 class BrokenThread:
     pools = {}
 
+    def __new__(cls, *args, **kwargs) -> Thread:
+        return cls.new(*args, **kwargs)
+
     @staticmethod
     def pool(name: str) -> BrokenThreadPool:
         return BrokenThread.pools.setdefault(name, BrokenThreadPool())
@@ -802,12 +805,14 @@ class BrokenThread:
         target: Callable,
         *args,
         start: bool=True,
+        join: bool=False,
         loop: bool=False,
         pool: str=None,
         max: int=1,
         daemon: bool=False,
         locals: bool=False,
         self: bool=False,
+        callback: Callable=None,
         **kwargs
     ) -> Thread:
         """
@@ -819,14 +824,16 @@ class BrokenThread:
             args:   Arguments to pass to the function (positional, unnamed)
             kwargs: Keyword arguments to pass to the function
             start:  Start the thread immediately after creation
+            join:   Wait for the thread to finish after creation
             loop:   Wrap the target callable in a loop
             pool:   Name of the pool to append the thread to, see BrokenThreadPool
             max:    Maximum threads in the pool
             daemon: When the main thread exits, daemon threads are also terminated
 
         Advanced:
-            locals: Whether to pass the current scope locals to the callable or not
-            self:   Include "self" in the locals if locals=True
+            locals:   Whether to pass the current scope locals to the callable or not
+            self:     Include "self" in the locals if locals=True
+            callback: Function to call after the thread finishes
 
         Returns:
             The created Thread object
@@ -840,10 +847,19 @@ class BrokenThread:
         def looped(*args, **kwargs):
             while True:
                 target(*args, **kwargs)
+        the_target = (looped if loop else target)
+
+        # Wrap the target in a callback
+        @functools.wraps(target)
+        def callbacked(*args, **kwargs):
+            target(*args, **kwargs)
+            if callback is not None:
+                callback()
+        the_target = (callbacked if callback else target)
 
         # Create Thread object
         parallel = Thread(
-            target=looped if loop else target,
+            target=the_target,
             daemon=daemon,
             args=args,
             kwargs=kwargs
@@ -853,10 +869,10 @@ class BrokenThread:
         if pool and (pool := BrokenThread.pools.setdefault(pool, BrokenThreadPool())):
             pool.max = max
             pool.append(parallel)
-
         if start:
             parallel.start()
-
+        if join and start:
+            parallel.join()
         return parallel
 
 # -------------------------------------------------------------------------------------------------|

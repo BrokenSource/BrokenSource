@@ -132,6 +132,7 @@
         "brakeit",
         "bref",
         "cachetools",
+        "callbacked",
         "camelcase",
         "cattrs",
         "Cheatsheet",
