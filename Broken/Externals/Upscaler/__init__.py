@@ -144,4 +144,4 @@ class BrokenUpscaler(BrokenExternal, ABC):
             yield file
 
 
-from .BrokenNCNN import *
+from .ncnn import *

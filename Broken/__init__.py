@@ -33,13 +33,12 @@ BROKEN_DEVELOPMENT: bool = not BROKEN_RELEASE
 BROKEN_VERSION:     str  = importlib.metadata.version("broken-source")
 
 # isort: off
-from .BrokenImports import *
-from .BrokenEnum    import *
-from .BrokenLogging import *
-from .BrokenBase    import *
-# from .BrokenDotmap  import *
-from .Optional.BrokenDotmap import *
-from .BrokenProject import *
+from .Imports import *
+from .Enum    import *
+from .Logging import *
+from .Base    import *
+from .Optional.Dotmap import *
+from .Project import *
 
 import Broken.Resources as BrokenResources
 
@@ -50,8 +49,8 @@ BROKEN = PROJECT = BrokenProject(
     RESOURCES=BrokenResources,
 )
 
-from .BrokenLoaders import *
-from .BrokenExternals import *
+from .Loaders   import *
+from .Externals import *
 
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!

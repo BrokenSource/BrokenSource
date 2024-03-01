@@ -248,17 +248,29 @@ class _BrokenProjectResources:
     def __truediv__(self, name: str) -> Path:
         return self.__div__(name)
 
+    # # Common section
+
+    @property
+    def IMAGES(self) -> Path:
+        """Images directory"""
+        return self.__RESOURCES__/"Images"
+
+    @property
+    def AUDIO(self) -> Path:
+        """Audio directory"""
+        return self.__RESOURCES__/"Audio"
+
     # # Branding section
 
     @property
     def ICON(self) -> Path:
         """Application icon in PNG format"""
-        return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.png"
+        return self.IMAGES/f"{self.BROKEN_PROJECT.APP_NAME}.png"
 
     @property
     def ICON_ICO(self) -> Path:
         """Application icon in ICO format"""
-        return self.__RESOURCES__/f"{self.BROKEN_PROJECT.APP_NAME}.ico"
+        return self.IMAGES/f"{self.BROKEN_PROJECT.APP_NAME}.ico"
 
     # # Shaders section
 

@@ -234,13 +234,14 @@ class BrokenPath(Path):
         return path
 
     @staticmethod
-    def touch(path: PathLike, *, echo=True):
+    def touch(path: PathLike, *, echo=True) -> Path:
         """Creates a file, fail safe™"""
         if (path := BrokenPath(path)).exists():
-            log.success(f"File ({path}) already exists", echo=echo)
+            log.success(f"File ({path}) already touched", echo=echo)
             return
-        log.info(f"Creating file {path}", echo=echo)
+        log.info(f"Touching file {path}", echo=echo)
         path.touch()
+        return path
 
     @staticmethod
     def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
