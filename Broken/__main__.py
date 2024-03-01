@@ -403,16 +403,19 @@ class BrokenCLI:
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
             return
 
+        IGNORED_DIRECTORIES = ("workspace", ".", "_", "modernglw")
+
         for directory in path.iterdir():
 
             # Avoid hidden directories and workspace
-            if any(directory.name.startswith(x) for x in ("workspace", ".", "_")):
+            if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
                 continue
 
             # Must be a directory
@@ -450,6 +453,7 @@ class BrokenCLI:
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
+            self.broken_typer.command(self.tremeschin, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
             self.broken_typer.command(self.mock,   hidden=True)
@@ -465,6 +469,19 @@ class BrokenCLI:
             )
 
         self.broken_typer(sys.argv[1:])
+
+    # ---------------------------------------------------------------------------------------------|
+    # Private
+
+    def tremeschin(self):
+        for username, repository, name in (
+            ("Tremeschin", "GitHub", "Tremeschin"),
+            ("Tremeschin", "Archium", "Archium"),
+            ("Tremeschin", "Clipyst", "Clipyst"),
+        ):
+            url  = f"https://github.com/{username}/{repository}"
+            path = BROKEN.DIRECTORIES.BROKEN_PRIVATE/name
+            shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
@@ -576,7 +593,6 @@ class BrokenCLI:
     def install(self):
         """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
         BROKEN.welcome()
-        self.submodules()
         self.scripts()
         if BrokenPlatform.OnWindows:
             self.shortcut()

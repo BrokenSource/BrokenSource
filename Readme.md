@@ -63,7 +63,9 @@
   ```
 
   ```bash
-  git clone https://github.com/BrokenSource/BrokenSource && python ./BrokenSource/brakeit.py
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+
+  python ./BrokenSource/brakeit.py
   ```
 
 **And done**, now run `broken` for a Command List 🚀
@@ -142,7 +144,9 @@
   <br>
   <hr>
 
-  - Run `broken submodules` to clone all the public projects
+  Likely a partial initialization of the submodules
+
+  - Run `git submodule update --init --recursive` on the root directory to fix
   <hr>
   <br>
 </details>

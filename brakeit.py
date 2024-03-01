@@ -23,8 +23,7 @@ flatten = lambda stuff: [
 def shell(*args, echo: bool=True, Popen: bool=False, **kwargs):
     args = tuple(map(str, flatten(args)))
     print(f"• Running command {args}") if echo else None
-    if Popen:
-        return subprocess.Popen(args, **kwargs)
+    if Popen: return subprocess.Popen(args, **kwargs)
     return subprocess.run(args, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
@@ -46,7 +45,7 @@ os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
 os.environ["PYTHONPYCACHEPREFIX"] = str(TEMP_DIR/"__pycache__")
 
 # Weird KDE wallet or GNOME wallet askings on Linux
-if os.name == "posix":
+if (os.name == "posix"):
     os.environ["PYTHON_KEYRING_BACKEND"] = "keyring.backends.null.Keyring"
 
 # -------------------------------------------------------------------------------------------------|
@@ -58,28 +57,25 @@ PIPE_INSTALL_FLAG = "BRAKEIT_OK_NON_ATTY"
 
 # If not running interactively, we might be on a pipe
 if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
-    print("• Detected non-interactive shell, using automatic installation mode")
+    print("• Detected non-interactive shell (pipe installation)")
     os.environ[PIPE_INSTALL_FLAG] = "1"
     cwd = Path.cwd()
 
     # Brakeit might be on the current directory
     if (brakeit := cwd/"brakeit").exists():
-        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # It might be on a BrokenSource directory
     elif (brakeit := cwd/"BrokenSource"/"brakeit").exists():
-        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # It might be on the parent directory
     elif (brakeit := cwd.parent/"brakeit").exists():
-        os.chdir(brakeit.parent)
         shell(PYTHON, brakeit)
 
     # Ok to clone and run automatic installation
     else:
-        shell("git", "clone", "https://github.com/BrokenSource/BrokenSource")
+        shell("git", "clone", "https://github.com/BrokenSource/BrokenSource", "--recurse-submodules")
         os.chdir(cwd/"BrokenSource")
         shell(PYTHON, cwd/"BrokenSource/brakeit.py")
 
@@ -106,7 +102,9 @@ for attempt in itertools.count(0):
         break
     except ImportError:
         if attempt == INSTALL_MAX_ATTEMPTS:
-            print("Failed to install pip using ensurepip")
+            print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install pip, but it failed")
+            print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
+            print( "2) Install it manually at (https://pip.pypa.io/en/stable/installation)")
             input("\nPress enter to continue, things might not work..")
             break
         print("Couldn't import pip, installing it...")
@@ -124,19 +122,19 @@ for attempt in itertools.count(0):
         import poetry
         break
     except ImportError:
+        if attempt == INSTALL_MAX_ATTEMPTS:
+            print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but it failed")
+            print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
+            print( "2) Install it manually at (https://python-poetry.org/docs/#installation)")
+            input("\nPress enter to continue, things might not work..")
+            break
         print("Couldn't import Poetry, installing it...")
-        shell(PIP, "poetry")
 
-    # Couldn't install poetry or not available on Path
-    if attempt == INSTALL_MAX_ATTEMPTS:
-        print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but it failed")
-        print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
-        print( "2) Install it manually at (https://python-poetry.org/docs/#installation)")
-        input("\nPress enter to continue, things might not work..")
-        break
+    # Fixme: Do we need a more complex solution?
+    shell(PIP, "poetry")
 
 # Enable execution of scripts if on PowerShell
-if os.name == "nt":
+if (os.name == "nt"):
     shell("powershell", "-Command",
         "Set-ExecutionPolicy", "RemoteSigned", "-Scope", "CurrentUser",
         echo=False, Popen=True
@@ -145,7 +143,7 @@ if os.name == "nt":
 # Create, install dependencies on virtual environment
 if shell(POETRY, "install", echo=False).returncode != 0:
     print("Failed to install Python Virtual Environment and Dependencies")
-    input("Press enter to continue...")
+    input("\nPress enter to continue, things might not work..")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -153,23 +151,18 @@ if shell(POETRY, "install", echo=False).returncode != 0:
 venv_path = Path(shell(POETRY, "env", "info", "-p", echo=False, capture_output=True).stdout.decode().strip())
 
 try:
-    # Bonus: Symlink the venv path to the current directory
-    # Note: This is not a crucial step
+    # Bonus: Symlink .venvs -> Poetry venvs directory
     if (dot_venv := BRAKEIT.parent/".venvs").exists():
         dot_venv.unlink()
-
-    # Actually symlink .venvs -> Poetry venvs directory
     dot_venv.symlink_to(venv_path.parent)
-
 except Exception:
     print("Couldn't symlink .venvs to the virtual environment path, skipping")
 
 # -------------------------------------------------------------------------------------------------|
 
-# Install scripts, desktop files and submodules (+ignore private infra)
 if shell(POETRY, "run", "broken", "install", echo=False).returncode != 0:
     print("Failed to clone one or many essential public or private submodules, or install brakeit")
-    input("Press enter to continue...")
+    input("\nPress enter to continue, things might not work..")
 
 # Directly execute a command
 if len(sys.argv) > 1:

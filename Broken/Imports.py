@@ -143,6 +143,7 @@ from attrs import Factory
 from attrs import define
 from attrs import field as Field
 from dotmap import DotMap
+from halo import Halo
 from numpy import pi as PI
 from typer import Context as TyperContext
 from typer import Option as TyperOption

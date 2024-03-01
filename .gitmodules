@@ -19,17 +19,8 @@
 	path = Website
 	url  = https://github.com/brokenSource/brokensource.github.io
 
-# # Private
+# # Meta
 
-[submodule "Projects/Private/Clipyst"]
-	path    = Projects/Private/Clipyst
-	url     = https://github.com/Tremeschin/Clipyst
-	private = true
-[submodule "Projects/Private/Archium"]
-	path    = Projects/Private/Archium
-	url     = https://github.com/Tremeschin/Archium
-	private = true
-[submodule "Meta/Tremeschin"]
-	path    = Meta/Tremeschin
-	url     = https://github.com/Tremeschin/GitHub
-	private = true
+[submodule "Meta/FluentMidi"]
+	path = Meta/FluentMidi
+	url = https://github.com/FluentMidi/FluentMidi

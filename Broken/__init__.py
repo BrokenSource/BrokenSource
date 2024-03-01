@@ -1,7 +1,3 @@
-from halo import Halo
-
-__HALO__ = Halo(text="Initializing Broken").start()
-
 # -------------------------------------------------------------------------------------------------|
 # Pretty... Errors !
 
@@ -82,5 +78,3 @@ for i, arg in enumerate(sys.argv):
 
 # Safer measures: Store the first cwd that Broken is run, always start from there
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
-
-__HALO__.stop()

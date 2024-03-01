@@ -75,6 +75,9 @@
         "Clipyst":      "tools",
         "Upscalin":     "tools",
 
+        // Meta
+        "FluentMidi":   "include",
+
         // Sub-packages of Broken
         "Dotmap":    "core",
         "Enum":      "core",
@@ -119,6 +122,7 @@
         "appendget",
         "arange",
         "arccos",
+        "Archium",
         "astuv",
         "astype",
         "audioread",
