@@ -96,6 +96,7 @@ import random
 import re
 import shlex
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -128,7 +129,6 @@ import click
 import distro
 import dotenv
 import forbiddenfruit
-import halo
 import intervaltree
 import loguru
 import numpy
@@ -184,6 +184,42 @@ Hertz:     TypeAlias = float
 Samples:   TypeAlias = int
 Degrees:   TypeAlias = float
 Radians:   TypeAlias = float
+BPM:       TypeAlias = float
+
+# # Y'know what, I'm tired of numpy.* stuff. Let's fix that.
+
+# Good to have
+ndarray:    TypeAlias = numpy.ndarray
+
+# Types
+complex256: TypeAlias = numpy.complex256
+c256:       TypeAlias = numpy.complex256
+complex128: TypeAlias = numpy.complex128
+c128:       TypeAlias = numpy.complex128
+complex64:  TypeAlias = numpy.complex64
+c64:        TypeAlias = numpy.complex64
+float128:   TypeAlias = numpy.float128
+f128:       TypeAlias = numpy.float128
+float64:    TypeAlias = numpy.float64
+f64:        TypeAlias = numpy.float64
+float32:    TypeAlias = numpy.float32
+f32:        TypeAlias = numpy.float32
+int64:      TypeAlias = numpy.int64
+i64:        TypeAlias = numpy.int64
+int32:      TypeAlias = numpy.int32
+i32:        TypeAlias = numpy.int32
+int16:      TypeAlias = numpy.int16
+i16:        TypeAlias = numpy.int16
+int8:       TypeAlias = numpy.int8
+i8:         TypeAlias = numpy.int8
+uint64:     TypeAlias = numpy.uint64
+u64:        TypeAlias = numpy.uint64
+uint32:     TypeAlias = numpy.uint32
+u32:        TypeAlias = numpy.uint32
+uint16:     TypeAlias = numpy.uint16
+u16:        TypeAlias = numpy.uint16
+uint8:      TypeAlias = numpy.uint8
+u8:         TypeAlias = numpy.uint8
 
 # Fix: typing.Self was implemented in Python 3.11
 if sys.version_info < (3, 11):
