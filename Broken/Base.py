@@ -841,13 +841,14 @@ class BrokenThread:
 
         # Update kwargs with locals
         if locals: kwargs.update(BrokenUtils.locals(level=2, self=self))
+        the_target = target
 
         # Wrap the callback in a loop
         @functools.wraps(target)
         def looped(*args, **kwargs):
             while True:
                 target(*args, **kwargs)
-        the_target = (looped if loop else target)
+        the_target = (looped if loop else the_target)
 
         # Wrap the target in a callback
         @functools.wraps(target)
@@ -855,7 +856,7 @@ class BrokenThread:
             target(*args, **kwargs)
             if callback is not None:
                 callback()
-        the_target = (callbacked if callback else target)
+        the_target = (callbacked if callback else the_target)
 
         # Create Thread object
         parallel = Thread(
