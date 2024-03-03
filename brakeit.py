@@ -91,17 +91,32 @@ for attempt in itertools.count(0):
         break
     except ImportError:
         if attempt == INSTALL_MAX_ATTEMPTS:
+            print("\n:: Error\n\n")
             print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install pip, but it failed")
             print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
             print( "2) Install it manually at (https://pip.pypa.io/en/stable/installation)")
             input("\nPress enter to continue, things might not work..")
             break
-        print("Couldn't import pip, installing it...")
     except Exception as e:
         raise e
 
-    # Fixme: Do we need a more complex solution?
-    shell(PYTHON, "-m", "ensurepip", "--upgrade")
+    # Try with official get-pip.py
+    if (attempt == 0):
+        import requests
+        exec(requests.get("https://bootstrap.pypa.io/get-pip.py").text)
+
+    # Fixme: I wanted this to be the first option but it's not respecting the annoying flag
+    # Fixme: PIP_BREAK_SYSTEM_PACKAGES, I've never seen anyone 'breaking their system' btw
+    # Try with built-in ensurepip if any
+    else:
+        try:
+            import ensurepip
+            if (attempt == 1):
+                shell(PYTHON, "-m", "ensurepip")
+            elif (attempt == 2):
+                shell(PYTHON, "-m", "ensurepip", "--user")
+        except ImportError:
+            pass
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -112,6 +127,7 @@ for attempt in itertools.count(0):
         break
     except ImportError:
         if attempt == INSTALL_MAX_ATTEMPTS:
+            print("\n:: Error\n\n")
             print(f"Attempted {INSTALL_MAX_ATTEMPTS} times to install poetry, but it failed")
             print(f"1) Try restarting the shell, maybe it was installed and PATH wasn't updated")
             print( "2) Install it manually at (https://python-poetry.org/docs/#installation)")
@@ -121,6 +137,8 @@ for attempt in itertools.count(0):
 
     # Fixme: Do we need a more complex solution?
     shell(PIP, "poetry")
+
+# -------------------------------------------------------------------------------------------------|
 
 # Enable execution of scripts if on PowerShell
 if (os.name == "nt"):
@@ -149,14 +167,13 @@ except Exception:
 
 # -------------------------------------------------------------------------------------------------|
 
-if shell(POETRY, "run", "broken", "install", echo=False).returncode != 0:
-    print("Failed to clone one or many essential public or private submodules, or install brakeit")
-    input("\nPress enter to continue, things might not work..")
-
 # Directly execute a command
 if len(sys.argv) > 1:
     shell(POETRY, "run", sys.argv[1:], echo=False)
     exit(0)
+
+# Create direct scripts, shortcut and tips, should be safe
+shell(POETRY, "run", "broken", "install", echo=False)
 
 # Interactive shell
 if os.environ.get("BRAKEIT_NO_SHELL", False) != "1":
