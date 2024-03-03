@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# Warn: Remember to sync with Website on any changes
-
 import itertools
 import os
 import subprocess
@@ -46,29 +44,23 @@ if (os.name == "posix"):
 
 PIPE_INSTALL_FLAG = "BRAKEIT_OK_NON_ATTY"
 
-# If not running interactively, we might be on a pipe
+# If not running interactively, we are on a pipe
 if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
     print("• Detected non-interactive shell (pipe installation)")
     os.environ[PIPE_INSTALL_FLAG] = "1"
     cwd = Path.cwd()
 
-    # Brakeit might be on the current directory
-    if (brakeit := cwd/"brakeit").exists():
+    # Try finding `brakeit.py` on nearby directories
+    if (brakeit := cwd/"brakeit.py").exists():
         shell(PYTHON, brakeit)
-
-    # It might be on a BrokenSource directory
-    elif (brakeit := cwd/"BrokenSource"/"brakeit").exists():
+    elif (brakeit := cwd/"BrokenSource"/"brakeit.py").exists():
         shell(PYTHON, brakeit)
-
-    # It might be on the parent directory
-    elif (brakeit := cwd.parent/"brakeit").exists():
+    elif (brakeit := cwd.parent/"brakeit.py").exists():
         shell(PYTHON, brakeit)
-
-    # Ok to clone and run automatic installation
     else:
         shell("git", "clone", "https://github.com/BrokenSource/BrokenSource", "--recurse-submodules", "--jobs", "4")
         os.chdir(cwd/"BrokenSource")
-        shell(PYTHON, cwd/"BrokenSource/brakeit.py")
+        shell(PYTHON, cwd/"BrokenSource"/"brakeit.py")
 
     exit(0)
 
@@ -76,11 +68,9 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
 
 print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Entry Script 💎\n")
 
-# Change directory to where the script is, make it executable
+# Change directory to where the script is
 BRAKEIT = Path(__file__).absolute()
 os.chdir(BRAKEIT.parent)
-if os.name != "nt":
-    os.chmod(BRAKEIT, 0o755)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -120,7 +110,7 @@ for attempt in itertools.count(0):
 
 # -------------------------------------------------------------------------------------------------|
 
-# Install poetry
+# Ensure poetry is installed
 for attempt in itertools.count(0):
     try:
         import poetry
@@ -149,7 +139,7 @@ if (os.name == "nt"):
 
 # Create, install dependencies on virtual environment
 if shell(POETRY, "install", echo=False).returncode != 0:
-    print("Failed to install Python Virtual Environment and Dependencies")
+    print("Failed to install Python Virtual Environment and Dependencies with Poetry")
     input("\nPress enter to continue, things might not work..")
 
 # -------------------------------------------------------------------------------------------------|
@@ -163,7 +153,7 @@ try:
         dot_venv.unlink()
     dot_venv.symlink_to(venv_path.parent)
 except Exception:
-    print("Couldn't symlink .venvs to the virtual environment path, skipping")
+    print("Couldn't symlink .venvs to Poetry's Virtual Environments cache path, skipping")
 
 # -------------------------------------------------------------------------------------------------|
 

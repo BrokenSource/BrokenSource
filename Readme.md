@@ -41,6 +41,8 @@
 
 > **Please read all instructions** before executing them for tips, notes and troubleshooting
 
+- The **brakeit** script does Sanity Checks, installs [`pip`](https://pip.pypa.io/en/stable/) and [`poetry`](https://python-poetry.org/), sets up and enter a Virtual Environment
+
 <br>
 
 ## ✅ Linux and MacOS
