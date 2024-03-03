@@ -279,6 +279,7 @@
         "pyshortcuts",
         "pyside",
         "pythonprofileimporttime",
+        "PYTHONPYCACHEPREFIX",
         "quadsnap",
         "rawvideo",
         "realesr",

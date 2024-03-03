@@ -4,10 +4,8 @@
 
 import itertools
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 # -------------------------------------------------------------------------------------------------|
@@ -30,7 +28,6 @@ def shell(*args, echo: bool=True, Popen: bool=False, **kwargs):
 
 # Constants
 INSTALL_MAX_ATTEMPTS = 3
-TEMP_DIR = Path(tempfile.gettempdir())
 
 # Binaries convenience
 PYTHON = sys.executable
@@ -39,10 +36,6 @@ PIP    = [PYTHON, "-m", "pip", "install", "--upgrade", "--no-warn-script-locatio
 
 # --user no longer works, thanks
 os.environ["PIP_BREAK_SYSTEM_PACKAGES"] = "1"
-
-# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean.
-# On Linux, it's under /tmp - System RAM, brutally fast, also shouldn't take that much memory
-os.environ["PYTHONPYCACHEPREFIX"] = str(TEMP_DIR/"__pycache__")
 
 # Weird KDE wallet or GNOME wallet askings on Linux
 if (os.name == "posix"):
@@ -83,13 +76,9 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
 
 # -------------------------------------------------------------------------------------------------|
 
-# Path to this script
+# Change directory to where the script is, make it executable
 BRAKEIT = Path(__file__).absolute()
-
-# Change directory to where the script is from, anywhere
 os.chdir(BRAKEIT.parent)
-
-# Make the script executable (runnable if on PATH)
 if os.name != "nt":
     os.chmod(BRAKEIT, 0o755)
 

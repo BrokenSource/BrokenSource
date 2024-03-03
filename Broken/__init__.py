@@ -1,4 +1,14 @@
 # -------------------------------------------------------------------------------------------------|
+# Keep repository clean of __pycache__ and .pyc files
+
+import os
+import tempfile
+
+# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean.
+# On Linux, it's under /tmp - System RAM, brutally fast, also shouldn't take that much memory
+os.environ["PYTHONPYCACHEPREFIX"] = str(f"{tempfile.gettempdir()}/__pycache__")
+
+# -------------------------------------------------------------------------------------------------|
 # Pretty... Errors !
 
 import pretty_errors
@@ -17,7 +27,6 @@ pretty_errors.configure(
 
 import importlib.metadata
 import importlib.resources
-import os
 import sys
 
 # Information about the release and version
@@ -81,3 +90,5 @@ for i, arg in enumerate(sys.argv):
 
 # Safer measures: Store the first cwd that Broken is run, always start from there
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
+
+# -------------------------------------------------------------------------------------------------|

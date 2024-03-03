@@ -56,17 +56,25 @@
 
 - **Install** [**Git**](https://git-scm.com/downloads), [**Python 3.10 or 3.11**](https://www.python.org/downloads) and [FFmpeg](https://www.ffmpeg.org/download.html)<sup>*</sup> for your platform
 
-- Open a **Terminal** on some directory and run either command
+- Open a **Terminal** on some directory and run either command below
 
-  ```bash
+<br>
+
+🚀 Simplified:
+  ```ps
   curl -sSL https://brokensource.github.io/get.py | python3 -
   ```
 
-  ```bash
+<br>
+
+🍷 Traditional:
+  ```ps
   git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
 
   python ./BrokenSource/brakeit.py
   ```
+
+<br>
 
 **And done**, now run `broken` for a Command List 🚀
 
@@ -94,6 +102,8 @@
 
 <sub><b>Note:</b> You <i>might</i> need to restart the Terminal if PATH wasn't refreshed automatically</sub>
 
+<sub><b>Note:</b> Linux is better supported and streamlined, faster startup times,
+
 <br>
 
 <details>
@@ -117,11 +127,17 @@
     winget install ffmpeg
     ```
 
-  - **Restart** the Terminal - First step then back here
+  - **Reload** the Path with the command: (Or Restart the Terminal)
+    ```ps
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    ```
 
-  - **Run** the command:
-    ```bash
-    git clone https://github.com/BrokenSource/BrokenSource && python ./BrokenSource/brakeit.py
+  - **Clone** all Submodules and enter the Development Environment:
+    ```ps
+    git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+    ```
+    ```ps
+    python ./BrokenSource/brakeit.py
     ```
   <br>
 
