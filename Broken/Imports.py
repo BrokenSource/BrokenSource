@@ -146,6 +146,7 @@ from attrs import field as Field
 from dotmap import DotMap
 from halo import Halo
 from numpy import pi as PI
+from typer import Argument as TyperArgument
 from typer import Context as TyperContext
 from typer import Option as TyperOption
 from typer import Typer as TyperApp

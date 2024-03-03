@@ -526,8 +526,8 @@ class BrokenCLI:
         if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
         if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
-    def link(self, path: Path):
-        """📌 Link a {Directory} or {Directory of Projects} to be Managed by Broken"""
+    def link(self, path: Annotated[Path, TyperArgument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
+        """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
         BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     @staticmethod
