@@ -62,14 +62,14 @@
 
 🚀 Simplified:
   ```ps
-  curl -sSL https://brokensource.github.io/get.py | python3 -
+  curl -sS https://brokensource.github.io/get.sh | sh
   ```
 
 <br>
 
 🍷 Traditional:
   ```ps
-  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
 
   python ./BrokenSource/brakeit.py
   ```
@@ -98,10 +98,6 @@
 
 **And done**, now run `broken` for a Command List 🚀
 
-<sub><b>Note:</b> You <i>might</i> need to restart the Terminal if PATH wasn't refreshed automatically</sub>
-
-<sub><b>Note:</b> Linux is better supported and streamlined, faster startup times,
-
 <br>
 
 <details>
@@ -127,7 +123,7 @@
 
   - **Clone** all Submodules and enter the Development Environment:
     ```ps
-    git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
+    git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
     ```
     ```ps
     python ./BrokenSource/brakeit.py

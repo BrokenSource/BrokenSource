@@ -68,7 +68,7 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
 
     # Ok to clone and run automatic installation
     else:
-        shell("git", "clone", "https://github.com/BrokenSource/BrokenSource", "--recurse-submodules")
+        shell("git", "clone", "https://github.com/BrokenSource/BrokenSource", "--recurse-submodules", "--jobs", "4")
         os.chdir(cwd/"BrokenSource")
         shell(PYTHON, cwd/"BrokenSource/brakeit.py")
 
