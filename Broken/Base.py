@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import Broken
+
 from . import *
+
+
+# Fixme: Why `condition or callable()` doesn't work?
+def Maybe(callable, condition):
+    return callable if condition else Mock()
 
 # -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods
@@ -50,7 +57,7 @@ def shell(
         `*`:   Any other keyword arguments are passed to subprocess.*
     """
     if output and Popen:
-        raise ValueError("Cannot use (output=True) and (Popen=True) at the same time")
+        raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
     # Flatten a list, remove falsy values, convert to strings
     command = tuple(map(str, BrokenUtils.flatten(args)))
@@ -165,6 +172,13 @@ class BrokenPlatform:
     PyScriptExtension = (".cmd" if OnWindows else "")
 
 # -------------------------------------------------------------------------------------------------|
+
+class ShutilFormat(BrokenEnum):
+    Zip   = "zip"
+    Tar   = "tar"
+    GzTar = "tar.gz"
+    BzTar = "tar.bz2"
+    XzTar = "tar.xz"
 
 class BrokenPath(Path):
     """
@@ -330,30 +344,212 @@ class BrokenPath(Path):
         return path
 
     @staticmethod
-    def zip(path: Path, output: Path=None, echo: bool=True) -> Path:
-        """
-        Zip a directory
-
-        Args:
-            path (Path): Path to zip
-            output (Path): Output path, defaults to path with .zip extension
-
-        Returns:
-            Path: The zipped file's path
-        """
-        path = Path(path)
-
-        # Default output to path with .zip extension
-        output = (Path(output) if output else path).with_suffix(".zip")
-
-        # Remove old zip
+    def zip(path: Path, output: Path=None, *, format: ShutilFormat=ShutilFormat.Zip, echo: bool=True) -> Path:
+        format = ShutilFormat(format)
+        output = BrokenPath(output or path).with_suffix(f".{format}")
+        path   = BrokenPath(path)
         BrokenPath.remove(output, echo=echo)
-
-        # Make the new zip
         log.info(f"Zipping ({path}) → ({output})", echo=echo)
-        shutil.make_archive(output.with_suffix(""), "zip", path)
-
+        shutil.make_archive(output.with_suffix(""), format, path)
         return output
+
+    @staticmethod
+    def stem(path: PathLike) -> str:
+        """Get the "true stem" of a path, as pathlib's only remove the last one"""
+        stem = Path(Path(path).stem)
+        while (stem := Path(stem).with_suffix("")).suffix:
+            continue
+        return str(stem)
+
+    @staticmethod
+    def sha256sum(data: Union[Path, str, bytes]) -> Optional[str]:
+        """Get the sha256sum of a file or bytes"""
+
+        # Nibble the bytes !
+        if isinstance(data, bytes):
+            return hashlib.sha256(data).hexdigest()
+
+        # String or Path is a valid path
+        elif (path := BrokenPath(data, valid=True)):
+            with Halo(log.info(f"Calculating sha256sum of ({path})")):
+                if path.is_file():
+                    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+                # Iterate on all files for low memory footprint
+                feed = hashlib.sha256()
+                for file in path.rglob("*"):
+                    if not file.is_file():
+                        continue
+                    with open(file, "rb") as file:
+                        while (chunk := file.read(8192)):
+                            feed.update(chunk)
+                return feed.hexdigest()
+
+        elif isinstance(data, str):
+            return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+        return
+
+    @staticmethod
+    def extract(
+        path: Path,
+        output: Path=None,
+        *,
+        overwrite: bool=False,
+        PATH: bool=False,
+        echo: bool=True
+    ) -> Path:
+        path, output = BrokenPath(path, output)
+
+        # Output is input without suffix if not given
+        if (output is None):
+            output = path.parent/BrokenPath.stem(path)
+
+        # Add stem to the output as some archives might be flat
+        output /= BrokenPath.stem(path)
+
+        # Re-extract on order
+        Maybe(BrokenPath.remove, overwrite)(output, echo=echo)
+
+        # A file to skip if it exists, created after successful extraction
+        if (extract_flag := (output/"BrokenPath.extract.ok")).exists():
+            log.minor(f"Already extracted ({output})", echo=echo)
+            Maybe(BrokenPath.add_to_path, PATH)(path=output, recursively=True, echo=echo)
+            return output
+
+        # Show progress as this might take a while on slower IOs
+        with Halo(log.info(f"Extracting ({path}) → ({output})", echo=echo)):
+            shutil.unpack_archive(path, output)
+
+        extract_flag.touch()
+        Maybe(BrokenPath.add_to_path, PATH)(path=output, recursively=True, echo=echo)
+        return output/BrokenPath.stem(path)
+
+    @staticmethod
+    def download(
+        url: URL,
+        output: Path=None,
+        *,
+        size_check: bool=True,
+        chunk: int=1024,
+        echo: bool=True
+    ) -> Optional[Path]:
+
+        # Link must be valid
+        if not validators.url(url):
+            log.error(f"The string ({url}) doesn't look like a valid URL", echo=echo)
+            return
+
+        import requests
+
+        # Default to Broken's Download directory
+        if (output is None):
+            output = Broken.BROKEN.DIRECTORIES.DOWNLOADS
+
+        # Append url's file name to the output path
+        if (output := BrokenPath(output)).is_dir():
+            output /= Path(url.split("#")[0].split("?")[0].split("/")[-1])
+
+        # Without size check, the existence of the file is enough
+        if output.exists() and (not size_check):
+            log.success(f"File ({output}) was already downloaded", echo=echo)
+            log.minor(f"• Size check was skipped, the file might be incomplete", echo=echo)
+            return
+
+        # Send the GET request, we might be offline!
+        try:
+            response = requests.get(url, stream=True)
+        except requests.exceptions.RequestException as error:
+            log.error(f"Failed to download file ({url}) → ({output}): {error}", echo=echo)
+            return
+
+        size = int(response.headers.get('content-length', 0))
+
+        # The file might already be (partially) downloaded
+        if output.exists() and (output.stat().st_size == size):
+            log.success(f"File ({output}) was already downloaded", echo=echo)
+            return output
+        else:
+            log.warning(f"File ({output}) was partially downloaded, re-downloading", echo=echo)
+
+        log.info(f"Downloading file at ({url}):", echo=echo)
+        log.info(f"• Output: ({output})", echo=echo)
+
+        # It is binary prefix, right? kibi, mebi, gibi, etc. as we're dealing with raw bytes
+        with open(output, "wb") as file, tqdm.tqdm(
+            desc=f"Downloading ({output.name})",
+            total=size, unit="iB", unit_scale=True, unit_divisor=1024,
+            mininterval=1/30, maxinterval=0.5, leave=False
+        ) as progress:
+            for data in response.iter_content(chunk_size=chunk):
+                progress.update(file.write(data))
+
+        # Sanity check
+        if (output.stat().st_size != size):
+            log.error(f"File ({output}) was not downloaded correctly", echo=echo)
+            return
+
+        log.success(f"Downloaded file ({output}) from ({url})", echo=echo)
+        return output
+
+    @staticmethod
+    def on_path(path: PathLike) -> bool:
+        """Check if a path is on PATH, works with symlinks"""
+        return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
+
+    @staticmethod
+    def add_to_path(
+        path: PathLike,
+        *,
+        recursively: bool=False,
+        persistent: bool=False,
+        echo: bool=True
+    ) -> Path:
+        """Add a path, recursively or not, to System's Path or this Python process's Path"""
+        path = BrokenPath(path)
+
+        # Can't recurse on file or non existing directories
+        if (not path.exists()) and path.is_file() and recursively:
+            log.warning(f"Can't add non existing path or file recursively to Path ({path})", echo=echo)
+            return path
+
+        log.info(f"Adding to Path (Recursively: {recursively}, Persistent: {persistent}): ({path})", echo=echo)
+
+        for other in (path.glob("**/*") if recursively else [path]):
+            if other.is_file():
+                continue
+            if BrokenPath.on_path(other):
+                log.trace(f"• Directory: ({other}) OK")
+                continue
+            log.trace(f"• Directory: ({other})")
+            if persistent:
+                import userpath
+                userpath.append(str(other))
+            else:
+                os.environ["PATH"] = (os.environ["PATH"]+os.pathsep+str(other))
+                sys.path.insert(0, str(other))
+
+        return path
+
+    @staticmethod
+    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Optional[Path]:
+        """Get a binary from PATH"""
+
+        # Get binary if on path and executable
+        binary = shutil.which(name)
+
+        # Workaround for files that are not set as executable: shutil will not find them
+        # • Attempt finding directory/name for every directory in PATH
+        if (binary is None) and file_not_tagged_executable_workaround :
+            for directory in os.environ["PATH"].split(os.pathsep):
+                if (maybe_the_binary := Path(directory)/name).is_file():
+                    binary = maybe_the_binary
+                    break
+
+        # Print information about the binary
+        (log.success if binary else log.warning)(f"• Binary ({name}) found at ({binary})", echo=echo)
+
+        return binary
 
     # # Specific / "Utils"
 
@@ -367,26 +563,6 @@ class BrokenPath(Path):
             shell("xdg-open", path)
         elif BrokenPlatform.OnMacOS:
             shell("open", path)
-
-    @staticmethod
-    def on_path(path: PathLike) -> bool:
-        """Check if a path is on PATH, works with symlinks"""
-        return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
-
-    @staticmethod
-    def add_to_path(path: PathLike, *, echo: bool=True) -> Path:
-        """Add a path to PATH"""
-        path = BrokenPath(path)
-
-        # Skip already on PATH
-        if BrokenPath.on_path(path):
-            log.skip(f"Path ({path}) is already on PATH", echo=echo)
-            return path
-
-        # Actually add to PATH
-        log.warning(f"Path ({path}) was added to PATH. Please, restart the Terminal to take effect", echo=echo)
-        __import__("userpath").append(str(path))
-        return path
 
     @staticmethod
     def read_text(path: Path, *, encoding: str="utf8", echo: bool=True) -> Optional[str]:
@@ -468,26 +644,6 @@ class BrokenPath(Path):
 
         # Restore PATH
         os.environ["PATH"] = old
-
-    @staticmethod
-    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Optional[Path]:
-        """Get a binary from PATH"""
-
-        # Get binary if on path and executable
-        binary = shutil.which(name)
-
-        # Workaround for files that are not set as executable: shutil will not find them
-        # • Attempt finding directory/name for every directory in PATH
-        if (binary is None) and file_not_tagged_executable_workaround :
-            for directory in os.environ["PATH"].split(os.pathsep):
-                if (maybe_the_binary := Path(directory)/name).is_file():
-                    binary = maybe_the_binary
-                    break
-
-        # Print information about the binary
-        if echo: (log.warning if (binary is None) else log.success)(f"• Binary ({name}) found at ({binary})", echo=echo)
-
-        return binary
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -654,13 +810,6 @@ class BrokenUtils:
 
         log.info(f"Relaunching self process with arguments ({sys.argv})", echo=echo)
         return shell(sys.executable, sys.argv, echo=echo)
-
-    @staticmethod
-    def sha256sum(data: Union[Path, bytes]) -> str:
-        """Get the sha256sum of a file or bytes"""
-        if isinstance(data, Path):
-            return BrokenUtils.sha256sum(data.read_bytes())
-        return hashlib.sha256(data).hexdigest()
 
     @staticmethod
     def is_dunder(name: str) -> bool:

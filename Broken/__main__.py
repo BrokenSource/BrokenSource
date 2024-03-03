@@ -186,14 +186,19 @@ class BrokenProjectCLI:
                         ctx.args, echo=echo
                     )
                 except KeyboardInterrupt:
-                    log.success(f"Project ({self.name}) finished with KeyboardInterrupt")
+                    log.success(f"Project ({self.name}) finished with KeyboardInterrupt (Ctrl+C)")
                     break
                 except FileNotFoundError:
-                    log.warning(f"Potential partial installation detected for the Project ({self.name}), a installation retry is recommended {{(r) option}}")
+                    log.warning(f"Partial Virtual Environment installation detected for the Project ({self.name})")
+                    log.warning(f"• A full installation reset and retry is recommended {{(r) option}}")
                     status = DotMap(returncode=1, args=ctx.args)
+                except Exception as e:
+                    log.error(f"Project ({self.name}) finished with an Exception: {e}")
+                    break
 
             # Rust projects
             if self.is_rust:
+                raise RuntimeError(log.error("Rust projects are not supported yet"))
                 status = shell(
                     "cargo", "run",
                     "--bin", self.name,
@@ -204,7 +209,7 @@ class BrokenProjectCLI:
 
             # C++ projects
             if self.is_cpp:
-                log.error("C++ projects are not supported yet")
+                raise RuntimeError(log.error("C++ projects are not supported yet"))
 
             # Avoid reinstalling on future runs
             reinstall = False
@@ -456,7 +461,6 @@ class BrokenCLI:
             self.broken_typer.command(self.tremeschin, hidden=True)
 
         with self.broken_typer.panel("⚠️ Experimental"):
-            self.broken_typer.command(self.mock,   hidden=True)
             self.broken_typer.command(self.pillow, hidden=True)
 
         for project in self.projects:
@@ -796,6 +800,3 @@ class BrokenCLI:
         """Use Pillow-SIMD for faster Image processing"""
         os.environ["CC"] = f"cc -mavx2"
         shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")
-
-    def mock(self):
-        import Broken.Mock

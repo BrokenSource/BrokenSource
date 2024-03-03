@@ -81,9 +81,9 @@ class BrokenLogging:
     def __add_loglevel__(self, name: str, loglevel: int=0, color: str=None) -> Self:
         """Create a new loglevel `.{name.lower()}` on the logger"""
         def log(*args, echo=True, **kwargs) -> str:
-            if not echo:
-                return
             message = " ".join(map(str, args))
+            if not echo:
+                return message
             self.logger.log(name, message, **kwargs)
             return message
 

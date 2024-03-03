@@ -121,6 +121,7 @@ from threading import Lock
 from threading import Thread
 from time import time as now
 from typing import *
+from unittest.mock import Mock
 
 import attrs
 import cachetools
@@ -192,14 +193,10 @@ BPM:       TypeAlias = float
 ndarray:    TypeAlias = numpy.ndarray
 
 # Types
-complex256: TypeAlias = numpy.complex256
-c256:       TypeAlias = numpy.complex256
 complex128: TypeAlias = numpy.complex128
 c128:       TypeAlias = numpy.complex128
 complex64:  TypeAlias = numpy.complex64
 c64:        TypeAlias = numpy.complex64
-float128:   TypeAlias = numpy.float128
-f128:       TypeAlias = numpy.float128
 float64:    TypeAlias = numpy.float64
 f64:        TypeAlias = numpy.float64
 float32:    TypeAlias = numpy.float32
