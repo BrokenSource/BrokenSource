@@ -44,8 +44,6 @@ if (os.name == "posix"):
 # -------------------------------------------------------------------------------------------------|
 # Welcome! We might be on a curl install
 
-print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Entry Script 💎\n")
-
 PIPE_INSTALL_FLAG = "BRAKEIT_OK_NON_ATTY"
 
 # If not running interactively, we might be on a pipe
@@ -75,6 +73,8 @@ if (not sys.stdin.isatty()) and (not os.environ.get(PIPE_INSTALL_FLAG, False)):
     exit(0)
 
 # -------------------------------------------------------------------------------------------------|
+
+print("\n🚀 Welcome to Brakeit, the Broken Source Development Environment Entry Script 💎\n")
 
 # Change directory to where the script is, make it executable
 BRAKEIT = Path(__file__).absolute()
