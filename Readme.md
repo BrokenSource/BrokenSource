@@ -109,7 +109,7 @@
 
   - **Install** [**Python 3.11**](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe) with the command (once):
     ```ps
-    winget install -e --id Python.Python.3.11
+    winget install -e --id Python.Python.3.11 --scope=machine
     ```
 
   - **Install** [**FFmpeg**](https://www.ffmpeg.org/download.html) to render videos (once):
