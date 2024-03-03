@@ -62,7 +62,7 @@
 
 🚀 Simplified:
   ```ps
-  curl -sS https://brokensource.github.io/get.sh | sh
+  curl -sS https://brokensource.github.io/get.py | python3 -
   ```
 
 <br>
