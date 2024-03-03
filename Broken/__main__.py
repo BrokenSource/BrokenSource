@@ -295,7 +295,7 @@ class BrokenProjectCLI:
                     virtual = (old_venv /BrokenPlatform.PyScripts/(direct := f"{self.name.lower()}er"))
                     real    = (venv_path/BrokenPlatform.PyScripts/"main")
                     if BrokenPath(virtual) != BrokenPath(real):
-                        log.note(f"• Tip: For faster startup times but less integration, you can run $ {direct}")
+                        log.note(f"• Tip: For faster startup times but less integration, you can run ($ {direct})")
                         BrokenPath.symlink(virtual=virtual, real=real)
 
                 return venv_path
