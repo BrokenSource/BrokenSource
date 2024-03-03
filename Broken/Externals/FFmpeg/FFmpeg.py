@@ -560,18 +560,44 @@ class BrokenFFmpeg:
             self.audio_codec,
         )
 
+    def install(self) -> Self:
+        if all(BrokenPath.which("ffmpeg", "ffprobe")):
+            return
+
+        log.info(f"FFmpeg wasn't found on System Path, trying to install it")
+        if not BrokenPlatform.OnMacOS:
+            BrokenPath.easy_external(''.join((
+                "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
+                "ffmpeg-master-latest-",
+                BrokenPlatform.Name.replace("windows", "win"),
+                BrokenPlatform.Architecture.replace("amd64", "64"),
+                "-gpl.tar.xz"
+            )))
+        else:
+            for binary in ("ffmpeg", "ffplay", "ffprobe"):
+                BrokenPath.easy_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
+
     def set_ffmpeg_binary(self, binary: Path=None) -> Self:
         """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
         if binary:
-            log.debug(f"Using custom FFmpeg binary at ({binary})")
-        elif (binary := shutil.which("ffmpeg")):
-            log.debug(f"Using system FFmpeg binary at ({binary})")
+            log.debug(f"Using FFmpeg binary at ({binary})")
+            self.binary = binary
+            return self
+
+        self.install()
+
+        # Try finding with shutil
+        if (binary := BrokenPath.which("ffmpeg")):
+            log.debug(f"Using FFmpeg binary at ({binary})")
+            self.binary = binary
+            return self
+
+        import imageio_ffmpeg
+        binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
+        log.debug(f"Using ImageIO FFmpeg binary at ({binary})")
+
         if not binary:
-            import imageio_ffmpeg
-            binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
-            log.debug(f"Using ImageIO FFmpeg binary at ({binary})")
-        if not binary:
-            log.error(f"Could not find (FFmpeg) binary on PATH and don't have (ImageIO FFmpeg) package, please install it")
+            log.error(f"Could not find (FFmpeg) binary on System Path or Externals, and don't have (ImageIO FFmpeg) package")
             exit(1)
 
         self.binary = binary
@@ -1118,8 +1144,10 @@ class BrokenFFmpeg:
         """Get the duration of a video"""
         if not (path := BrokenPath(path, valid=True)):
             return
+        self.install()
         log.minor(f"Getting Video Duration of file ({path})")
-        return float(shell("ffprobe",
+        return float(shell(
+            BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "format=duration",
             "-v", "quiet", "-of", "csv=p=0",
@@ -1141,8 +1169,10 @@ class BrokenFFmpeg:
         """Get the samplerate of a audio file"""
         if not (path := BrokenPath(path, valid=True)):
             return
+        self.install()
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
-        return int(shell("ffprobe",
+        return int(shell(
+            BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "stream=sample_rate",
             "-v", "quiet", "-of", "csv=p=0",
@@ -1155,8 +1185,10 @@ class BrokenFFmpeg:
         """Get the number of channels of a audio file"""
         if not (path := BrokenPath(path, valid=True)):
             return
+        self.install()
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
-        return int(shell("ffprobe",
+        return int(shell(
+            BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "stream=channels",
             "-v", "quiet", "-of", "csv=p=0",
@@ -1171,11 +1203,9 @@ class BrokenFFmpeg:
         chunk: Seconds=0.1,
         echo: bool=True
     ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
-
         if not (path := BrokenPath(path, valid=True)):
             return
-
-        import numpy
+        self.install()
 
         # Get basic information
         channels:   int = BrokenFFmpeg.get_audio_channels(path, echo=echo)

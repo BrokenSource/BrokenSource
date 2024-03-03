@@ -452,7 +452,7 @@ class BrokenPath(Path):
 
         # Without size check, the existence of the file is enough
         if output.exists() and (not size_check):
-            log.success(f"File ({output}) was already downloaded", echo=echo)
+            log.info(f"File ({output}) is already downloaded", echo=echo)
             log.minor(f"• Size check was skipped, the file might be incomplete", echo=echo)
             return
 
@@ -467,7 +467,7 @@ class BrokenPath(Path):
 
         # The file might already be (partially) downloaded
         if output.exists() and (output.stat().st_size == size):
-            log.success(f"File ({output}) was already downloaded", echo=echo)
+            log.info(f"File ({output}) is already downloaded", echo=echo)
             return output
         else:
             log.warning(f"File ({output}) was partially downloaded, re-downloading", echo=echo)
@@ -493,6 +493,24 @@ class BrokenPath(Path):
         return output
 
     @staticmethod
+    def easy_external(url: URL, *, echo: bool=True) -> Path:
+        return BrokenPath.extract(
+            BrokenPath.download(url, echo=echo),
+            Broken.BROKEN.DIRECTORIES.EXTERNALS,
+            PATH=True, echo=echo
+        )
+
+    @staticmethod
+    def which(*name: str, echo=True) -> Optional[Path]:
+        BrokenPath.update_externals_path()
+        return BrokenUtils.one_or_all(list(map(shutil.which, name)))
+
+    @staticmethod
+    def update_externals_path(path: PathLike=None, *, echo: bool=True) -> Optional[Path]:
+        path = path or Broken.BROKEN.DIRECTORIES.EXTERNALS
+        return BrokenPath.add_to_path(path, recursively=True, echo=echo)
+
+    @staticmethod
     def on_path(path: PathLike) -> bool:
         """Check if a path is on PATH, works with symlinks"""
         return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
@@ -503,6 +521,7 @@ class BrokenPath(Path):
         *,
         recursively: bool=False,
         persistent: bool=False,
+        prepend: bool=True,
         echo: bool=True
     ) -> Path:
         """Add a path, recursively or not, to System's Path or this Python process's Path"""
@@ -513,43 +532,26 @@ class BrokenPath(Path):
             log.warning(f"Can't add non existing path or file recursively to Path ({path})", echo=echo)
             return path
 
-        log.info(f"Adding to Path (Recursively: {recursively}, Persistent: {persistent}): ({path})", echo=echo)
+        log.debug(f"Adding to Path (Recursively: {recursively}, Persistent: {persistent}): ({path})", echo=echo)
 
         for other in (path.glob("**/*") if recursively else [path]):
             if other.is_file():
                 continue
             if BrokenPath.on_path(other):
-                log.trace(f"• Directory: ({other}) OK")
+                log.debug(f"• Directory: ({other}) OK")
                 continue
-            log.trace(f"• Directory: ({other})")
+            log.debug(f"• Directory: ({other})")
             if persistent:
                 import userpath
                 userpath.append(str(other))
             else:
-                os.environ["PATH"] = (os.environ["PATH"]+os.pathsep+str(other))
-                sys.path.insert(0, str(other))
-
+                if prepend:
+                    os.environ["PATH"] = (str(other)+os.pathsep+os.environ["PATH"])
+                    sys.path.insert(0, str(other))
+                else:
+                    os.environ["PATH"] = (os.environ["PATH"]+os.pathsep+str(other))
+                    sys.path.append(str(other))
         return path
-
-    @staticmethod
-    def get_binary(name: str, file_not_tagged_executable_workaround=True, *, echo=True) -> Optional[Path]:
-        """Get a binary from PATH"""
-
-        # Get binary if on path and executable
-        binary = shutil.which(name)
-
-        # Workaround for files that are not set as executable: shutil will not find them
-        # • Attempt finding directory/name for every directory in PATH
-        if (binary is None) and file_not_tagged_executable_workaround :
-            for directory in os.environ["PATH"].split(os.pathsep):
-                if (maybe_the_binary := Path(directory)/name).is_file():
-                    binary = maybe_the_binary
-                    break
-
-        # Print information about the binary
-        (log.success if binary else log.warning)(f"• Binary ({name}) found at ({binary})", echo=echo)
-
-        return binary
 
     # # Specific / "Utils"
 
@@ -673,6 +675,13 @@ class BrokenUtils:
             if (not truthy) or (truthy and item)
         ]
         return flatten(stuff)
+
+    @staticmethod
+    def one_or_all(*stuff: Union[Any, Iterable[Any]]) -> Union[Any, List[Any]]:
+        stuff = list(stuff)
+        if len(stuff) == 1:
+            return stuff[0]
+        return stuff
 
     @staticmethod
     def denum(item: Any) -> Any:

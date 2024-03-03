@@ -54,7 +54,7 @@
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
 
-- **Install** [**Git**](https://git-scm.com/downloads), [**Python 3.10 or 3.11**](https://www.python.org/downloads) and [FFmpeg](https://www.ffmpeg.org/download.html)<sup>*</sup> for your platform
+- **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
 
 - Open a **Terminal** on some directory and run either command below
 
@@ -77,8 +77,6 @@
 <br>
 
 **And done**, now run `broken` for a Command List 🚀
-
-<sup>*: If you'll render videos on any Project</sup>
 
 <br>
 
@@ -120,11 +118,6 @@
   - **Install** [**Python 3.11**](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe) with the command (once):
     ```ps
     winget install -e --id Python.Python.3.11 --scope=machine
-    ```
-
-  - **Install** [**FFmpeg**](https://www.ffmpeg.org/download.html) to render videos (once):
-    ```ps
-    winget install ffmpeg
     ```
 
   - **Reload** the Path with the command: (Or Restart the Terminal)
