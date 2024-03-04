@@ -565,7 +565,8 @@ class BrokenFFmpeg:
         if all(BrokenPath.which("ffmpeg", "ffprobe")):
             return
 
-        log.info(f"FFmpeg wasn't found on System Path, trying to install it")
+        log.info(f"FFmpeg wasn't found on System Path, will download a BtbN's Build")
+
         if not BrokenPlatform.OnMacOS:
             BrokenPath.easy_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
@@ -575,7 +576,7 @@ class BrokenFFmpeg:
                 "-gpl.tar.xz"
             )))
         else:
-            for binary in ("ffmpeg", "ffplay", "ffprobe"):
+            for binary in ("ffmpeg", "ffprobe"):
                 BrokenPath.easy_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
 
     def set_ffmpeg_binary(self, binary: Path=None) -> Self:
@@ -585,7 +586,7 @@ class BrokenFFmpeg:
             self.binary = binary
             return self
 
-        self.install()
+        BrokenFFmpeg.install()
 
         # Try finding with shutil
         if (binary := BrokenPath.which("ffmpeg")):
