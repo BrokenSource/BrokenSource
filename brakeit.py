@@ -93,7 +93,16 @@ for attempt in itertools.count(0):
     # Try with official get-pip.py
     if (attempt == 0):
         import requests
-        exec(requests.get("https://bootstrap.pypa.io/get-pip.py").text)
+        try:
+            exec(requests.get("https://bootstrap.pypa.io/get-pip.py").text)
+        except requests.RequestException:
+            print("\n:: Error\n\n")
+            print("Failed to download (https://bootstrap.pypa.io/get-pip.py) for installing pip")
+            print("1) Check your internet connection or the URL if you can access it")
+            print("2) Run the install script again, if next with ensurepip fails")
+            input("\nPress enter to continue..")
+        except SystemExit:
+            pass
 
     # Fixme: I wanted this to be the first option but it's not respecting the annoying flag
     # Fixme: PIP_BREAK_SYSTEM_PACKAGES, I've never seen anyone 'breaking their system' btw

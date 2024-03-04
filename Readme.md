@@ -68,7 +68,7 @@
 
 🚀 Simplified:
   ```ps
-  sh -c "$(curl -sS https://brokensource.github.io/get.sh)"
+  /bin/bash -c "$(curl -sS https://brokensource.github.io/get.sh)"
   ```
 
 <br>
