@@ -47,6 +47,42 @@
 
 - **Python 3.12** is supported, but might need compilers for some packages
 
+
+<details>
+  <summary>
+    Don't want to use <code>brakeit.py</code> or <code>get.{sh,ps1}</code>?
+  </summary>
+  <br>
+  If you already have Python and Git installed:
+
+  <br>
+
+  ```ps
+  # Note: This flag is safe, users would `sudo pip` and break their system
+  python -m pip install poetry --user --break-system-packages
+  ```
+  ```ps
+  # Clone the Monorepo and all Submodules
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
+  ```
+  ```ps
+  # Enter the Monorepo directory
+  cd BrokenSource
+  ```
+  ```ps
+  # Create the main Virtual Environment and install the dependencies
+  python -m poetry install
+  ```
+  ```ps
+  # Activate the main Virtual Environment
+  python -m poetry shell
+  ```
+  ```ps
+  # For calling `$project` other than `broken $project`
+  broken scripts
+  ```
+</details>
+
 <br>
 
 ## ✅ Linux and MacOS
