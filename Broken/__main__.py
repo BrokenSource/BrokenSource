@@ -449,7 +449,7 @@ class BrokenCLI:
         with self.broken_typer.panel("📦 Installation"):
             self.broken_typer.command(self.install)
             self.broken_typer.command(self.uninstall)
-            self.broken_typer.command(self.submodules)
+            self.broken_typer.command(self.submodules, hidden=True)
             self.broken_typer.command(self.scripts)
             self.broken_typer.command(self.shortcut)
 
@@ -651,7 +651,7 @@ class BrokenCLI:
     LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
 
     def shortcut(self):
-        """🧿 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
+        """🧭 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
         if BrokenPlatform.OnUnix:
             if BrokenPlatform.OnLinux:
                 log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
