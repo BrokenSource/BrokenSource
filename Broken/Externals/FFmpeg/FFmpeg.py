@@ -560,7 +560,8 @@ class BrokenFFmpeg:
             self.audio_codec,
         )
 
-    def install(self) -> Self:
+    @staticmethod
+    def install() -> Self:
         if all(BrokenPath.which("ffmpeg", "ffprobe")):
             return
 
@@ -1144,7 +1145,7 @@ class BrokenFFmpeg:
         """Get the duration of a video"""
         if not (path := BrokenPath(path, valid=True)):
             return
-        self.install()
+        BrokenFFmpeg.install()
         log.minor(f"Getting Video Duration of file ({path})")
         return float(shell(
             BrokenPath.which("ffprobe"),
@@ -1169,7 +1170,7 @@ class BrokenFFmpeg:
         """Get the samplerate of a audio file"""
         if not (path := BrokenPath(path, valid=True)):
             return
-        self.install()
+        BrokenFFmpeg.install()
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
         return int(shell(
             BrokenPath.which("ffprobe"),
@@ -1185,7 +1186,7 @@ class BrokenFFmpeg:
         """Get the number of channels of a audio file"""
         if not (path := BrokenPath(path, valid=True)):
             return
-        self.install()
+        BrokenFFmpeg.install()
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
         return int(shell(
             BrokenPath.which("ffprobe"),
@@ -1205,7 +1206,7 @@ class BrokenFFmpeg:
     ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
         if not (path := BrokenPath(path, valid=True)):
             return
-        self.install()
+        BrokenFFmpeg.install()
 
         # Get basic information
         channels:   int = BrokenFFmpeg.get_audio_channels(path, echo=echo)

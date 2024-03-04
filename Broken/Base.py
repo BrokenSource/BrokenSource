@@ -466,11 +466,15 @@ class BrokenPath(Path):
         size = int(response.headers.get('content-length', 0))
 
         # The file might already be (partially) downloaded
-        if output.exists() and (output.stat().st_size == size):
-            log.info(f"File ({output}) is already downloaded", echo=echo)
-            return output
-        else:
-            log.warning(f"File ({output}) was partially downloaded, re-downloading", echo=echo)
+        if output.exists():
+            A, B = (output.stat().st_size, size)
+            if (A == B):
+                log.info(f"File ({output}) is already downloaded", echo=echo)
+                return output
+            elif (A < B):
+                log.warning(f"File ({output}) was partially downloaded, re-downloading", echo=echo)
+            elif (A > B):
+                log.warning(f"File ({output}) is larger than expected, re-downloading", echo=echo)
 
         log.info(f"Downloading file at ({url}):", echo=echo)
         log.info(f"• Output: ({output})", echo=echo)
