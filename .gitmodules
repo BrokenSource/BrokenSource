@@ -1,5 +1,3 @@
-# # Broken Source
-
 [submodule "Projects/ShaderFlow"]
 	path = Projects/ShaderFlow
 	url  = https://github.com/BrokenSource/ShaderFlow
@@ -15,12 +13,6 @@
 [submodule "Projects/Upscalin"]
 	path = Projects/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
-[submodule "Website"]
-	path = Website
-	url  = https://github.com/brokenSource/brokensource.github.io
-
-# # Meta
-
 [submodule "Meta/FluentMidi"]
 	path = Meta/FluentMidi
 	url = https://github.com/FluentMidi/FluentMidi
