@@ -53,31 +53,32 @@
     Don't want to use <code>brakeit.py</code> or <code>get.{sh,ps1}</code>?
   </summary>
   <br>
-  If you already have Python and Git installed:
+
+  - **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
 
   <br>
 
-  ```ps
+  ```bash
   # Note: This flag is safe, users would `sudo pip` and break their system
   python -m pip install poetry --user --break-system-packages
   ```
-  ```ps
+  ```bash
   # Clone the Monorepo and all Submodules
   git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
   ```
-  ```ps
+  ```bash
   # Enter the Monorepo directory
   cd BrokenSource
   ```
-  ```ps
+  ```bash
   # Create the main Virtual Environment and install the dependencies
   python -m poetry install
   ```
-  ```ps
+  ```bash
   # Activate the main Virtual Environment
   python -m poetry shell
   ```
-  ```ps
+  ```bash
   # For calling `$project` other than `broken $project`
   broken scripts
   ```
@@ -103,14 +104,14 @@
 <br>
 
 🚀 Simplified:
-  ```ps
-  /bin/bash -c "$(curl -sS https://brokensource.github.io/get.sh)"
+  ```bash
+  /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
   ```
 
 <br>
 
 🍷 Traditional:
-  ```ps
+  ```bash
   git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
 
   python ./BrokenSource/brakeit.py
@@ -134,8 +135,8 @@
 
 - Press `Ctrl+L` to focus the address bar and type `powershell` to open a Terminal and run
 
-  ```ps
-  irm https://brokensource.github.io/get.ps1 | iex
+  ```bash
+  irm https://brakeit.github.io/get.ps1 | iex
   ```
 
 **And done**, now run `broken` for a Command List 🚀
@@ -149,25 +150,25 @@
   <br>
 
   - **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
-    ```ps
+    ```bash
     winget install -e --id Git.Git --source winget
     ```
 
   - **Install** [**Python 3.11**](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe) with the command (once):
-    ```ps
+    ```bash
     winget install -e --id Python.Python.3.11 --scope=machine
     ```
 
   - **Reload** the Path with the command: (Or Restart the Terminal)
-    ```ps
+    ```bash
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
     ```
 
   - **Clone** all Submodules and enter the Development Environment:
-    ```ps
+    ```bash
     git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
     ```
-    ```ps
+    ```bash
     python ./BrokenSource/brakeit.py
     ```
   <br>
