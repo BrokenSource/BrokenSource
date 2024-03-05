@@ -282,6 +282,7 @@
         "pythonprofileimporttime",
         "PYTHONPYCACHEPREFIX",
         "quadsnap",
+        "rateio",
         "rawvideo",
         "realesr",
         "realesrgan",
