@@ -54,6 +54,7 @@
         "Midis":      "audio",
         "Midi":       "audio",
         "SoundFonts": "audio",
+        "Brakeit":    "download",
 
         // Shaders
         "Fragment": "shader",
