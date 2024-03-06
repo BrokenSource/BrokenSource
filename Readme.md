@@ -95,7 +95,7 @@
 
 **Open** some folder you want to download the code to on **Windows Explorer**
 
-- Press `Ctrl+L` to focus the address bar and type `powershell` to open a Terminal and run
+- Press `Ctrl+L` and enter `powershell` to open a Terminal
 
   ```bash
   irm https://brakeit.github.io/get.ps1 | iex

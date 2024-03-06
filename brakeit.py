@@ -122,6 +122,8 @@ for attempt in itertools.count(0):
 # Ensure poetry is installed
 for attempt in itertools.count(0):
     try:
+        if shell(POETRY, "--version", echo=False).returncode == 0:
+            break
         import poetry
         break
     except ImportError:
