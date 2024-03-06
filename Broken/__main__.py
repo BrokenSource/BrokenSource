@@ -645,23 +645,22 @@ class BrokenCLI:
 
             BrokenPath.make_executable(script, echo=False)
 
-    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Broken.desktop"
+    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
 
     def shortcut(self):
         """🧭 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
-        if BrokenPlatform.OnUnix:
-            if BrokenPlatform.OnLinux:
-                log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
-                BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
-                    "[Desktop Entry]",
-                    "Type=Application",
-                    "Name=Brakeit",
-                    f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
-                    f"Icon={BROKEN.RESOURCES.ICON}",
-                    "Comment=Brakeit Bootstrapper",
-                    "Terminal=true",
-                    "Categories=Development",
-                )))
+        if BrokenPlatform.OnLinux:
+            log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
+            BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
+                "[Desktop Entry]",
+                "Type=Application",
+                "Name=Brakeit",
+                f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
+                f"Icon={BROKEN.RESOURCES.ICON}",
+                "Comment=Brakeit Bootstrapper",
+                "Terminal=true",
+                "Categories=Development",
+            )))
 
         # Workaround: Do not print KeyError of `pyshortcuts.windows.get_conda_active_env`
         elif BrokenPlatform.OnWindows:

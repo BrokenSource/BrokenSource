@@ -22,3 +22,6 @@
 [submodule "Projects/Pianola"]
 	path = Projects/Pianola
 	url = https://github.com/BrokenSource/Pianola
+[submodule "Projects/SpectroNote"]
+	path = Projects/SpectroNote
+	url = https://github.com/BrokenSource/SpectroNote

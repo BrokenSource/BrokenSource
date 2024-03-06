@@ -1,14 +1,18 @@
 {
     // Configure files and folders visibility
     "files.exclude": {
-        // Annoying __pycache__, cleaned with pyclean
+
+        // Synced with other projects or shown on monorepo
+        "*/**/poetry.toml":    true,
+        "*/**/.gitattributes": true,
+        "*/**/.gitignore":     true,
+        "*/**/.github":        true,
+
+        // Always hidden
+        "**/poetry.lock": true,
+        "**/.stignore":   true,
         "**/__pycache__": true,
-
-        // Don't hide .git, it might be useful ?
-        "**/.git": false,
-
-        // Syncthing
-        ".stignore": true,
+        "**/License.md":  true, // You'll know the license before cloning..
     },
 
     // Pylance and star imports..
@@ -76,6 +80,7 @@
         "Clipyst":      "tools",
         "Upscalin":     "tools",
         "Pianola":      "tools",
+        "SpectroNote":  "tools",
 
         // Meta
         "FluentMidi":   "include",
@@ -313,6 +318,8 @@
         "soundcard",
         "soundfont",
         "spacebar",
+        "Spectro",
+        "SPECTRONOTE",
         "SQRTPI",
         "srmd",
         "ssaa",

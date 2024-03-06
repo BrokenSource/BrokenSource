@@ -498,6 +498,7 @@ class BrokenPath(Path):
 
     @staticmethod
     def easy_external(url: URL, *, echo: bool=True) -> Path:
+        url = BrokenUtils.denum(url)
         return BrokenPath.extract(
             BrokenPath.download(url, echo=echo),
             Broken.BROKEN.DIRECTORIES.EXTERNALS,
