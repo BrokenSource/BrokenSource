@@ -47,7 +47,6 @@
 
 - **Python 3.12** is supported, but might need compilers for some packages
 
-
 <details>
   <summary>
     Don't want to use <code>brakeit.py</code> or <code>get.{sh,ps1}</code>?
@@ -86,43 +85,6 @@
 
 <br>
 
-## ✅ Linux and MacOS
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
-  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
-
-  **Linux** 💎 **MacOS**
-</div>
-
-<sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
-
-- **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
-
-- Open a **Terminal** on some directory and run either command below
-
-<br>
-
-🚀 Simplified:
-  ```bash
-  /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
-  ```
-
-<br>
-
-🍷 Traditional:
-  ```bash
-  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
-
-  python ./BrokenSource/brakeit.py
-  ```
-
-<br>
-
-**And done**, now run `broken` for a Command List 🚀
-
-<br>
-
 ## ✅ Windows
 
 <div align="center">
@@ -140,8 +102,6 @@
   ```
 
 **And done**, now run `broken` for a Command List 🚀
-
-<br>
 
 <details>
   <summary>
@@ -178,70 +138,42 @@
   <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
 </details>
 
+<br>
+
+## ✅ Linux and MacOS
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle;" width="82">
+  <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle;" width="82">
+
+  **Linux** 💎 **MacOS**
+</div>
+
+<sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
+
+- **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
+
+- Open a **Terminal** on some directory and run either command below
 
 <br>
 
-## ⚠️ **Common** Troubleshooting
-
-**Generic**:
-
-<details>
-  <summary>
-    No such command <code>(project)</code> when running <code>broken (project)</code>
-  </summary>
-  <br>
-  <hr>
-
-  Likely a partial initialization of the submodules
-
-  - Run `git submodule update --init --recursive` on the root directory to fix
-  <hr>
-  <br>
-</details>
+🚀 Simplified:
+  ```bash
+  /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
+  ```
 
 <br>
 
-**Windows**:
+🍷 Traditional:
+  ```bash
+  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
 
-<details>
-  <summary>
-    Shell Error: <i>execution of scripts is disabled on this system</i>
-  </summary>
-  <br>
-  <hr>
-
-  - This happens when activating a Python Virtual Environment - a `.ps1` script - from PowerShell
-
-  - Following <a href="https://stackoverflow.com/a/4038991"><b>This Answer</b></a>, Open a PowerShell terminal as <b>Administrator</b> and run:
-
-  ```powershell
-  Set-ExecutionPolicy RemoteSigned
+  python ./BrokenSource/brakeit.py
   ```
-  <hr>
-  <br>
-</details>
 
-<details>
-  <summary>
-    <a href="https://github.com/microsoft/winget-cli"><b>Winget</b></a> is not installed or available on your System
-  </summary>
-  <br>
-  <hr>
+<br>
 
-  As [**Microsoft**](https://learn.microsoft.com/en-us/windows/package-manager/winget/#install-winget) says in their documentation, you have options:
-
-  - Install it from the [**Microsoft Store**](https://apps.microsoft.com/detail/9NBLGGH4NNS1)
-
-  - Open a PowerShell terminal and run:
-
-  ```powershell
-  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
-  ```
-  <hr>
-  <br>
-</details>
-
-
+**And done**, now run `broken` for a Command List 🚀
 
 <br>
 <br>
