@@ -58,8 +58,8 @@
   <br>
 
   ```bash
-  # Note: This flag is safe, users would `sudo pip` and break their system
-  python -m pip install poetry --user --break-system-packages
+  # Note: You might need to add `--break-system-packages` on Linux
+  python -m pip install --upgrade poetry
   ```
   ```bash
   # Clone the Monorepo and all Submodules
@@ -103,41 +103,6 @@
 
 **And done**, now run `broken` for a Command List 🚀
 
-<details>
-  <summary>
-    <b>Traditional Method</b> - Alternative
-  </summary>
-  <br>
-
-  - **Install** [**Git for Windows**](https://git-scm.com/downloads) with the command (once):
-    ```bash
-    winget install -e --id Git.Git --source winget
-    ```
-
-  - **Install** [**Python 3.11**](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe) with the command (once):
-    ```bash
-    winget install -e --id Python.Python.3.11 --scope=machine
-    ```
-
-  - **Reload** the Path with the command: (Or Restart the Terminal)
-    ```bash
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-    ```
-
-  - **Clone** all Submodules and enter the Development Environment:
-    ```bash
-    git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
-    ```
-    ```bash
-    python ./BrokenSource/brakeit.py
-    ```
-  <br>
-
-  <sub><b>Note:</b> You might need to replace `/` with `\` on the second command, `python` to `python3` or add `.exe` to it</sub>
-
-  <sub><b>Note:</b> You don't need to use Winget (it's more practical), you can manually install Python and Git following the links above</sub>
-</details>
-
 <br>
 
 ## ✅ Linux and MacOS
@@ -153,25 +118,10 @@
 
 - **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
 
-- Open a **Terminal** on some directory and run either command below
-
-<br>
-
-🚀 Simplified:
+- Open a **Terminal** on some directory and run
   ```bash
   /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
   ```
-
-<br>
-
-🍷 Traditional:
-  ```bash
-  git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
-
-  python ./BrokenSource/brakeit.py
-  ```
-
-<br>
 
 **And done**, now run `broken` for a Command List 🚀
 
