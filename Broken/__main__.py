@@ -588,9 +588,6 @@ class BrokenCLI:
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
 
-        # Brakeit on the Website
-        BrokenPath.copy(root/"brakeit.py", BROKEN.DIRECTORIES.WEBSITE/"public"/"get.py")
-
     # ---------------------------------------------------------------------------------------------|
     # Installation section
 

@@ -75,6 +75,7 @@
         "Archium":      "tools",
         "Clipyst":      "tools",
         "Upscalin":     "tools",
+        "Pianola":      "tools",
 
         // Meta
         "FluentMidi":   "include",

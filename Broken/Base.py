@@ -542,9 +542,7 @@ class BrokenPath(Path):
             if other.is_file():
                 continue
             if BrokenPath.on_path(other):
-                log.debug(f"• Directory: ({other}) OK")
                 continue
-            log.debug(f"• Directory: ({other})")
             if persistent:
                 import userpath
                 userpath.append(str(other))
