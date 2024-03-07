@@ -243,6 +243,7 @@
         "mipmap",
         "mipmaps",
         "moderngl",
+        "MSAA",
         "MULAW",
         "muxer",
         "nanosleep",

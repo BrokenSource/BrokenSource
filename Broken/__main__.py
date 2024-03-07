@@ -677,12 +677,12 @@ class BrokenCLI:
             return
 
     def submodules(self,
-        root:     Annotated[Path, TyperOption("--root",     "-r", help="(Basic ) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
-        auth:     Annotated[bool, TyperOption("--auth",     "-a", help="(Basic ) Prompt Username and Password privately for Private clones")]=False,
-        username: Annotated[str,  TyperOption("--username", "-u", help="(Auth  ) Username to use for git clone")]=None,
-        password: Annotated[str,  TyperOption("--password", "-p", help="(Auth  ) Password to use for git clone")]=None,
-        pull:     Annotated[bool, TyperOption("--pull",           help="(Git   ) Run git pull on all submodules")]=False,
-        force:    Annotated[bool, TyperOption("--force",    "-f", help="(Git   ) Force pull (overrides local changes)")]=False,
+        root:     Annotated[Path, TyperOption("--root",     "-r", help="(Basic) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
+        auth:     Annotated[bool, TyperOption("--auth",     "-a", help="(Basic) Prompt Username and Password privately for Private clones")]=False,
+        username: Annotated[str,  TyperOption("--username", "-u", help="(Auth ) Username to use for git clone")]=None,
+        password: Annotated[str,  TyperOption("--password", "-p", help="(Auth ) Password to use for git clone")]=None,
+        pull:     Annotated[bool, TyperOption("--pull",           help="(Git  ) Run git pull on all submodules")]=False,
+        force:    Annotated[bool, TyperOption("--force",    "-f", help="(Git  ) Force pull (overrides local changes)")]=False,
     ):
         """🔽 Safely init and clone submodules, skip private ones, optional authentication"""
 

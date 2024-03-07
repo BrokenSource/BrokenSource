@@ -13,6 +13,7 @@ def Maybe(callable, condition):
 # Lazy Bastard methods
 
 inverse = lambda x: 1 / x
+clamp = lambda value, low, high: max(low, min(value, high))
 
 @contextlib.contextmanager
 def LazyCounter():
