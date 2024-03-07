@@ -13,7 +13,7 @@ class LoaderString(BrokenLoader):
             return value
 
         elif (path := BrokenPath(value, valid=True)):
-            return path.read_text()
+            return path.read_text(encoding="utf-8")
 
         elif isinstance(value, bytes):
             return value.decode()
