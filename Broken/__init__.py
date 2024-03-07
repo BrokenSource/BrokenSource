@@ -47,12 +47,16 @@ from .Project import *
 
 import Broken.Resources as BrokenResources
 
-BROKEN = PROJECT = BrokenProject(
+BROKEN = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
     RESOURCES=BrokenResources,
 )
+
+# The Broken.PROJECT variable points to the last initialized project, which more often than not
+# is the current project. Just `import Broken` and set/access it for own BrokenProject class
+PROJECT = BROKEN
 
 from .Loaders   import *
 from .Externals import *
