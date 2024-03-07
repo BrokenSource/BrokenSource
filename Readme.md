@@ -290,41 +290,31 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 
 - By contributing and using to the Projects, you agree to the **License** and **Terms** below
 
-<br>
-
 **The terms** are **simple** yet detailed - **be fair** and **responsible**, **credit** us and consider **donating** !
 
-<br>
 
 ## 🎓 Basic Terms
 - 📝 **All Projects have their own License**, unless specified in the Code or some `Readme.md`
 
 - ☑️ There is **_no warranty_** of the Software. However, **it improves over time** and we are open to **fixing** it
 
-<br>
 
 ## 👤 User Generated Content
-- 🖋 You are responsible for the **Content** you create, any copyright or law infringements are your own responsibility.
+- 🖋 You are responsible for the **Content** you generate, external copyright laws applies
 
 - ⚠️ By default, all **Content** you generate falls under the [**CC-BY 4.0 License**](https://creativecommons.org/licenses/by/4.0/)
 
 <sub><b>Note:</b> While we won't enforce punishments for failed attributions, we would appreciate if you could credit us</sub>
 
-<br>
-
 ## 🤝 Fair Use
-- 💝 Projects takes many human-hours to be created, consider **donating** and **sharing** the projects with others
+- 💝 Projects takes many hours to be created, consider **donating** and **sharing** the projects with others
 
 - 💰 We are **not** against **Commercial** use, but we are against **abuse** of the projects and their code. Be fair, get in touch with us, we'll be happy to help both sides grow
-
-<br>
 
 ## 🎩 Commercial Usage
 Want to **use** our **Projects** for **Your Company** or **YouTube Channel**?
 
 - Let's do something great together, contact me at [**@Tremeschin**](https://github.com/Tremeschin)
-
-<br>
 
 ## 👁 Privacy Policy
 - ✅ We **do not collect any data** from the user via Locally run Software, **period**<sup>*</sup>
