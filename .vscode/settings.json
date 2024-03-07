@@ -59,6 +59,7 @@
         "Midi":       "audio",
         "SoundFonts": "audio",
         "Brakeit":    "download",
+        "Profile":    "admin",
 
         // Shaders
         "Fragment": "shader",
