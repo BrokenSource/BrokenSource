@@ -909,6 +909,14 @@ class BrokenUtils:
         return type(multiple * round(number/multiple))
 
     @staticmethod
+    def round_resolution(width: Number, height: Number) -> Tuple[int, int]:
+        """FFmpeg likes multiples of 2, so let it be"""
+        return (
+            BrokenUtils.round(width,  multiple=2, type=int),
+            BrokenUtils.round(height, multiple=2, type=int)
+        )
+
+    @staticmethod
     def rms_stdlib(data) -> float:
         return math.sqrt(sum(x**2 for x in data) / len(data))
 
