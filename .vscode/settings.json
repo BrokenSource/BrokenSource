@@ -60,6 +60,7 @@
         "SoundFonts": "audio",
         "Brakeit":    "download",
         "Profile":    "admin",
+        "Fork":       "less",
 
         // Shaders
         "Fragment": "shader",
