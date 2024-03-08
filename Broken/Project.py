@@ -211,6 +211,36 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.WORKSPACE/"Externals")
 
     @property
+    def EXTERNAL_ARCHIVES(self) -> Path:
+        """Third party archives"""
+        return self.__mkdir__(self.EXTERNALS/"Archives")
+
+    @property
+    def EXTERNAL_IMAGES(self) -> Path:
+        """Third party images"""
+        return self.__mkdir__(self.EXTERNALS/"Images")
+
+    @property
+    def EXTERNAL_AUDIO(self) -> Path:
+        """Third party audio"""
+        return self.__mkdir__(self.EXTERNALS/"Audio")
+
+    @property
+    def EXTERNAL_FONTS(self) -> Path:
+        """Third party fonts"""
+        return self.__mkdir__(self.EXTERNALS/"Fonts")
+
+    @property
+    def EXTERNAL_SOUNDFONTS(self) -> Path:
+        """Third party soundfonts"""
+        return self.__mkdir__(self.EXTERNALS/"Soundfonts")
+
+    @property
+    def EXTERNAL_MIDIS(self) -> Path:
+        """Third party midis"""
+        return self.__mkdir__(self.EXTERNALS/"Midis")
+
+    @property
     def TEMP(self) -> Path:
         """Temporary directory for working files"""
         return self.__mkdir__(self.WORKSPACE/"Temp")

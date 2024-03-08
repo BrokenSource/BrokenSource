@@ -562,13 +562,14 @@ class BrokenFFmpeg:
 
     @staticmethod
     def install() -> Self:
+        # Prefer System FFmpeg if found
         if all(BrokenPath.which("ffmpeg", "ffprobe")):
             return
 
         log.info(f"FFmpeg wasn't found on System Path, will download a BtbN's Build")
 
         if not BrokenPlatform.OnMacOS:
-            BrokenPath.easy_external(''.join((
+            BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
                 "ffmpeg-master-latest-",
                 BrokenPlatform.Name.replace("windows", "win"),
@@ -577,7 +578,7 @@ class BrokenFFmpeg:
             )))
         else:
             for binary in ("ffmpeg", "ffprobe"):
-                BrokenPath.easy_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
+                BrokenPath.get_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
 
     def set_ffmpeg_binary(self, binary: Path=None) -> Self:
         """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
@@ -973,7 +974,7 @@ class BrokenFFmpeg:
 
     @property
     def command(self) -> List[str]:
-        return list(map(BrokenUtils.denum, BrokenUtils.flatten(self.binary, self.__command__)))
+        return apply(BrokenUtils.denum, BrokenUtils.flatten(self.binary, self.__command__))
 
     def run(self, **kwargs) -> subprocess.CompletedProcess:
         return shell(self.command, **kwargs)
@@ -1016,7 +1017,7 @@ class BrokenFFmpeg:
                         self.zmq_socket.connect(self.zmq_tcp)
                         self.zmq_socket.setsockopt(zmq.SNDHWM, self.buffer)
                         self.zmq_socket_id = self.zmq_socket.getsockopt(zmq.IDENTITY)
-                        command = list(map(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command))
+                        command = apply(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command)
                 except Exception:
                     log.minor("ZeroMQ is not supported, installed, or failed. Falling back to normal pipes")
 

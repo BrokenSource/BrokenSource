@@ -21,6 +21,19 @@ def LazyCounter():
     yield None
     log.info(f"Took: {time.perf_counter() - start:.4f} seconds")
 
+def easy_multiple(method: Callable) -> Callable:
+    """Returns a single element if method returns len 1 else list of outputs"""
+    def wrapper(*args, **kwargs):
+        result = list(method(*args, **kwargs))
+        if len(result) == 1:
+            return result[0]
+        return result
+    return wrapper
+
+def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
+    """map(f, x) is lazy, this consumes the generator returning a list"""
+    return list(map(callback, iterable))
+
 # -------------------------------------------------------------------------------------------------|
 
 def shell(
@@ -419,7 +432,9 @@ class BrokenPath(Path):
             return output
 
         # Show progress as this might take a while on slower IOs
-        with Halo(log.info(f"Extracting ({path}) → ({output})", echo=echo)):
+        log.info(f"Extracting ({path})", echo=echo)
+        log.info(f"→ ({output})")
+        with Halo("Extracting archive.."):
             shutil.unpack_archive(path, output)
 
         extract_flag.touch()
@@ -498,18 +513,35 @@ class BrokenPath(Path):
         return output
 
     @staticmethod
-    def easy_external(url: URL, *, echo: bool=True) -> Path:
-        url = BrokenUtils.denum(url)
-        return BrokenPath.extract(
-            BrokenPath.download(url, echo=echo),
-            Broken.BROKEN.DIRECTORIES.EXTERNALS,
-            PATH=True, echo=echo
-        )
+    def get_external(url: URL, *, echo: bool=True) -> Path:
+        file = BrokenPath.download(BrokenUtils.denum(url), echo=echo)
+
+        # File is a Archive, extract
+        if any((str(file).endswith(ext) for ext in ShutilFormat.values)):
+            log.minor(f"File ({file}) is an archive, extracting", echo=echo)
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_ARCHIVES
+            return BrokenPath.extract(file, directory, PATH=True, echo=echo)
+
+        # File is some known type, move to their own external directory
+        if file.suffix in (".mp3", ".ogg", ".flac", ".wav"):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
+        elif file.suffix in (".png", ".jpg", ".jpeg"):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
+        elif file.suffix in (".ttf", ".otf"):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_FONTS
+        elif file.suffix in (".sf2", ".sf3"):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_SOUNDFONTS
+        elif file.suffix in (".mid", ".midi"):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
+        else:
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNALS
+        return BrokenPath.move(file, directory, echo=echo)
 
     @staticmethod
+    @easy_multiple
     def which(*name: str, echo=True) -> Optional[Path]:
         BrokenPath.update_externals_path()
-        return BrokenUtils.one_or_all(list(map(shutil.which, name)))
+        return apply(shutil.which, name)
 
     @staticmethod
     def update_externals_path(path: PathLike=None, *, echo: bool=True) -> Optional[Path]:
@@ -679,13 +711,6 @@ class BrokenUtils:
             if (not truthy) or (truthy and item)
         ]
         return flatten(stuff)
-
-    @staticmethod
-    def one_or_all(*stuff: Union[Any, Iterable[Any]]) -> Union[Any, List[Any]]:
-        stuff = list(stuff)
-        if len(stuff) == 1:
-            return stuff[0]
-        return stuff
 
     @staticmethod
     def denum(item: Any) -> Any:
