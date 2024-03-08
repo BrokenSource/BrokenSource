@@ -34,7 +34,7 @@ BROKEN_PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 BROKEN_PYAPP:       bool = bool(getattr(os.environ, "PYAPP", False))
 BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
-BROKEN_DEVELOPMENT: bool = not BROKEN_RELEASE
+BROKEN_DEVELOPMENT: bool = (not BROKEN_RELEASE)
 BROKEN_VERSION:     str  = importlib.metadata.version("broken-source")
 
 # isort: off
@@ -81,6 +81,35 @@ forbiddenfruit.curse(
     list, "appendget",
     lambda self, value: self.append(value) or value
 )
+
+def transcends(method, base, generator: bool=False):
+    """
+    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
+    > We have just the right solution for you!
+
+    Introducing transcends, the decorator that crosses your class's MRO and calls the method
+    with the same name as the one you are decorating. It's an automatic super() !
+    """
+    name = method.__name__
+
+    def decorator(func: Callable) -> Callable:
+        def get_targets(self):
+            for cls in type(self).mro()[:-1]:
+                if cls in (base, object):
+                    continue
+                if (target := cls.__dict__.get(name)):
+                    yield target
+
+        # Note: We can't have a `if generator` else the func becomes a Generator
+        def yields(self, *args, **kwargs):
+            for target in get_targets(self):
+                yield from target(self, *args, **kwargs)
+        def plain(self, *args, **kwargs):
+            for target in get_targets(self):
+                target(self, *args, **kwargs)
+
+        return (yields if generator else plain)
+    return decorator
 
 # As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
 # binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found

@@ -1160,11 +1160,7 @@ class BrokenEventClient:
 
         # The assumed instant the code below will run instantly
         now = self.next_call if self.decoupled else time.bang_counter()
-
-        # Delta time between last call and next call
-        if self._dt: self.kwargs["dt"] = (now - self.last_call)
-
-        # Time since client started
+        if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
         if self._time: self.kwargs["time"] = (now - self.started)
 
         # Enter or not the given context, call callback with args and kwargs
