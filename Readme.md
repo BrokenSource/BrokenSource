@@ -116,8 +116,6 @@
 
 <sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
 
-- **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
-
 - Open a **Terminal** on some directory and run
   ```bash
   /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
