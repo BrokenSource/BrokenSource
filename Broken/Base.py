@@ -312,7 +312,7 @@ class BrokenPath(Path):
         Returns:
             None if it fails, else `virtual` Path
         """
-        log.info(f"Symlinking ({virtual}) → ({real})", echo=echo)
+        log.info(f"Symlinking ({virtual})\n → ({real})", echo=echo)
 
         # Return if already symlinked
         if (BrokenPath(virtual) == BrokenPath(real)):
@@ -363,7 +363,7 @@ class BrokenPath(Path):
         output = BrokenPath(output or path).with_suffix(f".{format}")
         path   = BrokenPath(path)
         BrokenPath.remove(output, echo=echo)
-        log.info(f"Zipping ({path}) → ({output})", echo=echo)
+        log.info(f"Zipping ({path})\n → ({output})", echo=echo)
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
@@ -432,8 +432,7 @@ class BrokenPath(Path):
             return output
 
         # Show progress as this might take a while on slower IOs
-        log.info(f"Extracting ({path})", echo=echo)
-        log.info(f"→ ({output})")
+        log.info(f"Extracting ({path})\n → ({output})", echo=echo)
         with Halo("Extracting archive.."):
             shutil.unpack_archive(path, output)
 
@@ -565,16 +564,16 @@ class BrokenPath(Path):
         *,
         recursively: bool=False,
         persistent: bool=False,
-        prepend: bool=True,
+        preferential: bool=True,
         echo: bool=True
     ) -> Path:
         """
         Add a path, recursively or not, to System's Path or this Python process's Path
 
         Args:
-            `recursively`: Also add all subdirectories of the given path
-            `persistent`:  Use 'userpath' package to add to the Shell's or Registry PATH
-            `prepend`:     The 'search preference', if False prefers system binaries
+            `recursively`:  Also add all subdirectories of the given path
+            `persistent`:   Use 'userpath' package to add to the Shell's or Registry PATH
+            `preferential`: Prepends the path for less priority on system binaries
 
         Returns:
             The Path argument itself
@@ -597,7 +596,7 @@ class BrokenPath(Path):
                 import userpath
                 userpath.append(str(other))
             else:
-                if prepend:
+                if preferential:
                     os.environ["PATH"] = (str(other)+os.pathsep+os.environ["PATH"])
                     sys.path.insert(0, str(other))
                 else:

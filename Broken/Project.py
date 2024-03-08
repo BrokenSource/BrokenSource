@@ -416,7 +416,9 @@ class BrokenProject:
         import pyfiglet
 
         # Build message
-        message  = [line for line in pyfiglet.figlet_format(self.APP_NAME).split("\n") if line.strip()]
+        ascii    = pyfiglet.figlet_format(self.APP_NAME, font="dos_rebel", width=1000)
+        message  = [""]
+        message += [line for line in ascii.split("\n") if line.strip()]
         message += [""]
         message += [f"Made with ❤️ by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
         message += [("Release version." if BROKEN_RELEASE else "Development version") + f" @ Python {sys.version.split()[0]}"]
@@ -426,7 +428,7 @@ class BrokenProject:
         size = max(map(len, message))
 
         for line in message:
-            log.info(line.center(size).rstrip())
+            print("  " + line.center(size).rstrip())
 
     @property
     def LOGLEVEL(self) -> str:
