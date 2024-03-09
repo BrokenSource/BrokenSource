@@ -114,9 +114,7 @@
   **Linux** 💎 **MacOS**
 </div>
 
-<sub><i><b>Note:</b> For MacOS, use [Homebrew](https://brew.sh/) package manager if needed 🍺</i></sub>
-
-- Open a **Terminal** on some directory and run
+Open a **Terminal** on some directory and run
   ```bash
   /bin/bash -c "$(curl -sS https://brakeit.github.io/get.sh)"
   ```

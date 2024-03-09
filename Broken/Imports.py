@@ -172,6 +172,10 @@ while True:
 
 # -------------------------------------------------------------------------------------------------|
 
+# Fix: typing.Self was implemented in Python 3.11
+if sys.version_info < (3, 11):
+    Self = TypeVar("Self")
+
 # # Custom types
 Image:     TypeAlias = PIL.Image.Image
 ImagePIL:  TypeAlias = PIL.Image.Image
@@ -219,12 +223,17 @@ u16:        TypeAlias = numpy.uint16
 uint8:      TypeAlias = numpy.uint8
 u8:         TypeAlias = numpy.uint8
 
-# Fix: typing.Self was implemented in Python 3.11
-if sys.version_info < (3, 11):
-    Self = TypeVar("Self")
-
 # Recurring math constants
 TAU     = (2 * PI)
 SQRT2   = numpy.sqrt(2)
 SQRT3   = numpy.sqrt(3)
 SQRT_PI = numpy.sqrt(PI)
+
+# File extensions. {} are sets !
+AUDIO_EXTENSIONS = {".wav", ".ogg", ".flac", ".mp3"}
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".webp"}
+FONTS_EXTENSIONS = {".ttf", ".otf", ".woff", ".woff2"}
+VIDEO_EXTENSIONS = {".mp4", ".mkv", ".webm", ".avi", ".mov", ".wmv", ".flv"}
+FONTS_EXTENSIONS = {".ttf", ".otf", ".woff", ".woff2"}
+MIDI_EXTENSIONS  = {".mid", ".midi"}
+SOUNDFONTS_EXTENSIONS = {".sf2", ".sf3"}

@@ -561,22 +561,21 @@ class BrokenFFmpeg:
         )
 
     @staticmethod
-    def install() -> Self:
-        # Prefer System FFmpeg if found
+    def install() -> None:
         if all(BrokenPath.which("ffmpeg", "ffprobe")):
             return
 
-        log.info(f"FFmpeg wasn't found on System Path, will download a BtbN's Build")
-
         if not BrokenPlatform.OnMacOS:
+            log.info(f"FFmpeg wasn't found on System Path, will download a BtbN's Build")
             BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
                 "ffmpeg-master-latest-",
                 BrokenPlatform.Name.replace("windows", "win"),
                 BrokenPlatform.Architecture.replace("amd64", "64"),
-                "-gpl.tar.xz"
+                "-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz"
             )))
         else:
+            log.info(f"FFmpeg wasn't found on System Path, will download a EverMeet's Build")
             for binary in ("ffmpeg", "ffprobe"):
                 BrokenPath.get_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
 

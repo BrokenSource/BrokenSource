@@ -581,7 +581,6 @@ class BrokenCLI:
             for file in BrokenUtils.flatten(
                 (root/"poetry.toml"),
                 (root/".gitignore"),
-                (root/".gitattributes"),
                 (root/".github"/"Funding.yml"),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
             ):

@@ -22,7 +22,7 @@ def LazyCounter():
     log.info(f"Took: {time.perf_counter() - start:.4f} seconds")
 
 def easy_multiple(method: Callable) -> Callable:
-    """Returns a single element if method returns len 1 else list of outputs"""
+    """Returns first element if the method returns len 1 else list of outputs"""
     def wrapper(*args, **kwargs):
         result = list(method(*args, **kwargs))
         if len(result) == 1:
@@ -504,8 +504,14 @@ class BrokenPath(Path):
             for data in response.iter_content(chunk_size=chunk):
                 progress.update(file.write(data))
 
-        # Sanity check
-        if (output.stat().st_size != size):
+        # Url was invalid
+        if (response.status_code != 200):
+            log.error(f"Failed to Download File at ({url}):", echo=echo)
+            log.error(f"• HTTP Error: {response.status_code}", echo=echo)
+            return
+
+        # Wrong downloaded and expected size
+        elif (output.stat().st_size != size):
             log.error(f"File ({output}) was not downloaded correctly", echo=echo)
             return
 
@@ -523,15 +529,15 @@ class BrokenPath(Path):
             return BrokenPath.extract(file, directory, PATH=True, echo=echo)
 
         # File is some known type, move to their own external directory
-        if file.suffix in (".mp3", ".ogg", ".flac", ".wav"):
+        if file.suffix in AUDIO_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
-        elif file.suffix in (".png", ".jpg", ".jpeg"):
+        elif file.suffix in IMAGE_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
-        elif file.suffix in (".ttf", ".otf"):
+        elif file.suffix in FONT_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_FONTS
-        elif file.suffix in (".sf2", ".sf3"):
+        elif file.suffix in SOUNDFONTS_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_SOUNDFONTS
-        elif file.suffix in (".mid", ".midi"):
+        elif file.suffix in MIDI_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
         else:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNALS
@@ -562,7 +568,17 @@ class BrokenPath(Path):
         prepend: bool=True,
         echo: bool=True
     ) -> Path:
-        """Add a path, recursively or not, to System's Path or this Python process's Path"""
+        """
+        Add a path, recursively or not, to System's Path or this Python process's Path
+
+        Args:
+            `recursively`: Also add all subdirectories of the given path
+            `persistent`:  Use 'userpath' package to add to the Shell's or Registry PATH
+            `prepend`:     The 'search preference', if False prefers system binaries
+
+        Returns:
+            The Path argument itself
+        """
         path = BrokenPath(path)
 
         # Can't recurse on file or non existing directories
@@ -1333,6 +1349,7 @@ class BrokenTyper:
     commands:    List[str] = Factory(list)
     default:     str       = None
     help_option: bool      = False
+    exit_hook:   Callable  = Mock()
     __first__:   bool      = True
     epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
@@ -1413,11 +1430,12 @@ class BrokenTyper:
             try:
                 self.app(args)
             except SystemExit:
-                pass
+                self.exit_hook()
             except KeyboardInterrupt:
                 log.success("BrokenTyper stopped by user")
-                pass
+                self.exit_hook()
             except Exception as e:
+                self.exit_hook()
                 raise e
 
             # Don't continue on non BrokenShell mode
