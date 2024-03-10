@@ -4,7 +4,7 @@
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-_spinner = yaspin(text="Initializing Broken Library")
+_spinner = yaspin(text="Initializing Library: Broken")
 _spinner.start()
 
 # -------------------------------------------------------------------------------------------------|
