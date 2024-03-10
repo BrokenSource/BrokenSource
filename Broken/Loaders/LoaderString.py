@@ -12,10 +12,10 @@ class LoaderString(BrokenLoader):
         elif isinstance(value, str):
             return value
 
+        elif isinstance(value, bytes):
+            return value.decode(encoding="utf-8")
+
         elif (path := BrokenPath(value, valid=True)):
             return path.read_text(encoding="utf-8")
-
-        elif isinstance(value, bytes):
-            return value.decode()
 
         return None

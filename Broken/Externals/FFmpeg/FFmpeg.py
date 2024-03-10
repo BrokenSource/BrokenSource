@@ -1035,7 +1035,7 @@ class BrokenFFmpeg:
             def close(self):
                 """Wait for all frames to be written and close the pipe"""
                 self.__stop__ = True
-                with Halo() as spinner:
+                with yaspin() as spinner:
                     while self.frames:
                         spinner.text = f"BrokenFFmpeg: Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
                         time.sleep(0.016)

@@ -1,4 +1,12 @@
 # -------------------------------------------------------------------------------------------------|
+# Faster than halo spinners
+
+from yaspin import yaspin
+
+_spinner = yaspin(text="Initializing Broken Library")
+_spinner.start()
+
+# -------------------------------------------------------------------------------------------------|
 # Keep repository clean of __pycache__ and .pyc files
 
 import os
@@ -125,3 +133,5 @@ for i, arg in enumerate(sys.argv):
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
 
 # -------------------------------------------------------------------------------------------------|
+
+_spinner.stop()

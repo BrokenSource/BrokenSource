@@ -417,18 +417,16 @@ class BrokenProject:
 
         # Build message
         ascii    = pyfiglet.figlet_format(self.APP_NAME, font="dos_rebel", width=1000)
+        width    = shutil.get_terminal_size().columns
         message  = [""]
         message += [line for line in ascii.split("\n") if line.strip()]
         message += [""]
         message += [f"Made with ❤️ by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
         message += [("Release version." if BROKEN_RELEASE else "Development version") + f" @ Python {sys.version.split()[0]}"]
-        message += [""]
-
-        # Get longest line size for centering
-        size = max(map(len, message))
-
+        print("─"*width)
         for line in message:
-            print("  " + line.center(size).rstrip())
+            print(line.center(width).rstrip())
+        print("─"*width)
 
     @property
     def LOGLEVEL(self) -> str:

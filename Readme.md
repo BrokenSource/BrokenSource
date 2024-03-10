@@ -43,7 +43,7 @@
 
 - The **brakeit** script does Sanity Checks, installs [`pip`](https://pip.pypa.io/en/stable/) and [`poetry`](https://python-poetry.org/), sets up and enter a Virtual Environment
 
-- **Linux tip**: You can run `(project)er` for faster startup times after the first run, like `shaderflower`
+- **Linux tip**: You can run `(project)s` for faster startup times after the first run, like `shaderflows`
 
 - **Python 3.12** is supported, but might need compilers for some packages
 

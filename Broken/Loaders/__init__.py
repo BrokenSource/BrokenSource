@@ -12,5 +12,6 @@ class BrokenLoader(ABC):
     def load(value: Any=None, **kwargs) -> Optional[Type]:
         ...
 
+from .LoaderBytes import *
 from .LoaderPIL import *
 from .LoaderString import *

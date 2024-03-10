@@ -121,7 +121,6 @@ from threading import Lock
 from threading import Thread
 from time import time as now
 from typing import *
-from unittest.mock import Mock
 
 import attrs
 import cachetools
@@ -144,7 +143,6 @@ from attrs import Factory
 from attrs import define
 from attrs import field as Field
 from dotmap import DotMap
-from halo import Halo
 from numpy import pi as PI
 from typer import Argument as TyperArgument
 from typer import Context as TyperContext

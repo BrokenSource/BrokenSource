@@ -4,10 +4,23 @@ import Broken
 
 from . import *
 
+# -------------------------------------------------------------------------------------------------|
+
+class Ignore:
+    """A class that does nothing. No-operation"""
+
+    def __nop__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __call__(self, *args, **kwargs) -> Self:
+        return self
+
+    def __getattr__(self, _):
+        return self.__nop__
 
 # Fixme: Why `condition or callable()` doesn't work?
 def Maybe(callable, condition):
-    return callable if condition else Mock()
+    return callable if condition else Ignore()
 
 # -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods
@@ -385,7 +398,7 @@ class BrokenPath(Path):
 
         # String or Path is a valid path
         elif (path := BrokenPath(data, valid=True)):
-            with Halo(log.info(f"Calculating sha256sum of ({path})")):
+            with yaspin(text=log.info(f"Calculating sha256sum of ({path})")):
                 if path.is_file():
                     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -433,7 +446,7 @@ class BrokenPath(Path):
 
         # Show progress as this might take a while on slower IOs
         log.info(f"Extracting ({path})\n → ({output})", echo=echo)
-        with Halo("Extracting archive.."):
+        with yaspin(text="Extracting archive.."):
             shutil.unpack_archive(path, output)
 
         extract_flag.touch()
@@ -1348,7 +1361,7 @@ class BrokenTyper:
     commands:    List[str] = Factory(list)
     default:     str       = None
     help_option: bool      = False
-    exit_hook:   Callable  = Mock()
+    exit_hook:   Callable  = Factory(Ignore)
     __first__:   bool      = True
     epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
@@ -1497,19 +1510,6 @@ class BrokenFluentBuilder:
         for key, value in kwargs.items():
             setattr(new, key, value)
         return new
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenNOP:
-    """A class that does nothing"""
-    def __nop__(self, *args, **kwargs) -> Self:
-        return self
-
-    def __call__(self, *args, **kwargs) -> Self:
-        return self
-
-    def __getattr__(self, _):
-        return self.__nop__
 
 # -------------------------------------------------------------------------------------------------|
 

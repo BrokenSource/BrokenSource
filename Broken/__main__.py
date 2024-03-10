@@ -263,7 +263,7 @@ class BrokenProjectCLI:
             while True:
 
                 # Fixme: Poetry has a very slow startup time, more than Broken
-                with Halo(text=f"Finding Virtual Environment"):
+                with yaspin(text=f"Finding Virtual Environment"):
                     venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
                 # Install if virtualenv is not found
@@ -292,7 +292,7 @@ class BrokenProjectCLI:
 
                 # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
                 if BrokenPlatform.OnLinux and (old_venv is not None):
-                    virtual = (old_venv /BrokenPlatform.PyScripts/(direct := f"{self.name.lower()}er"))
+                    virtual = (old_venv /BrokenPlatform.PyScripts/(direct := f"{self.name.lower()}s"))
                     real    = (venv_path/BrokenPlatform.PyScripts/"main")
                     if BrokenPath(virtual) != BrokenPath(real):
                         log.note(f"• Tip: For faster startup times but less integration, you can run ($ {direct})")
@@ -407,9 +407,10 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
+        with yaspin(text="Finding Projects"):
+            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
+            self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
