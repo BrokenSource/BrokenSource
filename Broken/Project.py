@@ -416,17 +416,22 @@ class BrokenProject:
         import pyfiglet
 
         # Build message
-        ascii    = pyfiglet.figlet_format(self.APP_NAME, font="dos_rebel", width=1000)
-        width    = shutil.get_terminal_size().columns
-        message  = [""]
-        message += [line for line in ascii.split("\n") if line.strip()]
-        message += [""]
-        message += [f"Made with ❤️ by {self.APP_AUTHOR}, Version: ({self.VERSION})"]
-        message += [("Release version." if BROKEN_RELEASE else "Development version") + f" @ Python {sys.version.split()[0]}"]
-        print("─"*width)
-        for line in message:
-            print(line.center(width).rstrip())
-        print("─"*width)
+        ascii = pyfiglet.figlet_format(self.APP_NAME, font="dos_rebel", width=1000)
+        ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
+
+        # Print panel center-justified lines
+        rprint(rich.panel.Panel(
+            rich.align.Align.center(ascii),
+            subtitle=' '.join((
+                f"Made with ❤️ by {self.APP_AUTHOR}.",
+                ("Release version." if BROKEN_RELEASE else "Development version"),
+                f"(Python {sys.version.split()[0]})"
+            )),
+            padding=1,
+            title_align="center",
+            subtitle_align="center",
+        ))
+        print()
 
     @property
     def LOGLEVEL(self) -> str:
@@ -441,20 +446,20 @@ class BrokenProject:
         self.__START_LOGGING__()
 
     def __START_LOGGING__(self):
-        BrokenLogging().reset()
-        BrokenLogging().stdout(self.LOGLEVEL)
+        log.stdout(self.LOGLEVEL)
+        # log.file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
 
-        # Fixme: Two logging instances on the same file on Windows?
-        try:
-            BrokenLogging().file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
-        except PermissionError as e:
-            # Fixme: Two logging instances for the same file on Windows doesn't work
-            if os.name == "nt":
-                pass
-            else:
-                raise e
-        except Exception as e:
-            raise e
+        # # Fixme: Two logging instances on the same file on Windows?
+        # try:
+        #     log.file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
+        # except PermissionError as e:
+        #     # Fixme: Two logging instances for the same file on Windows doesn't work
+        #     if os.name == "nt":
+        #         pass
+        #     else:
+        #         raise e
+        # except Exception as e:
+        #     raise e
 
 # -------------------------------------------------------------------------------------------------|
 

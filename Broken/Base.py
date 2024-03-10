@@ -1101,11 +1101,6 @@ class BrokenThread:
 
 # -------------------------------------------------------------------------------------------------|
 
-# Count time since.. the big bang with the bang counter. Shebang #!
-# Serious note, a Decoupled client starts at the Python's time origin, others on OS perf counter
-BIG_BANG: Seconds = time.perf_counter()
-time.bang_counter = (lambda: time.perf_counter() - BIG_BANG)
-
 @define
 class BrokenEventClient:
     """

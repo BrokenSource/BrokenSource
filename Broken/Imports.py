@@ -130,10 +130,10 @@ import distro
 import dotenv
 import forbiddenfruit
 import intervaltree
-import loguru
 import numpy
 import PIL
 import PIL.Image
+import rich
 import schedule
 import toml
 import tqdm
@@ -144,6 +144,8 @@ from attrs import define
 from attrs import field as Field
 from dotmap import DotMap
 from numpy import pi as PI
+from rich import pretty
+from rich import print as rprint
 from typer import Argument as TyperArgument
 from typer import Context as TyperContext
 from typer import Option as TyperOption
@@ -235,3 +237,8 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".webm", ".avi", ".mov", ".wmv", ".flv"}
 FONTS_EXTENSIONS = {".ttf", ".otf", ".woff", ".woff2"}
 MIDI_EXTENSIONS  = {".mid", ".midi"}
 SOUNDFONTS_EXTENSIONS = {".sf2", ".sf3"}
+
+# Count time since.. the big bang with the bang counter. Shebang #!
+# Serious note, a Decoupled client starts at the Python's time origin, others on OS perf counter
+BIG_BANG: Seconds = time.perf_counter()
+time.bang_counter = (lambda: time.perf_counter() - BIG_BANG)

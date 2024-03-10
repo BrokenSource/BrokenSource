@@ -2,6 +2,7 @@
 # Faster than halo spinners
 
 from yaspin import yaspin
+from yaspin.spinners import Spinners
 
 _spinner = yaspin(text="Initializing Broken Library")
 _spinner.start()
@@ -72,7 +73,7 @@ from .Externals import *
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!
 
-if (sys.version_info>=(3, 12)) and (BrokenLogging().project=="Broken") and not (BrokenPlatform.OnLinux):
+if (sys.version_info>=(3, 12)) and (log.project=="Broken") and not (BrokenPlatform.OnLinux):
     log.warning(f"You are on Python 3.12+, some project packages might require compilation")
 
 # Ignore mostly NumPy warnings

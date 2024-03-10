@@ -1,132 +1,175 @@
+from __future__ import annotations
+
 from . import *
 
-# Add milliseconds to timedelta for logging
-forbiddenfruit.curse(
-    datetime.timedelta, "milliseconds",
-    property(lambda self: f"{(self.seconds*1000 + self.microseconds/1000):5.0f}")
-)
 
+@define
+class _LogLevel:
+    no:    int
+    color: str
+    def _get(self, other: Union[int, Self]) -> int:
+        return getattr(other, "no", other)
+    def __lt__(self, other): return self.no  < self._get(other)
+    def __le__(self, other): return self.no <= self._get(other)
+    def __eq__(self, other): return self.no == self._get(other)
+    def __ne__(self, other): return self.no != self._get(other)
+    def __gt__(self, other): return self.no  > self._get(other)
+    def __ge__(self, other): return self.no >= self._get(other)
+
+
+class LogLevel(BrokenEnum):
+    CRITICAL  = _LogLevel(no= 0, color="red")
+    EXCEPTION = _LogLevel(no= 0, color="red")
+    ERROR     = _LogLevel(no= 5, color="red")
+    WARNING   = _LogLevel(no=15, color="yellow")
+    INFO      = _LogLevel(no=20, color="bright_white")
+    SUCCESS   = _LogLevel(no=20, color="green")
+    SKIP      = _LogLevel(no=20, color="bright_black")
+    MINOR     = _LogLevel(no=20, color="bright_black")
+    FIXME     = _LogLevel(no=20, color="cyan")
+    TODO      = _LogLevel(no=20, color="dark_blue")
+    NOTE      = _LogLevel(no=20, color="magenta")
+    DEBUG     = _LogLevel(no=25, color="turquoise4")
+    TRACE     = _LogLevel(no=30, color="dark_turquoise")
+
+
+class LoggingFormats:
+    """Default Broken logging pretty formats"""
+    Stdout: str = (
+        "│[{log.project_color}]{log.project:<10}[/{log.project_color}]├"
+        "┤[green]{ms:>4}ms[/green]├"
+        "┤[{color}]{level:7}[/{color}]"
+        "│ ▸ {message}"
+    )
+
+    File: str = (
+        "({log.project})"
+        "({time:YYYY-MM-DD HH:mm:ss})"
+        "-({ms}ms)"
+        "-({level:7}): "
+        "{message}"
+    )
+
+
+@define(eq=False)
+class LogTarget:
+    target:     Any
+    level:      LogLevel = LogLevel.INFO.Field()
+    format:     str = Field(default=LoggingFormats.Stdout, converter=str)
+    identifier: str = Field(default="logging", converter=str)
+
+    def __hash__(self) -> int:
+        return hash(self.identifier)
+
+    def __eq__(self, other) -> bool:
+        return (self.identifier == other.identifier)
+
+
+@define
 class BrokenLogging:
+    targets: Set[Any] = Factory(set)
 
     # # Singleton
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "singleton"):
             cls.singleton = super().__new__(cls)
-            cls.singleton.__start__()
         return cls.singleton
 
-    def __start__(self):
-        """__init__ but for the singleton"""
-        self.reset()
-
-    # # Context information
+    # # Useful properties
 
     @property
-    def project(self):
-        """Current project name"""
+    def project(self) -> str:
         return os.environ.get("BROKEN_CURRENT_PROJECT_NAME", "Broken")
 
     @property
-    def project_color(self):
-        """Current project 'logging color'"""
-        return "dim" if (self.project == "Broken") else "light-blue"
+    def project_color(self) -> str:
+        return "white" if (self.project=="Broken") else "royal_blue1"
 
-    # # Output log places
+    # # Common Sinks
 
-    def reset(self):
-        """Reset logger bindings"""
-        loguru.logger.remove()
-        self.logger = loguru.logger.bind()
-        self.__loglevel__()
+    def stdout(self,
+        level: LogLevel, *,
+        rich: bool=True,
+        format: str=LoggingFormats.Stdout
+    ) -> LogTarget:
+        self.targets.add(target := LogTarget(
+            target=functools.partial((rprint if rich else print)),
+            level=LogLevel.get(level),
+            format=format,
+            identifier="stdout"
+        ))
+        return target
 
-    def stdout(self, loglevel: str) -> Self:
-        """Add stdout logging"""
-        self.reset()
-        self.logger.add(
-            sys.stdout,
-            colorize=True,
-            level=loglevel,
-            format=(
-                f"\r│<{self.project_color}>{self.project.ljust(10)}</{self.project_color}>├"
-                "┤<green>{elapsed.milliseconds}ms</green>├"
-                "┤<level>{level:7}</level>"
-                "│ ▸ <level>{message}</level>"
-            )
-        )
-        return self
+    def file(self,
+        path: PathLike,
+        level: str, *,
+        reset: bool=True,
+        format: str=LoggingFormats.File
+    ) -> LogTarget:
+        if reset: Path(path).unlink(missing_ok=True)
+        self.targets.add(target := LogTarget(
+            target=functools.partial(open(path, "w").write),
+            level=LogLevel.get(level),
+            format=format
+        ))
+        return target
 
-    def file(self, path: PathLike, loglevel: str, empty: bool=True) -> Self:
-        """Add file logging"""
+    # # Actual logging
 
-        # Remove
-        if (path := Path(path)).exists() and empty:
-            path.unlink()
+    def log(self, *content, level: LogLevel, echo: bool=True) -> str:
+        message = (" ".join(map(str, content)))
 
-        self.logger.add(
-            path,
-            level=loglevel,
-            format=(
-                f"({self.project})"
-                "({time:YYYY-MM-DD HH:mm:ss})-"
-                "({elapsed.milliseconds}ms)-"
-                "({level:7})"
-                " ▸ {message}"
-            )
-        )
-        return self
-
-    # # Add new log levels
-
-    def __add_loglevel__(self, name: str, loglevel: int=0, color: str=None) -> Self:
-        """Create a new loglevel `.{name.lower()}` on the logger"""
-        def log(*args, echo: bool=True, **kwargs) -> str:
-            message = " ".join(map(str, args))
-            if not echo:
-                return message
-            for line in message.split("\n"):
-                self.logger.log(name, line, **kwargs)
+        if not echo:
             return message
 
-        # Create new log level on logger
-        try:
-            self.logger.level(name, loglevel, f"<{color}><bold>" if color else "<bold>")
-        except TypeError:
-            pass
+        # Write to all sinks
+        for line in message.split("\n"):
+            for sink in self.targets:
 
-        # Assign log function to logger
-        setattr(self.logger, name.lower(), log)
-        return self
+                # Immediately skip if target is less verbose
+                if (sink.level.value < level.value):
+                    continue
 
-    def __loglevel__(self) -> Self:
-        """Bootstrap better log levels"""
+                # Replace {message} first so it have access to final format!
+                sink.target(sink.format.replace("{message}", line).format(
+                    log=self,
+                    time=datetime.datetime.now(),
+                    level=level.name,
+                    color=level.value.color,
+                    ms=int((time.perf_counter() - BIG_BANG)*1000),
+                ))
 
-        # Override default ones for echo= argument
-        self.__add_loglevel__("INFO")
-        self.__add_loglevel__("WARNING")
-        self.__add_loglevel__("ERROR")
-        self.__add_loglevel__("DEBUG")
-        self.__add_loglevel__("TRACE")
-        self.__add_loglevel__("SUCCESS")
-        self.__add_loglevel__("CRITICAL")
-        self.__add_loglevel__("EXCEPTION")
+        return message
 
-        # Add custom ones
-        self.__add_loglevel__("FIXME",  35, "cyan"      )
-        self.__add_loglevel__("TODO",   35, "blue"      )
-        self.__add_loglevel__("NOTE",   35, "magenta"   )
-        self.__add_loglevel__("MINOR",  35, "fg #777"   )
-        self.__add_loglevel__("ACTION", 35, "fg #7340ff")
-        self.__add_loglevel__("SKIP",   35, "fg #777"   )
+    # # The many logging methods
 
-        return self
+    # I mean, sure, we could patch __getattr__ but this is faster
+    def critical(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.CRITICAL, **kwargs)
+    def exception(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.EXCEPTION, **kwargs)
+    def error(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.ERROR, **kwargs)
+    def warning(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.WARNING, **kwargs)
+    def info(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.INFO, **kwargs)
+    def success(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.SUCCESS, **kwargs)
+    def skip(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.SKIP, **kwargs)
+    def minor(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.MINOR, **kwargs)
+    def fixme(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.FIXME, **kwargs)
+    def todo(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.TODO, **kwargs)
+    def note(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.NOTE, **kwargs)
+    def debug(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.DEBUG, **kwargs)
+    def trace(self, *content, **kwargs) -> str:
+        return self.log(*content, level=LogLevel.TRACE, **kwargs)
 
-# Initialize logging class
-log = BrokenLogging().stdout("CRITICAL").logger
-
-# -------------------------------------------------------------------------------------------------|
-
-# I hope one day to implement a log-able pretty exceptions
-class BrokenExceptions:
-    def hook(self, exception_type, value, traceback) -> None:
-        ...
+log = BrokenLogging()
