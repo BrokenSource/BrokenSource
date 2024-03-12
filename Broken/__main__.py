@@ -133,19 +133,19 @@ class BrokenProjectCLI:
     def poetry(self, ctx: TyperContext) -> None:
         """Run poetry command"""
         self.pop_venv()
-        shell("poetry", *ctx.args)
+        shell("python", "-m", "poetry", *ctx.args)
 
     def poe(self, ctx: TyperContext) -> None:
         """Run poethepoet command"""
         self.pop_venv()
-        shell("poe", *ctx.args)
+        shell("python", "-m", "poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
 
         # # Dependencies
         if dependencies:
             if self.is_python:
-                shell("poetry", "update")
+                shell("python", "-m", "poetry", "update")
             if self.is_rust:
                 shell("cargo", "update")
             if self.is_cpp:
@@ -537,16 +537,24 @@ class BrokenCLI:
         build_tools: Annotated[bool, TyperOption("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
         """🦀 Installs Build Dependencies and a Rust Toolchain"""
+        import requests
 
         # Install rustup based on platform
         if not shutil.which("rustup"):
+            log.info("Rustup wasn't found, will install it")
             if BrokenPlatform.OnWindows:
                 shell("winget", "install", "-e", "--id", "Rustlang.Rustup")
             elif BrokenPlatform.OnUnix:
                 shell("sh", "-c", requests.get("https://sh.rustup.rs").text, "-y", echo=False)
-            log.note(f"Please restart your shell for Rust toolchain to be on PATH")
-            log.note(f"• If this didn't work, have rustup available externally")
-            exit(0)
+
+            # If rustup isn't found, ask user to restart shell
+            BrokenPath.add_to_path(Path.home()/".cargo"/"bin")
+
+            if not BrokenPath.which("rustup"):
+                log.note(f"Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
+                log.note(f"• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
+                log.note(f"• Please restart your shell for Rust toolchain to be on PATH")
+                exit(0)
 
         # Install Visual C++ Build Tools on Windows
         if BrokenPlatform.OnWindows and build_tools:
@@ -579,7 +587,7 @@ class BrokenCLI:
         root = BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:
-            for file in BrokenUtils.flatten(
+            for file in flatten(
                 (root/"poetry.toml"),
                 (root/".gitignore"),
                 (root/".github"/"Funding.yml"),

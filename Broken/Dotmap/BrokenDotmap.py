@@ -84,7 +84,7 @@ class BrokenDotmap(
         return {
             k: v.to_dict() if isinstance(v, type(self)) else v
             for k, v in sorted(self.items(), key=lambda x: x[0])
-            if not BrokenUtils.is_dunder(k)
+            if not dunder(k)
         }
 
     @property
@@ -101,15 +101,15 @@ class BrokenDotmap(
 
     def items(self) -> Dict[str, Any]:
         log.trace(f"({self.__uuid__:2}) self.items()")
-        return [(k, v) for k, v in self.__dict__.items() if not BrokenUtils.is_dunder(k)]
+        return [(k, v) for k, v in self.__dict__.items() if not dunder(k)]
 
     def keys(self) -> list:
         log.trace(f"({self.__uuid__:2}) self.keys()")
-        return [k for k in self.__dict__.keys() if not BrokenUtils.is_dunder(k)]
+        return [k for k in self.__dict__.keys() if not dunder(k)]
 
     def values(self) -> list:
         log.trace(f"({self.__uuid__:2}) self.values()")
-        return [v for k, v in self.__dict__.items() if not BrokenUtils.is_dunder(k)]
+        return [v for k, v in self.__dict__.items() if not dunder(k)]
 
     # # Random dunder
 
@@ -245,7 +245,7 @@ class BrokenDotmap(
         """Handle attribute assignment using dot notation"""
 
         # Do not "recurse" on dunder attributes, they are self!
-        if BrokenUtils.is_dunder(key):
+        if dunder(key):
             self.__dict__[key] = value
             return
 

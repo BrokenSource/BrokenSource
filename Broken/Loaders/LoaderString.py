@@ -19,3 +19,5 @@ class LoaderString(BrokenLoader):
             return path.read_text(encoding="utf-8")
 
         return None
+
+LoadableString = Union[str, bytes, PathLike, None]

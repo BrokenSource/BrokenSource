@@ -43,3 +43,5 @@ class LoaderImage(BrokenLoader):
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
         return None
+
+LoadableImage = Union[Image, PathLike, URL, numpy.ndarray, bytes, None]

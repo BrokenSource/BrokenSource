@@ -439,7 +439,7 @@ class FFmpegFilterFactory:
         height: int=None,
         filter: FFmpegScaleFilter=FFmpegScaleFilter.Lanczos
     ) -> str:
-        width, height = BrokenUtils.flatten(width, height)
+        width, height = flatten(width, height)
         filter = FFmpegScaleFilter.get(filter).value
         return f"scale={width}:{height}:flags={filter}"
 
@@ -610,13 +610,13 @@ class BrokenFFmpeg:
 
     def __add_option__(self, *options: callable) -> Self:
         """Add a private callback as an option for the next allowed command pipeline"""
-        for option in BrokenUtils.flatten(options):
+        for option in flatten(options):
             self.options[self.__private_to_option__(option.__name__)] = option
         return self
 
     def __del_option__(self, *options: callable) -> Self:
         """Remove a private callback as an option for the next allowed command pipeline"""
-        for option in BrokenUtils.flatten(options):
+        for option in flatten(options):
             self.options.pop(self.__private_to_option__(option.__name__))
         return self
 
@@ -644,7 +644,7 @@ class BrokenFFmpeg:
     ) -> Self:
         """Append items to the command, maybe delete or add new callbacks to the options"""
         log.debug(f"BrokenFFmpeg Append: {items}")
-        self.__command__ = BrokenUtils.flatten(self.__command__, items)
+        self.__command__ = flatten(self.__command__, items)
         self.__del_option__(delete)
         self.__add_option__(add)
         return self
@@ -973,7 +973,7 @@ class BrokenFFmpeg:
 
     @property
     def command(self) -> List[str]:
-        return apply(BrokenUtils.denum, BrokenUtils.flatten(self.binary, self.__command__))
+        return apply(denum, flatten(self.binary, self.__command__))
 
     def run(self, **kwargs) -> subprocess.CompletedProcess:
         return shell(self.command, **kwargs)

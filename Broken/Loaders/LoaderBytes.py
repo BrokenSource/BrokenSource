@@ -19,3 +19,5 @@ class LoaderBytes(BrokenLoader):
             return path.read_bytes()
 
         return None
+
+LoadableBytes = Union[bytes, str, PathLike, None]

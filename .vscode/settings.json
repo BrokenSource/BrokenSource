@@ -246,6 +246,7 @@
         "moderngl",
         "MSAA",
         "MULAW",
+        "Multipass",
         "muxer",
         "nanosleep",
         "nbytes",

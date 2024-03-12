@@ -4,7 +4,7 @@
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-_spinner = yaspin(text="Initializing Library: Broken")
+_spinner = yaspin(text="Loading Library: Broken")
 _spinner.start()
 
 # -------------------------------------------------------------------------------------------------|
@@ -70,55 +70,8 @@ PROJECT = BROKEN
 from .Loaders   import *
 from .Externals import *
 
-# -------------------------------------------------------------------------------------------------|
-# Cursed Python ahead, here be dragons!
-
 if (sys.version_info>=(3, 12)) and (log.project=="Broken") and not (BrokenPlatform.OnLinux):
     log.warning(f"You are on Python 3.12+, some project packages might require compilation")
-
-# Ignore mostly NumPy warnings
-warnings.filterwarnings('ignore')
-
-# Add a list.get(index, default=None)
-forbiddenfruit.curse(
-    list, "get",
-    lambda self, index, default=None: self[index] if (index < len(self)) else default
-)
-
-# Walrus-like operator for list.append
-forbiddenfruit.curse(
-    list, "appendget",
-    lambda self, value: self.append(value) or value
-)
-
-def transcends(method, base, generator: bool=False):
-    """
-    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
-    > We have just the right solution for you!
-
-    Introducing transcends, the decorator that crosses your class's MRO and calls the method
-    with the same name as the one you are decorating. It's an automatic super() !
-    """
-    name = method.__name__
-
-    def decorator(func: Callable) -> Callable:
-        def get_targets(self):
-            for cls in type(self).mro()[:-1]:
-                if cls in (base, object):
-                    continue
-                if (target := cls.__dict__.get(name)):
-                    yield target
-
-        # Note: We can't have a `if generator` else the func becomes a Generator
-        def yields(self, *args, **kwargs):
-            for target in get_targets(self):
-                yield from target(self, *args, **kwargs)
-        def plain(self, *args, **kwargs):
-            for target in get_targets(self):
-                target(self, *args, **kwargs)
-
-        return (yields if generator else plain)
-    return decorator
 
 # As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
 # binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found

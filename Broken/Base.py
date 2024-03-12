@@ -34,6 +34,20 @@ def LazyCounter():
     yield None
     log.info(f"Took: {time.perf_counter() - start:.4f} seconds")
 
+def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
+    """
+    Flatten nested list like iterables to a 1D list
+    [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
+    """
+    # Fixme: Add allow_none argument
+    iterables = (list, tuple, Generator)
+    flatten = lambda stuff: [
+        item for subitem in stuff for item in
+        (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
+        if (not truthy) or (truthy and item)
+    ]
+    return flatten(stuff)
+
 def easy_multiple(method: Callable) -> Callable:
     """Returns first element if the method returns len 1 else list of outputs"""
     def wrapper(*args, **kwargs):
@@ -46,6 +60,76 @@ def easy_multiple(method: Callable) -> Callable:
 def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
     """map(f, x) is lazy, this consumes the generator returning a list"""
     return list(map(callback, iterable))
+
+@easy_multiple
+def denum(*items: Any) -> Any:
+    """De-enumerates enum iterables to their value"""
+    return apply(lambda item: item.value if isinstance(item, Enum) else item, items)
+
+@staticmethod
+def dunder(name: str) -> bool:
+    return name.startswith("__") and name.endswith("__")
+
+# -------------------------------------------------------------------------------------------------|
+# Cursed Python ahead, here be dragons!
+
+# Ignore mostly NumPy warnings
+warnings.filterwarnings('ignore')
+
+# Add a list.get(index, default=None)
+forbiddenfruit.curse(
+    list, "get",
+    lambda self, index, default=None: self[index] if (index < len(self)) else default
+)
+
+# Walrus-like operator for list.append
+forbiddenfruit.curse(
+    list, "appendget",
+    lambda self, value: self.append(value) or value
+)
+
+def transcends(method, base, generator: bool=False):
+    """
+    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
+    > We have just the right solution for you!
+
+    Introducing transcends, the decorator that crosses your class's MRO and calls the method
+    with the same name as the one you are decorating. It's an automatic super() !
+    """
+    name = method.__name__
+
+    def decorator(func: Callable) -> Callable:
+        def get_targets(self):
+            for cls in type(self).mro()[:-2]:
+                if cls in (base, object):
+                    continue
+                if (target := cls.__dict__.get(name)):
+                    yield target
+
+        # Note: We can't have a `if generator` else the func becomes a Generator
+        def yields(self, *args, **kwargs):
+            for target in get_targets(self):
+                yield from target(self, *args, **kwargs)
+        def plain(self, *args, **kwargs):
+            for target in get_targets(self):
+                target(self, *args, **kwargs)
+
+        return (yields if generator else plain)
+    return decorator
+
+class BrokenAttrs:
+    """
+    Walk over an @attrs.defined class and call __post__ on all classes in the MRO.
+    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
+    # Fixme: Can improve by starting on BrokenAttrs itself
+    """
+    def __attrs_post_init__(self):
+        for cls in reversed(type(self).mro()):
+            if method := cls.__dict__.get("__post__"):
+                method(self)
+
+    def __post__(self) -> None:
+        pass
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -87,7 +171,7 @@ def shell(
         raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
     # Flatten a list, remove falsy values, convert to strings
-    command = tuple(map(str, BrokenUtils.flatten(args)))
+    command = tuple(map(str, flatten(args)))
 
     if shell:
         log.warning("Running command with (shell=True), be careful.." + " Consider using (confirm=True)"*(not confirm))
@@ -229,17 +313,17 @@ class BrokenPath(Path):
         src, dst = BrokenPath(src, dst)
         BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
-            log.info(f"Copying Directory ({src}) → ({dst})", echo=echo)
+            log.info(f"Copying Directory ({src})\n → ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
-            log.info(f"Copying File ({src}) → ({dst})", echo=echo)
+            log.info(f"Copying File ({src})\n → ({dst})", echo=echo)
             shutil.copy2(src, dst)
         return dst
 
     @staticmethod
     def move(src: PathLike, dst: PathLike, *, echo=True) -> "destination":
         src, dst = BrokenPath(src, dst)
-        log.info(f"Moving ({src}) → ({dst})", echo=echo)
+        log.info(f"Moving ({src})\n → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
@@ -382,7 +466,10 @@ class BrokenPath(Path):
 
     @staticmethod
     def stem(path: PathLike) -> str:
-        """Get the "true stem" of a path, as pathlib's only remove the last one"""
+        """
+        Get the "true stem" of a path, as pathlib's only gets the last dot one
+        • "/path/with/many.ext.ens.ions" -> "many" instead of "many.ext.ens"
+        """
         stem = Path(Path(path).stem)
         while (stem := Path(stem).with_suffix("")).suffix:
             continue
@@ -390,7 +477,7 @@ class BrokenPath(Path):
 
     @staticmethod
     def sha256sum(data: Union[Path, str, bytes]) -> Optional[str]:
-        """Get the sha256sum of a file or bytes"""
+        """Get the sha256sum of a file, directory or bytes"""
 
         # Nibble the bytes !
         if isinstance(data, bytes):
@@ -531,8 +618,8 @@ class BrokenPath(Path):
         return output
 
     @staticmethod
-    def get_external(url: URL, *, echo: bool=True) -> Path:
-        file = BrokenPath.download(BrokenUtils.denum(url), echo=echo)
+    def get_external(url: URL, *, subdir: str="", echo: bool=True) -> Path:
+        file = BrokenPath.download(denum(url), echo=echo)
 
         # File is a Archive, extract
         if any((str(file).endswith(ext) for ext in ShutilFormat.values)):
@@ -553,7 +640,7 @@ class BrokenPath(Path):
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
         else:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNALS
-        return BrokenPath.move(file, directory, echo=echo)
+        return BrokenPath.move(file, directory/subdir, echo=echo)
 
     @staticmethod
     @easy_multiple
@@ -630,20 +717,6 @@ class BrokenPath(Path):
         elif BrokenPlatform.OnMacOS:
             shell("open", path)
 
-    @staticmethod
-    def read_text(path: Path, *, encoding: str="utf8", echo: bool=True) -> Optional[str]:
-        """Safe read text from a file, returns an empty string if the file doesn't exist"""
-        if (path := BrokenPath(path)).exists():
-            return path.read_text(encoding=encoding)
-        return ""
-
-    @staticmethod
-    def read_bytes(path: Path, *, echo: bool=True) -> Optional[bytes]:
-        """Safe read bytes from a file, returns an empty bytes string if the file doesn't exist"""
-        if (path := BrokenPath(path)).exists():
-            return path.read_bytes()
-        return b""
-
     # Fixme: Untested functions, needs better name; are these useful?
 
     @staticmethod
@@ -656,10 +729,6 @@ class BrokenPath(Path):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.touch()
         return path.exists() and path.is_file() and len(path.read_text()) == 0
-
-    @staticmethod
-    def empty_path(path: Path) -> bool:
-        return not path.exists()
 
     @contextmanager
     def PATH(*,
@@ -678,7 +747,7 @@ class BrokenPath(Path):
         """
 
         # Make Path objects
-        directories = [Path(x) for x in BrokenUtils.force_list(directories)]
+        directories = apply(Path, flatten(directories))
 
         # Get current PATH
         old = os.environ["PATH"]
@@ -716,36 +785,9 @@ class BrokenPath(Path):
 class BrokenUtils:
 
     @staticmethod
-    def force_list(item: Union[Any, List[Any]]) -> List[Any]:
-        """Force an item to be a list, if it's not already"""
-        return item if (type(item) is list) else [item]
-
-    @staticmethod
     def truthy(items: List[Any]) -> List[Any]:
         """Transforms a list into a truthy-only values list, removing all falsy values"""
-        return [item for item in BrokenUtils.force_list(items) if item]
-
-    @staticmethod
-    def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
-        """
-        Flatten nested list like iterables to a 1D list
-        [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
-        """
-        # Fixme: Add allow_none argument
-        iterables = (list, tuple, Generator)
-        flatten = lambda stuff: [
-            item for subitem in stuff for item in
-            (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
-            if (not truthy) or (truthy and item)
-        ]
-        return flatten(stuff)
-
-    @staticmethod
-    def denum(item: Any) -> Any:
-        """De-enumerates enum iterables to their value"""
-        if isinstance(item, Enum):
-            return item.value
-        return item
+        return [item for item in flatten(items) if item]
 
     @staticmethod
     def get_free_tcp_port():
@@ -876,10 +918,6 @@ class BrokenUtils:
 
         log.info(f"Relaunching self process with arguments ({sys.argv})", echo=echo)
         return shell(sys.executable, sys.argv, echo=echo)
-
-    @staticmethod
-    def is_dunder(name: str) -> bool:
-        return name.startswith("__") and name.endswith("__")
 
     # Todo: Move this to a proper class
     PRECISE_SLEEP_AHEAD_SECONDS     = (5e-3 if BrokenPlatform.OnWindows else 5e-4)
@@ -1423,7 +1461,7 @@ class BrokenTyper:
 
     def __call__(self, *args, shell: bool=False):
         while True:
-            args = BrokenUtils.flatten(args)
+            args = flatten(args)
 
             # Insert default implied command
             if self.default and ((not args) or (args.get(0) not in self.commands)):
@@ -1544,7 +1582,7 @@ class BrokenRelay:
 
     def __bind__(self, *callbacks: callable) -> Self:
         """Adds callbacks to the list of callables, runs on self.__call__"""
-        self.callbacks += BrokenUtils.flatten(callbacks)
+        self.callbacks += flatten(callbacks)
         return self
 
     def bind(self, *callbacks: callable) -> Self:
@@ -1600,7 +1638,7 @@ class BrokenProfiler:
 
         match self.profiler:
             case BrokenProfilerEnum.cprofile:
-                log.action("Profiling with cProfile")
+                log.trace("Profiling with cProfile")
                 import cProfile
                 self.__profiler__ = cProfile.Profile()
                 self.__profiler__.enable()
@@ -1612,7 +1650,7 @@ class BrokenProfiler:
 
         match self.profiler:
             case BrokenProfilerEnum.cprofile:
-                log.action("Finishing cProfile")
+                log.trace("Finishing cProfile")
                 output = self.output.with_suffix(".prof")
                 self.__profiler__.disable()
                 self.__profiler__.dump_stats(output)
