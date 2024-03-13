@@ -1081,7 +1081,7 @@ class BrokenFFmpeg:
         ), formats=["jpeg"]).size
 
     @staticmethod
-    def get_frames(path: PathLike, *, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
+    def get_frames(path: PathLike, *, skip: int=0, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
         if not (path := BrokenPath(path, valid=True)):
             return None
@@ -1093,6 +1093,7 @@ class BrokenFFmpeg:
             .vsync(FFmpegVsync.ConstantFramerate)
             .loglevel(FFmpegLogLevel.Panic)
             .input(path)
+            .filter(f"select='gte(n\\,{skip})'")
             .video_codec(FFmpegVideoCodec.Rawvideo)
             .format(FFmpegFormat.Rawvideo)
             .pixel_format(FFmpegPixelFormat.RGB24)
