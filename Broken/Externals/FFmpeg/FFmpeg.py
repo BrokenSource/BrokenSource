@@ -978,7 +978,7 @@ class BrokenFFmpeg:
     def run(self, **kwargs) -> subprocess.CompletedProcess:
         return shell(self.command, **kwargs)
 
-    def popen(self, **kwargs) -> subprocess.Popen:
+    def Popen(self, **kwargs) -> subprocess.Popen:
         return shell(self.command, Popen=True, **kwargs)
 
     def pipe(self, *args, **kwargs) -> BrokenFFmpegPopenBuffered:
@@ -1069,76 +1069,55 @@ class BrokenFFmpeg:
         path = BrokenPath(path)
         log.minor(f"Getting video resolution of ({path})")
         return PIL.Image.open(io.BytesIO(
-            shell((
-                BrokenFFmpeg()
+            (BrokenFFmpeg()
                 .quiet()
                 .input(path)
                 .advanced("-vframes", "1")
                 .format(FFmpegFormat.Image2pipe)
                 .output("-")
-            ).command,
-            stdout=PIPE,
-            stderr=PIPE,
-            echo=echo,
-        ).stdout), formats=["jpeg"]).size
+            ).run(stdout=PIPE, echo=echo).stdout
+        ), formats=["jpeg"]).size
 
     @staticmethod
-    @functools.lru_cache
-    def get_frames(path: PathLike, *, echo: bool=True) -> Iterable[numpy.ndarray]:
+    def get_frames(path: PathLike, *, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
         if not (path := BrokenPath(path, valid=True)):
             return
-        log.minor(f"Yielding video frames of ({path})")
+        BrokenFFmpeg.install()
+        log.minor(f"New Generator of video frames at ({path})")
 
-        import numpy
-
-        # Get resolution of the video (so we now how many bytes to read a frame)
         (width, height) = BrokenFFmpeg.get_resolution(path)
 
-        # Popen the frames reading FFmpeg
-        ffmpeg = shell((
-                BrokenFFmpeg()
-                .hwaccel(FFmpegHWAccel.Auto)
-                .vsync(FFmpegVsync.ConstantFramerate)
-                .loglevel(FFmpegLogLevel.Panic)
-                .input(path)
-                .video_codec(FFmpegVideoCodec.Rawvideo)
-                .format(FFmpegFormat.Rawvideo)
-                .pixel_format(FFmpegPixelFormat.RGB24)
-                .no_audio()
-                .output("-")
-            ).command,
-            Popen=True,
-            stdout=PIPE,
-            echo=echo,
-        )
+        ffmpeg = (BrokenFFmpeg()
+            .hwaccel(FFmpegHWAccel.Auto)
+            .vsync(FFmpegVsync.ConstantFramerate)
+            .loglevel(FFmpegLogLevel.Panic)
+            .input(path)
+            .video_codec(FFmpegVideoCodec.Rawvideo)
+            .format(FFmpegFormat.Rawvideo)
+            .pixel_format(FFmpegPixelFormat.RGB24)
+            .no_audio()
+            .output("-")
+        ).Popen(stdout=PIPE, echo=echo)
 
-        # Keep reading frames until we run out (should be equal to video_total_frames)
+        # Keep reading frames until we run out, each pixel is 3 bytes !
         while (raw := ffmpeg.stdout.read(width * height * 3)):
             yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
 
     @staticmethod
     @functools.lru_cache
     def get_total_frames(path: PathLike, *, echo: bool=True) -> Optional[int]:
-        """Count the total frames of a video"""
+        """Count the total frames of a video by decode voiding and parsing stats output"""
         if not (path := BrokenPath(path, valid=True)):
             return
-        log.minor(f"Getting video total frames of ({path})")
-
-        # Read all frames from the video but don't process them
-        info = shell((
-                BrokenFFmpeg()
+        BrokenFFmpeg.install()
+        with yaspin(text=log.minor(f"Counting total frames of Video ({path}), might take a while..")):
+            return int(re.compile(r"frame=\s*(\d+)").findall((BrokenFFmpeg()
                 .vsync(FFmpegVsync.ConstantFramerate)
                 .input(path)
                 .format(FFmpegFormat.Null)
                 .output("-")
-            ).command,
-            stderr=PIPE,
-            echo=echo,
-        ).stderr.decode()
-
-        # Search for the last frame=(number)
-        return int(re.compile(r"frame=\s*(\d+)").findall(info)[-1])
+            ).run(stderr=PIPE, echo=echo).stderr.decode())[-1])
 
     @staticmethod
     @functools.lru_cache
@@ -1158,12 +1137,24 @@ class BrokenFFmpeg:
 
     @staticmethod
     @functools.lru_cache
-    def get_framerate(path: PathLike, *, echo: bool=True) -> Optional[Hertz]:
+    def get_framerate(path: PathLike, *, precise: bool=False, echo: bool=True) -> Optional[Hertz]:
         """Get the framerate of a video"""
         if not (path := BrokenPath(path, valid=True)):
             return
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
-        return BrokenFFmpeg.get_total_frames(path, echo=False)/BrokenFFmpeg.get_video_duration(path, echo=False)
+
+        if precise:
+            A = BrokenFFmpeg.get_total_frames(path, echo=False)
+            B = BrokenFFmpeg.get_video_duration(path, echo=False)
+            return (A/B)
+        else:
+            return float(flatten(eval(shell(
+                BrokenPath.which("ffprobe"),
+                "-i", path,
+                "-show_entries", "stream=r_frame_rate",
+                "-v", "quiet", "-of", "csv=p=0",
+                output=True, echo=echo
+            ).splitlines()[0]))[0])
 
     @staticmethod
     @functools.lru_cache
@@ -1205,6 +1196,7 @@ class BrokenFFmpeg:
         chunk: Seconds=0.1,
         echo: bool=True
     ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
+
         if not (path := BrokenPath(path, valid=True)):
             return
         BrokenFFmpeg.install()
@@ -1222,8 +1214,7 @@ class BrokenFFmpeg:
         dtype:  str = f"{endian}{type}{size}"
 
         # Note: Stderr to null as we might not read all the audio
-        ffmpeg = (
-            BrokenFFmpeg()
+        ffmpeg = (BrokenFFmpeg()
             .quiet()
             .input(path)
             .audio_codec(f"pcm_{format}")
@@ -1232,7 +1223,7 @@ class BrokenFFmpeg:
             .custom("-ar", samplerate)
             .custom("-ac", channels)
             .output("-")
-        ).popen(stdout=PIPE, stderr=DEVNULL)
+        ).Popen(stdout=PIPE, stderr=DEVNULL)
 
         """
         One would think the following code is the way, but it is not

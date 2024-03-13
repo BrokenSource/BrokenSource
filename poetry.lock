@@ -876,13 +876,13 @@ files = [
 
 [[package]]
 name = "meson"
-version = "1.3.2"
+version = "1.4.0"
 description = "A high performance build system"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "meson-1.3.2-py3-none-any.whl", hash = "sha256:0ba4a71fbc060c44721c7b674807598c5af9ea51335073cae7a3e9a95b375c89"},
-    {file = "meson-1.3.2.tar.gz", hash = "sha256:492eb450c8b073024276f916f5adbb3c4bb7e90e9e6ec124efda064f3d9b5baa"},
+    {file = "meson-1.4.0-py3-none-any.whl", hash = "sha256:476a458d51fcfa322a6bdc64da5138997c542d08e6b2e49b9fa68c46fd7c4475"},
+    {file = "meson-1.4.0.tar.gz", hash = "sha256:8fd6630c25c27f1489a8a0392b311a60481a3c161aa699b330e25935b750138d"},
 ]
 
 [package.extras]
@@ -1040,14 +1040,38 @@ files = [
 ]
 
 [[package]]
+name = "opencv-contrib-python"
+version = "4.9.0.80"
+description = "Wrapper package for OpenCV python bindings."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "opencv-contrib-python-4.9.0.80.tar.gz", hash = "sha256:ff1c00b06e2c3f4ad47de64fa9c527d67f7c6fce93f513b64163d41bea7c41b2"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-macosx_10_16_x86_64.whl", hash = "sha256:86078d3653ec3107877536c9178622b1f98b51acf59e554ddbc552785cba55fa"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:b52e381144f774b486729ccee69911bdc7d16b5ced4830502e906ad803373ab0"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:760e76c535da81e50f5a5a0acd85bada376f505736875eb446811b4b76fb9bb5"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:89ca1508dd895ae42176640bdd503cac82772f6efa25120738a469a6a69de321"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-win32.whl", hash = "sha256:4ce33844dbdf4bcbb0bd1ea7249367ffccab82de09f531ad25ac258aca5f813c"},
+    {file = "opencv_contrib_python-4.9.0.80-cp37-abi3-win_amd64.whl", hash = "sha256:fdd9b14028f74af8dbb69f90e6e4a956ce2eb5b59947df28ba0b79d337431477"},
+]
+
+[package.dependencies]
+numpy = [
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.23.5", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
+    {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\" and python_version < \"3.11\""},
+    {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\" and python_version < \"3.11\""},
+]
+
+[[package]]
 name = "packaging"
-version = "23.2"
+version = "24.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
-    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
+    {file = "packaging-24.0-py3-none-any.whl", hash = "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5"},
+    {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
 ]
 
 [[package]]
@@ -1322,13 +1346,13 @@ files = [
 
 [[package]]
 name = "pydantic"
-version = "2.6.3"
+version = "2.6.4"
 description = "Data validation using Python type hints"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydantic-2.6.3-py3-none-any.whl", hash = "sha256:72c6034df47f46ccdf81869fddb81aade68056003900a8724a4f160700016a2a"},
-    {file = "pydantic-2.6.3.tar.gz", hash = "sha256:e07805c4c7f5c6826e33a1d4c9d47950d7eaf34868e2690f8594d2e30241f11f"},
+    {file = "pydantic-2.6.4-py3-none-any.whl", hash = "sha256:cc46fce86607580867bdc3361ad462bab9c222ef042d3da86f2fb333e1d916c5"},
+    {file = "pydantic-2.6.4.tar.gz", hash = "sha256:b1704e0847db01817624a6b86766967f552dd9dbf3afba4004409f908dcc84e6"},
 ]
 
 [package.dependencies]
@@ -1533,6 +1557,19 @@ files = [
 
 [package.extras]
 cli = ["click (>=5.0)"]
+
+[[package]]
+name = "pyturbojpeg"
+version = "1.7.3"
+description = "A Python wrapper of libjpeg-turbo for decoding and encoding JPEG image."
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyTurboJPEG-1.7.3.tar.gz", hash = "sha256:79d48e3ab53461528ffb8009c420989d087a89ec315454ccd50994f3c9ae922b"},
+]
+
+[package.dependencies]
+numpy = "*"
 
 [[package]]
 name = "pytz"
@@ -1848,17 +1885,17 @@ full = ["numpy"]
 
 [[package]]
 name = "redis"
-version = "5.0.2"
+version = "5.0.3"
 description = "Python client for Redis database and key-value store"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-5.0.2-py3-none-any.whl", hash = "sha256:4caa8e1fcb6f3c0ef28dba99535101d80934b7d4cd541bbb47f4a3826ee472d1"},
-    {file = "redis-5.0.2.tar.gz", hash = "sha256:3f82cc80d350e93042c8e6e7a5d0596e4dd68715babffba79492733e1f367037"},
+    {file = "redis-5.0.3-py3-none-any.whl", hash = "sha256:5da9b8fe9e1254293756c16c008e8620b3d15fcc6dde6babde9541850e72a32d"},
+    {file = "redis-5.0.3.tar.gz", hash = "sha256:4973bae7444c0fbed64a06b87446f79361cb7e4ec1538c022d696ed7a5015580"},
 ]
 
 [package.dependencies]
-async-timeout = ">=4.0.3"
+async-timeout = {version = ">=4.0.3", markers = "python_full_version < \"3.11.3\""}
 
 [package.extras]
 hiredis = ["hiredis (>=1.0.0)"]
@@ -2210,13 +2247,13 @@ test = ["black (>=22.3.0,<23.0.0)", "coverage (>=6.2,<7.0)", "isort (>=5.0.6,<6.
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.19.20240106"
+version = "2.8.19.20240311"
 description = "Typing stubs for python-dateutil"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-python-dateutil-2.8.19.20240106.tar.gz", hash = "sha256:1f8db221c3b98e6ca02ea83a58371b22c374f42ae5bbdf186db9c9a76581459f"},
-    {file = "types_python_dateutil-2.8.19.20240106-py3-none-any.whl", hash = "sha256:efbbdc54590d0f16152fa103c9879c7d4a00e82078f6e2cf01769042165acaa2"},
+    {file = "types-python-dateutil-2.8.19.20240311.tar.gz", hash = "sha256:51178227bbd4cbec35dc9adffbf59d832f20e09842d7dcb8c73b169b8780b7cb"},
+    {file = "types_python_dateutil-2.8.19.20240311-py3-none-any.whl", hash = "sha256:ef813da0809aca76472ca88807addbeea98b19339aebe56159ae2f4b4f70857a"},
 ]
 
 [[package]]
@@ -2621,4 +2658,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "78eaacfd1dd028adc9b860d19e606237e75026e14d3d36b27811aa0fa4668bf0"
+content-hash = "d034cdeba03c4d4010ad9d6dddbea7d4158400e86175e416649a7912f25dc674"

@@ -186,6 +186,8 @@ Range:     TypeAlias = range
 
 # Units
 Seconds:   TypeAlias = float
+Minutes:   TypeAlias = float
+Hours:     TypeAlias = float
 Hertz:     TypeAlias = float
 Samples:   TypeAlias = int
 Degrees:   TypeAlias = float

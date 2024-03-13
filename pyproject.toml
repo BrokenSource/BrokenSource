@@ -43,6 +43,8 @@ cachetools     = "^5.3.2"
 pyzmq          = "^25.1.2"
 pillow         = "^10.0.1"
 yaspin         = "^3.0.1"
+pyturbojpeg    = "^1.7.3"
+opencv-contrib-python = "^4.9.0.80"
 
 # Todo: Gotta use 'em
 watchdog       = "^3.0.0"
