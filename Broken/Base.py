@@ -18,9 +18,9 @@ class Ignore:
     def __getattr__(self, _):
         return self.__nop__
 
-# Fixme: Why `condition or callable()` doesn't work?
-def Maybe(callable, condition):
-    return callable if condition else Ignore()
+def Maybe(call, when, **args):
+    if when:
+        return call(**args)
 
 # -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods
@@ -72,9 +72,6 @@ def dunder(name: str) -> bool:
 
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!
-
-# Ignore mostly NumPy warnings
-warnings.filterwarnings('ignore')
 
 # Add a list.get(index, default=None)
 forbiddenfruit.curse(
@@ -523,12 +520,12 @@ class BrokenPath(Path):
         output /= BrokenPath.stem(path)
 
         # Re-extract on order
-        Maybe(BrokenPath.remove, overwrite)(output, echo=echo)
+        Maybe(BrokenPath.remove, overwrite, echo=echo)
 
         # A file to skip if it exists, created after successful extraction
         if (extract_flag := (output/"BrokenPath.extract.ok")).exists():
             log.minor(f"Already extracted ({output})", echo=echo)
-            Maybe(BrokenPath.add_to_path, PATH)(path=output, recursively=True, echo=echo)
+            Maybe(BrokenPath.add_to_path, PATH, path=output, recursively=True, echo=echo)
             return output
 
         # Show progress as this might take a while on slower IOs
@@ -537,7 +534,7 @@ class BrokenPath(Path):
             shutil.unpack_archive(path, output)
 
         extract_flag.touch()
-        Maybe(BrokenPath.add_to_path, PATH)(path=output, recursively=True, echo=echo)
+        Maybe(BrokenPath.add_to_path, PATH, path=output, recursively=True, echo=echo)
         return output/BrokenPath.stem(path)
 
     @staticmethod

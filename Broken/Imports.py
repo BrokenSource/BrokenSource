@@ -176,6 +176,9 @@ while True:
 if sys.version_info < (3, 11):
     Self = TypeVar("Self")
 
+# Ignore mostly NumPy warnings
+warnings.filterwarnings('ignore')
+
 # # Custom types
 Image:     TypeAlias = PIL.Image.Image
 ImagePIL:  TypeAlias = PIL.Image.Image
@@ -193,6 +196,7 @@ Samples:   TypeAlias = int
 Degrees:   TypeAlias = float
 Radians:   TypeAlias = float
 BPM:       TypeAlias = float
+Pixel:     TypeAlias = int
 
 # # Y'know what, I'm tired of numpy.* stuff. Let's fix that.
 

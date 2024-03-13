@@ -131,12 +131,10 @@ class BrokenProjectCLI:
     # # Commands
 
     def poetry(self, ctx: TyperContext) -> None:
-        """Run poetry command"""
         self.pop_venv()
         shell("python", "-m", "poetry", *ctx.args)
 
     def poe(self, ctx: TyperContext) -> None:
-        """Run poethepoet command"""
         self.pop_venv()
         shell("python", "-m", "poe", *ctx.args)
 
