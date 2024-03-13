@@ -564,7 +564,7 @@ class BrokenPath(Path):
 
         # Without size check, the existence of the file is enough
         if output.exists() and (not size_check):
-            log.info(f"File ({output}) is already downloaded", echo=echo)
+            log.info(f"Already Downloaded ({output})", echo=echo)
             log.minor(f"• Size check was skipped, the file might be incomplete", echo=echo)
             return
 
@@ -581,12 +581,10 @@ class BrokenPath(Path):
         if output.exists():
             A, B = (output.stat().st_size, size)
             if (A == B):
-                log.info(f"File ({output}) is already downloaded", echo=echo)
+                log.info(f"Already Downloaded ({output})", echo=echo)
                 return output
-            elif (A < B):
-                log.warning(f"File ({output}) was partially downloaded, re-downloading", echo=echo)
-            elif (A > B):
-                log.warning(f"File ({output}) is larger than expected, re-downloading", echo=echo)
+            else:
+                log.warning(f"Wrong Download at ({output})", echo=echo)
 
         log.info(f"Downloading file at ({url}):", echo=echo)
         log.info(f"• Output: ({output})", echo=echo)
@@ -620,7 +618,6 @@ class BrokenPath(Path):
 
         # File is a Archive, extract
         if any((str(file).endswith(ext) for ext in ShutilFormat.values)):
-            log.minor(f"File ({file}) is an archive, extracting", echo=echo)
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_ARCHIVES
             return BrokenPath.extract(file, directory, PATH=True, echo=echo)
 
