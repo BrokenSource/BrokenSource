@@ -990,8 +990,8 @@ class BrokenUtils:
         return locals
 
     @staticmethod
-    def round(number: Number, multiple: Number, *, type=int) -> Number:
-        return type(multiple * round(number/multiple))
+    def round(number: Number, multiple: Number, *, type=int, operation: Callable=round) -> Number:
+        return type(multiple * operation(number/multiple))
 
     @staticmethod
     def round_resolution(width: Number, height: Number) -> Tuple[int, int]:
