@@ -1,6 +1,8 @@
 # # Common
+
 *Private*
 *.env
+*Meta*
 
 # Python
 **__pycache__*
