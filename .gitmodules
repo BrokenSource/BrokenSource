@@ -28,3 +28,6 @@
 [submodule "Meta/Fork/ModernGLW"]
 	path = Meta/Fork/ModernGLW
 	url  = https://github.com/Tremeschin/moderngl-window
+[submodule "Meta/PyAPP"]
+	path = Meta/Fork/PyAPP
+	url = https://github.com/Tremeschin/pyapp

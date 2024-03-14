@@ -127,6 +127,11 @@ class _BrokenProjectDirectories:
         return self.__mkdir__(self.REPOSITORY/"Meta")
 
     @property
+    def BROKEN_FORK(self) -> Path:
+        """Broken Source's Monorepo Forks directory"""
+        return self.__mkdir__(self.BROKEN_META/"Fork")
+
+    @property
     def BROKEN_PRIVATE(self) -> Path:
         """Broken Source's Monorepo Private directory"""
         return self.__mkdir__(self.REPOSITORY/"Private")

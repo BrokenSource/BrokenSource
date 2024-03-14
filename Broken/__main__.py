@@ -334,14 +334,11 @@ class BrokenProjectCLI:
                     # Remove previous builds
                     BrokenPath.remove(path/"dist")
 
-                    # Hack: Move all built wheels to the Resources folder
-                    if self.path == path:
-                        log.info(f"Moving wheels to Resources folder")
-                        for wheel in [next(project.glob("dist/*.whl")) for project in projects[1:]]:
-                            BrokenPath.copy(src=wheel, dst=BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")/wheel.name)
-
                     # Build the current project
-                    shell("poetry", "build", "--format", "wheel")
+                    if ("tool.poetry" in pyproject):
+                        shell("poetry", "build", "--format", "wheel")
+                    else:
+                        shell(sys.executable, "-m", "build", "--wheel")
 
                 return projects
 
@@ -349,33 +346,48 @@ class BrokenProjectCLI:
             wheels = [next(project.glob("dist/*.whl")) for project in convoluted_wheels(self.path)]
 
             for i, wheel in enumerate(wheels):
-                log.info(f"{i}: Using project wheel at ({wheel})")
+                log.info(f"(Local Wheel {i}): {wheel}")
 
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(wheels[0]),
+                PYAPP_LOCAL_WHEELS=(":".join(str(x) for x in wheels[1:])),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
             ))
 
+            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD
+
             # Remove previous build cache for pyapp but no other crate
-            for path in [x for x in BROKEN.DIRECTORIES.BROKEN_BUILD.glob("**") if "pyapp" in x.name]:
+            for path in [x for x in BUILD_DIR.glob("**") if "pyapp" in x.name]:
                 BrokenPath.remove(path)
 
             # Cache Rust compilation across projects
-            os.environ["CARGO_TARGET_DIR"] = str(BROKEN.DIRECTORIES.BROKEN_BUILD)
+            os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
 
             # Build the final binary
-            shell("cargo", "install", "pyapp", "--force", "--root", BROKEN.DIRECTORIES.BROKEN_BUILD)
-            binary = next((BROKEN.DIRECTORIES.BROKEN_BUILD/"bin").glob("pyapp*"))
+            if (OFFICIAL := False):
+                if shell("cargo", "install", "pyapp", "--force", "--root", BUILD_DIR).returncode != 0:
+                    log.error("Failed to compile PyAPP")
+                    exit(1)
+            elif (FORKED := True):
+                with BrokenPath.pushd(BROKEN.DIRECTORIES.BROKEN_FORK/"PyAPP"):
+                    if shell("cargo", "install", "--path", ".", "--force", "--root", BUILD_DIR).returncode != 0:
+                        log.error("Failed to compile PyAPP")
+                        exit(1)
+            else:
+                raise RuntimeError("No Pyapp build method selected")
+
+            # Find the compiled binary
+            binary = next((BUILD_DIR/"bin").glob("pyapp*"))
             log.info(f"Compiled Pyapp binary at ({binary})")
             BrokenPath.make_executable(binary)
 
             # Remove build wheel artifacts
-            for wheel in wheels:
-                BrokenPath.remove(wheel.parent)
-            BrokenPath.remove(self.path/self.name/"Resources"/"Wheels")
+            if (DELETE_WHEELS := True):
+                for wheel in wheels:
+                    BrokenPath.remove(wheel.parent)
 
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
@@ -390,10 +402,9 @@ class BrokenProjectCLI:
             binary.rename(release_name)
 
             # Create a sha265sum file for integrity verification
-            sha256sum = BrokenUtils.sha256sum(release_name)
+            sha256sum = BrokenPath.sha256sum(release_name)
             release_name.with_suffix(".sha256").write_text(sha256sum)
             log.info(f"Release SHA256: {sha256sum}")
-
             log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_name})")
 
 # -------------------------------------------------------------------------------------------------|
