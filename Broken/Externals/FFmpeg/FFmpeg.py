@@ -992,7 +992,7 @@ class BrokenFFmpeg:
             thread: Thread       = None
 
             # ZeroMQ
-            zmq_enable:    bool  = (os.environ.get('ZMQ', '1') == '1')
+            zmq_enable:    bool  = (os.environ.get('ZMQ', '0') == '1')
             zmq_context:   Any   = None
             zmq_socket:    Any   = None
             zmq_tcp:       str   = None
