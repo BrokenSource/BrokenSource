@@ -351,7 +351,7 @@ class BrokenProjectCLI:
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(wheels[0]),
-                PYAPP_LOCAL_WHEELS=(":".join(str(x) for x in wheels[1:])),
+                PYAPP_LOCAL_WHEELS=(";".join(str(x) for x in wheels[1:])),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
@@ -385,9 +385,8 @@ class BrokenProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Remove build wheel artifacts
-            if (DELETE_WHEELS := True):
-                for wheel in wheels:
-                    BrokenPath.remove(wheel.parent)
+            for wheel in wheels:
+                BrokenPath.remove(wheel.parent)
 
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
@@ -423,6 +422,8 @@ class BrokenCLI:
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
+            return
+        if not path.exists():
             return
 
         IGNORED_DIRECTORIES = ("workspace", ".", "_", "modernglw")
