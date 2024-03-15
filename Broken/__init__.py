@@ -21,7 +21,7 @@ os.environ["PYTHONPYCACHEPREFIX"] = str(f"{tempfile.gettempdir()}/__pycache__")
 # Idk why but PyAPP isn't passing the argument on Linux
 import sys
 
-if os.environ.get("PYAPP", False) and (os.name != "nt"):
+if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
     sys.argv.insert(0, sys.executable)
 
 # -------------------------------------------------------------------------------------------------|

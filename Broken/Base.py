@@ -5,28 +5,14 @@ import Broken
 from . import *
 
 # -------------------------------------------------------------------------------------------------|
-
-class Ignore:
-    """A class that does nothing. No-operation"""
-
-    def __nop__(self, *args, **kwargs) -> Self:
-        return self
-
-    def __call__(self, *args, **kwargs) -> Self:
-        return self
-
-    def __getattr__(self, _):
-        return self.__nop__
-
-def Maybe(call, when, **args):
-    if when:
-        return call(**args)
-
-# -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods
 
 inverse = lambda x: 1 / x
 clamp = lambda value, low, high: max(low, min(value, high))
+
+def Maybe(call, when, **args):
+    if when:
+        return call(**args)
 
 @contextlib.contextmanager
 def LazyCounter():
@@ -69,6 +55,26 @@ def denum(*items: Any) -> Any:
 @staticmethod
 def dunder(name: str) -> bool:
     return name.startswith("__") and name.endswith("__")
+
+class Ignore:
+    """A class that does nothing. No-operation faster Mock"""
+    def __nop__(self, *args, **kwargs) -> Self:
+        return self
+    def __call__(self, *args, **kwargs) -> Self:
+        return self
+    def __getattr__(self, _):
+        return self.__nop__
+
+@define
+class SameTracker:
+    """Doumo same desu"""
+    value: Any = None
+
+    def __call__(self, value: Any) -> bool:
+        if self.value != value:
+            self.value = value
+            return False
+        return True
 
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!

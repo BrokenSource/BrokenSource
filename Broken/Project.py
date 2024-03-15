@@ -315,21 +315,6 @@ class _BrokenProjectResources:
         return self.__RESOURCES__/"Scenes"
 
     @property
-    def USER_SCENES(self) -> Path:
-        """User scenes directory"""
-        return self.SCENES/"User"
-
-    @property
-    def EXAMPLE_SCENES(self) -> Path:
-        """Example scenes directory"""
-        return self.SCENES/"Examples"
-
-    @property
-    def COMMUNITY_SCENES(self) -> Path:
-        """Community scenes directory"""
-        return self.SCENES/"Community"
-
-    @property
     def SHADERS(self) -> Path:
         """Shaders directory - May you use .FRAGMENT and .VERTEX?"""
         return self.__RESOURCES__/"Shaders"
