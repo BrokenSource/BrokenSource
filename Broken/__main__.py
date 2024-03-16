@@ -136,7 +136,7 @@ class BrokenProjectCLI:
 
     def poe(self, ctx: TyperContext) -> None:
         self.pop_venv()
-        shell("python", "-m", "poe", *ctx.args)
+        shell("python", "-m", "poethepoet", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
 
