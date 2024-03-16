@@ -159,7 +159,36 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 
 <sub><i><b>⚠️ Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
 
+<br>
+<br>
+<br>
 
+# 🗑️ Uninstalling
+
+We have a partially implemented command for uninstalling, but it doesn't exist for release versions yet:
+- `broken uninstall`
+
+For now, you can just delete the directories we use below:
+
+### Workspaces
+The main Library uses [**AppDirs**](https://pypi.org/project/appdirs) to decide per-platform directories
+
+For unification, all project's Workspaces are located at the User Data directory, followed by a AppAuthor and AppName subdirectories which will be `BrokenSource` and `ProjectName` in most cases
+- **Linux**: `~/.local/share/AppAuthor/AppName/*`
+- **Windows**: `%applocaldata%\AppAuthor\AppName\*`
+- **MacOS**: `~/Library/Application Support/AppAuthor/AppName/*`
+
+### Poetry Virtual Environment
+Poetry caches downloads and creates Virtual Environments on:
+- **Linux**: `~/.cache/pypoetry/*`
+- **Windows**: `%localappdata%\pypoetry\*`
+- **MacOS**: `~/Library/Caches/pypoetry/*`
+
+### Releases Virtual Environment
+We use [**PyApp**](https://github.com/ofek/pyapp) to make the releases. It unpacks itself on:
+- **Linux**: `~/.local/share/pyapp`
+- **Windows**: `%applocaldata%\pyapp`
+- **MacOS**: `~/Library/Application Support/pyapp`
 
 <br>
 <br>
