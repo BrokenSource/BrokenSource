@@ -299,9 +299,14 @@ class BrokenProjectCLI:
                 return venv_path
 
     def release(self,
-        target: Annotated[BrokenPlatform.Targets, TyperOption("--target", "-t", help="Target platform to build for")]=BrokenPlatform.CurrentTarget,
-    ):
+        target: Annotated[List[BrokenPlatform.Targets], TyperOption("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
+    ) -> List[Path]:
         """Release the Project as a distributable binary"""
+
+        # Recurse on each list plain item
+        if isinstance(target, list) and len(target):
+            return apply(self.release, target)
+
         if self.is_python:
             BrokenCLI.rust()
 
@@ -365,15 +370,25 @@ class BrokenProjectCLI:
 
             # Cache Rust compilation across projects
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
+            shell("rustup", "target", "add", target.rust)
 
             # Build the final binary
             if (OFFICIAL := False):
-                if shell("cargo", "install", "pyapp", "--force", "--root", BUILD_DIR).returncode != 0:
+                if shell("cargo", "install",
+                    "pyapp", "--force",
+                    "--root", BUILD_DIR,
+                    "--target", target.rust
+                ).returncode != 0:
                     log.error("Failed to compile PyAPP")
                     exit(1)
             elif (FORKED := True):
                 with BrokenPath.pushd(BROKEN.DIRECTORIES.BROKEN_FORK/"PyAPP"):
-                    if shell("cargo", "install", "--path", ".", "--force", "--root", BUILD_DIR).returncode != 0:
+                    if shell("cargo", "install",
+                        "--path", ".",
+                        "--force",
+                        "--root", BUILD_DIR,
+                        "--target", target.rust
+                    ).returncode != 0:
                         log.error("Failed to compile PyAPP")
                         exit(1)
             else:
@@ -390,21 +405,22 @@ class BrokenProjectCLI:
 
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
-            release_name = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
+            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
                 f"{self.name.lower()}-"
-                f"{BrokenPlatform.Name}-"
-                f"{BrokenPlatform.Architecture}-"
+                f"{target.name}-"
+                f"{target.architecture}-"
                 f"{version}"
-                f"{BrokenPlatform.Extension}"
+                f"{target.extension}"
             )
-            BrokenPath.remove(release_name)
-            binary.rename(release_name)
+            BrokenPath.remove(release_path)
+            binary.rename(release_path)
 
             # Create a sha265sum file for integrity verification
-            sha256sum = BrokenPath.sha256sum(release_name)
-            release_name.with_suffix(".sha256").write_text(sha256sum)
+            sha256sum = BrokenPath.sha256sum(release_path)
+            release_path.with_suffix(".sha256").write_text(sha256sum)
             log.info(f"Release SHA256: {sha256sum}")
-            log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_name})")
+            log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_path})")
+            return release_path
 
 # -------------------------------------------------------------------------------------------------|
 

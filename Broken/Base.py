@@ -264,6 +264,32 @@ class BrokenPlatform:
         MacosAMD64:   str = "macos-amd64"
         MacosARM:     str = "macos-arm64"
 
+        @property
+        def rust(self) -> str:
+            return {
+                self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
+                self.LinuxARM:     "aarch64-unknown-linux-gnu",
+                self.WindowsAMD64: "x86_64-pc-windows-gnu",
+                self.WindowsARM:   "aarch64-pc-windows-gnu",
+                self.MacosAMD64:   "x86_64-apple-darwin",
+                self.MacosARM:     "aarch64-apple-darwin",
+            }[self]
+
+        @property
+        def extension(self) -> str:
+            """Same as BrokenPlatform.Extension"""
+            return ".exe" if ("windows" in self.value) else ".bin"
+
+        @property
+        def name(self) -> str:
+            """Same as BrokenPlatform.Name"""
+            return self.value.split("-")[0]
+
+        @property
+        def architecture(self) -> str:
+            """Same as BrokenPlatform.Architecture"""
+            return self.value.split("-")[1]
+
     CurrentTarget:    str = f"{Name}-{Architecture}"
 
     @staticmethod
