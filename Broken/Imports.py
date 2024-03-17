@@ -156,7 +156,6 @@ from typer import Typer as TyperApp
 # Note: List of modules that take a bit to import:
 # - imageio_ffmpeg
 # - moderngl_window
-# - transformers
 # - torch
 # - openai
 # - gradio

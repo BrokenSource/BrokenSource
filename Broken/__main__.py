@@ -179,10 +179,8 @@ class BrokenProjectCLI:
             if self.is_python:
                 venv = self.get_virtualenv(reinstall=reinstall)
                 try:
-                    status = shell(
-                        (venv/BrokenPlatform.PyScripts/("main"+BrokenPlatform.PyScriptExtension)),
-                        ctx.args, echo=echo
-                    )
+                    script = (venv/BrokenPlatform.PyScripts/("main"+BrokenPlatform.PyScriptExtension))
+                    status = shell(script, ctx.args, echo=echo)
                 except KeyboardInterrupt:
                     log.success(f"Project ({self.name}) finished with KeyboardInterrupt (Ctrl+C)")
                     break
@@ -300,40 +298,51 @@ class BrokenProjectCLI:
 
     def release(self,
         target: Annotated[List[BrokenPlatform.Targets], TyperOption("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
+        torch:  Annotated[bool, TyperOption("--torch", help="Build for all PyTorch flavors")]=False,
     ) -> List[Path]:
         """Release the Project as a distributable binary"""
 
-        # Recurse on each list plain item
-        if isinstance(target, list) and len(target):
-            return apply(self.release, target)
+        # Recurse on all Torch flavors
+        if isinstance(torch, bool) and torch:
+            for torch_flavor in TorchFlavor:
+                self.release(target=target, torch=torch_flavor)
+            return
+
+        # Recurse on each target item
+        if isinstance(target, list) and True:
+            for item in target:
+                self.release(target=item, torch=torch)
+            return
+
+        # ROCm Windows doesn't exist yet
+        if ("windows" in target.name) and (torch == TorchFlavor.ROCM):
+            return
 
         if self.is_python:
             BrokenCLI.rust()
+            BrokenTorch.write_flavor(self.path/self.name/"Resources", torch)
+            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD
 
             # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
                 with BrokenPath.pushd(path := BrokenPath(path)):
-                    log.info(f"Building project at ({path})")
 
-                    # Initialize empty set and add current project
-                    projects = projects or list()
-                    if path in projects:
+                    # Avoid rebuilding the same project or recurse
+                    if path not in (projects := projects or list()):
+                        log.info(f"Building project at ({path})")
+                        projects.append(path)
+                    else:
                         return
-                    projects.append(path)
 
                     # Load pyproject dictionary
                     pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
 
-                    # Iterate on all path dependencies
+                    # Iterate on all dependencies, find only 'path=' ones
                     for name, dependency in pyproject.tool.poetry["dev-dependencies"].items():
-
-                        # Find only path= dependencies
                         if isinstance(dependency, str):
                             continue
                         if not dependency.path:
                             continue
-
-                        # Recurse on the other project
                         convoluted_wheels(path=dependency.path, projects=projects)
 
                     # Remove previous builds
@@ -348,10 +357,13 @@ class BrokenProjectCLI:
                 return projects
 
             # Build all projects wheels. Main project is the first returned
-            wheels = [next(project.glob("dist/*.whl")) for project in convoluted_wheels(self.path)]
+            path_projects = convoluted_wheels(self.path)
+            wheels = [next(project.glob("dist/*.whl")) for project in path_projects]
 
-            for i, wheel in enumerate(wheels):
-                log.info(f"(Local Wheel {i}): {wheel}")
+            # Remove previous build cache for pyapp but no other crate
+            for path in BUILD_DIR.rglob("*"):
+                if ("pyapp" in path.name):
+                    BrokenPath.remove(path)
 
             # Pyapp configuration
             os.environ.update(dict(
@@ -361,12 +373,6 @@ class BrokenProjectCLI:
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
             ))
-
-            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD
-
-            # Remove previous build cache for pyapp but no other crate
-            for path in [x for x in BUILD_DIR.glob("**") if "pyapp" in x.name]:
-                BrokenPath.remove(path)
 
             # Cache Rust compilation across projects
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
@@ -394,31 +400,33 @@ class BrokenProjectCLI:
             else:
                 raise RuntimeError("No Pyapp build method selected")
 
+            # Remove build wheel artifacts
+            for project in path_projects:
+                BrokenPath.remove(project/"dist")
+                BrokenTorch.remove_flavor(project)
+
             # Find the compiled binary
             binary = next((BUILD_DIR/"bin").glob("pyapp*"))
             log.info(f"Compiled Pyapp binary at ({binary})")
             BrokenPath.make_executable(binary)
 
-            # Remove build wheel artifacts
-            for wheel in wheels:
-                BrokenPath.remove(wheel.parent)
-
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
-            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / (
-                f"{self.name.lower()}-"
-                f"{target.name}-"
-                f"{target.architecture}-"
-                f"{version}"
-                f"{target.extension}"
-            )
+            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+                f"{self.name.lower()}-",
+                (f"{torch.name.lower()}-" if torch else ""),
+                f"{target.name}-",
+                f"{target.architecture}-",
+                f"{version}",
+                f"{target.extension}",
+            ))
             BrokenPath.remove(release_path)
             binary.rename(release_path)
 
             # Create a sha265sum file for integrity verification
             sha256sum = BrokenPath.sha256sum(release_path)
             release_path.with_suffix(".sha256").write_text(sha256sum)
-            log.info(f"Release SHA256: {sha256sum}")
+            log.info(f"• SHA256: {sha256sum}")
             log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_path})")
             return release_path
 
@@ -526,27 +534,27 @@ class BrokenCLI:
         all: bool=False
     ) -> None:
         """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
+        ROOT = BROKEN.DIRECTORIES.REPOSITORY
 
         # Sort imports, ignore "Releases" folder
         if all or isort:
-            shell("isort", BROKEN.DIRECTORIES.REPOSITORY,
+            shell("isort", ROOT,
                 "--force-single-line-imports",
-                "--skip", BROKEN.DIRECTORIES.REPOSITORY/".venvs",
+                "--skip", ROOT/".venvs",
                 "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
                 "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
             )
 
         # Remove all .pyc files and __pycache__ folders
         if all or pycache:
-            delete  = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.pyc"))
-            delete += list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/__pycache__"))
-            for path in delete:
+            for path in ROOT.rglob("__pycache__"):
+                BrokenPath.remove(path)
+            for path in ROOT.rglob("*.pyc"):
                 BrokenPath.remove(path)
 
         # Remove all .whl files
         if all or wheels:
-            delete = list(BROKEN.DIRECTORIES.REPOSITORY.glob("**/*.whl"))
-            for path in delete:
+            for path in ROOT.rglob("*.whl"):
                 BrokenPath.remove(path)
 
         # Remove build and releases folders if requested

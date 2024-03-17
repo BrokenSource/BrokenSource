@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from . import *
 
 
@@ -8,7 +6,7 @@ class BrokenEnum(Enum):
     # # Initialization
 
     @classmethod
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def from_name(cls, name: str, *, lowercase: bool=True, must: bool=False) -> Optional[Enum]:
         """
         Get enum members from their name
@@ -25,9 +23,9 @@ class BrokenEnum(Enum):
             ```
 
         Args:
-            `name`:      Name of the member to get
-            `lowercase`: Whether to lowercase the name and key before matching
-            `must`:      Whether to raise an error if the member is not found
+            name: Name of the member to get
+            lowercase: Whether to lowercase the name and key before matching
+            must: Whether to raise an error if the member is not found
 
         Returns:
             The enum member with the given name if found, None otherwise
@@ -48,7 +46,7 @@ class BrokenEnum(Enum):
         if must: raise ValueError(f"Member with name '{name}' not found on BrokenEnum.from_name()")
 
     @classmethod
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def from_value(cls, value: Any, *, must: bool=False) -> Optional[Enum]:
         """
         Get enum members from their value (name=value)
@@ -85,21 +83,21 @@ class BrokenEnum(Enum):
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def members(cls) -> Tuple[Enum]:
         """Get all members of the enum"""
         return tuple(cls)
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def options(cls) -> Tuple[Enum]:
         """Get all members of the enum"""
         return cls.members
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def values(cls) -> Tuple[Any]:
         """Get all values of the enum (name=value)"""
         return tuple(member.value for member in cls)
@@ -108,21 +106,21 @@ class BrokenEnum(Enum):
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def keys(cls) -> Tuple[str]:
         """Get all 'keys' of the enum (key=value)"""
         return tuple(member.name for member in cls)
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def names(cls) -> Tuple[str]:
         """Get all names of the enum (name=value)"""
         return cls.keys
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def names_lower(cls) -> Tuple[str]:
         """Get all names of the enum (name=value) in lowercase"""
         return tuple(name.lower() for name in cls.keys)
@@ -131,20 +129,20 @@ class BrokenEnum(Enum):
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def items(cls) -> Tuple[Tuple[str, Any]]:
         """Get the tuple of (name, value) of all members of the enum"""
         return tuple((member.name, member.value) for member in cls)
 
     @classmethod
     @property
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def as_dict(cls) -> Dict[str, Any]:
         """Get the dictionary of key: value of all members of the enum"""
         return dict(cls.items)
 
     @classmethod
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def to_dict(cls) -> Dict[str, Any]:
         """Alias for .as_dict, but as a method"""
         return cls.as_dict
@@ -152,7 +150,7 @@ class BrokenEnum(Enum):
     # # Smart methods
 
     @classmethod
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def get(cls, value: Union[str, Enum, Any], *, lowercase: bool=True) -> Optional[Self]:
         """
         Get enum members from their value, name or themselves
@@ -195,7 +193,7 @@ class BrokenEnum(Enum):
         # Search by value
         return cls.from_value(value)
 
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def next(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
         """
         Get the next enum member (in position) from their value, name or themselves
@@ -229,7 +227,7 @@ class BrokenEnum(Enum):
         """Alias for .next, but as a method"""
         return self.next()
 
-    @lru_cache(typed=True)
+    @functools.lru_cache(typed=True)
     def previous(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
         """
         Get the previous enum member (in position) from their value, name or themselves

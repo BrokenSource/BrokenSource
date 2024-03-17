@@ -1,6 +1,6 @@
 [tool.poetry]
 name          = "broken-source"
-version       = "2024.3.16"
+version       = "2024.3.18"
 description   = "Broken Source Software Framework"
 license       = "AGPLv3-only"
 authors       = ["Tremeschin <tremeschin@users.noreply.github.com>"]
@@ -64,6 +64,16 @@ ninja       = "^1.11.1.1"
 wheel       = "^0.42.0"
 poethepoet  = "^0.24.4"
 tuna        = "^0.5.11"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.5.3"
+mkdocstrings = {extras = ["python"], version = "^0.24.1"}
+mkdocs-gen-files = "^0.5.0"
+mkdocs-include-markdown-plugin = "^6.0.4"
+mkdocs-autorefs = "^1.0.1"
+mkdocs-literate-nav = "^0.6.1"
+mkdocs-section-index = "^0.3.8"
+mkdocs-material = "^9.5.13"
 
 [tool.poetry.group.staging.dependencies]
 redis   = "^5.0.1"

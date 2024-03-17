@@ -61,6 +61,7 @@
         "Brakeit":    "download",
         "Profile":    "admin",
         "Fork":       "less",
+        "Releases":   "release",
 
         // Shaders
         "Fragment": "shader",
@@ -128,6 +129,7 @@
         "animevideov3",
         "antialiasing",
         "anullsrc",
+        "apidoc",
         "Appdirs",
         "applocaldata",
         "arange",
@@ -248,6 +250,7 @@
         "mininterval",
         "mipmap",
         "mipmaps",
+        "mkdocs",
         "moderngl",
         "MSAA",
         "MULAW",
@@ -347,6 +350,8 @@
         "texel",
         "thefuzz",
         "tobytes",
+        "torchaudio",
+        "torchvision",
         "tqdm",
         "traceback",
         "tremeschin",

@@ -99,7 +99,7 @@ class _BrokenProjectDirectories:
     @property
     def BROKEN_RELEASES(self) -> Path:
         """Broken Source's Monorepo general Releases directory"""
-        return self.__mkdir__(self.REPOSITORY/"Release")
+        return self.__mkdir__(self.REPOSITORY/"Releases")
 
     @property
     def BROKEN_BUILD(self) -> Path:
@@ -395,7 +395,6 @@ class BrokenProject:
             except Exception as e:
                 log.minor(f"Failed to symlink Workspace: {e}")
 
-        # Fixme: Anywhere to unify envs?
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             log.minor(f"Loading environment variables at ({env})")

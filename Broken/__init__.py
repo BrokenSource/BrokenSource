@@ -47,7 +47,7 @@ import sys
 
 # Information about the release and version
 BROKEN_PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
-BROKEN_PYAPP:       bool = bool(getattr(os.environ, "PYAPP", False))
+BROKEN_PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 BROKEN_NUITKA:      bool = ("__compiled__" in globals())
 BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
 BROKEN_DEVELOPMENT: bool = (not BROKEN_RELEASE)
