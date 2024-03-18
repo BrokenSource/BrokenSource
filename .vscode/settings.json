@@ -61,7 +61,6 @@
         "Brakeit":    "download",
         "Profile":    "admin",
         "Fork":       "less",
-        "Releases":   "release",
 
         // Shaders
         "Fragment": "shader",

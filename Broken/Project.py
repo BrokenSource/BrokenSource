@@ -99,7 +99,7 @@ class _BrokenProjectDirectories:
     @property
     def BROKEN_RELEASES(self) -> Path:
         """Broken Source's Monorepo general Releases directory"""
-        return self.__mkdir__(self.REPOSITORY/"Releases")
+        return self.__mkdir__(self.REPOSITORY/"Release")
 
     @property
     def BROKEN_BUILD(self) -> Path:
