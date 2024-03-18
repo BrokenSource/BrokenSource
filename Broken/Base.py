@@ -71,6 +71,10 @@ class SameTracker:
     value: Any = None
 
     def __call__(self, value: Any) -> bool:
+        """
+        If a value is the same, returns True, else updates it and returns False
+        • Useful on ignoring expensive calls where parameters doesn't changes
+        """
         if self.value != value:
             self.value = value
             return False

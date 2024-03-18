@@ -450,7 +450,7 @@ class BrokenCLI:
         if not path.exists():
             return
 
-        IGNORED_DIRECTORIES = ("workspace", ".", "_", "modernglw")
+        IGNORED_DIRECTORIES = (".", "_", "modernglw", "workspace", "pyapp")
 
         for directory in path.iterdir():
 
