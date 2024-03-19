@@ -12,7 +12,7 @@
         {
             "label": "release-depthflow",
             "type": "shell",
-            "command": "python3 -m poetry run broken depthflow release",
+            "command": "python3 -m poetry run broken depthflow release --target linux-amd64 --target windows-amd64 --torch",
         },
         {
             "label": "release-quadsnap",
