@@ -80,66 +80,6 @@ class SameTracker:
             return False
         return True
 
-# -------------------------------------------------------------------------------------------------|
-# Cursed Python ahead, here be dragons!
-
-# Add a list.get(index, default=None)
-forbiddenfruit.curse(
-    list, "get",
-    lambda self, index, default=None: self[index] if (index < len(self)) else default
-)
-
-# Walrus-like operator for list.append
-forbiddenfruit.curse(
-    list, "appendget",
-    lambda self, value: self.append(value) or value
-)
-
-def transcends(method, base, generator: bool=False):
-    """
-    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
-    > We have just the right solution for you!
-
-    Introducing transcends, the decorator that crosses your class's MRO and calls the method
-    with the same name as the one you are decorating. It's an automatic super() !
-    """
-    name = method.__name__
-
-    def decorator(func: Callable) -> Callable:
-        def get_targets(self):
-            for cls in type(self).mro()[:-2]:
-                if cls in (base, object):
-                    continue
-                if (target := cls.__dict__.get(name)):
-                    yield target
-
-        # Note: We can't have a `if generator` else the func becomes a Generator
-        def yields(self, *args, **kwargs):
-            for target in get_targets(self):
-                yield from target(self, *args, **kwargs)
-        def plain(self, *args, **kwargs):
-            for target in get_targets(self):
-                target(self, *args, **kwargs)
-
-        return (yields if generator else plain)
-    return decorator
-
-class BrokenAttrs:
-    """
-    Walk over an @attrs.defined class and call __post__ on all classes in the MRO.
-    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
-    # Fixme: Can improve by starting on BrokenAttrs itself
-    """
-    def __attrs_post_init__(self):
-        for cls in reversed(type(self).mro()):
-            if method := cls.__dict__.get("__post__"):
-                method(self)
-
-    def __post__(self) -> None:
-        pass
-
-# -------------------------------------------------------------------------------------------------|
-
 def shell(
     *args:   list[Any],
     output:  bool=False,
@@ -204,6 +144,64 @@ def shell(
     if output: return subprocess.check_output(command, env=env, shell=shell, **kwargs).decode("utf-8")
     if Popen:  return subprocess.Popen(command, env=env, shell=shell, **kwargs)
     else:      return subprocess.run(command, env=env, shell=shell, **kwargs)
+
+# -------------------------------------------------------------------------------------------------|
+# Cursed Python ahead, here be dragons!
+
+# Add a list.get(index, default=None)
+forbiddenfruit.curse(
+    list, "get",
+    lambda self, index, default=None: self[index] if (index < len(self)) else default
+)
+
+# Walrus-like operator for list.append
+forbiddenfruit.curse(
+    list, "appendget",
+    lambda self, value: self.append(value) or value
+)
+
+def transcends(method, base, generator: bool=False):
+    """
+    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
+    > We have just the right solution for you!
+
+    Introducing transcends, the decorator that crosses your class's MRO and calls the method
+    with the same name as the one you are decorating. It's an automatic super() !
+    """
+    name = method.__name__
+
+    def decorator(func: Callable) -> Callable:
+        def get_targets(self):
+            for cls in type(self).mro()[:-2]:
+                if cls in (base, object):
+                    continue
+                if (target := cls.__dict__.get(name)):
+                    yield target
+
+        # Note: We can't have a `if generator` else the func becomes a Generator
+        def yields(self, *args, **kwargs):
+            for target in get_targets(self):
+                yield from target(self, *args, **kwargs)
+        def plain(self, *args, **kwargs):
+            for target in get_targets(self):
+                target(self, *args, **kwargs)
+
+        return (yields if generator else plain)
+    return decorator
+
+class BrokenAttrs:
+    """
+    Walk over an @attrs.defined class and call __post__ on all classes in the MRO.
+    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
+    # Fixme: Can improve by starting on BrokenAttrs itself
+    """
+    def __attrs_post_init__(self):
+        for cls in reversed(type(self).mro()):
+            if method := cls.__dict__.get("__post__"):
+                method(self)
+
+    def __post__(self) -> None:
+        pass
 
 # -------------------------------------------------------------------------------------------------|
 

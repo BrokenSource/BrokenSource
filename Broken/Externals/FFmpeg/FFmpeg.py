@@ -138,36 +138,6 @@ class FFmpegVideoCodec(BrokenEnum):
 
 class FFmpegPCM(BrokenEnum):
     # Raw pcm formats `ffmpeg -formats | grep PCM`
-    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "f32be"
-    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "f32le"
-    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "f64be"
-    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "f64le"
-    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "s16be"
-    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "s16le"
-    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "s24be"
-    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "s24le"
-    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "s32be"
-    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "s32le"
-    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "u16be"
-    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "u16le"
-    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "u24be"
-    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "u24le"
-    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "u32be"
-    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "u32le"
-    PCM_UNSIGNED_8_BITS                = "u8"
-    PCM_SIGNED_8_BITS                  = "s8"
-
-class FFmpegAudioCodec(BrokenEnum):
-    """-c:a ffmpeg option"""
-    AAC    = "aac"
-    MP3    = "libmp3lame"
-    VORBIS = "libvorbis"
-    OPUS   = "libopus"
-    FLAC   = "flac"
-    AC3    = "ac3"
-    Copy   = "copy"
-
-    # Raw pcm formats `ffmpeg -formats | grep PCM`
     PCM_FLOAT_32_BITS_BIG_ENDIAN       = "pcm_f32be"
     PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "pcm_f32le"
     PCM_FLOAT_64_BITS_BIG_ENDIAN       = "pcm_f64be"
@@ -186,6 +156,32 @@ class FFmpegAudioCodec(BrokenEnum):
     PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "pcm_u32le"
     PCM_UNSIGNED_8_BITS                = "pcm_u8"
     PCM_SIGNED_8_BITS                  = "pcm_s8"
+
+    @property
+    @functools.lru_cache
+    def size(self) -> int:
+        return int(''.join(filter(str.isdigit, self.value)))//8
+
+    @property
+    @functools.lru_cache
+    def endian(self) -> str:
+        return "<" if ("le" in self.value) else ">"
+
+    @property
+    @functools.lru_cache
+    def dtype(self) -> numpy.dtype:
+        type = self.value.split("_")[1][0]
+        return numpy.dtype(f"{self.endian}{type}{self.size}")
+
+class FFmpegAudioCodec(BrokenEnum):
+    """-c:a ffmpeg option"""
+    AAC    = "aac"
+    MP3    = "libmp3lame"
+    VORBIS = "libvorbis"
+    OPUS   = "libopus"
+    FLAC   = "flac"
+    AC3    = "ac3"
+    Copy   = "copy"
 
 # ----------------------------------------------|
 # H264
@@ -889,8 +885,9 @@ class BrokenFFmpeg:
             self.hwaccel,
         ))
 
-    def audio_codec(self, codec: FFmpegAudioCodec=FFmpegAudioCodec.AAC) -> Self:
-        return self.__smart__("-c:a", FFmpegAudioCodec.get(codec), delete=self.audio_codec)
+    def audio_codec(self, codec: Union[FFmpegAudioCodec, FFmpegPCM]=FFmpegAudioCodec.AAC) -> Self:
+        codec = FFmpegAudioCodec.get(codec) or FFmpegPCM.get(codec)
+        return self.__smart__("-c:a", codec, delete=self.audio_codec)
 
     # ---------------------------------------------------------------------------------------------|
     # Generic NVENC
@@ -1190,44 +1187,87 @@ class BrokenFFmpeg:
         ).strip().splitlines()[stream])
 
     @staticmethod
-    def get_raw_audio(
-        path: PathLike,
-        *,
-        format: FFmpegPCM=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN,
-        chunk: Seconds=0.1,
-        echo: bool=True
-    ) -> Optional[Generator[numpy.ndarray, None, Seconds]]:
+    def get_audio_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
         if not (path := BrokenPath(path, valid=True)):
             return
-        BrokenFFmpeg.install()
-        log.minor(f"Streaming Raw Audio from file ({path})")
+        try:
+            generator = BrokenAudioReader(path=path, chunk=10)
+            while next(generator) is not None: ...
+        except StopIteration as result:
+            return result.value
 
-        # Get basic information
-        channels:   int = BrokenFFmpeg.get_audio_channels(path, echo=echo)
-        samplerate: int = BrokenFFmpeg.get_samplerate(path, echo=echo)
+# -------------------------------------------------------------------------------------------------|
+# BrokenFFmpeg Spin-offs
 
-        # An example format of "f32le" will have:
-        # • Size, Endian, Type, dtype = 4, "<", "f", "<f4"
-        format: str = FFmpegPCM.get(format).value
-        size:   int = int(re.sub(r"\D", "", format)) // 8
-        endian: str = re.sub(r".*\d", "", format).replace("le", "<").replace("be", ">")
-        type:   str = re.match(r"[^\d]+", format).group(0)
-        dtype:  str = f"{endian}{type}{size}"
+@define
+class BrokenAudioReader:
+    path:        PathLike
+    chunk:       Seconds     = 0.1
+    format:      FFmpegPCM   = FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN
+    _time:       Seconds     = 0
+    _channels:   int         = None
+    _samplerate: Hertz       = None
+    _dtype:      numpy.dtype = None
+    _size:       int         = 4
+    _ffmpeg:     Popen       = None
 
-        # Note: Stderr to null as we might not read all the audio
-        ffmpeg = (BrokenFFmpeg()
+    @property
+    def time(self) -> Seconds:
+        return self._time
+
+    @property
+    def channels(self) -> int:
+        return self._channels
+
+    @property
+    def samplerate(self) -> Hertz:
+        return self._samplerate
+
+    @property
+    def dtype(self) -> numpy.dtype:
+        return self._dtype
+
+    @property
+    def size(self) -> int:
+        return self._size
+
+    @property
+    def bytes_per_second(self) -> int:
+        return (self.size * self.channels * self.samplerate)
+
+    @property
+    def bytes_per_sample(self) -> int:
+        return (self.size * self.channels)
+
+    @property
+    def stream(self) -> Generator[numpy.ndarray, None, None]:
+        self.path = BrokenPath(self.path, valid=True)
+        if (self.path is None):
+            return None
+
+        # Get audio file attributes
+        self._channels   = BrokenFFmpeg.get_audio_channels(self.path)
+        self._samplerate = BrokenFFmpeg.get_samplerate(self.path)
+        self.format = FFmpegPCM.get(self.format)
+        self._dtype = self.format.dtype
+        self._size = self.format.size
+        self._time = 0
+
+        # Note: Stderr to null as we might not read all the audio, won't log errors
+        self._ffmpeg = (
+            BrokenFFmpeg()
             .quiet()
-            .input(path)
-            .audio_codec(f"pcm_{format}")
-            .format(format)
+            .input(self.path)
+            .audio_codec(self.format.value)
+            .format(self.format.value.removeprefix("pcm_"))
             .no_video()
-            .custom("-ar", samplerate)
-            .custom("-ac", channels)
+            .custom("-ar", self.samplerate)
+            .custom("-ac", self.channels)
             .output("-")
         ).Popen(stdout=PIPE, stderr=DEVNULL)
 
         """
-        One would think the following code is the way, but it is not
+        One could think the following code is the way, but it is not
 
         ```python
         while (data := ffmpeg.stdout.read(chunk*samplerate)):
@@ -1238,34 +1278,17 @@ class BrokenFFmpeg:
         • Small reads yields time imprecision on sample domain vs time domain
         • Must keep track of theoretical time and real time of the read
         """
-
-        # Keep track of theoretical and read time
-        bytes_per_second: int = (size * channels * samplerate)
-        bytes_per_sample: int = (size * channels)
-        stream_time:    float = 0
-
-        for target_time in itertools.count(chunk, chunk):
+        for i in itertools.count(1):
+            target = (i * self.chunk)
 
             # Calculate the length of the next read to best match the target time
-            length = (target_time - stream_time) * bytes_per_second
-            length = BrokenUtils.round(length, bytes_per_sample, type=int)
-
-            # The next chunk might overshoot or undershoot, and it's ok
-            if not (data := ffmpeg.stdout.read(length)):
-                break
+            # but do not carry over temporal conversion errors
+            length = (target - self.time) * self.bytes_per_second
+            length = BrokenUtils.round(length, self.bytes_per_sample, type=int)
+            length = max(length, self.bytes_per_sample)
+            data   = self._ffmpeg.stdout.read(length)
+            if data is None: break
 
             # Increment precise time and read time
-            stream_time += len(data)/bytes_per_second
-            yield numpy.frombuffer(data, dtype=dtype).reshape(-1, channels)
-
-        return stream_time
-
-    @staticmethod
-    def get_audio_duration(path: PathLike, *, echo: bool=True) -> Optional[Seconds]:
-        if not (path := BrokenPath(path, valid=True)):
-            return
-        try:
-            generator = BrokenFFmpeg.get_raw_audio(path, chunk=10, echo=echo)
-            while next(generator) is not None: ...
-        except StopIteration as result:
-            return result.value
+            self._time += len(data)/self.bytes_per_second
+            yield numpy.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)

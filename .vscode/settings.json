@@ -83,6 +83,7 @@
         "Upscalin":     "tools",
         "Pianola":      "tools",
         "SpectroNote":  "tools",
+        "FastCutter":   "tools",
 
         // Meta
         "FluentMidi":   "include",
@@ -178,6 +179,7 @@
         "equirectangular",
         "esrgan",
         "explorable",
+        "fastcutter",
         "fastdecode",
         "ffprobe",
         "figlet",

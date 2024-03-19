@@ -30,4 +30,7 @@
 	url  = https://github.com/Tremeschin/moderngl-window
 [submodule "Meta/PyAPP"]
 	path = Meta/Fork/PyAPP
-	url = https://github.com/Tremeschin/pyapp
+	url  = https://github.com/Tremeschin/pyapp
+[submodule "Projects/FastCutter"]
+	path = Projects/FastCutter
+	url  = https://github.com/BrokenSource/FastCutter

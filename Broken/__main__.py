@@ -478,7 +478,7 @@ class BrokenCLI:
         self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software Monorepo manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️ Broken Source Software, AGPLv3-only License."
+            "©️ Broken Source Software, AGPL-3.0-only License."
         ))
 
         with self.broken_typer.panel("📦 Installation"):
