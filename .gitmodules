@@ -8,10 +8,10 @@
 	path = Projects/DepthFlow
 	url  = https://github.com/BrokenSource/DepthFlow
 [submodule "Projects/QuadSnap"]
-	path = Projects/QuadSnap
+	path = Projects/Others/QuadSnap
 	url  = https://github.com/BrokenSource/QuadSnap
 [submodule "Projects/Upscalin"]
-	path = Projects/Upscalin
+	path = Projects/Others/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
 [submodule "Meta/FluentMidi"]
 	path = Meta/FluentMidi
@@ -32,5 +32,5 @@
 	path = Meta/Fork/PyAPP
 	url  = https://github.com/Tremeschin/pyapp
 [submodule "Projects/FastCutter"]
-	path = Projects/FastCutter
+	path = Projects/Others/FastCutter
 	url  = https://github.com/BrokenSource/FastCutter

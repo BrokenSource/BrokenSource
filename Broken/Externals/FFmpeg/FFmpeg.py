@@ -1278,8 +1278,9 @@ class BrokenAudioReader:
         • Small reads yields time imprecision on sample domain vs time domain
         • Must keep track of theoretical time and real time of the read
         """
-        for i in itertools.count(1):
-            target = (i * self.chunk)
+        target = 0
+
+        while (target := target + self.chunk):
 
             # Calculate the length of the next read to best match the target time
             # but do not carry over temporal conversion errors
