@@ -1191,7 +1191,7 @@ class BrokenFFmpeg:
         if not (path := BrokenPath(path, valid=True)):
             return
         try:
-            generator = BrokenAudioReader(path=path, chunk=10)
+            generator = BrokenAudioReader(path=path, chunk=10).stream
             while next(generator) is not None: ...
         except StopIteration as result:
             return result.value
@@ -1287,8 +1287,10 @@ class BrokenAudioReader:
             length = BrokenUtils.round(length, self.bytes_per_sample, type=int)
             length = max(length, self.bytes_per_sample)
             data   = self._ffmpeg.stdout.read(length)
-            if data is None: break
+            if len(data) == 0: break
 
             # Increment precise time and read time
             self._time += len(data)/self.bytes_per_second
             yield numpy.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)
+
+        return self.time
