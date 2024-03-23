@@ -1204,6 +1204,7 @@ class BrokenAudioReader:
     path:        PathLike
     chunk:       Seconds     = 0.1
     format:      FFmpegPCM   = FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN
+    echo:        bool        = False
     _time:       Seconds     = 0
     _channels:   int         = None
     _samplerate: Hertz       = None
@@ -1246,8 +1247,8 @@ class BrokenAudioReader:
             return None
 
         # Get audio file attributes
-        self._channels   = BrokenFFmpeg.get_audio_channels(self.path)
-        self._samplerate = BrokenFFmpeg.get_samplerate(self.path)
+        self._channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=self.echo)
+        self._samplerate = BrokenFFmpeg.get_samplerate(self.path, echo=self.echo)
         self.format = FFmpegPCM.get(self.format)
         self._dtype = self.format.dtype
         self._size = self.format.size
@@ -1264,7 +1265,7 @@ class BrokenAudioReader:
             .custom("-ar", self.samplerate)
             .custom("-ac", self.channels)
             .output("-")
-        ).Popen(stdout=PIPE, stderr=DEVNULL)
+        ).Popen(stdout=PIPE, stderr=DEVNULL, echo=self.echo)
 
         """
         One could think the following code is the way, but it is not

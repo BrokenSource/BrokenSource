@@ -173,13 +173,14 @@ if sys.version_info < (3, 11):
 # Ignore mostly NumPy warnings
 warnings.filterwarnings('ignore')
 
-# # Custom types
+# # Custom types and utilities
 Image:     TypeAlias = PIL.Image.Image
 ImagePIL:  TypeAlias = PIL.Image.Image
 Unchanged: TypeAlias = None
 URL:       TypeAlias = str
 Option               = Union
 Range:     TypeAlias = range
+Channels:  TypeAlias = int
 
 # Units
 Seconds:   TypeAlias = float

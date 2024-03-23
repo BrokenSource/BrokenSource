@@ -120,7 +120,7 @@ class BrokenLogging:
     def log(self, *content, level: LogLevel, echo: bool=True) -> str:
         message = (" ".join(map(str, content)))
 
-        if not echo:
+        if (not bool(echo)):
             return message
 
         # Write to all sinks

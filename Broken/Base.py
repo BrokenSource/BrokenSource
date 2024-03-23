@@ -131,7 +131,7 @@ def shell(
     # Get the current working directory
     cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
     (log.info if do else log.skip)(("Running" if do else "Skipping") + f" Command {command}{cwd}", echo=echo)
-    if not do: return
+    if (not do): return
 
     # Confirm running command or not
     if confirm and not click.confirm(f"• Confirm running the command above"):
@@ -292,7 +292,7 @@ class BrokenPlatform:
             """Same as BrokenPlatform.Architecture"""
             return self.value.split("-")[1]
 
-    CurrentTarget:    str = f"{Name}-{Architecture}"
+    CurrentTarget: str = f"{Name}-{Architecture}"
 
     @staticmethod
     def clear_terminal(**kwargs):
@@ -656,7 +656,9 @@ class BrokenPath(Path):
             return BrokenPath.extract(file, directory, PATH=True, echo=echo)
 
         # File is some known type, move to their own external directory
-        if file.suffix in AUDIO_EXTENSIONS:
+        if bool(subdir):
+            directory = Broken.BROKEN.DIRECTORIES.EXTERNALS/subdir
+        elif file.suffix in AUDIO_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
         elif file.suffix in IMAGE_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
