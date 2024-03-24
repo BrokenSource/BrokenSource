@@ -9,7 +9,6 @@ from typing import List
 from typing import Optional
 from typing import Self
 
-import arrow
 import toml
 import typer
 from attr import Factory
@@ -85,6 +84,7 @@ class BrokenProjectCLI:
 
     @property
     def version(self) -> str:
+        import arrow
         return self.config.setdefault("version", arrow.utcnow().format("YYYY.M.D"))
 
     @property

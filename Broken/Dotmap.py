@@ -1,15 +1,11 @@
 import contextlib
 import json
-import pickle
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Self
 from typing import Union
-
-import toml
-import yaml
 
 from Broken.Base import BrokenPath
 from Broken.Logging import log
@@ -121,12 +117,16 @@ class BrokenDotmap:
         try:
             match format:
                 case ".toml":
+                    import toml
                     data = toml.loads(path.read_text())
                 case ".json":
+                    import json
                     data = json.loads(path.read_text())
                 case ".yaml":
+                    import yaml
                     data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
                 case ".pickle":
+                    import pickle
                     data = pickle.loads(path.read_bytes())
                 case _:
                     log.error(f"• BrokenDotmap: Unknown file format ({format})")
@@ -243,12 +243,16 @@ class BrokenDotmap:
         # Load file based on format
         match self.__ext__:
             case ".toml":
+                import toml
                 self.__path__.write_text(toml.dumps(dict))
             case ".json":
+                import json
                 self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
             case ".yaml":
+                import yaml
                 self.__path__.write_text(yaml.dump(dict))
             case ".pickle":
+                import pickle
                 self.__path__.write_bytes(pickle.dumps(dict))
             case _:
                 log.error(f"BrokenDotmap: Unknown file format ({self.__ext__}), cannot save to file")
