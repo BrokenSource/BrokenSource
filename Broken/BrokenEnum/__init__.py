@@ -1,13 +1,22 @@
-from . import *
+import enum
+import functools
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Self
+from typing import Tuple
+from typing import Union
+
+import attrs
 
 
-class BrokenEnum(Enum):
+class BrokenEnum(enum.Enum):
 
     # # Initialization
 
     @classmethod
     @functools.lru_cache(typed=True)
-    def from_name(cls, name: str, *, lowercase: bool=True, must: bool=False) -> Optional[Enum]:
+    def from_name(cls, name: str, *, lowercase: bool=True, must: bool=False) -> Optional[enum.Enum]:
         """
         Get enum members from their name
 
@@ -47,7 +56,7 @@ class BrokenEnum(Enum):
 
     @classmethod
     @functools.lru_cache(typed=True)
-    def from_value(cls, value: Any, *, must: bool=False) -> Optional[Enum]:
+    def from_value(cls, value: Any, *, must: bool=False) -> Optional[enum.Enum]:
         """
         Get enum members from their value (name=value)
 
@@ -84,14 +93,14 @@ class BrokenEnum(Enum):
     @classmethod
     @property
     @functools.lru_cache(typed=True)
-    def members(cls) -> Tuple[Enum]:
+    def members(cls) -> Tuple[enum.Enum]:
         """Get all members of the enum"""
         return tuple(cls)
 
     @classmethod
     @property
     @functools.lru_cache(typed=True)
-    def options(cls) -> Tuple[Enum]:
+    def options(cls) -> Tuple[enum.Enum]:
         """Get all members of the enum"""
         return cls.members
 
@@ -151,7 +160,7 @@ class BrokenEnum(Enum):
 
     @classmethod
     @functools.lru_cache(typed=True)
-    def get(cls, value: Union[str, Enum, Any], *, lowercase: bool=True) -> Optional[Self]:
+    def get(cls, value: Union[str, enum.Enum, Any], *, lowercase: bool=True) -> Optional[Self]:
         """
         Get enum members from their value, name or themselves
 
@@ -194,7 +203,7 @@ class BrokenEnum(Enum):
         return cls.from_value(value)
 
     @functools.lru_cache(typed=True)
-    def next(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
+    def next(self, value: Union[str, enum.Enum]=None, offset: int=1) -> Self:
         """
         Get the next enum member (in position) from their value, name or themselves
 
@@ -228,7 +237,7 @@ class BrokenEnum(Enum):
         return self.next()
 
     @functools.lru_cache(typed=True)
-    def previous(self, value: Union[str, Enum]=None, offset: int=1) -> Self:
+    def previous(self, value: Union[str, enum.Enum]=None, offset: int=1) -> Self:
         """
         Get the previous enum member (in position) from their value, name or themselves
 
@@ -286,7 +295,7 @@ class BrokenEnum(Enum):
         """
         raise NotImplementedError("This method is not implemented yet")
 
-    def Field(self, **kwargs) -> attrs.Attribute:
+    def field(self, **kwargs) -> attrs.Attribute:
         """
         Make a attrs.field() with this member as default and enum class's get method as converter
 
@@ -299,7 +308,7 @@ class BrokenEnum(Enum):
 
             @define
             class Computer:
-                os: Platform = Platform.Linux.Field()
+                os: Platform = Platform.Linux.field()
 
             # Any setattr will be redirected to the enum's get method
             computer = Computer()

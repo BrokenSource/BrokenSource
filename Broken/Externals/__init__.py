@@ -1,4 +1,6 @@
-from .. import *
+from abc import ABC
+from abc import abstractmethod
+from typing import Type
 
 
 class BrokenExternal(ABC):
@@ -11,6 +13,3 @@ class BrokenExternal(ABC):
 class BrokenExternalManager:
     def get(self, external: Type[BrokenExternal]) -> BrokenExternal:
         ...
-
-from .FFmpeg import *
-from .Upscaler import *

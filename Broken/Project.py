@@ -1,6 +1,27 @@
 from __future__ import annotations
 
-from . import *
+import importlib.metadata
+import importlib.resources
+import os
+import sys
+import tempfile
+from abc import ABC
+from abc import abstractmethod
+from pathlib import Path
+
+import dotenv
+from appdirs import AppDirs
+from attr import define
+from attr import field
+from rich import print as rprint
+from rich.align import Align
+from rich.panel import Panel
+from typer import Typer
+
+import Broken
+from Broken.Base import BrokenPath
+from Broken.Dotmap import BrokenDotmap
+from Broken.Logging import log
 
 
 @define(slots=False)
@@ -11,7 +32,7 @@ class _BrokenProjectDirectories:
     BROKEN_PROJECT: BrokenProject
 
     # App basic information
-    APP_DIRS: AppDirs = Field(default=None)
+    APP_DIRS: AppDirs = field(default=None)
 
     def __attrs_post_init__(self):
         args = (self.BROKEN_PROJECT.APP_AUTHOR, self.BROKEN_PROJECT.APP_NAME)
@@ -26,9 +47,9 @@ class _BrokenProjectDirectories:
         When running from a Release:
             - Directory where the executable is located
         """
-        if BROKEN_PYINSTALLER:
+        if Broken.PYINSTALLER:
             return Path(sys.executable).parent.resolve()
-        elif BROKEN_NUITKA:
+        elif Broken.NUITKA:
             return Path(sys.argv[0]).parent.resolve()
         else:
             return Path(self.BROKEN_PROJECT.PACKAGE).parent.resolve()
@@ -271,7 +292,7 @@ class _BrokenProjectResources:
 
     # # Internal states
 
-    __RESOURCES__: Path = Field(default=None)
+    __RESOURCES__: Path = field(default=None)
 
     def __attrs_post_init__(self):
         if self.BROKEN_PROJECT.RESOURCES:
@@ -354,8 +375,8 @@ class BrokenProject:
     PACKAGE: str
 
     # App information
-    APP_NAME:   str = Field(default="Broken")
-    APP_AUTHOR: str = Field(default="BrokenSource")
+    APP_NAME:   str = field(default="Broken")
+    APP_AUTHOR: str = field(default="BrokenSource")
 
     # Standard Broken objects for a project
     DIRECTORIES: _BrokenProjectDirectories = None
@@ -385,7 +406,7 @@ class BrokenProject:
         self.__START_LOGGING__()
 
         # Convenience: Symlink Workspace to projects data directory
-        if BROKEN_DEVELOPMENT:
+        if Broken.DEVELOPMENT:
             try:
                 BrokenPath.symlink(
                     virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
@@ -409,11 +430,11 @@ class BrokenProject:
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
 
         # Print panel center-justified lines
-        rprint(rich.panel.Panel(
-            rich.align.Align.center(ascii),
+        rprint(Panel(
+            Align.center(ascii),
             subtitle=' '.join((
                 f"Made with ❤️ by {self.APP_AUTHOR}.",
-                ("Release version." if BROKEN_RELEASE else "Development version"),
+                ("Release version." if Broken.RELEASE else "Development version"),
                 f"(Python {sys.version.split()[0]})"
             )),
             padding=1,
@@ -454,7 +475,7 @@ class BrokenProject:
 
 @define
 class BrokenApp(ABC):
-    broken_typer: BrokenTyper = None
+    broken_typer: Typer = None
 
     @abstractmethod
     def cli(self) -> None:

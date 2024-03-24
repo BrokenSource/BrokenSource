@@ -1,6 +1,37 @@
 from __future__ import annotations
 
-from Broken import *
+import os
+import shutil
+import sys
+from pathlib import Path
+from typing import Annotated
+from typing import List
+from typing import Optional
+from typing import Self
+
+import arrow
+import toml
+import typer
+from attr import Factory
+from attr import define
+from dotmap import DotMap
+from typer import Argument
+from typer import Context
+from typer import Option
+from typer import Typer
+from yaspin import kbi_safe_yaspin as yaspin
+
+import Broken
+from Broken.Base import BrokenPath
+from Broken.Base import BrokenPlatform
+from Broken.Base import BrokenProfiler
+from Broken.Base import BrokenTorch
+from Broken.Base import BrokenTyper
+from Broken.Base import TorchFlavor
+from Broken.Base import flatten
+from Broken.Base import shell
+from Broken.BrokenEnum import BrokenEnum
+from Broken.Logging import log
 
 
 def main():
@@ -23,11 +54,11 @@ class ProjectLanguage(BrokenEnum):
 class BrokenProjectCLI:
     path: Path
     name: str = "Unknown"
-    broken_typer: TyperApp = None
+    broken_typer: Typer = None
 
     # # Main entry point
 
-    def cli(self, ctx: TyperContext) -> None:
+    def cli(self, ctx: Context) -> None:
         self.broken_typer = BrokenTyper(help_option=False)
         self.broken_typer.command(self.poetry,  add_help_option=False)
         self.broken_typer.command(self.poe,     add_help_option=True)
@@ -130,11 +161,11 @@ class BrokenProjectCLI:
 
     # # Commands
 
-    def poetry(self, ctx: TyperContext) -> None:
+    def poetry(self, ctx: Context) -> None:
         self.pop_venv()
         shell("python", "-m", "poetry", *ctx.args)
 
-    def poe(self, ctx: TyperContext) -> None:
+    def poe(self, ctx: Context) -> None:
         self.pop_venv()
         shell("python", "-m", "poethepoet", *ctx.args)
 
@@ -165,12 +196,12 @@ class BrokenProjectCLI:
             up_date(self.path/"pyproject.toml")
 
     def run(self,
-        ctx:       TyperContext,
-        reinstall: Annotated[bool, TyperOption("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
-        infinite:  Annotated[bool, TyperOption("--infinite",  help="Press Enter after each run to run again")]=False,
-        clear:     Annotated[bool, TyperOption("--clear",     help="Clear terminal before running")]=False,
-        debug:     Annotated[bool, TyperOption("--debug",     help="Debug mode for Rust projects")]=False,
-        echo:      Annotated[bool, TyperOption("--echo",      help="Echo command")]=False,
+        ctx:       Context,
+        reinstall: Annotated[bool, Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
+        infinite:  Annotated[bool, Option("--infinite",  help="Press Enter after each run to run again")]=False,
+        clear:     Annotated[bool, Option("--clear",     help="Clear terminal before running")]=False,
+        debug:     Annotated[bool, Option("--debug",     help="Debug mode for Rust projects")]=False,
+        echo:      Annotated[bool, Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
         while BrokenPlatform.clear_terminal(do=clear, echo=False) or True:
@@ -186,7 +217,7 @@ class BrokenProjectCLI:
                     break
                 except FileNotFoundError:
                     log.warning(f"Partial Virtual Environment installation detected for the Project ({self.name})")
-                    log.warning(f"• A full installation reset and retry is recommended {{(r) option}}")
+                    log.warning("• A full installation reset and retry is recommended {{(r) option}}")
                     status = DotMap(returncode=1, args=ctx.args)
                 except Exception as e:
                     log.error(f"Project ({self.name}) finished with an Exception: {e}")
@@ -259,7 +290,7 @@ class BrokenProjectCLI:
             while True:
 
                 # Fixme: Poetry has a very slow startup time, more than Broken
-                with yaspin(text=f"Finding Virtual Environment"):
+                with yaspin(text="Finding Virtual Environment"):
                     venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
                 # Install if virtualenv is not found
@@ -297,8 +328,8 @@ class BrokenProjectCLI:
                 return venv_path
 
     def release(self,
-        target: Annotated[List[BrokenPlatform.Targets], TyperOption("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
-        torch:  Annotated[bool, TyperOption("--torch", help="Build for all PyTorch flavors")]=False,
+        target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
+        torch:  Annotated[bool, Option("--torch", help="Build for all PyTorch flavors")]=False,
     ) -> List[Path]:
         """Release the Project as a distributable binary"""
 
@@ -321,7 +352,7 @@ class BrokenProjectCLI:
         if self.is_python:
             BrokenCLI.rust()
             BrokenTorch.write_flavor(self.path/self.name/"Resources", torch)
-            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD
+            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD
 
             # Build all path dependencies for a project recursively, return their path
             def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
@@ -379,7 +410,7 @@ class BrokenProjectCLI:
             shell("rustup", "target", "add", target.rust)
 
             # Build the final binary
-            if (OFFICIAL := False):
+            if (_OFFICIAL := False):
                 if shell("cargo", "install",
                     "pyapp", "--force",
                     "--root", BUILD_DIR,
@@ -387,8 +418,8 @@ class BrokenProjectCLI:
                 ).returncode != 0:
                     log.error("Failed to compile PyAPP")
                     exit(1)
-            elif (FORKED := True):
-                with BrokenPath.pushd(BROKEN.DIRECTORIES.BROKEN_FORK/"PyAPP"):
+            elif (_FORKED := True):
+                with BrokenPath.pushd(Broken.BROKEN.DIRECTORIES.BROKEN_FORK/"PyAPP"):
                     if shell("cargo", "install",
                         "--path", ".",
                         "--force",
@@ -412,7 +443,7 @@ class BrokenProjectCLI:
 
             # Rename project binary according to the Broken naming convention
             version = wheels[0].name.split("-")[1]
-            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+            release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                 f"{self.name.lower()}-",
                 (f"{torch.name.lower()}-" if torch else ""),
                 f"{target.name}-",
@@ -427,7 +458,7 @@ class BrokenProjectCLI:
             sha256sum = BrokenPath.sha256sum(release_path)
             release_path.with_suffix(".sha256").write_text(sha256sum)
             log.info(f"• SHA256: {sha256sum}")
-            log.success(f"Built project at ({BROKEN.DIRECTORIES.BROKEN_RELEASES/release_path})")
+            log.success(f"Built project at ({Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES/release_path})")
             return release_path
 
 # -------------------------------------------------------------------------------------------------|
@@ -435,14 +466,13 @@ class BrokenProjectCLI:
 @define
 class BrokenCLI:
     projects:     list[BrokenProjectCLI] = Factory(list)
-    directories:  BrokenDirectories      = None
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
         with yaspin(text="Finding Projects"):
-            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-            self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
-            self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
+            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE)
+            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
@@ -463,7 +493,7 @@ class BrokenCLI:
                 continue
 
             # Avoid recursion
-            if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
+            if BrokenPath(directory) == Broken.BROKEN.DIRECTORIES.REPOSITORY:
                 continue
 
             # Resolve symlinks recursively
@@ -519,7 +549,7 @@ class BrokenCLI:
             ("Tremeschin", "Clipyst", "Clipyst"),
         ):
             url  = f"https://github.com/{username}/{repository}"
-            path = BROKEN.DIRECTORIES.BROKEN_PRIVATE/name
+            path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE/name
             shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|
@@ -534,15 +564,15 @@ class BrokenCLI:
         all: bool=False
     ) -> None:
         """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
-        ROOT = BROKEN.DIRECTORIES.REPOSITORY
+        ROOT = Broken.BROKEN.DIRECTORIES.REPOSITORY
 
         # Sort imports, ignore "Releases" folder
         if all or isort:
             shell("isort", ROOT,
                 "--force-single-line-imports",
                 "--skip", ROOT/".venvs",
-                "--skip", BROKEN.DIRECTORIES.BROKEN_RELEASES,
-                "--skip", BROKEN.DIRECTORIES.BROKEN_BUILD,
+                "--skip", Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES,
+                "--skip", Broken.BROKEN.DIRECTORIES.BROKEN_BUILD,
             )
 
         # Remove all .pyc files and __pycache__ folders
@@ -558,17 +588,17 @@ class BrokenCLI:
                 BrokenPath.remove(path)
 
         # Remove build and releases folders if requested
-        if all or build:    BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
-        if all or releases: BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
+        if all or build:    BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_BUILD)
+        if all or releases: BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
-    def link(self, path: Annotated[Path, TyperArgument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
+    def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
+        BrokenPath.symlink(virtual=Broken.BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     @staticmethod
     def rust(
-        toolchain:   Annotated[str,  TyperOption("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
-        build_tools: Annotated[bool, TyperOption("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
+        toolchain:   Annotated[str,  Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
+        build_tools: Annotated[bool, Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
         """🦀 Installs Build Dependencies and a Rust Toolchain"""
         import requests
@@ -585,9 +615,9 @@ class BrokenCLI:
             BrokenPath.add_to_path(Path.home()/".cargo"/"bin")
 
             if not BrokenPath.which("rustup"):
-                log.note(f"Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
-                log.note(f"• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
-                log.note(f"• Please restart your shell for Rust toolchain to be on PATH")
+                log.note("Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
+                log.note("• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
+                log.note("• Please restart your shell for Rust toolchain to be on PATH")
                 exit(0)
 
         # Install Visual C++ Build Tools on Windows
@@ -618,7 +648,7 @@ class BrokenCLI:
 
     def sync(self) -> None:
         """♻️  Synchronize common Resources Files across all Projects"""
-        root = BROKEN.DIRECTORIES.REPOSITORY
+        root = Broken.BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:
             for file in flatten(
@@ -635,11 +665,11 @@ class BrokenCLI:
 
     def install(self):
         """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
-        BROKEN.welcome()
+        Broken.BROKEN.welcome()
         self.scripts()
         if BrokenPlatform.OnWindows:
             self.shortcut()
-        log.note(f"Running Broken at ({BROKEN.DIRECTORIES.REPOSITORY})")
+        log.note(f"Running Broken at ({Broken.BROKEN.DIRECTORIES.REPOSITORY})")
         log.note("• Tip: Avoid 'poetry run (broken | project)', prefer 'broken', it's faster 😉")
         log.note("• Tip: Next Time, run 'python ./brakeit.py'" + BrokenPlatform.OnWindows*" or click the Desktop App Icon")
         log.note("• Now run 'broken' for the full command list")
@@ -650,7 +680,7 @@ class BrokenCLI:
 
         # Get Broken virtualenv path
         bin_path = Path(os.environ["VIRTUAL_ENV"])/BrokenPlatform.PyScripts
-        log.info(f"Installing Direct Scripts on current Virtual Environment")
+        log.info("Installing Direct Scripts on current Virtual Environment")
 
         # Watermark to tag files are Broken made
         WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
@@ -672,7 +702,7 @@ class BrokenCLI:
 
             if BrokenPlatform.OnUnix:
                 script.write_text('\n'.join([
-                    f"#!/bin/bash",
+                    "#!/bin/bash",
                     f"# {WATERMARK}",
                     f"broken {project.lname} $@",
                 ]))
@@ -687,7 +717,7 @@ class BrokenCLI:
 
             BrokenPath.make_executable(script, echo=False)
 
-    LINUX_DESKTOP_FILE = BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
+    LINUX_DESKTOP_FILE = Broken.BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
 
     def shortcut(self):
         """🧭 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
@@ -697,8 +727,8 @@ class BrokenCLI:
                 "[Desktop Entry]",
                 "Type=Application",
                 "Name=Brakeit",
-                f"Exec={BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
-                f"Icon={BROKEN.RESOURCES.ICON}",
+                f"Exec={Broken.BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
+                f"Icon={Broken.BROKEN.RESOURCES.ICON}",
                 "Comment=Brakeit Bootstrapper",
                 "Terminal=true",
                 "Categories=Development",
@@ -709,22 +739,22 @@ class BrokenCLI:
             os.environ["CONDA_DEFAULT_ENV"] = "base"
             import pyshortcuts
             pyshortcuts.make_shortcut(
-                script=str(BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
+                script=str(Broken.BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
                 name="Brakeit",
                 description="Broken Source Software Development Environment Entry Script",
-                icon=str(BROKEN.RESOURCES.ICON_ICO),
+                icon=str(Broken.BROKEN.RESOURCES.ICON_ICO),
             )
         else:
             log.error(f"Unknown Platform ({BrokenPlatform.Name})")
             return
 
     def submodules(self,
-        root:     Annotated[Path, TyperOption("--root",     "-r", help="(Basic) Root path to search for Submodules")]=BROKEN.DIRECTORIES.REPOSITORY,
-        auth:     Annotated[bool, TyperOption("--auth",     "-a", help="(Basic) Prompt Username and Password privately for Private clones")]=False,
-        username: Annotated[str,  TyperOption("--username", "-u", help="(Auth ) Username to use for git clone")]=None,
-        password: Annotated[str,  TyperOption("--password", "-p", help="(Auth ) Password to use for git clone")]=None,
-        pull:     Annotated[bool, TyperOption("--pull",           help="(Git  ) Run git pull on all submodules")]=False,
-        force:    Annotated[bool, TyperOption("--force",    "-f", help="(Git  ) Force pull (overrides local changes)")]=False,
+        root:     Annotated[Path, Option("--root",     "-r", help="(Basic) Root path to search for Submodules")]=Broken.BROKEN.DIRECTORIES.REPOSITORY,
+        auth:     Annotated[bool, Option("--auth",     "-a", help="(Basic) Prompt Username and Password privately for Private clones")]=False,
+        username: Annotated[str,  Option("--username", "-u", help="(Auth ) Username to use for git clone")]=None,
+        password: Annotated[str,  Option("--password", "-p", help="(Auth ) Password to use for git clone")]=None,
+        pull:     Annotated[bool, Option("--pull",           help="(Git  ) Run git pull on all submodules")]=False,
+        force:    Annotated[bool, Option("--force",    "-f", help="(Git  ) Force pull (overrides local changes)")]=False,
     ):
         """🔽 Safely init and clone submodules, skip private ones, optional authentication"""
 
@@ -836,5 +866,5 @@ class BrokenCLI:
 
     def pillow(self):
         """Use Pillow-SIMD for faster Image processing"""
-        os.environ["CC"] = f"cc -mavx2"
+        os.environ["CC"] = "cc -mavx2"
         shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")

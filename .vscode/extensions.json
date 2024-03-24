@@ -1,27 +1,11 @@
 {
     "recommendations": [
-        // Well, better toml!
         "tamasfe.even-better-toml",
-
-        // Inline errors
         "usernamehw.errorlens",
-
-        // Lovely icons, better visibility
         "PKief.material-icon-theme",
-
-        // Yeah, I know, but it's useful
         "ms-python.python",
-
-        // Alt+B and you're good to go
         "silesky.toggle-boolean",
-
-        // Save bytes, save the world
         "shardulm94.trailing-spaces",
-
-        // Actually see special notes on the code
         "aaron-bond.better-comments",
-
-        // Python Isort
-        "ms-python.isort",
     ]
 }

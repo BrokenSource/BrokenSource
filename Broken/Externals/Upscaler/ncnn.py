@@ -1,16 +1,25 @@
-from . import *
+from abc import ABC
+from pathlib import Path
+from subprocess import DEVNULL
+
+from attr import define
+from attr import field
+from Base import shell
+from Externals.Upscaler import BrokenUpscaler
+
+from Broken.BrokenEnum import BrokenEnum
 
 
 @define
 class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
-    noise_level:  int  = Field(default=1, converter=int)
-    tile_size:    int  = Field(default=0, converter=int)
-    gpu:          int  = Field(default=0, converter=int)
-    load_threads: int  = Field(default=1, converter=int)
-    proc_threads: int  = Field(default=1, converter=int)
-    save_threads: int  = Field(default=1, converter=int)
-    cpu:          bool = Field(default=0, converter=bool)
-    tta:          bool = Field(default=0, converter=bool)
+    noise_level:  int  = field(default=1, converter=int)
+    tile_size:    int  = field(default=0, converter=int)
+    gpu:          int  = field(default=0, converter=int)
+    load_threads: int  = field(default=1, converter=int)
+    proc_threads: int  = field(default=1, converter=int)
+    save_threads: int  = field(default=1, converter=int)
+    cpu:          bool = field(default=0, converter=bool)
+    tta:          bool = field(default=0, converter=bool)
 
     def preexec_fn(self):
         import os
@@ -80,7 +89,7 @@ class BrokenWaifu2xModel(BrokenEnum):
 
 @define
 class BrokenWaifu2x(BrokenUpscalerNCNN):
-    model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.Field()
+    model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.field()
 
     @property
     def binary(self) -> str:
@@ -111,7 +120,7 @@ class BrokenWaifu2x(BrokenUpscalerNCNN):
             "-j", f"{self.load_threads}:{self.proc_threads}:{self.save_threads}",
             "-x"*self.tta,
             # "-m", self.model.value, # Fixme: Doko?
-            stderr=subprocess.DEVNULL,
+            stderr=DEVNULL,
             preexec_fn=self.preexec_fn,
             echo=echo,
         )
@@ -126,7 +135,7 @@ class BrokenRealEsrganModel(BrokenEnum):
 
 @define
 class BrokenRealEsrgan(BrokenUpscalerNCNN):
-    model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.Field()
+    model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.field()
 
     @property
     def binary(self) -> str:
@@ -156,7 +165,7 @@ class BrokenRealEsrgan(BrokenUpscalerNCNN):
             "-g", self.gpu,
             "-j", f"{self.load_threads}:{self.proc_threads}:{self.save_threads}",
             "-x"*self.tta,
-            stderr=subprocess.DEVNULL,
+            stderr=DEVNULL,
             preexec_fn=self.preexec_fn,
             echo=echo,
         )

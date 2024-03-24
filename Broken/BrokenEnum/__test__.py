@@ -1,4 +1,4 @@
-from Broken import *
+from Broken.BrokenEnum import BrokenEnum
 
 # -------------------------------------------------------------------------------------------------|
 # Basic usage
@@ -26,7 +26,7 @@ def test_from_name():
     Fruits = get_fruits()
     assert Fruits.from_name("Apple")  == Fruits.Apple
     assert Fruits.from_name("apple")  == Fruits.Apple
-    assert Fruits.from_name("Maçã")   == None
+    assert Fruits.from_name("Maçã")   is None
 
 # Test .options property
 def test_options():
@@ -93,7 +93,7 @@ def test_from_value():
     assert Multivalue.from_value(9000)    == Multivalue.Age
     assert Multivalue.from_value(1.41)    == Multivalue.Height
     assert Multivalue.from_value("🔱")    == Multivalue.Emoji
-    assert Multivalue.from_value("color") == None
+    assert Multivalue.from_value("color") is None
 
 # Test .get
 def test_get():

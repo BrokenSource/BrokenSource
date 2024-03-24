@@ -1,12 +1,30 @@
-from .. import *
+import contextlib
+import shutil
+import tempfile
+from abc import ABC
+from abc import abstractmethod
+from ctypes import Union
+from pathlib import Path
+from typing import Generator
+
+import PIL
+from attr import define
+from attr import field
+from Base import BrokenPath
+from PIL.Image import Image
+
+from Broken.Externals import BrokenExternal
+from Broken.Loaders.LoaderPIL import LoadableImage
+from Broken.Loaders.LoaderPIL import LoaderImage
+from Broken.Logging import log
 
 
 @define
 class BrokenUpscaler(BrokenExternal, ABC):
-    scale:  int = Field(default=2, converter=int)
-    width:  int = Field(default=0, converter=int)
-    height: int = Field(default=0, converter=int)
-    passes: int = Field(default=1, converter=int)
+    scale:  int = field(default=2, converter=int)
+    width:  int = field(default=0, converter=int)
+    height: int = field(default=0, converter=int)
+    passes: int = field(default=1, converter=int)
 
     @property
     def s(self) -> int:
@@ -47,11 +65,11 @@ class BrokenUpscaler(BrokenExternal, ABC):
         ...
 
     def upscale(self,
-        input:  Union[Path, URL, Image],
-        output: Union[Path, URL, None]=Image,
+        input:  LoadableImage,
+        output: Union[Path, Image]=Image,
         *,
         echo: bool=True
-    ) -> Option[Path, Image]:
+    ) -> Union[Path, Image]:
         """
         Upscale some input image given by its path or Image object.
 
@@ -114,7 +132,7 @@ class BrokenUpscaler(BrokenExternal, ABC):
 
     @contextlib.contextmanager
     def temp_image(self,
-        image: Union[Path, URL, Image],
+        image: LoadableImage,
         format="jpg"
     ) -> Generator[Path, None, None]:
         """
@@ -143,5 +161,3 @@ class BrokenUpscaler(BrokenExternal, ABC):
 
             yield file
 
-
-from .ncnn import *

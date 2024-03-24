@@ -1,14 +1,68 @@
 from __future__ import annotations
 
-import Broken
+import contextlib
+import copy
+import functools
+import hashlib
+import inspect
+import math
+import os
+import platform
+import shlex
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import types
+import warnings
+from abc import ABC
+from abc import abstractmethod
+from enum import Enum
+from numbers import Number
+from pathlib import Path
+from threading import Lock
+from threading import Thread
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Self
+from typing import Tuple
+from typing import Union
 
-from . import *
+import click
+import distro
+import tqdm
+import validators
+from attr import Factory
+from attr import define
+from typer import Typer
+from yaspin import kbi_safe_yaspin as yaspin
+
+import Broken
+from Broken.BrokenEnum import BrokenEnum
+from Broken.Logging import log
+from Broken.Types import AUDIO_EXTENSIONS
+from Broken.Types import BIG_BANG
+from Broken.Types import FONTS_EXTENSIONS
+from Broken.Types import IMAGE_EXTENSIONS
+from Broken.Types import MIDI_EXTENSIONS
+from Broken.Types import SOUNDFONTS_EXTENSIONS
+from Broken.Types import Hertz
+from Broken.Types import Seconds
 
 # -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods
 
-inverse = lambda x: 1 / x
-clamp = lambda value, low, high: max(low, min(value, high))
+def inverse(x: float) -> float:
+    return (1/x)
+
+def clamp(value: float, low: float=0, high: float=1) -> float:
+    return max(low, min(value, high))
 
 def Maybe(call, when, **args):
     if when:
@@ -27,11 +81,12 @@ def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
     """
     # Fixme: Add allow_none argument
     iterables = (list, tuple, Generator)
-    flatten = lambda stuff: [
-        item for subitem in stuff for item in
-        (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
-        if (not truthy) or (truthy and item)
-    ]
+    def flatten(stuff):
+        return [
+            item for subitem in stuff for item in
+            (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
+            if (not truthy) or (truthy and item)
+        ]
     return flatten(stuff)
 
 def easy_multiple(method: Callable) -> Callable:
@@ -90,7 +145,7 @@ def shell(
     confirm: bool=False,
     do:      bool=True,
     **kwargs
-) -> Option[None, str, subprocess.Popen, subprocess.CompletedProcess]:
+) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
     • This is arguably the most important function in Broken 🙈
@@ -134,31 +189,20 @@ def shell(
     if (not do): return
 
     # Confirm running command or not
-    if confirm and not click.confirm(f"• Confirm running the command above"):
+    if confirm and not click.confirm("• Confirm running the command above"):
         return
 
-    # Get current environment variables
-    env = os.environ.copy() | (env or {})
+    # Update kwargs on the fly
+    kwargs["env"] = os.environ | (env or {})
+    kwargs["shell"] = shell
 
     # Run the command and return specified object
-    if output: return subprocess.check_output(command, env=env, shell=shell, **kwargs).decode("utf-8")
-    if Popen:  return subprocess.Popen(command, env=env, shell=shell, **kwargs)
-    else:      return subprocess.run(command, env=env, shell=shell, **kwargs)
+    if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
+    if Popen:  return subprocess.Popen(command, **kwargs)
+    else:      return subprocess.run(command, **kwargs)
 
 # -------------------------------------------------------------------------------------------------|
 # Cursed Python ahead, here be dragons!
-
-# Add a list.get(index, default=None)
-forbiddenfruit.curse(
-    list, "get",
-    lambda self, index, default=None: self[index] if (index < len(self)) else default
-)
-
-# Walrus-like operator for list.append
-forbiddenfruit.curse(
-    list, "appendget",
-    lambda self, value: self.append(value) or value
-)
 
 def transcends(method, base, generator: bool=False):
     """
@@ -328,11 +372,11 @@ class BrokenPath(Path):
     • The __new__ method returns the value of .get method, which is pathlib.Path
     • Many Path utilities as staticmethod and contextmanager
     """
-    def __new__(cls, *paths: PathLike, valid: bool=False) -> Optional[Path]:
+    def __new__(cls, *paths: Path, valid: bool=False) -> Optional[Path]:
         return cls.get(*paths, valid=valid)
 
     @staticmethod
-    def get(*paths: PathLike, valid: bool=False) -> Optional[Path] | List[Optional[Path]]:
+    def get(*paths: Path, valid: bool=False) -> Optional[Path] | List[Optional[Path]]:
         """Resolve paths to absolute None-safe, optionally verify their existence, None if invalid"""
         paths = map(lambda path: Path(path).expanduser().resolve() if path else None, paths)
         paths = map(lambda path: (path if (path and path.exists()) else None) if valid else path, paths)
@@ -340,7 +384,7 @@ class BrokenPath(Path):
         return paths[0] if (len(paths) == 1) else paths
 
     @staticmethod
-    def copy(src: PathLike, dst: PathLike, *, echo=True) -> Path:
+    def copy(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath(src, dst)
         BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
@@ -352,14 +396,14 @@ class BrokenPath(Path):
         return dst
 
     @staticmethod
-    def move(src: PathLike, dst: PathLike, *, echo=True) -> Path:
+    def move(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath(src, dst)
         log.info(f"Moving ({src})\n → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
     @staticmethod
-    def remove(path: PathLike, *, confirm=False, echo=True) -> Path:
+    def remove(path: Path, *, confirm=False, echo=True) -> Path:
 
         # Already removed or doesn't exist
         if not (path := BrokenPath(path, valid=True)):
@@ -390,7 +434,7 @@ class BrokenPath(Path):
         return path
 
     @staticmethod
-    def touch(path: PathLike, *, echo=True) -> Path:
+    def touch(path: Path, *, echo=True) -> Path:
         """Creates a file, fail safe™"""
         if (path := BrokenPath(path)).exists():
             log.success(f"File ({path}) already touched", echo=echo)
@@ -400,7 +444,7 @@ class BrokenPath(Path):
         return path
 
     @staticmethod
-    def mkdir(path: PathLike, parent: bool=False, *, echo=True) -> Path:
+    def mkdir(path: Path, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath(path)
         path = path.parent if parent else path
@@ -412,13 +456,13 @@ class BrokenPath(Path):
         return path
 
     @staticmethod
-    def resetdir(path: PathLike, *, echo=True) -> Path:
+    def resetdir(path: Path, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         BrokenPath.remove(path, echo=echo)
         return BrokenPath.mkdir(path, echo=echo)
 
-    @contextmanager
-    def pushd(path: PathLike, *, echo: bool=True) -> Generator[Path, None, None]:
+    @contextlib.contextmanager
+    def pushd(path: Path, *, echo: bool=True) -> Generator[Path, None, None]:
         """Change directory, then change back when done"""
         path = BrokenPath(path)
         cwd = os.getcwd()
@@ -476,7 +520,7 @@ class BrokenPath(Path):
         return virtual
 
     @staticmethod
-    def make_executable(path: PathLike, *, echo=False) -> Path:
+    def make_executable(path: Path, *, echo=False) -> Path:
         """Make a file executable"""
         path = BrokenPath(path)
         if BrokenPlatform.OnUnix:
@@ -496,7 +540,7 @@ class BrokenPath(Path):
         return output
 
     @staticmethod
-    def stem(path: PathLike) -> str:
+    def stem(path: Path) -> str:
         """
         Get the "true stem" of a path, as pathlib's only gets the last dot one
         • "/path/with/many.ext.ens.ions" -> "many" instead of "many.ext.ens"
@@ -573,7 +617,7 @@ class BrokenPath(Path):
 
     @staticmethod
     def download(
-        url: URL,
+        url: str,
         output: Path=None,
         *,
         size_check: bool=True,
@@ -599,7 +643,7 @@ class BrokenPath(Path):
         # Without size check, the existence of the file is enough
         if output.exists() and (not size_check):
             log.info(f"Already Downloaded ({output})", echo=echo)
-            log.minor(f"• Size check was skipped, the file might be incomplete", echo=echo)
+            log.minor("• Size check was skipped, the file might be incomplete", echo=echo)
             return
 
         # Send the GET request, we might be offline!
@@ -647,7 +691,7 @@ class BrokenPath(Path):
         return output
 
     @staticmethod
-    def get_external(url: URL, *, subdir: str="", echo: bool=True) -> Path:
+    def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
         file = BrokenPath.download(denum(url), echo=echo)
 
         # File is a Archive, extract
@@ -662,7 +706,7 @@ class BrokenPath(Path):
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
         elif file.suffix in IMAGE_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
-        elif file.suffix in FONT_EXTENSIONS:
+        elif file.suffix in FONTS_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_FONTS
         elif file.suffix in SOUNDFONTS_EXTENSIONS:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_SOUNDFONTS
@@ -679,18 +723,18 @@ class BrokenPath(Path):
         return apply(shutil.which, name)
 
     @staticmethod
-    def update_externals_path(path: PathLike=None, *, echo: bool=True) -> Optional[Path]:
+    def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
         path = path or Broken.BROKEN.DIRECTORIES.EXTERNALS
         return BrokenPath.add_to_path(path, recursively=True, echo=echo)
 
     @staticmethod
-    def on_path(path: PathLike) -> bool:
+    def on_path(path: Path) -> bool:
         """Check if a path is on PATH, works with symlinks"""
         return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
 
     @staticmethod
     def add_to_path(
-        path: PathLike,
+        path: Path,
         *,
         recursively: bool=False,
         persistent: bool=False,
@@ -737,7 +781,7 @@ class BrokenPath(Path):
     # # Specific / "Utils"
 
     @staticmethod
-    def open_in_file_explorer(path: PathLike):
+    def open_in_file_explorer(path: Path):
         """Opens a path in the file explorer"""
         path = BrokenPath(path)
         if BrokenPlatform.OnWindows:
@@ -760,9 +804,9 @@ class BrokenPath(Path):
             path.touch()
         return path.exists() and path.is_file() and len(path.read_text()) == 0
 
-    @contextmanager
+    @contextlib.contextmanager
     def PATH(*,
-        directories: List[PathLike],
+        directories: List[Path],
         recursive: bool=True,
         prepend: bool=True,
         clean: bool=False,
@@ -929,7 +973,7 @@ class BrokenUtils:
                 return True
             except ImportError:
                 return False
-        return not isinstance(sys.modules.get(module), BrokenImportError)
+        return sys.modules.get(module, False)
 
     @staticmethod
     def relaunch(*, safe: int=3, echo: bool=True) -> subprocess.CompletedProcess:
@@ -1203,7 +1247,7 @@ class BrokenEventClient:
     kwargs:   Dict[str, Any] = Factory(dict)
     output:   Any            = None
     context:  Any            = None
-    lock:     threading.Lock = None
+    lock:     Lock           = None
     enabled:  bool           = True
     once:     bool           = False
 
@@ -1419,7 +1463,7 @@ class BrokenTyper:
     • Will I use it? Yes.
     """
     description: str       = ""
-    app:         TyperApp  = None
+    app:         Typer     = None
     chain:       bool      = False
     commands:    List[str] = Factory(list)
     default:     str       = None
@@ -1427,12 +1471,12 @@ class BrokenTyper:
     exit_hook:   Callable  = Factory(Ignore)
     __first__:   bool      = True
     epilog:      str       = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{BROKEN_VERSION}[/yellow]\n\n"
+        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://www.patreon.com/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 
     def __attrs_post_init__(self):
-        self.app = TyperApp(
+        self.app = Typer(
             help=self.description or "No help provided",
             add_help_option=self.help_option,
             pretty_exceptions_enable=False,
@@ -1494,7 +1538,8 @@ class BrokenTyper:
             args = flatten(args)
 
             # Insert default implied command
-            if self.default and ((not args) or (args.get(0) not in self.commands)):
+            first = (args[0] if (len(args) > 0) else None)
+            if self.default and ((not args) or (first not in self.commands)):
                 args.insert(0, self.default)
 
             # Update args to BrokenTyper
@@ -1530,16 +1575,6 @@ class BrokenWatchdog(ABC):
         """Calls __changed__ when a property changes"""
         super().__setattr__(key, value)
         self.__changed__(key, value)
-
-# -------------------------------------------------------------------------------------------------|
-
-class BrokenSerde:
-    def serialize(self) -> Dict:
-        return cattrs.unstructure(self)
-
-    @classmethod
-    def deserialize(data: Dict) -> Self['cls']:
-        return cattrs.structure(data, cls)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -1707,7 +1742,7 @@ class BrokenTorch:
     """Version of Torch to install"""
 
     @staticmethod
-    def manage(resources: PathLike):
+    def manage(resources: Path):
 
         # Maybe install a PyTorch flavor
         if (pytorch := BrokenPath(resources/BrokenTorch.flavor_file, valid=True)):
@@ -1736,7 +1771,7 @@ class BrokenTorch:
                 log.info(f"PyTorch Flavor ({full}) already installed")
 
     @staticmethod
-    def write_flavor(resources: PathLike, flavor: Optional[TorchFlavor]) -> Optional[Path]:
+    def write_flavor(resources: Path, flavor: Optional[TorchFlavor]) -> Optional[Path]:
         if not bool(flavor):
             return None
         flavor = (f"+{flavor.value}" * bool(flavor.value))
@@ -1745,6 +1780,6 @@ class BrokenTorch:
         return file
 
     @staticmethod
-    def remove_flavor(resources: PathLike) -> None:
+    def remove_flavor(resources: Path) -> None:
         for file in resources.rglob(BrokenTorch.flavor_file):
             BrokenPath.remove(file)

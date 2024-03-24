@@ -15,11 +15,6 @@
         "**/License.md":  true, // You'll know the license before cloning..
     },
 
-    // Pylance and star imports..
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportUndefinedVariable": "none"
-    },
-
     // Python isort
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
@@ -116,6 +111,20 @@
         {"tag": "workaround", "color": "#3498DB"}
     ],
 
+    // Fixme: Remove when only a single Python venv is used
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+
+    // Ignore "Meta" directory on PyLance
+    "python.analysis.exclude": [
+        "Meta/Fork/**",
+        "___**",
+        "Private**",
+        "**/Staging/**",
+        "**/Others**",
+    ],
+
     // Better minimap
     "editor.minimap.renderCharacters": false,
     "editor.minimap.maxColumn": 100,
@@ -181,6 +190,7 @@
         "explorable",
         "fastcutter",
         "fastdecode",
+        "faststart",
         "ffprobe",
         "figlet",
         "flac",
@@ -254,6 +264,7 @@
         "mipmaps",
         "mkdocs",
         "moderngl",
+        "movflags",
         "mpqn",
         "MSAA",
         "MULAW",

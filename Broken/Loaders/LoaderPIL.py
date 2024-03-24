@@ -1,4 +1,20 @@
-from . import *
+import io
+from pathlib import Path
+from typing import Any
+from typing import Optional
+from typing import Union
+
+import numpy
+import PIL
+import validators
+from attr import define
+from PIL.Image import Image
+
+from Broken import BROKEN
+from Broken.Base import BrokenPath
+from Broken.Types import URL
+
+from . import BrokenLoader
 
 
 @define
@@ -11,7 +27,7 @@ class LoaderImage(BrokenLoader):
             import requests_cache
             if not LoaderImage._cache:
                 LoaderImage._cache = requests_cache.CachedSession(
-                    BROKEN.DIRECTORIES.CACHE/f"LoaderImage.sqlite",
+                    BROKEN.DIRECTORIES.CACHE/"LoaderImage.sqlite",
                 )
         except ImportError:
             return None
@@ -20,8 +36,11 @@ class LoaderImage(BrokenLoader):
 
     @staticmethod
     def load(value: Any=None, **kwargs) -> Optional[Image]:
-        if not value:
+        if value is None:
             return None
+
+        elif isinstance(value, numpy.ndarray):
+            return PIL.Image.fromarray(value, **kwargs)
 
         elif isinstance(value, Image):
             return value
@@ -36,12 +55,9 @@ class LoaderImage(BrokenLoader):
             import requests
             return PIL.Image.open(io.BytesIO(requests.get(value).content), **kwargs)
 
-        elif isinstance(value, numpy.ndarray):
-            return PIL.Image.fromarray(value, **kwargs)
-
         elif isinstance(value, bytes):
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
         return None
 
-LoadableImage = Union[Image, PathLike, URL, numpy.ndarray, bytes, None]
+LoadableImage = Union[Image, Path, URL, numpy.ndarray, bytes, None]

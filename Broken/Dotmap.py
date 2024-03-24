@@ -1,4 +1,18 @@
-from . import *
+import contextlib
+import json
+import pickle
+from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Self
+from typing import Union
+
+import toml
+import yaml
+
+from Broken.Base import BrokenPath
+from Broken.Logging import log
 
 
 class BrokenDotmap:
@@ -45,8 +59,10 @@ class BrokenDotmap:
     ```
     """
 
-    # Utility methods
-    is_dunder = lambda key: key.startswith("__") and key.endswith("__")
+    @staticmethod
+    def is_dunder(key: str) -> bool:
+        """Check if a key is a dunder attribute"""
+        return key.startswith("__") and key.endswith("__")
 
     def __init__(self,
         path: Path=None,
@@ -197,7 +213,7 @@ class BrokenDotmap:
         """Set a default value for a key else don't change, returns it"""
         return self.default(key, value)
 
-    @contextmanager
+    @contextlib.contextmanager
     def no_sync(self) -> Generator[None, None, None]:
         """Temporarily disables syncing, for example bulk operations"""
         self.__sync__ = False

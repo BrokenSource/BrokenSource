@@ -1,6 +1,22 @@
 from __future__ import annotations
 
-from . import *
+import datetime
+import functools
+import os
+import time
+from pathlib import Path
+from typing import Any
+from typing import Self
+from typing import Set
+from typing import Union
+
+from attr import Factory
+from attr import define
+from attr import field
+from rich import print as rprint
+
+from Broken.BrokenEnum import BrokenEnum
+from Broken.Types import BIG_BANG
 
 
 @define
@@ -18,19 +34,19 @@ class _LogLevel:
 
 
 class LogLevel(BrokenEnum):
-    CRITICAL  = _LogLevel(no= 0, color="red")
-    EXCEPTION = _LogLevel(no= 0, color="red")
-    ERROR     = _LogLevel(no= 5, color="red")
-    WARNING   = _LogLevel(no=15, color="yellow")
-    INFO      = _LogLevel(no=20, color="bright_white")
-    SUCCESS   = _LogLevel(no=20, color="green")
-    SKIP      = _LogLevel(no=20, color="bright_black")
-    MINOR     = _LogLevel(no=20, color="bright_black")
-    FIXME     = _LogLevel(no=20, color="cyan")
-    TODO      = _LogLevel(no=20, color="dark_blue")
-    NOTE      = _LogLevel(no=20, color="magenta")
-    DEBUG     = _LogLevel(no=25, color="turquoise4")
-    TRACE     = _LogLevel(no=30, color="dark_turquoise")
+    Critical  = _LogLevel(no= 0, color="red")
+    Exception = _LogLevel(no= 0, color="red")
+    Error     = _LogLevel(no= 5, color="red")
+    Warning   = _LogLevel(no=15, color="yellow")
+    Info      = _LogLevel(no=20, color="bright_white")
+    Success   = _LogLevel(no=20, color="green")
+    Skip      = _LogLevel(no=20, color="bright_black")
+    Minor     = _LogLevel(no=20, color="bright_black")
+    Fixme     = _LogLevel(no=20, color="cyan")
+    Todo      = _LogLevel(no=20, color="dark_blue")
+    Note      = _LogLevel(no=20, color="magenta")
+    Debug     = _LogLevel(no=25, color="turquoise4")
+    Trace     = _LogLevel(no=30, color="dark_turquoise")
 
 
 class LoggingFormats:
@@ -54,9 +70,9 @@ class LoggingFormats:
 @define(eq=False)
 class LogTarget:
     target:     Any
-    level:      LogLevel = LogLevel.INFO.Field()
-    format:     str = Field(default=LoggingFormats.Stdout, converter=str)
-    identifier: str = Field(default="logging", converter=str)
+    level:      LogLevel = LogLevel.Info.field()
+    format:     str = field(default=LoggingFormats.Stdout, converter=str)
+    identifier: str = field(default="logging", converter=str)
 
     def __hash__(self) -> int:
         return hash(self.identifier)
@@ -102,7 +118,7 @@ class BrokenLogging:
         return target
 
     def file(self,
-        path: PathLike,
+        path: Path,
         level: str, *,
         reset: bool=True,
         format: str=LoggingFormats.File
@@ -146,30 +162,42 @@ class BrokenLogging:
 
     # I mean, sure, we could patch __getattr__ but this is faster
     def critical(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.CRITICAL, **kwargs)
+        return self.log(*content, level=LogLevel.Critical, **kwargs)
+
     def exception(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.EXCEPTION, **kwargs)
+        return self.log(*content, level=LogLevel.Exception, **kwargs)
+
     def error(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.ERROR, **kwargs)
+        return self.log(*content, level=LogLevel.Error, **kwargs)
+
     def warning(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.WARNING, **kwargs)
+        return self.log(*content, level=LogLevel.Warning, **kwargs)
+
     def info(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.INFO, **kwargs)
+        return self.log(*content, level=LogLevel.Info, **kwargs)
+
     def success(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.SUCCESS, **kwargs)
+        return self.log(*content, level=LogLevel.Success, **kwargs)
+
     def skip(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.SKIP, **kwargs)
+        return self.log(*content, level=LogLevel.Skip, **kwargs)
+
     def minor(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.MINOR, **kwargs)
+        return self.log(*content, level=LogLevel.Minor, **kwargs)
+
     def fixme(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.FIXME, **kwargs)
+        return self.log(*content, level=LogLevel.Fixme, **kwargs)
+
     def todo(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.TODO, **kwargs)
+        return self.log(*content, level=LogLevel.Todo, **kwargs)
+
     def note(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.NOTE, **kwargs)
+        return self.log(*content, level=LogLevel.Note, **kwargs)
+
     def debug(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.DEBUG, **kwargs)
+        return self.log(*content, level=LogLevel.Debug, **kwargs)
+
     def trace(self, *content, **kwargs) -> str:
-        return self.log(*content, level=LogLevel.TRACE, **kwargs)
+        return self.log(*content, level=LogLevel.Trace, **kwargs)
 
 log = BrokenLogging()

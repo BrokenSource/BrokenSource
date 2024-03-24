@@ -1,4 +1,13 @@
-from . import *
+from pathlib import Path
+from typing import Any
+from typing import Optional
+from typing import Union
+
+from attr import define
+
+from Broken.Base import BrokenPath
+
+from . import BrokenLoader
 
 
 @define
@@ -20,4 +29,4 @@ class LoaderBytes(BrokenLoader):
 
         return None
 
-LoadableBytes = Union[bytes, str, PathLike, None]
+LoadableBytes = Union[bytes, str, Path, None]

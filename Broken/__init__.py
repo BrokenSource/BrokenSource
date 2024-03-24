@@ -1,13 +1,4 @@
 # -------------------------------------------------------------------------------------------------|
-# Faster than halo spinners
-
-from yaspin import yaspin
-from yaspin.spinners import Spinners
-
-_spinner = yaspin(text="Loading Library: Broken")
-_spinner.start()
-
-# -------------------------------------------------------------------------------------------------|
 # Keep repository clean of __pycache__ and .pyc files
 
 import os
@@ -44,24 +35,21 @@ pretty_errors.configure(
 import importlib.metadata
 import importlib.resources
 import sys
+from pathlib import Path
 
 # Information about the release and version
-BROKEN_PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
-BROKEN_PYAPP:       bool = bool(os.environ.get("PYAPP", False))
-BROKEN_NUITKA:      bool = ("__compiled__" in globals())
-BROKEN_RELEASE:     bool = (BROKEN_NUITKA or BROKEN_PYINSTALLER or BROKEN_PYAPP)
-BROKEN_DEVELOPMENT: bool = (not BROKEN_RELEASE)
-BROKEN_VERSION:     str  = importlib.metadata.version("broken-source")
-
-# isort: off
-from .Imports import *
-from .Enum    import *
-from .Logging import *
-from .Base    import *
-from .Optional.Dotmap import *
-from .Project import *
+PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
+PYAPP:       bool = bool(os.environ.get("PYAPP", False))
+NUITKA:      bool = ("__compiled__" in globals())
+RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP)
+DEVELOPMENT: bool = (not RELEASE)
+VERSION:     str  = importlib.metadata.version("broken-source")
 
 import Broken.Resources as BrokenResources
+from Broken.Base import BrokenPath
+from Broken.Base import BrokenPlatform
+from Broken.Logging import log
+from Broken.Project import BrokenProject
 
 BROKEN = BrokenProject(
     PACKAGE=__file__,
@@ -74,11 +62,30 @@ BROKEN = BrokenProject(
 # is the current project. Just `import Broken` and set/access it for own BrokenProject class
 PROJECT = BROKEN
 
-from .Loaders   import *
-from .Externals import *
+# -------------------------------------------------------------------------------------------------|
+# Small fixes
+# Numpy's blas broken multiprocessing on matmul
+# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+os.environ["OMP_NUM_THREADS"] = "1"
+
+# Patch torch.jit requiring inspect.getsource
+# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
+if PYINSTALLER:
+    try:
+        import torch.jit
+        def patch(object, **kwargs):
+            return object
+        torch.jit.script_method = patch
+        torch.jit.script = patch
+    except (ModuleNotFoundError, ImportError):
+        pass
+
+    import pyi_splash  # type: ignore
+    pyi_splash.close()
+
 
 if (sys.version_info>=(3, 12)) and (log.project=="Broken") and not (BrokenPlatform.OnLinux):
-    log.warning(f"You are on Python 3.12+, some project packages might require compilation")
+    log.warning("You are on Python 3.12+, some project packages might require compilation")
 
 # As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
 # binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
@@ -94,5 +101,3 @@ for i, arg in enumerate(sys.argv):
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
 
 # -------------------------------------------------------------------------------------------------|
-
-_spinner.stop()
