@@ -10,6 +10,7 @@ os.environ["PYTHONPYCACHEPREFIX"] = str(f"{tempfile.gettempdir()}/__pycache__")
 
 # -------------------------------------------------------------------------------------------------|
 # Idk why but PyAPP isn't passing the argument on Linux
+
 import sys
 
 if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
@@ -31,6 +32,10 @@ pretty_errors.configure(
 
 # -------------------------------------------------------------------------------------------------|
 # Broken Library
+
+from Broken.Spinner import BrokenSpinner
+
+_spinner = BrokenSpinner(text="Loading Library: Broken")
 
 import importlib.metadata
 import importlib.resources
@@ -101,3 +106,5 @@ for i, arg in enumerate(sys.argv):
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
 
 # -------------------------------------------------------------------------------------------------|
+
+_spinner.stop()

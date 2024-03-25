@@ -18,7 +18,6 @@ from typer import Argument
 from typer import Context
 from typer import Option
 from typer import Typer
-from yaspin import kbi_safe_yaspin as yaspin
 
 import Broken
 from Broken.Base import BrokenPath
@@ -31,6 +30,7 @@ from Broken.Base import flatten
 from Broken.Base import shell
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
+from Broken.Spinner import BrokenSpinner
 
 
 def main():
@@ -290,7 +290,7 @@ class BrokenProjectCLI:
             while True:
 
                 # Fixme: Poetry has a very slow startup time, more than Broken
-                with yaspin(text="Finding Virtual Environment"):
+                with BrokenSpinner("Finding Virtual Environment"):
                     venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
 
                 # Install if virtualenv is not found
@@ -469,7 +469,7 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        with yaspin(text="Finding Projects"):
+        with BrokenSpinner("Finding Projects"):
             self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
             self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE)
             self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)

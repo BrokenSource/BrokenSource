@@ -33,7 +33,6 @@ from attr import Factory
 from attr import define
 from attr import field
 from dotmap import DotMap
-from yaspin import kbi_safe_yaspin as yaspin
 
 from Broken.Base import BrokenPath
 from Broken.Base import BrokenPlatform
@@ -45,6 +44,7 @@ from Broken.Base import flatten
 from Broken.Base import shell
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
+from Broken.Spinner import BrokenSpinner
 from Broken.Types import Hertz
 from Broken.Types import Option
 from Broken.Types import Range
@@ -1156,7 +1156,7 @@ class BrokenFFmpeg:
         if not (path := BrokenPath(path, valid=True)):
             return None
         BrokenFFmpeg.install()
-        with yaspin(text=log.minor(f"Getting video total frames of ({path}), might take a while..")):
+        with BrokenSpinner(log.minor(f"Getting video total frames of ({path}), might take a while..")):
             return int(re.compile(r"frame=\s*(\d+)").findall((BrokenFFmpeg()
                 .vsync(FFmpegVsync.ConstantFramerate)
                 .input(path)

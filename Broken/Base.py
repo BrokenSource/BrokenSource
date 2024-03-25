@@ -41,11 +41,11 @@ import validators
 from attr import Factory
 from attr import define
 from typer import Typer
-from yaspin import kbi_safe_yaspin as yaspin
 
 import Broken
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
+from Broken.Spinner import BrokenSpinner
 from Broken.Types import AUDIO_EXTENSIONS
 from Broken.Types import BIG_BANG
 from Broken.Types import FONTS_EXTENSIONS
@@ -560,7 +560,7 @@ class BrokenPath(Path):
 
         # String or Path is a valid path
         elif (path := BrokenPath(data, valid=True)):
-            with yaspin(text=log.info(f"Calculating sha256sum of ({path})")):
+            with BrokenSpinner(log.info(f"Calculating sha256sum of ({path})")):
                 if path.is_file():
                     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -608,7 +608,7 @@ class BrokenPath(Path):
 
         # Show progress as this might take a while on slower IOs
         log.info(f"Extracting ({path})\n → ({output})", echo=echo)
-        with yaspin(text="Extracting archive.."):
+        with BrokenSpinner("Extracting archive.."):
             shutil.unpack_archive(path, output)
 
         extract_flag.touch()
