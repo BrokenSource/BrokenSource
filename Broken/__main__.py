@@ -162,11 +162,11 @@ class BrokenProjectCLI:
 
     def poetry(self, ctx: Context) -> None:
         self.pop_venv()
-        shell("python", "-m", "poetry", *ctx.args)
+        shell("poetry", *ctx.args)
 
     def poe(self, ctx: Context) -> None:
         self.pop_venv()
-        shell("python", "-m", "poethepoet", *ctx.args)
+        shell("poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
 
