@@ -10,7 +10,6 @@ from typing import Optional
 from typing import Self
 
 import toml
-import typer
 from attr import Factory
 from attr import define
 from dotmap import DotMap

@@ -70,6 +70,10 @@
   cd BrokenSource
   ```
   ```bash
+  # Checkout all Submodules to the Master branch
+  git submodule foreach --recursive 'git checkout Master || true'
+  ```
+  ```bash
   # Create the main Virtual Environment and install the dependencies
   python -m poetry install
   ```
