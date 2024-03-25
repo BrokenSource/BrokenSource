@@ -421,6 +421,7 @@ class FFmpegH265_NVENC__Tier(BrokenEnum):
 class FFmpegPixelFormat(BrokenEnum):
     """-pix_fmt ffmpeg option"""
     RGB24   = "rgb24"
+    RGBA    = "rgba"
     YUV420P = "yuv420p"
     YUV422P = "yuv422p"
     YUV444P = "yuv444p"
