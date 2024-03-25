@@ -26,6 +26,10 @@ class BrokenSpinner:
     _index: int = 0
     """Current index of the spinner"""
 
+    @property
+    def frametime(self) -> float:
+        return 1/self.framerate
+
     # Singleton to save spawning multiple threads
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
@@ -67,7 +71,12 @@ class BrokenSpinner:
                 self._index += 1
                 char = self.spinner[self._index % len(self.spinner)]
                 self._write(f"{char} {self.text}")
-                time.sleep(1/self.framerate)
+
+                # Sleep for a frametime, but break if there's no text
+                start = time.perf_counter()
+
+                while bool(self.text) and (time.perf_counter() - start < self.frametime):
+                    time.sleep(0.01/self.framerate)
 
             # Cleanup
             if self._spinning:
