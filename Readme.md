@@ -51,6 +51,8 @@
 
   - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) for your platform
 
+  - **Windows**: Prefer using a PowerShell than the Command Prompt (CMD)
+
   <br>
 
   ```bash
@@ -77,14 +79,11 @@
   # Activate the main Virtual Environment
 
   # Windows:
-  .venv\Scripts\Activate
+  .venv\Scripts\Activate.ps1
 
   # Linux and MacOS:
-  source .venv/bin/activate
-  ```
-  ```bash
-  # For calling `$project` other than `broken $project`
-  broken scripts
+  source .venv/bin/activate # Bash
+  soruce .venv/bin/activate.fish # Fish
   ```
 </details>
 
