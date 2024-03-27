@@ -1,11 +1,6 @@
 import enum
 import functools
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Self
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, Optional, Self, Tuple, Union
 
 import attrs
 

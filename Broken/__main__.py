@@ -4,29 +4,25 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated
-from typing import List
-from typing import Self
+from typing import Annotated, List, Self
 
 import toml
 import typer
-from attr import Factory
-from attr import define
+from attr import Factory, define
 from dotmap import DotMap
-from typer import Argument
-from typer import Context
-from typer import Option
-from typer import Typer
+from typer import Argument, Context, Option, Typer
 
 import Broken
-from Broken.Base import BrokenPath
-from Broken.Base import BrokenPlatform
-from Broken.Base import BrokenProfiler
-from Broken.Base import BrokenTorch
-from Broken.Base import BrokenTyper
-from Broken.Base import TorchFlavor
-from Broken.Base import flatten
-from Broken.Base import shell
+from Broken.Base import (
+    BrokenPath,
+    BrokenPlatform,
+    BrokenProfiler,
+    BrokenTorch,
+    BrokenTyper,
+    TorchFlavor,
+    flatten,
+    shell,
+)
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
