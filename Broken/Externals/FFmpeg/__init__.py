@@ -5,50 +5,45 @@ from __future__ import annotations
 import functools
 import inspect
 import io
-import os
 import re
 import subprocess
 import time
 from collections import deque
 from pathlib import Path
-from subprocess import DEVNULL
-from subprocess import PIPE
-from subprocess import Popen
+from subprocess import DEVNULL, PIPE, Popen
 from threading import Thread
-from typing import Any
-from typing import Deque
-from typing import Generator
-from typing import Iterable
-from typing import List
-from typing import Literal
-from typing import Optional
-from typing import Self
-from typing import Tuple
-from typing import Union
+from typing import (
+    Any,
+    Deque,
+    Generator,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Self,
+    Tuple,
+    Union,
+)
 
 import numpy
 import PIL
-import zmq
-from attr import Factory
-from attr import define
-from attr import field
+from attr import Factory, define, field
 from dotmap import DotMap
 
-from Broken.Base import BrokenPath
-from Broken.Base import BrokenPlatform
-from Broken.Base import BrokenThread
-from Broken.Base import BrokenUtils
-from Broken.Base import apply
-from Broken.Base import denum
-from Broken.Base import flatten
-from Broken.Base import shell
+from Broken.Base import (
+    BrokenPath,
+    BrokenPlatform,
+    BrokenThread,
+    BrokenUtils,
+    apply,
+    denum,
+    flatten,
+    shell,
+)
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
-from Broken.Types import Hertz
-from Broken.Types import Option
-from Broken.Types import Range
-from Broken.Types import Seconds
+from Broken.Types import Hertz, Range, Seconds
 
 # ----------------------------------------------|
 # Resolution
@@ -1037,37 +1032,13 @@ class BrokenFFmpeg:
             frames: Deque[bytes] = Factory(deque)
             thread: Thread       = None
 
-            # ZeroMQ
-            zmq_enable:    bool  = (os.environ.get('ZMQ', '0') == '1')
-            zmq_context:   Any   = None
-            zmq_socket:    Any   = None
-            zmq_tcp:       str   = None
-            zmq_socket_id: bytes = None
+            def __attrs_post_init__(self):
+                self.ffmpeg = shell(self.ffmpeg.command, Popen=True, stdin=PIPE)
+                self.thread = BrokenThread.new(self.__worker__)
 
             @property
-            def zmq(self) -> bool:
-                return (self.zmq_socket is not None)
-
-            def __attrs_post_init__(self):
-                command = self.ffmpeg.command
-
-                # Configure FFmpeg command to read from a ZeroMQ socket
-                try:
-                    if BrokenPlatform.OnLinux and self.zmq_enable:
-                        log.success("ZeroMQ is Enabled. Behold Fastest Pipes in the West 🌵")
-                        self.zmq_context = zmq.Context()
-                        self.zmq_socket = self.zmq_context.socket(zmq.STREAM)
-                        self.zmq_tcp = f"tcp://127.0.0.1:{BrokenUtils.get_free_tcp_port()}"
-                        self.zmq_socket.connect(self.zmq_tcp)
-                        self.zmq_socket.setsockopt(zmq.SNDHWM, self.buffer)
-                        self.zmq_socket_id = self.zmq_socket.getsockopt(zmq.IDENTITY)
-                        command = apply(lambda item: f"{self.zmq_tcp}?listen=1" if (item == "-") else item, command)
-                except Exception:
-                    log.minor("ZeroMQ is not supported, installed, or failed. Falling back to normal pipes")
-
-                # Start FFmpeg subprocess
-                self.ffmpeg = shell(command, Popen=True, stdin=PIPE)
-                self.thread = BrokenThread.new(self.__worker__)
+            def stdin(self) -> Self:
+                return self
 
             def write(self, frame: bytes):
                 """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
@@ -1092,15 +1063,11 @@ class BrokenFFmpeg:
                 while self.frames or (not self.__stop__):
                     try:
                         frame = self.frames.popleft()
-                        if not self.zmq:
-                            self.ffmpeg.stdin.write(frame)
-                        else:
-                            self.zmq_socket.send(self.zmq_socket_id, zmq.SNDMORE)
-                            self.zmq_socket.send(frame)
+                        self.ffmpeg.stdin.write(frame)
                     except IndexError:
                         time.sleep(0.01)
 
-                (self.zmq_socket or self.ffmpeg.stdin).close()
+                self.ffmpeg.stdin.close()
 
         return BrokenFFmpegPopenBuffered(ffmpeg=self, *args, **kwargs)
 

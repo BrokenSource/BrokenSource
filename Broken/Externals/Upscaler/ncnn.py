@@ -2,8 +2,7 @@ from abc import ABC
 from pathlib import Path
 from subprocess import DEVNULL
 
-from attr import define
-from attr import field
+from attr import define, field
 from Base import shell
 from Externals.Upscaler import BrokenUpscaler
 

@@ -5,14 +5,9 @@ import functools
 import os
 import time
 from pathlib import Path
-from typing import Any
-from typing import Self
-from typing import Set
-from typing import Union
+from typing import Any, Self, Set, Union
 
-from attr import Factory
-from attr import define
-from attr import field
+from attr import Factory, define, field
 from rich import print as rprint
 
 from Broken.BrokenEnum import BrokenEnum

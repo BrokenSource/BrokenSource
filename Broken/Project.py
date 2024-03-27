@@ -5,14 +5,12 @@ import importlib.resources
 import os
 import sys
 import tempfile
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import dotenv
 from appdirs import AppDirs
-from attr import define
-from attr import field
+from attr import define, field
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel

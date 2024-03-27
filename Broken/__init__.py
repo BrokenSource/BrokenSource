@@ -51,8 +51,7 @@ DEVELOPMENT: bool = (not RELEASE)
 VERSION:     str  = importlib.metadata.version("broken-source")
 
 import Broken.Resources as BrokenResources
-from Broken.Base import BrokenPath
-from Broken.Base import BrokenPlatform
+from Broken.Base import BrokenPath, BrokenPlatform
 from Broken.Logging import log
 from Broken.Project import BrokenProject
 

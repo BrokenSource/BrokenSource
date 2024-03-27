@@ -1,88 +1,132 @@
-[tool.poetry]
-name          = "broken-source"
-version       = "2024.3.24"
-description   = "Broken Source Software Framework"
-license       = "AGPL-3.0-only"
-authors       = ["Tremeschin <tremeschin@users.noreply.github.com>"]
-readme        = "Readme.md"
-homepage      = "https://github.com/BrokenSource/BrokenSource"
-repository    = "https://github.com/BrokenSource/BrokenSource"
-documentation = "https://github.com/BrokenSource/BrokenSource"
+[project]
+name         = "broken-source"
+version      = "2024.3.27"
+description  = "Broken Source Software Framework"
+authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
+readme       = "Readme.md"
+dependencies = [
+    "rich>=13.7.1",
+    "dotmap>=1.3.30",
+    "arrow>=1.3.0",
+    "datetime>=5.5",
+    "distro>=1.9.0",
+    "toml>=0.10.2",
+    "appdirs>=1.4.4",
+    "attrs>=23.2.0",
+    "numpy>=1.26.3",
+    "typer>=0.10.0",
+    "intervaltree>=3.1.0",
+    "python-dotenv>=1.0.1",
+    "pyfiglet>=1.0.2",
+    "pyyaml>=6.0.1",
+    "validators>=0.24.0",
+    "pretty-errors>=1.2.25",
+    "cachetools>=5.3.3",
+    "pyturbojpeg>=1.7.3",
+    "opencv-contrib-python>=4.9.0.80",
+    "watchdog>=4.0.0",
+    "schedule>=1.2.1",
+    "thefuzz>=0.22.1",
+    "tqdm>=4.64.1",
+    "requests>=2.28.1",
+    "pillow==10.2.0",
+    "cattrs>=23.2.3",
+    "ujson>=5.9.0",
+    "requests-cache>=1.2.0",
+    "pip>=24.0",
+]
+requires-python = ">=3.11"
 
-[[tool.poetry.packages]]
-include = "Broken"
-
-[tool.poetry.scripts]
+[project.scripts]
 broken = "Broken.__main__:main"
 
-[tool.poetry.dependencies]
-python         = ">=3.10,<3.13"
-rich           = "^13.3.4"
-dotmap         = "^1.3.30"
-arrow          = "^1.2.3"
-datetime       = "^5.1"
-distro         = "^1.8.0"
-forbiddenfruit = "^0.1.4"
-requests       = "^2.28.2"
-toml           = "^0.10.2"
-appdirs        = "^1.4.4"
-poetry         = "^1.5.1"
-tqdm           = "^4.65.0"
-attrs          = "^23.1.0"
-numpy          = "^1.25.2"
-typer          = "^0.9.0"
-intervaltree   = "^3.1.0"
-python-dotenv  = "^1.0.0"
-pyfiglet       = "^1.0.2"
-pyyaml         = "^6.0.1"
-imageio        = "^2.33.1"
-validators     = "^0.22.0"
-requests-cache = "^1.1.1"
-pretty-errors  = "^1.2.25"
-cachetools     = "^5.3.2"
-pyzmq          = "^25.1.2"
-pillow         = "^10.0.1"
-pyturbojpeg    = "^1.7.3"
-opencv-contrib-python = "^4.9.0.80"
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "mkdocs>=1.5.3",
+    "poethepoet>=0.25.0",
+    "snakeviz>=2.2.0",
+    "pyshortcuts>=1.9.0",
+    "userpath>=1.9.2",
+    "pytest>=8.1.1",
+    "meson>=1.4.0",
+    "ninja>=1.11.1.1",
+    "tuna>=0.5.11",
+]
 
-# Todo: Gotta use 'em
-watchdog       = "^3.0.0"
-schedule       = "^1.2.0"
-thefuzz        = "^0.19.0" # Maybe rapidfuzz ?
-cattrs         = "^23.2.3"
-ujson          = "^5.9.0"
+[project.optional-dependencies]
+docs = [
+    "mkdocs>=1.5.3",
+    "mkdocstrings>=0.24.1",
+    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-include-markdown-plugin>=6.0.5",
+    "mkdocs-autorefs>=1.0.1",
+    "mkdocs-literate-nav>=0.6.1",
+    "mkdocs-section-index>=0.3.8",
+    "mkdocs-material>=9.5.15",
+]
 
-[tool.poetry.group.dev.dependencies]
-isort       = "^5.12.0"
-snakeviz    = "^2.2.0"
-pyshortcuts = "^1.9.0"
-userpath    = "^1.9.1"
-pytest      = "^7.4.4"
-meson       = "^1.3.1"
-ninja       = "^1.11.1.1"
-wheel       = "^0.42.0"
-poethepoet  = "^0.24.4"
-tuna        = "^0.5.11"
+[tool.rye.workspace]
+members = [
+    "Meta/Fork/ModernGLW",
+    "Projects/DepthFlow",
+    "Projects/Pianola",
+    "Projects/ShaderFlow",
+    "Projects/SpectroNote"
+]
 
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5.3"
-mkdocstrings = {extras = ["python"], version = "^0.24.1"}
-mkdocs-gen-files = "^0.5.0"
-mkdocs-include-markdown-plugin = "^6.0.4"
-mkdocs-autorefs = "^1.0.1"
-mkdocs-literate-nav = "^0.6.1"
-mkdocs-section-index = "^0.3.8"
-mkdocs-material = "^9.5.13"
-
-[tool.poetry.group.staging.dependencies]
-redis   = "^5.0.1"
-fastapi = "^0.105.0"
-uvicorn = "^0.24.0.post1"
+# # Hatchling
 
 [build-system]
-requires      = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pytest.ini_options]
-addopts      = "-ra --no-header --durations=0 -v -p no:cacheprovider"
-python_files = "**/__test__.py"
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["Broken"]
+
+# # PyTorch
+
+[tool.poe.tasks]
+_sync         = "rye sync"
+_transformers = "python -m pip install transformers==4.39.1 "
+_torch_base   = "python -m pip install torch==2.2.1 torchvision"
+_torch_cuda   = "python -m pip install torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/cu118"
+_torch_rocm   = "python -m pip install torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/rocm5.7"
+_torch_cpu    = "python -m pip install torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/cpu"
+_utorch       = "python -m pip uninstall -y torch torchvision"
+base          = ["_sync", "_utorch", "_torch_base", "_transformers"]
+cuda          = ["_sync", "_utorch", "_torch_cuda", "_transformers"]
+rocm          = ["_sync", "_utorch", "_torch_rocm", "_transformers"]
+cpu           = ["_sync", "_utorch", "_torch_cpu" , "_transformers"]
+
+# # Ruff
+
+[tool.ruff.format]
+exclude = ["*"]
+
+[tool.ruff.lint]
+ignore = ["F401", "E402", "E701"]
+
+[tool.ruff.isort]
+force-single-line = true
+
+# # Sources
+
+# [[tool.rye.sources]]
+# name = "default"
+# url  = "https://pypi.org/simple"
+
+# [[tool.rye.sources]]
+# name = "torch"
+# url  = "https://download.pytorch.org/whl/cpu"
+
+# [[tool.rye.sources]]
+# name = "torch-cuda"
+# url  = "https://download.pytorch.org/whl/cu118"
+
+# [[tool.rye.sources]]
+# name = "torch-rocm"
+# url  = "https://download.pytorch.org/whl/rocm5.7"

@@ -16,44 +16,45 @@ import tempfile
 import time
 import types
 import warnings
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from enum import Enum
 from numbers import Number
 from pathlib import Path
-from threading import Lock
-from threading import Thread
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Self
-from typing import Tuple
-from typing import Union
+from threading import Lock, Thread
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Self,
+    Tuple,
+    Union,
+)
 
 import click
 import distro
 import tqdm
 import validators
-from attr import Factory
-from attr import define
+from attr import Factory, define
 from typer import Typer
 
 import Broken
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
-from Broken.Types import AUDIO_EXTENSIONS
-from Broken.Types import BIG_BANG
-from Broken.Types import FONTS_EXTENSIONS
-from Broken.Types import IMAGE_EXTENSIONS
-from Broken.Types import MIDI_EXTENSIONS
-from Broken.Types import SOUNDFONTS_EXTENSIONS
-from Broken.Types import Hertz
-from Broken.Types import Seconds
+from Broken.Types import (
+    AUDIO_EXTENSIONS,
+    BIG_BANG,
+    FONTS_EXTENSIONS,
+    IMAGE_EXTENSIONS,
+    MIDI_EXTENSIONS,
+    SOUNDFONTS_EXTENSIONS,
+    Hertz,
+    Seconds,
+)
 
 # -------------------------------------------------------------------------------------------------|
 # Lazy Bastard methods

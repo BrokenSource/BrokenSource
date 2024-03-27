@@ -1,10 +1,7 @@
-import itertools
 import sys
 import time
 from threading import Thread
-from typing import List
-from typing import Self
-from typing import Union
+from typing import List, Self, Union
 
 from attr import define
 

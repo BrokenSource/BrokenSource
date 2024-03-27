@@ -4,29 +4,25 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated
-from typing import List
-from typing import Optional
-from typing import Self
+from typing import Annotated, List, Self
 
 import toml
-from attr import Factory
-from attr import define
+import typer
+from attr import Factory, define
 from dotmap import DotMap
-from typer import Argument
-from typer import Context
-from typer import Option
-from typer import Typer
+from typer import Argument, Context, Option, Typer
 
 import Broken
-from Broken.Base import BrokenPath
-from Broken.Base import BrokenPlatform
-from Broken.Base import BrokenProfiler
-from Broken.Base import BrokenTorch
-from Broken.Base import BrokenTyper
-from Broken.Base import TorchFlavor
-from Broken.Base import flatten
-from Broken.Base import shell
+from Broken.Base import (
+    BrokenPath,
+    BrokenPlatform,
+    BrokenProfiler,
+    BrokenTorch,
+    BrokenTyper,
+    TorchFlavor,
+    flatten,
+    shell,
+)
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
@@ -58,8 +54,6 @@ class BrokenProjectCLI:
 
     def cli(self, ctx: Context) -> None:
         self.broken_typer = BrokenTyper(help_option=False)
-        self.broken_typer.command(self.poetry,  add_help_option=False)
-        self.broken_typer.command(self.poe,     add_help_option=True)
         self.broken_typer.command(self.update,  add_help_option=True)
         self.broken_typer.command(self.release, add_help_option=True)
         self.broken_typer.command(self.run,     add_help_option=False, default=True)
@@ -160,12 +154,7 @@ class BrokenProjectCLI:
 
     # # Commands
 
-    def poetry(self, ctx: Context) -> None:
-        self.pop_venv()
-        shell("poetry", *ctx.args)
-
     def poe(self, ctx: Context) -> None:
-        self.pop_venv()
         shell("poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
@@ -173,7 +162,7 @@ class BrokenProjectCLI:
         # # Dependencies
         if dependencies:
             if self.is_python:
-                shell("python", "-m", "poetry", "update")
+                shell("rye", "lock", "--update-all")
             if self.is_rust:
                 shell("cargo", "update")
             if self.is_cpp:
@@ -196,36 +185,19 @@ class BrokenProjectCLI:
 
     def run(self,
         ctx:       Context,
-        reinstall: Annotated[bool, Option("--reinstall", help="Delete and reinstall Poetry dependencies")]=False,
         infinite:  Annotated[bool, Option("--infinite",  help="Press Enter after each run to run again")]=False,
         clear:     Annotated[bool, Option("--clear",     help="Clear terminal before running")]=False,
         debug:     Annotated[bool, Option("--debug",     help="Debug mode for Rust projects")]=False,
-        echo:      Annotated[bool, Option("--echo",      help="Echo command")]=False,
     ) -> None:
 
         while BrokenPlatform.clear_terminal(do=clear, echo=False) or True:
-
-            # Python projects
             if self.is_python:
-                venv = self.get_virtualenv(reinstall=reinstall)
-                try:
-                    script = (venv/BrokenPlatform.PyScripts/("main"+BrokenPlatform.PyScriptExtension))
-                    status = shell(script, ctx.args, echo=echo)
-                except KeyboardInterrupt:
-                    log.success(f"Project ({self.name}) finished with KeyboardInterrupt (Ctrl+C)")
-                    break
-                except FileNotFoundError:
-                    log.warning(f"Partial Virtual Environment installation detected for the Project ({self.name})")
-                    log.warning("• A full installation reset and retry is recommended {{(r) option}}")
-                    status = DotMap(returncode=1, args=ctx.args)
-                except Exception as e:
-                    log.error(f"Project ({self.name}) finished with an Exception: {e}")
-                    break
+                log.info(f"Hey! Just type '{self.name.lower()}' to run the project with Rye, it's faster 😉")
+                return
 
-            # Rust projects
             if self.is_rust:
                 raise RuntimeError(log.error("Rust projects are not supported yet"))
-                status = shell(
+                _status = shell(
                     "cargo", "run",
                     "--bin", self.name,
                     ["--profile", "release"] if not debug else [],
@@ -233,98 +205,18 @@ class BrokenProjectCLI:
                     "--", ctx.args
                 )
 
-            # C++ projects
             if self.is_cpp:
                 raise RuntimeError(log.error("C++ projects are not supported yet"))
 
-            # Avoid reinstalling on future runs
-            reinstall = False
+            if not infinite:
+                break
 
-            # Detect bad return status, reinstall virtualenv and retry once
-            if (status.returncode != 0) and (not reinstall):
-                log.warning(f"Detected bad Return Status ({status.returncode}) for the Project ({self.name}) at ({self.path})")
-                if self.is_python:
-                    log.warning(f"• Python Virtual Environment: ({venv})")
-                log.warning(f"• Arguments: {tuple(status.args)}", echo=bool(status.args))
-
-                # Prompt user for action
-                import rich.prompt
-                answer = rich.prompt.Prompt.ask(
-                    "• Action: Run {poetry (i)nstall}, {poetry (l)ock}, {(r)einstall venv}, {(e)xit} or {(enter) nothing}, then retry",
-                    choices=["r", "e", "p", "l", ""],
-                    default="retry"
-                )
-                if answer == "r":
-                    reinstall = True
-                elif answer == "e":
-                    break
-                elif answer == "i":
-                    shell("poetry", "install")
-                elif answer == "l":
-                    shell("poetry", "lock")
-                elif answer == "retry":
-                    pass
-
-            elif infinite:
-                import rich.prompt
-                log.success(f"Project ({self.name}) finished successfully")
-                if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
-                    break
-
-            else:
+            import rich.prompt
+            log.success(f"Project ({self.name}) finished successfully")
+            if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                 break
 
     # # Python shenanigans
-
-    def pop_venv(self) -> Optional[Path]:
-        return BrokenPath(os.environ.pop("VIRTUAL_ENV", None))
-
-    def get_virtualenv(self, install: bool=True, reinstall: bool=False) -> Optional[Path]:
-        """Install and get a virtual environment path for Python project"""
-
-        # Unset virtualenv else the nested poetry will use it
-        old_venv = self.pop_venv()
-
-        with BrokenPath.pushd(self.path, echo=False):
-            while True:
-
-                # Fixme: Poetry has a very slow startup time, more than Broken
-                with BrokenSpinner("Finding Virtual Environment"):
-                    venv = shell("poetry", "env", "info", "--path", echo=False, capture_output=True)
-
-                # Install if virtualenv is not found
-                if (venv.returncode != 0):
-                    if install:
-                        log.info(f"Installing virtual environment for Project ({self.name})")
-                        shell("poetry", "install")
-                    else:
-                        log.minor(f"Virtual environment doesn't exist for Project ({self.name})")
-                        return None
-                    continue
-
-                # Convert to Path
-                venv_path = Path(venv.stdout.decode().strip())
-
-                if not install:
-                    log.info(f"Found virtual environment for Project at ({venv_path})")
-                    return venv_path
-
-                # Reinstall virtualenv if requested
-                if reinstall:
-                    reinstall = False
-                    BrokenPath.remove(venv_path)
-                    BrokenPath.remove(self.path/"poetry.lock")
-                    continue
-
-                # Optimization: Direct symlink to the main script (bypasses poetry run and Broken)
-                if BrokenPlatform.OnLinux and (old_venv is not None):
-                    virtual = (old_venv /BrokenPlatform.PyScripts/(direct := f"{self.name.lower()}s"))
-                    real    = (venv_path/BrokenPlatform.PyScripts/"main")
-                    if BrokenPath(virtual) != BrokenPath(real):
-                        log.note(f"• Tip: For faster startup times but less integration, you can run ($ {direct})")
-                        BrokenPath.symlink(virtual=virtual, real=real)
-
-                return venv_path
 
     def release(self,
         target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
@@ -470,7 +362,6 @@ class BrokenCLI:
     def __attrs_post_init__(self) -> None:
         with BrokenSpinner("Finding Projects"):
             self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE)
             self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
@@ -514,7 +405,6 @@ class BrokenCLI:
             self.broken_typer.command(self.install)
             self.broken_typer.command(self.uninstall)
             self.broken_typer.command(self.submodules, hidden=True)
-            self.broken_typer.command(self.scripts)
             self.broken_typer.command(self.shortcut)
 
         with self.broken_typer.panel("🛡️ Core"):
@@ -665,7 +555,6 @@ class BrokenCLI:
     def install(self):
         """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
         Broken.BROKEN.welcome()
-        self.scripts()
         if BrokenPlatform.OnWindows:
             self.shortcut()
         log.note(f"Running Broken at ({Broken.BROKEN.DIRECTORIES.REPOSITORY})")
@@ -673,48 +562,6 @@ class BrokenCLI:
         log.note("• Tip: Next Time, run 'python ./brakeit.py'" + BrokenPlatform.OnWindows*" or click the Desktop App Icon")
         log.note("• Now run 'broken' for the full command list")
         print()
-
-    def scripts(self):
-        """⚡️ Write short scripts for starting Projects, ($ broken command -> $ command)"""
-
-        # Get Broken virtualenv path
-        bin_path = Path(os.environ["VIRTUAL_ENV"])/BrokenPlatform.PyScripts
-        log.info("Installing Direct Scripts on current Virtual Environment")
-
-        # Watermark to tag files are Broken made
-        WATERMARK = "This file was automatically generated by Broken CLI, do not edit"
-
-        # Remove old script files (commands can be removed or renamed)
-        for file in bin_path.glob("*"):
-            if file.is_symlink():
-                continue
-            try:
-                if WATERMARK in file.read_text():
-                    BrokenPath.remove(file, echo=False)
-            except UnicodeDecodeError:
-                pass
-            except Exception as e:
-                raise e
-
-        for project in self.projects:
-            script = bin_path/project.lname
-
-            if BrokenPlatform.OnUnix:
-                script.write_text('\n'.join([
-                    "#!/bin/bash",
-                    f"# {WATERMARK}",
-                    f"broken {project.lname} $@",
-                ]))
-
-            elif BrokenPlatform.OnWindows:
-                script = script.with_suffix(".bat")
-                script.write_text('\n'.join([
-                    f"@echo off",
-                    f":: {WATERMARK}",
-                    f"broken {project.lname} %*",
-                ]))
-
-            BrokenPath.make_executable(script, echo=False)
 
     LINUX_DESKTOP_FILE = Broken.BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
 
@@ -852,14 +699,15 @@ class BrokenCLI:
             log.note(f"Project: {project.name}")
             log.note(f"• Path: {project.path}")
 
-            if (venv := project.get_virtualenv(install=False)):
-                log.minor("Now removing the Poetry's Python Virtual environment")
-                BrokenPath.remove(venv, echo=False, confirm=True)
-
             # Follow Project's Workspace folder
             if (workspace := BrokenPath(project.path/"Workspace", valid=True)):
                 log.minor("Now removing the Project Workspace directory")
                 BrokenPath.remove(workspace, echo=False, confirm=True)
+
+        # Finally, remove the root venv
+        if (venv := BrokenPath(Broken.BROKEN.DIRECTORIES.REPOSITORY/".venv", valid=True)):
+            log.minor("Now removing the Repository Virtual Environment")
+            BrokenPath.remove(venv, echo=False, confirm=True)
 
     # # Experimental
 

@@ -1,8 +1,6 @@
 import io
 from pathlib import Path
-from typing import Any
-from typing import Optional
-from typing import Union
+from typing import Any, Optional, Union
 
 import numpy
 import PIL

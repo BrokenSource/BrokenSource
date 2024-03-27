@@ -41,26 +41,18 @@
 
 > **Please read all instructions** before executing them for tips, notes and troubleshooting
 
-- The **brakeit** script does Sanity Checks, installs [`pip`](https://pip.pypa.io/en/stable/) and [`poetry`](https://python-poetry.org/), sets up and enter a Virtual Environment
-
-- **Linux tip**: You can run `(project)s` for faster startup times after the first run, like `shaderflows`
-
-- **Python 3.12** is supported, but might need compilers for some packages
+- **Note**: The Tooling recently changed to [**Rye**](https://rye-up.com). Expect some rough edges
 
 <details>
   <summary>
-    Don't want to use <code>brakeit.py</code> or <code>get.{sh,ps1}</code>?
+    Don't want to use <code>get.{sh,ps1}</code>?
   </summary>
   <br>
 
-  - **Install** [**Git**](https://git-scm.com/downloads) and [**Python 3.10 or 3.11**](https://www.python.org/downloads) for your platform
+  - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) for your platform
 
   <br>
 
-  ```bash
-  # Note: You might need to add `--break-system-packages` on Linux
-  python -m pip install --upgrade poetry
-  ```
   ```bash
   # Clone the Monorepo and all Submodules
   git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
@@ -74,12 +66,21 @@
   git submodule foreach --recursive 'git checkout Master || true'
   ```
   ```bash
+  # Install Rye, Windows: https://rye-up.com
+  curl -sSf https://rye-up.com/get | bash
+  ```
+  ```bash
   # Create the main Virtual Environment and install the dependencies
-  python -m poetry install
+  rye sync
   ```
   ```bash
   # Activate the main Virtual Environment
-  python -m poetry shell
+
+  # Windows:
+  .venv\Scripts\Activate
+
+  # Linux and MacOS:
+  source .venv/bin/activate
   ```
   ```bash
   # For calling `$project` other than `broken $project`
@@ -106,6 +107,12 @@
   ```
 
 **And done**, now run `broken` for a Command List 🚀
+
+<br>
+
+**Windows** Notes:
+
+⚠️ [**Enable Developer Mode**](https://rye-up.com/guide/faq/#windows-developer-mode) for a better experience
 
 <br>
 
@@ -177,6 +184,8 @@ We have a partially implemented command for uninstalling, but it doesn't exist f
 
 For now, you can just delete the directories we use below:
 
+<br>
+
 ### Workspaces
 The main Library uses [**AppDirs**](https://pypi.org/project/appdirs) to decide per-platform directories
 
@@ -185,11 +194,17 @@ For unification, all project's Workspaces are located at the User Data directory
 - **Windows**: `%applocaldata%\AppAuthor\AppName\*`
 - **MacOS**: `~/Library/Application Support/AppAuthor/AppName/*`
 
-### Poetry Virtual Environment
-Poetry caches downloads and creates Virtual Environments on:
-- **Linux**: `~/.cache/pypoetry/*`
-- **Windows**: `%localappdata%\pypoetry\*`
-- **MacOS**: `~/Library/Caches/pypoetry/*`
+<br>
+
+### Python Virtual Environment
+Rye creates Virtual Environments on the `.venv` directory on the Monorepo root
+
+The download cache if you chose `uv` instead of `pip-tools` is located at:
+- **Linux**: `~/.cache/uv/*`
+- **Windows**: `%localappdata%\uv\*`
+- **MacOS**: `~/Library/Caches/uv/*`
+
+<br>
 
 ### Releases Virtual Environment
 We use [**PyApp**](https://github.com/ofek/pyapp) to make the releases. It unpacks itself on:
@@ -271,6 +286,9 @@ Package managers for Linux and MacOS are welcome, you'll be credited ❤️
 ### Python
 - [**Python**](https://www.python.org): The programming language
 - [**Poetry**](https://python-poetry.org): Package manager and virtual environments
+- [**Rye**](https://rye-up.com/): _"A Hassle-Free Python Experience"_
+- [**Ruff**](https://github.com/astral-sh/ruff): _"An extremely fast Python linter and code formatter"_
+- [**uv**](https://github.com/astral-sh/uv): _"An extremely fast Python package installer and resolver"_
 - [**PyInstaller**](https://www.pyinstaller.org): A complete Python bundler for end user binaries
 - [**Nuitka**](https://nuitka.net): A Python compiler to a redistributable portable binary
 - [**ModernGL**](https://github.com/moderngl/moderngl): OpenGL made-easy wrapper

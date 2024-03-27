@@ -2,9 +2,7 @@ import sys
 import time
 import warnings
 from math import pi as PI
-from typing import TypeAlias
-from typing import TypeVar
-from typing import Union
+from typing import TypeAlias, TypeVar, Union
 
 # Fix: typing.Self was implemented in Python 3.11
 if sys.version_info < (3, 11):

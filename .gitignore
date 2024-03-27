@@ -1,35 +1,11 @@
-# # Common
-
-*Private*
-*.env
-
-# Python
+Meta*
+Build
+Release
+Workspace
+Projects/Hook/*
 **__pycache__*
 dist
 *.pyc
 *.whl
-
-# Syncthing
-.stfolder
-.stversions
-
-# # Custom
-
-Meta*
-
-# Blobs
-Build
-Release
-
-# Symlinks
-Workspace
-Projects/Hook/*
-.venvs
-
-# Temporary files
 ___*
-
-# # Projects
-
-# ShaderFlow
-ShaderFlow/Resources/Scenes/User
+*.lock

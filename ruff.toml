@@ -1,8 +1,0 @@
-[format]
-exclude = ["*"]
-
-[lint]
-ignore = ["F401", "E402", "E701"]
-
-[isort]
-force-single-line = true
