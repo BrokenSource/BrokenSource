@@ -29,8 +29,15 @@ pretty_errors.configure(
 )
 
 # -------------------------------------------------------------------------------------------------|
-# Broken Library
+# Fix: typing.Self was implemented on Python<3.11, monkey patch it on older versions
 
+import typing
+
+if sys.version_info < (3, 11):
+    typing.Self = typing.Any
+
+# -------------------------------------------------------------------------------------------------|
+# Broken Library
 from Broken.Spinner import BrokenSpinner
 
 _spinner = BrokenSpinner(text="Loading Library: Broken")
