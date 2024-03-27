@@ -112,9 +112,6 @@ exclude = ["*"]
 [tool.ruff.lint]
 ignore = ["F401", "E402", "E701"]
 
-[tool.ruff.isort]
-force-single-line = true
-
 # # Sources
 
 # [[tool.rye.sources]]
