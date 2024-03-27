@@ -1,0 +1,47 @@
+site_name: Broken Source Software
+site_description: Documentation
+repo_url: https://github.com/BrokenSource/BrokenSource
+repo_name: BrokenSource/BrokenSource
+site_author: Tremeschin
+copyright: © 2023-2024, Tremeschin
+
+plugins:
+  - mkdocstrings
+      # show_submodules: true
+      # handlers:
+      #   python:
+      #     paths: [Broken]
+
+  - search
+  - include-markdown
+  - autorefs
+
+  - gen-files:
+      scripts:
+        - Docs/Generate.py
+
+  - literate-nav:
+      nav_file: Summary.md
+
+  - section-index
+
+theme:
+  name: material
+  # name: readthedocs
+  palette:
+    primary: blue
+    accent: blue
+  # icon: Images/Broken.ico
+  # logo: Images/Broken.png
+
+markdown_extensions:
+  - pymdownx.highlight:
+      linenums: true
+      use_pygments: true
+      pygments_lang_class: true
+
+nav:
+  - Home: Index.md
+
+docs_dir: Docs
+site_dir: Site
