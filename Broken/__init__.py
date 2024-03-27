@@ -1,17 +1,15 @@
 # -------------------------------------------------------------------------------------------------|
-# Keep repository clean of __pycache__ and .pyc files
+# Keep repository clean of __pycache__ and .pyc files by writing to .venv
 
-import os
-import tempfile
+import sys
+from pathlib import Path
 
-# Write annoying __pycache__ and .pyc on temporary directory, keeps development directories clean.
-# On Linux, it's under /tmp - System RAM, brutally fast, also shouldn't take that much memory
-os.environ["PYTHONPYCACHEPREFIX"] = str(f"{tempfile.gettempdir()}/__pycache__")
+sys.pycache_prefix = str(Path(__file__).parent.parent/".venv"/"pycache")
 
 # -------------------------------------------------------------------------------------------------|
 # Idk why but PyAPP isn't passing the argument on Linux
 
-import sys
+import os
 
 if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
     sys.argv.insert(0, sys.executable)
