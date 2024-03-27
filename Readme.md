@@ -110,9 +110,7 @@
 
 <br>
 
-**Windows** Notes:
-
-⚠️ [**Enable Developer Mode**](https://rye-up.com/guide/faq/#windows-developer-mode) for a better experience
+⚠️ **Enable** [**Developer Mode**](https://rye-up.com/guide/faq/#windows-developer-mode) for [Symlinks](https://en.wikipedia.org/wiki/Symbolic_link) to each Project's Workspace on its Folder
 
 <br>
 
