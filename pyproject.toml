@@ -43,7 +43,6 @@ broken = "Broken.__main__:main"
 [tool.rye]
 managed = true
 dev-dependencies = [
-    "mkdocs>=1.5.3",
     "poethepoet>=0.25.0",
     "snakeviz>=2.2.0",
     "pyshortcuts>=1.9.0",
@@ -51,19 +50,19 @@ dev-dependencies = [
     "pytest>=8.1.1",
     "meson>=1.4.0",
     "ninja>=1.11.1.1",
-    "tuna>=0.5.11",
+    "tuna>=0.5.11"
 ]
 
 [project.optional-dependencies]
 docs = [
     "mkdocs>=1.5.3",
-    "mkdocstrings>=0.24.1",
+    "mkdocstrings[python]>=0.24.1",
     "mkdocs-gen-files>=0.5.0",
     "mkdocs-include-markdown-plugin>=6.0.5",
     "mkdocs-autorefs>=1.0.1",
     "mkdocs-literate-nav>=0.6.1",
     "mkdocs-section-index>=0.3.8",
-    "mkdocs-material>=9.5.15",
+    "mkdocs-material>=9.5.15"
 ]
 
 [tool.rye.workspace]
@@ -86,6 +85,9 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["Broken"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["*"]
 
 # # PyTorch
 

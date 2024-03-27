@@ -4,25 +4,29 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self
+from typing import Annotated
+from typing import List
+from typing import Self
 
 import toml
 import typer
-from attr import Factory, define
+from attr import Factory
+from attr import define
 from dotmap import DotMap
-from typer import Argument, Context, Option, Typer
+from typer import Argument
+from typer import Context
+from typer import Option
+from typer import Typer
 
 import Broken
-from Broken.Base import (
-    BrokenPath,
-    BrokenPlatform,
-    BrokenProfiler,
-    BrokenTorch,
-    BrokenTyper,
-    TorchFlavor,
-    flatten,
-    shell,
-)
+from Broken.Base import BrokenPath
+from Broken.Base import BrokenPlatform
+from Broken.Base import BrokenProfiler
+from Broken.Base import BrokenTorch
+from Broken.Base import BrokenTyper
+from Broken.Base import TorchFlavor
+from Broken.Base import flatten
+from Broken.Base import shell
 from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
@@ -88,8 +92,7 @@ class BrokenProjectCLI:
         if (config := self.path/"pyproject.toml").exists():
             description = (
                 toml.loads(config.read_text())
-                .get("tool", {})
-                .get("poetry", {})
+                .get("project", {})
                 .get("description", "")
             )
 
@@ -153,9 +156,6 @@ class BrokenProjectCLI:
         return ProjectLanguage.CPP in self.languages
 
     # # Commands
-
-    def poe(self, ctx: Context) -> None:
-        shell("poe", *ctx.args)
 
     def update(self, dependencies: bool=True, version: bool=True) -> None:
 
@@ -424,6 +424,7 @@ class BrokenCLI:
                 help=project.description_pretty_language,
                 panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
                 add_help_option=False,
+                hidden=("Projects/Others" in str(project.path)),
             )
 
         self.broken_typer(sys.argv[1:])

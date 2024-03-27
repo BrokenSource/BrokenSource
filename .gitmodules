@@ -13,9 +13,6 @@
 [submodule "Projects/Upscalin"]
 	path = Projects/Others/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
-[submodule "Meta/FluentMidi"]
-	path = Meta/FluentMidi
-	url  = https://github.com/FluentMidi/FluentMidi
 [submodule "Meta/Brakeit"]
 	path = Meta/Brakeit
 	url  = https://github.com/Brakeit/brakeit.github.io/
