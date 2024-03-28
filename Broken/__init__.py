@@ -38,10 +38,6 @@ if sys.version_info < (3, 11):
 
 # -------------------------------------------------------------------------------------------------|
 # Broken Library
-from Broken.Spinner import BrokenSpinner
-
-_spinner = BrokenSpinner(text="Loading Library: Broken")
-
 import importlib.metadata
 import importlib.resources
 import sys
@@ -67,9 +63,19 @@ BROKEN = BrokenProject(
     RESOURCES=BrokenResources,
 )
 
-# The Broken.PROJECT variable points to the last initialized project, which more often than not
-# is the current project. Just `import Broken` and set/access it for own BrokenProject class
 PROJECT = BROKEN
+"""
+The Broken.PROJECT variable points to the first project set on Broken.set_project, else BROKEN.
+It is useful to use current project pathing and resources on common parts of the code
+"""
+
+def set_project(project: BrokenProject):
+    global PROJECT
+    if not isinstance(project, BrokenProject):
+        raise TypeError(f"Project must be an instance of BrokenProject, not {type(project)}")
+    if PROJECT is not BROKEN:
+        return
+    PROJECT = project
 
 # -------------------------------------------------------------------------------------------------|
 # Small fixes
@@ -108,7 +114,3 @@ for i, arg in enumerate(sys.argv):
 
 # Safer measures: Store the first cwd that Broken is run, always start from there
 os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
-
-# -------------------------------------------------------------------------------------------------|
-
-_spinner.stop()

@@ -1410,6 +1410,13 @@ class BrokenEventLoop:
         finally:
             self.__sanitize__()
 
+    def all_once(self) -> None:
+        """Calls all 'once' clients. Useful for @partial calls on the main thread"""
+        for client in self.clients:
+            if client.once:
+                client.next()
+        self.__sanitize__()
+
     # # Block-free next
 
     __work__: bool = False
