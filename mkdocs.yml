@@ -1,47 +1,149 @@
 site_name: Broken Source Software
-site_description: Documentation
+site_description: Unified Documentation of ShaderFlow, DepthFlow, SpectroNote, Pianola and More
 repo_url: https://github.com/BrokenSource/BrokenSource
-repo_name: BrokenSource/BrokenSource
+repo_name: BrokenSource
 site_author: Tremeschin
 copyright: © 2023-2024, Tremeschin
-
-plugins:
-  - mkdocstrings
-      # show_submodules: true
-      # handlers:
-      #   python:
-      #     paths: [Broken]
-
-  - search
-  - include-markdown
-  - autorefs
-
-  - gen-files:
-      scripts:
-        - Docs/Generate.py
-
-  - literate-nav:
-      nav_file: Summary.md
-
-  - section-index
+docs_dir: Docs
+site_dir: Site
 
 theme:
   name: material
-  # name: readthedocs
+  logo: Images/Broken.png
+  favicon: Images/Broken.png
+
+  font:
+    text: Roboto Slab
+
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.prune
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+    - header.autohide
+    - navigation.footer
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+
   palette:
-    primary: blue
-    accent: blue
-  # icon: Images/Broken.ico
-  # logo: Images/Broken.png
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+nav:
+  - Home: index.md
+  - Broken: Broken/
+  # - DepthFlow: DepthFlow/
+  # - Pianola: Pianola/
+  - ShaderFlow: ShaderFlow/
+  # - SpectroNote: SpectroNote/
+
+
+plugins:
+  - search
+  - include-markdown
+  - autorefs
+  # - section-index
+  - literate-nav
+  - gen-files:
+      scripts:
+        - Docs/Generate.py
+  - mkdocstrings:
+      handlers:
+        python:
+
+          # https://mkdocstrings.github.io/python/usage
+          options:
+
+            # General
+            show_bases: false
+            show_source: true
+
+            # Headings
+            heading_level: 3
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_root_full_path: true
+            show_root_members_full_path: true
+            show_object_full_path: true
+            show_category_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+
+            # Members
+            inherited_members: false
+            members_order: "source"
+            group_by_category: false
+            show_submodules: false
+            summary: true
+            show_labels: true
+
+            # Docstrings
+            docstring_style: google
+            docstring_section_style: list
+            show_if_no_docstring: true
+
+            # Signatures
+            annotations_path: source
+            show_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: true
+            line_length: 60
 
 markdown_extensions:
+  - pymdownx.arithmatex
+  - pymdownx.magiclink
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
   - pymdownx.highlight:
       linenums: true
       use_pygments: true
+      auto_title: true
       pygments_lang_class: true
+  - toc:
+      permalink: true
+  - md_in_html
+  - attr_list
+  - tables
+  - admonition
+  - footnotes
 
-nav:
-  - Home: Index.md
 
-docs_dir: Docs
-site_dir: Site
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Tremeschin
+      name: GitHub
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/Tremeschinni
+      name: Twitter
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/@Tremeschin
+      name: YouTube
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/BrokenSource
+      name: Telegram
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/KjqvcYwRHm
+      name: Discord

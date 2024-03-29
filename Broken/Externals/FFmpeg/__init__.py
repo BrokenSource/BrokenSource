@@ -1028,12 +1028,12 @@ class BrokenFFmpeg:
         @define
         class BrokenFFmpegPopenBuffered:
             ffmpeg: subprocess.Popen
-            buffer: int          = 50
+            buffer: int          = 10
             frames: Deque[bytes] = Factory(deque)
             thread: Thread       = None
 
             def __attrs_post_init__(self):
-                self.ffmpeg = shell(self.ffmpeg.command, Popen=True, stdin=PIPE)
+                self.ffmpeg = self.ffmpeg.Popen(stdin=PIPE)
                 self.thread = BrokenThread.new(self.__worker__)
 
             @property

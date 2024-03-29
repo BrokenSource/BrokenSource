@@ -143,13 +143,16 @@ class BrokenLogging:
                     continue
 
                 # Replace {message} first so it have access to final format!
-                sink.target(sink.format.replace("{message}", line).format(
-                    log=self,
-                    time=datetime.datetime.now(),
-                    level=level.name,
-                    color=level.value.color,
-                    ms=int((time.perf_counter() - BIG_BANG)*1000),
-                ))
+                try:
+                    sink.target(sink.format.replace("{message}", line).format(
+                        log=self,
+                        time=datetime.datetime.now(),
+                        level=level.name,
+                        color=level.value.color,
+                        ms=int((time.perf_counter() - BIG_BANG)*1000),
+                    ))
+                except IndexError:
+                    sink.target(sink.format.replace("{message}", line))
 
         return message
 
