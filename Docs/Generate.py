@@ -1,32 +1,40 @@
+import sys
 from pathlib import Path
 
 import mkdocs_gen_files
 
-nav = mkdocs_gen_files.Nav()
-
 TABS = (
     Path("Broken"),
-    Path("Projects/ShaderFlow"),
-    Path("Projects/DepthFlow"),
-    Path("Projects/Pianola"),
-    Path("Projects/SpectroNote"),
+    Path("Projects/ShaderFlow/ShaderFlow"),
+    Path("Projects/DepthFlow/DepthFlow"),
+    Path("Projects/Pianola/Pianola"),
+    Path("Projects/SpectroNote/SpectroNote"),
 )
 
-for path in TABS:
-    name = path.name
+# Add each Tab to sys path
+for tab in TABS:
+    sys.path.append(str(tab))
 
-    for python in path.glob("**/*.py"):
-        if ("__" in str(python)):
-            continue
-        if ("Resources" in str(python)):
+# Ignore directories
+UNWANTED = (
+    "Resources",
+    "Community",
+    "__",
+)
+
+nav = mkdocs_gen_files.Nav()
+
+for root in TABS:
+    for python in root.rglob("*.py"):
+        if any(ban in str(python) for ban in UNWANTED):
             continue
 
-        relative = python.relative_to(path)
-        markdown = Path(name, relative).with_suffix(".md")
-        nav[python.parts] = str(markdown)
+        relative = python.relative_to(root)
+        markdown = Path(root.name, relative).with_suffix(".md")
+        nav[relative.parts] = str(markdown)
 
         with mkdocs_gen_files.open(markdown, "w") as file:
-            file.write("::: " + ".".join(python.with_suffix("").parts))
+            file.write("::: " + ".".join(markdown.with_suffix("").parts))
 
 with mkdocs_gen_files.open("Summary.md", "w") as nav_file:
     nav_file.writelines(nav.build_literate_nav())

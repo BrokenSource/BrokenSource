@@ -2,8 +2,10 @@ Meta*
 Build
 Release
 Workspace
+Site
 Projects/Hook/*
 **__pycache__*
+.cache
 dist
 *.pyc
 *.whl
