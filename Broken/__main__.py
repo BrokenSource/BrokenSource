@@ -480,7 +480,7 @@ class BrokenCLI:
 
     def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy Documentation for all Projects"""
-        GITHUB_PAGE = "https://github.com/BrokenSource/brokensource.github.io"
+        GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
             shell("mkdocs", "gh-deploy", "--remote-name", GITHUB_PAGE)
         else:

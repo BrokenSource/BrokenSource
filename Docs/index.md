@@ -1,5 +1,9 @@
 # 🔥 Broken Source Software
 
-Hello! This page is currently under construction
+!!! warning "🚧 This website is under Active Construction and Improvements 🚧"
 
-- I am porting documentation from repos to here
+    - **Projects** documentation are being **Ported** and **Enhanced**
+
+    - Initial **Code Reference** is available for **Exploration**
+
+    - **Basic** functionality and **Guides** are already **here**

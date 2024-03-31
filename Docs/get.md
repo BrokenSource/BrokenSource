@@ -1,6 +1,8 @@
 # 🔥 Source Code
 
-!!! abstract "Select your Platform"
+**Running** any of our Projects takes only **two commands** anywhere
+
+!!! abstract "1. Select your Platform"
     === "💠 Windows"
         <div align="center">
             <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;" width="82">
@@ -8,7 +10,7 @@
 
         **Open** some folder to download the code on **Windows Explorer**
 
-        - Press <kbd>Ctrl+L</kbd> , run `powershell` and execute:
+        - Press ++ctrl+l++ , run `powershell` and execute:
 
         ```powershell
         irm https://brokensource.github.io/get.ps1 | iex
@@ -45,9 +47,6 @@
 
         - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) on your Platform
 
-        !!! warning "Windows"
-            Prefer using a **PowerShell** than the **Command Prompt** (CMD)
-
         ```bash title="Clone the Monorepo and all Submodules"
         git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
         ```
@@ -75,7 +74,23 @@
         depthflow
         ```
 
-**And done**, now run `broken` for a Command List 🚀
+<hr>
+
+!!! success "2. Run any Project"
+    **Now** simply run `broken` for a full Command List 🚀
+
+    - Return the Project you want to run for extras
+
+??? bug "Something Failed?"
+    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](contact.md) with us
+
+<hr>
+
+!!! tip "Next time, to use the Projects"
+    You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> Folder and [**Source the Virtual Environment**](https://docs.python.org/3/library/venv.html#how-venvs-work):
+
+    - **Windows**: `.venv\Scripts\Activate.ps1` or `.venv\Scripts\Activate.bat`
+    - **Linux/MacOS**: `source .venv/bin/activate` or `source .venv/bin/activate.fish`
 
 <br>
 

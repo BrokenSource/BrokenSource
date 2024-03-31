@@ -33,7 +33,7 @@ nav:
   # - DepthFlow:
   #   - Code Reference: depthflow/reference/
   # - Pianola:
-    # - Code Reference: pianola/reference/
+  #   - Code Reference: pianola/reference/
   # - SpectroNote:
   #   - Code Reference: spectronote/reference/
 extra_css:
@@ -167,18 +167,18 @@ extra:
     provider: google
     property: G-1S2RXTSLF2
   social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/Tremeschin
-      name: GitHub
-    - icon: fontawesome/brands/x-twitter
-      link: https://twitter.com/Tremeschinni
-      name: Twitter
-    - icon: fontawesome/brands/youtube
-      link: https://www.youtube.com/@Tremeschin
-      name: YouTube
-    - icon: fontawesome/brands/telegram
-      link: https://t.me/BrokenSource
-      name: Telegram
     - icon: fontawesome/brands/discord
       link: https://discord.gg/KjqvcYwRHm
       name: Discord
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/BrokenSource
+      name: Telegram
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/Tremeschinni
+      name: Twitter
+    - icon: fontawesome/brands/github
+      link: https://github.com/Tremeschin
+      name: GitHub
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/@Tremeschin
+      name: YouTube
