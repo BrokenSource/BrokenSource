@@ -1,20 +1,49 @@
 site_name: Broken Source Software
-site_description: Unified Documentation of ShaderFlow, DepthFlow, SpectroNote, Pianola and More
+site_description: Unified Documentation of Broken Source Software
 repo_url: https://github.com/BrokenSource/BrokenSource
-repo_name: BrokenSource
+edit_uri: edit/Master/Docs/
+repo_name: GitHub
 site_author: Tremeschin
 copyright: © 2023-2024, Tremeschin
 docs_dir: Docs
-site_dir: Site
-
+site_dir: Build/Docs
+nav:
+  - Home:
+    - index.md
+    - Installation:
+      - 🔥 Source Code: get.md
+      - 📦 Releases: releases.md
+      - 🚀 Upgrading: upgrading.md
+      - ♻️ Uninstalling: uninstalling.md
+    - Special:
+      - 🧭 Roadmap: roadmap.md
+      - 🔦 PyTorch: pytorch.md
+      - 🌎 Contributing: contributing.md
+      # - ❤️ Sponsoring: sponsoring.md
+      # - Fixme: fixme.md
+    - About:
+      - 👤 Developers: developers.md
+      - 💬 Contact: contact.md
+      - ⚖️ License: license.md
+  - Broken:
+    - Code Reference: broken/reference/
+  - ShaderFlow:
+    - shaderflow/index.md
+    - Code Reference: shaderflow/reference/
+  # - DepthFlow:
+  #   - Code Reference: depthflow/reference/
+  # - Pianola:
+    # - Code Reference: pianola/reference/
+  # - SpectroNote:
+  #   - Code Reference: spectronote/reference/
+extra_css:
+  - css/extra.css
 theme:
   name: material
-  logo: Images/Broken.png
-  favicon: Images/Broken.png
-
+  logo: resources/images/broken.png
+  favicon: resources/images/broken.png
   font:
     text: Roboto Slab
-
   features:
     - navigation.tracking
     - navigation.tabs
@@ -26,12 +55,11 @@ theme:
     - search.highlight
     - search.share
     - toc.follow
-    - header.autohide
     - navigation.footer
     - content.code.copy
     - content.code.select
     - content.code.annotate
-
+    - content.tabs.link
   palette:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
@@ -47,15 +75,6 @@ theme:
         icon: material/weather-night
         name: Switch to dark mode
 
-nav:
-  - Home: index.md
-  - Broken: Broken/
-  # - DepthFlow: DepthFlow/
-  # - Pianola: Pianola/
-  - ShaderFlow: ShaderFlow/
-  # - SpectroNote: SpectroNote/
-
-
 plugins:
   - search
   - include-markdown
@@ -64,7 +83,9 @@ plugins:
   - literate-nav
   - gen-files:
       scripts:
-        - Docs/Generate.py
+        - Docs/make.py
+  - git-revision-date-localized:
+      enable_creation_date: true
   - mkdocstrings:
       handlers:
         python:
@@ -77,12 +98,12 @@ plugins:
             show_source: true
 
             # Headings
-            heading_level: 3
+            # heading_level: 2
             show_root_heading: true
             show_root_toc_entry: true
             show_root_full_path: true
             show_root_members_full_path: true
-            show_object_full_path: true
+            show_object_full_path: false
             show_category_heading: true
             show_symbol_type_heading: true
             show_symbol_type_toc: true
@@ -105,8 +126,16 @@ plugins:
             show_signature: true
             show_signature_annotations: true
             signature_crossrefs: true
-            separate_signature: true
+            separate_signature: false
             line_length: 60
+
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+          remove_comments: true
+      cache_safe: true
 
 markdown_extensions:
   - pymdownx.arithmatex
@@ -116,6 +145,10 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.mark
   - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.highlight:
       linenums: true
       use_pygments: true
@@ -129,8 +162,10 @@ markdown_extensions:
   - admonition
   - footnotes
 
-
 extra:
+  analytics:
+    provider: google
+    property: G-1S2RXTSLF2
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Tremeschin

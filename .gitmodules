@@ -13,9 +13,6 @@
 [submodule "Projects/Upscalin"]
 	path = Projects/Others/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
-[submodule "Meta/Brakeit"]
-	path = Meta/Brakeit
-	url  = https://github.com/Brakeit/brakeit.github.io/
 [submodule "Projects/Pianola"]
 	path = Projects/Pianola
 	url  = https://github.com/BrokenSource/Pianola

@@ -405,6 +405,7 @@ class BrokenCLI:
 
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
+            self.broken_typer.command(self.docs)
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
@@ -476,6 +477,14 @@ class BrokenCLI:
         # Remove build and releases folders if requested
         if all or build:    BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_BUILD)
         if all or releases: BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES)
+
+    def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:
+        """📚 Generate or Deploy Documentation for all Projects"""
+        GITHUB_PAGE = "https://github.com/BrokenSource/brokensource.github.io"
+        if deploy:
+            shell("mkdocs", "gh-deploy", "--remote-name", GITHUB_PAGE)
+        else:
+            shell("mkdocs", "serve")
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""

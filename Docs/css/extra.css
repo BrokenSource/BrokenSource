@@ -1,0 +1,43 @@
+
+/* https://squidfunk.github.io/mkdocs-material/reference/admonitions/#classic-admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+    border-width: 0;
+    border-left-width: 4px;
+}
+
+/* Justify all text */
+.md-typeset p {
+    text-align: justify;
+}
+
+.doc-label {
+    border-radius: 15px;
+    padding: 2px 8px;
+    font-weight: bold;
+}
+
+/* I'm not Walter White */
+.doc-symbol-parameter::after {
+    content: "argument";
+}
+
+.doc-symbol-attribute::after {
+    content: "attribute";
+}
+
+.doc-symbol-function::after {
+    content: "function";
+}
+
+.doc-symbol-method::after {
+    content: "method";
+}
+
+.doc-symbol-class::after {
+    content: "class";
+}
+
+.doc-symbol-module::after {
+    content: "module";
+}

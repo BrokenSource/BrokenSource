@@ -60,6 +60,8 @@ dev-dependencies = [
     "mkdocs-literate-nav>=0.6.1",
     "mkdocs-section-index>=0.3.8",
     "mkdocs-material>=9.5.15",
+    "mkdocs-minify-plugin>=0.8.0",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.4",
 ]
 
 [tool.rye.workspace]
