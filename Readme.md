@@ -14,12 +14,22 @@
     <img src="https://img.shields.io/discord/1184696441298485370?label=Discord&color=blue" alt="Discord Badge"/>
   </a>
 
+  <sub> 👆 Out of the many **Explorers**, you can be among the **Shining** stars who support us! ⭐️ </sub>
+
   <br>
 
   Here lies **❤️‍🩹 Broken** (The **📚 Shared Library** and **🎩 Manager**) + **📦 Submodules** of all our **💎 Projects**
-
   <br>
+</div>
 
+- **🌟 Framework**: A solution for Unification and Consistency
+
+- **🚀 Automation**: Spend more time **using** the Projects
+
+<br>
+<br>
+
+<div align="center">
   <h1>🔥 Learn More 🔥</h1>
 
   <h3>✨ Check out <a href="https://brokensource.github.io/"><b>Awesome Website</b></a> instead of a boring Readme ✨</h3>
