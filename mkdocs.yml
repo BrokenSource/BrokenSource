@@ -93,8 +93,6 @@ plugins:
   - gen-files:
       scripts:
         - Docs/make.py
-  - git-revision-date-localized:
-      enable_creation_date: true
   - mkdocstrings:
       handlers:
         python:
