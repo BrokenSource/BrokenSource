@@ -1,17 +1,12 @@
 # 📦 From PyPI
 
-!!! quote "**The most reliable** way to use the Projects | Direct Module CLI or Dependency"
+!!! quote "The most reliable way to use the Projects | Direct Module CLI or Dependency"
+
+!!! warning "Updated Wheels are not available yet. Will do after this Website is great"
 
 ## ⚡️ Installing
 
-!!! success "**All Projects** are centralized on this single dependency"
-
-!!! info annotate "(1) **Some Projects** or (2) **Optionals** require [**PyTorch**](https://pytorch.org/) separately due (3) **Reasons**"
-
-1.  Like [**DepthFlow**](https://github.com/BrokenSource/DepthFlow)
-2.  Like [**ShaderFlow.Optional.Monocular**](https://github.com/BrokenSource/ShaderFlow)
-3.  - Different flavors exists, no sense to force any of CUDA, CPU or ROCm on all users
-    - It's a large dependency and not always needed
+!!! success "All Projects are contained on this single dependency"
 
 !!! abstract "Install the Package"
     === "Pip"
@@ -33,6 +28,11 @@
         ```shell title="Command"
         python -m pdm add broken-source
         ```
+
+    !!! info annotate "Some Projects or Optionals require specifying a <a href="https://pytorch.org/get-started/locally/" target="_blank">PyTorch</a> flavor (1)"
+
+    1.  - No sense to me to force any of CUDA, CPU or ROCm
+        - It's a large dependency and not always needed
 
 ## 🚀 Upgrading
 Simply upgrade dependencies on your Python Package Manager of choice

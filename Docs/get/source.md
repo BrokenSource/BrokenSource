@@ -1,16 +1,14 @@
 # 🔥 From Source
 
-!!! quote "**The most flexible** way to use the Projects | Latest features, editable, git clone repositories locally"
+!!! quote "The most flexible way to use the Projects | Latest features, editable, standard git clone"
 
 ## ⚡️ Installing
 
-!!! success "**Running** any of my Projects takes only **two commands**, anywhere"
+!!! success "Running any of my Projects takes only two commands"
 
 !!! abstract "1. Select your Platform"
     === "✅ Windows"
-        <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;  border-radius: 20%;" width="120">
-        </div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         **Open** some folder to download the code on **Windows Explorer**
 
@@ -29,9 +27,7 @@
             - The pipe symbol `|` sends the first command's output to the second
 
     === "🐧 Linux"
-        <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="120">
-        </div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         **Open** a **Terminal** on some directory and run
 
@@ -40,9 +36,7 @@
         ```
 
     === "🍎 MacOS"
-        <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="120">
-        </div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="120"></div>
 
         **Open** a **Terminal** on some directory and run
 
@@ -51,9 +45,7 @@
         ```
 
     === "🧭 Manual"
-        <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%;" width="120">
-        </div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) on your Platform
 
@@ -84,15 +76,15 @@
         depthflow
         ```
 
+??? bug "Something Failed?"
+    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](contact.md) with us
+
 <hr>
 
 !!! abstract "2. Run any Project"
     **Now** simply run `broken` for a full Command List 🚀
 
     - Return the Project you want to run for extras
-
-??? bug "Something Failed?"
-    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](contact.md) with us
 
 <hr>
 
@@ -104,41 +96,38 @@
         - +CMD: `.venv\Scripts\Activate.bat`
     - **Linux/MacOS**: `source .venv/bin/activate` or `source .venv/bin/activate.fish`
 
-## 🌾 Using <a href="https://rye-up.com" target="_blank">Rye</a>
 
-The Python Tooling I chose to Orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**Rye**](https://rye-up.com)
-
-- You'll probably **only** need to know a **single command**:
-
-!!! note "Command: [`rye sync`](https://rye-up.com/guide/sync)"
-    This creates the `.venv` and installs dependencies on `pyproject.toml`
-
-    - It is automatically run, once, on the **Install Scripts** above before activating the venv
-
-    - Run this on **dependencies updates** or not-my-code **Import Errors**
-
-??? quote "Advantages of Rye on Monorepos"
-    There are many Python toolings solutions out there, to name a few:
-
-    - [Poetry](https://python-poetry.org), [Conda](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html), [Pipenv](https://pipenv.pypa.io/en/latest), [PDM](https://pdm-project.org/en/latest), [pip-tools](https://pip-tools.readthedocs.io/en/stable), [pip](https://pip.pypa.io/en/stable/) itself.
-
-    I was a Poetry hermit for a long time, until it became too inconvenient in a Monorepo environment. I partially blame Python itself for the Path Dependencies mess. Rye is no solution for that, but it does some other things in a smarter ways.
-
-    - **Single Virtual Environment**:
-        This saves a lot of **disk space**, **time**, and **micromanagement** in code
-
-    - **Managed Python**:
-        Doesn't depend on the user's Python installation, which can be problematic
-
-    - **Syncing Files on Cloud**:
-        Rye automatically makes your Cloud Provider [**ignore the `.venv` folder**](https://rye-up.com/guide/config/)
-
-    !!! warning "Limitation"
-        Rye currently has a limitation that `*.lock` files [**depends on the platform**](https://rye-up.com/guide/sync/#limitations)
-
-        - You might get errors if running `rye sync` with `.lock` files generated on a different platform
-
+<br>
 
 ## 🚀 Upgrading
 
-## ♻️ Uninstalling
+<hr>
+
+### 🌱 Submodules
+
+The installation script should've **initialized** and set all Submodules to the **Master branch**
+
+```bash title="Command"
+git submodule foreach --recursive 'git checkout Master || true'
+```
+
+After that, you can **pull** the latest changes of all Repositories with
+
+```bash title="Command"
+git pull --recurse-submodules
+```
+
+!!! note "You might need to add `--force` if you want to override Local Changes. Be careful with data loss!"
+
+<hr>
+
+### 🌱 Virtual Environment
+
+The Python Tooling I chose to Orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**Rye**](https://rye-up.com)
+
+- You'll probably **only** need to know of a **single command**:
+
+!!! note "Command: [`rye sync`](https://rye-up.com/guide/sync)"
+    This will **update** the **Virtual Environment** and **Install** any new **Dependencies**
+
+<hr>

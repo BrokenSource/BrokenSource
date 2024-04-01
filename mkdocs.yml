@@ -14,32 +14,30 @@ nav:
       - get/index.md
       - 🔥 From Source: get/source.md
       - 📦 From PyPI: get/pypi.md
-      - 🦀 From Releases: get/releases.md
+      - 🔮 From Releases: get/releases.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
-      - 🧭 Roadmap: roadmap.md
-      - 🔦 PyTorch: pytorch.md
-      - 🌎 Contributing: contributing.md
-      # - ❤️ Sponsoring: sponsoring.md
-      # - Fixme: fixme.md
+      - 🔦 PyTorch: get/pytorch.md
     - About:
       - 👤 Developers: about/developers.md
       - 💬 Contact: about/contact.md
       - ⚖️ License: about/license.md
+
   - Broken:
     - Code Reference: broken/reference/
+
   - ShaderFlow:
     - shaderflow/index.md
+    - Installation: shaderflow/get/index.md
     - Usage:
       - 🎮 Controls: shaderflow/controls.md
     - Code Reference: shaderflow/reference/
+
   - DepthFlow:
     - depthflow/index.md
+    - Installation: depthflow/get/index.md
     - Code Reference: depthflow/reference/
-  # - Pianola:
-  #   - Code Reference: pianola/reference/
-  # - SpectroNote:
-  #   - Code Reference: spectronote/reference/
+
 extra_css:
   - css/extra.css
 theme:
@@ -86,9 +84,8 @@ plugins:
   # - social
   # - section-index
   - search
-  - include-markdown
   - autorefs
-  - privacy
+  # - privacy
   - literate-nav
   - gen-files:
       scripts:
@@ -166,6 +163,8 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
+  - markdown_include.include:
+      base_path: Docs
   - md_in_html
   - attr_list
   - tables
@@ -183,12 +182,15 @@ extra:
     - icon: fontawesome/brands/telegram
       link: https://t.me/BrokenSource
       name: Telegram
-    - icon: fontawesome/brands/x-twitter
-      link: https://twitter.com/Tremeschinni
-      name: Twitter
+    - icon: fontawesome/brands/patreon
+      link: https://www.patreon.com/Tremeschin
+      name: Patreon
     - icon: fontawesome/brands/github
       link: https://github.com/Tremeschin
       name: GitHub
     - icon: fontawesome/brands/youtube
       link: https://www.youtube.com/@Tremeschin
       name: YouTube
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/Tremeschinni
+      name: Twitter

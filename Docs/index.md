@@ -1,6 +1,6 @@
 # 🔥 Broken Source Software
 
-!!! success "You're probably looking for the [**Installation Guide**](get/index.md)"
+!!! success "🚀 **Convenience:** You're probably looking for the [**Installation Guide**](get/index.md)"
 
 I'm yet to write a Landing Page here 😅
 

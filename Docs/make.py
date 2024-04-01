@@ -42,7 +42,7 @@ for ROOT in PROJECTS:
                 f"# {module.name}",
                 "",
                 "!!! warning",
-                "    Better **Docstrings** and **Formatting** are being worked on for the **Code References**",
+                "    **Better Docstrings** and **Formatting** are being worked on for the Code References",
                 "",
                 f"::: {'.'.join(module.parts)}",
             )))
@@ -55,20 +55,25 @@ for ROOT in PROJECTS:
     with mkdocs_gen_files.open(".meta.yaml", "w", encoding="utf-8") as file:
         file.write(f"repo_url: https://github.com/BrokenSource/{PROJECT_NAME}\n")
 
-
     # # Virtually copy all of Project's stuff to
 
     # This project's own paths
-    WHAT_WHERE = (
+    WHAT_WHERE = [
         ((ROOT/"Resources"), "resources"),
         ((ROOT.parent/"Docs"), ""),
-    )
+    ]
+
+    # Only copy project's readme
+    if (ROOT.name != "Broken"):
+        WHAT_WHERE.append((ROOT.parent/"Readme.md", "index.md"))
 
     WANT_SUFFIXES = (".md", ".png", ".jpg", ".svg")
 
     # Rebase "$what/*" to "$name/$where/*" local documentation
     for (what, where) in WHAT_WHERE:
-        for real in what.rglob("*"):
+        paths = (what.rglob("*") if what.is_dir() else [what])
+
+        for real in paths:
 
             # Skip "bad" files
             if real.is_dir():

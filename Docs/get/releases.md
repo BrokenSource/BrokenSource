@@ -1,12 +1,42 @@
-# 📦 Releases
+# 🔮 From Releases
 
-!!! quote "**The most convenient** way to use the Projects | Double-click and run"
+!!! quote "The most convenient way to use the Projects | Double-click and run"
+!!! example "Releases are Experimental and not the most Feature Complete yet"
+!!! warning "🚧 This Page is Under Construction 🚧"
 
 ## ⚡️ Installing
 
-!!! warning "Releases  aren't the most feature complete yet"
-
 - I make **Self-installing** executables using [**PyApp**](https://github.com/ofek/pyapp) for your Convenience!
+
+
+!!! abstract "1. Select your Platform"
+    === "✅ Windows"
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;  border-radius: 20%;" width="120"></div>
+
+        !!! quote "2. Select the Project"
+            === "🌊 DepthFlow"
+            === "🎹 Pianola"
+            === "🌵 ShaderFlow"
+            === "🎧 SpectroNote"
+
+    === "🐧 Linux"
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="120"></div>
+
+        !!! quote "2. Select the Project"
+            === "🌊 DepthFlow"
+            === "🎹 Pianola"
+            === "🌵 ShaderFlow"
+            === "🎧 SpectroNote"
+
+    === "🍎 MacOS"
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="120"></div>
+
+        !!! quote "2. Select the Project"
+            === "🌊 DepthFlow"
+            === "🎹 Pianola"
+            === "🌵 ShaderFlow"
+            === "🎧 SpectroNote"
+
 
 <!--
 
