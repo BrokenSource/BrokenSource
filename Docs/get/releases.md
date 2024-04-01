@@ -1,10 +1,16 @@
 # 📦 Releases
 
-Head over to each project's **Releases** page and download the latest version for your platform, if available. Otherwise, you'll have to run directly from the Source Code
+!!! quote "**The most convenient** way to use the Projects | Double-click and run"
 
+## ⚡️ Installing
 
+!!! warning "Releases  aren't the most feature complete yet"
 
-## Naming Convention
+- I make **Self-installing** executables using [**PyApp**](https://github.com/ofek/pyapp) for your Convenience!
+
+<!--
+
+## 📛 Naming Convention
 
 Our **release binaries** follow the **naming convention** below:
 
@@ -33,4 +39,4 @@ We also provide a `.sha256` file for checksum for each binary for integrity veri
 
 <sub><i>*3: We use date versioning as we are rolling release and is neatly sorted by name on file explorers</i></sub>
 
-<sub><i><b>⚠️ Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub>
+<sub><i><b>⚠️ Warning for Windows:</b> Our binaries are 100% safe - you can read the source code - but are likely to be flagged dangerous by Windows Smart Screen, mistaken as a malware by your antivirus or blocked by Windows Defender, given enough people downloading and executing them. Code signing is expensive and we 1. Don't have a budget for it; 2. Are completely Open Source, no shady between the lines stuff</i></sub> -->

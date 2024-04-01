@@ -6,6 +6,10 @@
     border-left-width: 4px;
 }
 
+.md-typeset .admonition-title {
+    font-weight: normal;
+}
+
 /* Justify all text */
 .md-typeset p {
     text-align: justify;

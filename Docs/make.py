@@ -42,10 +42,19 @@ for ROOT in PROJECTS:
                 f"# {module.name}",
                 "",
                 "!!! warning",
-                "    Better **Docstrings** and **Formatting** are being **worked on** for the **Code References**",
+                "    Better **Docstrings** and **Formatting** are being worked on for the **Code References**",
                 "",
                 f"::: {'.'.join(module.parts)}",
             )))
+
+    # This project's directory under the monorepo Docs
+    # Note: Avoid writing Broken/Docs to itself
+    BASE = PROJECT_NAME.lower().replace("broken", "")
+
+    # Override the repository
+    with mkdocs_gen_files.open(".meta.yaml", "w", encoding="utf-8") as file:
+        file.write(f"repo_url: https://github.com/BrokenSource/{PROJECT_NAME}\n")
+
 
     # # Virtually copy all of Project's stuff to
 
@@ -67,11 +76,10 @@ for ROOT in PROJECTS:
             if real.suffix not in WANT_SUFFIXES:
                 continue
 
-            # Avoid writing Broken/Docs to itself
-            BASE = PROJECT_NAME.lower().replace("broken", "")
             virtual = Path(BASE, where, str(real.relative_to(what)).lower())
 
             print(f"• Copying ({real}) -> ({virtual})")
 
             with mkdocs_gen_files.open(virtual, "wb") as file:
                 file.write(real.read_bytes())
+

@@ -27,15 +27,6 @@ from Broken.BrokenEnum import BrokenEnum
 from Broken.Logging import log
 from Broken.Spinner import BrokenSpinner
 
-
-def main():
-    with BrokenProfiler("BROKEN"):
-        broken = BrokenCLI()
-        broken.cli()
-
-if __name__ == "__main__":
-    main()
-
 # -------------------------------------------------------------------------------------------------|
 
 class ProjectLanguage(BrokenEnum):
@@ -406,6 +397,7 @@ class BrokenCLI:
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
             self.broken_typer.command(self.docs)
+            self.broken_typer.command(self.build)
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
@@ -485,6 +477,14 @@ class BrokenCLI:
             shell("mkdocs", "gh-deploy", "--remote-name", GITHUB_PAGE)
         else:
             shell("mkdocs", "serve")
+
+    def build(self,
+        publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
+        test:    Annotated[bool, Option("--test",    "-t", help="Upload to TestPyPI")]=False,
+    ) -> None:
+        """🧀 Build all Projects and Publish to PyPI"""
+        shell("rye", "build", "--wheel", "--out", Broken.BROKEN.DIRECTORIES.BROKEN_WHEELS)
+        url = ("testpypi" if test else "pypi")
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
@@ -721,3 +721,13 @@ class BrokenCLI:
         """Use Pillow-SIMD for faster Image processing"""
         os.environ["CC"] = "cc -mavx2"
         shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")
+
+# -------------------------------------------------------------------------------------------------|
+
+def main():
+    with BrokenProfiler("BROKEN"):
+        broken = BrokenCLI()
+        broken.cli()
+
+if __name__ == "__main__":
+    main()

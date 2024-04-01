@@ -4,17 +4,18 @@ repo_url: https://github.com/BrokenSource/BrokenSource
 edit_uri: edit/Master/Docs/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: © 2023-2024, Tremeschin
+copyright: © 2023-2024, Tremeschin 🇧🇷
 docs_dir: Docs
 site_dir: Build/Docs
 nav:
   - Home:
     - index.md
     - Installation:
-      - 🔥 Source Code: get.md
-      - 📦 Releases: releases.md
-      - 🚀 Upgrading: upgrading.md
-      - ♻️ Uninstalling: uninstalling.md
+      - get/index.md
+      - 🔥 From Source: get/source.md
+      - 📦 From PyPI: get/pypi.md
+      - 🦀 From Releases: get/releases.md
+      - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - 🧭 Roadmap: roadmap.md
       - 🔦 PyTorch: pytorch.md
@@ -22,16 +23,19 @@ nav:
       # - ❤️ Sponsoring: sponsoring.md
       # - Fixme: fixme.md
     - About:
-      - 👤 Developers: developers.md
-      - 💬 Contact: contact.md
-      - ⚖️ License: license.md
+      - 👤 Developers: about/developers.md
+      - 💬 Contact: about/contact.md
+      - ⚖️ License: about/license.md
   - Broken:
     - Code Reference: broken/reference/
   - ShaderFlow:
     - shaderflow/index.md
+    - Usage:
+      - 🎮 Controls: shaderflow/controls.md
     - Code Reference: shaderflow/reference/
-  # - DepthFlow:
-  #   - Code Reference: depthflow/reference/
+  - DepthFlow:
+    - depthflow/index.md
+    - Code Reference: depthflow/reference/
   # - Pianola:
   #   - Code Reference: pianola/reference/
   # - SpectroNote:
@@ -44,6 +48,8 @@ theme:
   favicon: resources/images/broken.png
   font:
     text: Roboto Slab
+  icon:
+    annotation: material/plus-circle-outline
   features:
     - navigation.tracking
     - navigation.tabs
@@ -76,10 +82,13 @@ theme:
         name: Switch to dark mode
 
 plugins:
+  # - meta
+  # - social
+  # - section-index
   - search
   - include-markdown
   - autorefs
-  # - section-index
+  - privacy
   - literate-nav
   - gen-files:
       scripts:
@@ -154,6 +163,9 @@ markdown_extensions:
       use_pygments: true
       auto_title: true
       pygments_lang_class: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
   - md_in_html
