@@ -1,7 +1,12 @@
 # Installation
 
-There are **three ways** to get started with the Projects
+- There are **three ways** to get started with the Projects
 
-- [**🔥 From Source**](source.md): Standard Git Clone, Editable and Local
-- [**📦 From PyPI**](pypi.md): Direct Module CLI or Dependency
-- [**🔮 From Releases**](releases.md): Executable Files
+!!! success "[**🔥 From Source**](source.md) - **Recommended**"
+    Standard Git Clone, Editable, Latest Features and Fixes
+
+!!! quote "[**📦 From PyPI**](pypi.md) - Coming Soon™"
+    Direct Module CLI or Dependency, Reliable and Stable
+
+!!! quote "[**🔮 From Releases**](releases.md) - ⚠️ Experimental, Outdated"
+    Executable Binary Files, Convenient and Portable

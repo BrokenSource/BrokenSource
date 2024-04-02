@@ -1,6 +1,6 @@
 [project]
 name         = "broken-source"
-version      = "2024.4.1"
+version      = "1.0.0"
 description  = "Broken Source Software Framework"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"

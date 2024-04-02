@@ -18,13 +18,13 @@
         irm https://brokensource.github.io/get.ps1 | iex
         ```
 
-        ??? tip "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
-            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory where the Source Code is (Data, Downloads, Config, etc), please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**
-
         ??? question "What is `irm` and `iex`?"
             - `irm` is an alias for `Invoke-RestMethod` to download the script
             - `iex` is an alias for `Invoke-Expression` to run the script
             - The pipe symbol `|` sends the first command's output to the second
+
+        ??? tip "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
+            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory where the Source Code is (Data, Downloads, Config, etc), please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**
 
     === "🐧 Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>

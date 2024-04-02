@@ -38,7 +38,7 @@ import click
 import distro
 import tqdm
 import validators
-from attr import Factory, define
+from attr import Factory, define, field
 from typer import Typer
 
 import Broken
@@ -1244,9 +1244,9 @@ class BrokenEventClient:
 
     # Callback
     callback: callable       = None
-    args:     List[Any]      = Factory(list)
-    kwargs:   Dict[str, Any] = Factory(dict)
-    output:   Any            = None
+    args:     List[Any]      = field(factory=list, repr=False)
+    kwargs:   Dict[str, Any] = field(factory=dict, repr=False)
+    output:   Any            = field(default=None, repr=False)
     context:  Any            = None
     lock:     Lock           = None
     enabled:  bool           = True
