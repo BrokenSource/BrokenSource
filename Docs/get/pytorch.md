@@ -46,8 +46,8 @@ When inside the **Virtual Environment**, choose a version below and and run the 
             poe rocm
             ```
 
-            !!! question "Should work, but I don't have the Hardware to test"
             !!! warning "Requires RX 5000 series or Newer. Might need to set `HSA_OVERRIDE_GFX_VERSION`"
+            !!! question "Should work, but I don't have the Hardware to test"
 
         === "❓ Intel ARC GPU"
             !!! bug "Help needed, I don't have the Hardware to test"

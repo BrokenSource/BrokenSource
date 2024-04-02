@@ -1,15 +1,10 @@
-import sys
 import time
 import warnings
 from math import pi as PI
-from typing import TypeAlias, TypeVar, Union
-
-# Fix: typing.Self was implemented in Python 3.11
-if sys.version_info < (3, 11):
-    Self = TypeVar("Self")
+from typing import TypeAlias, Union
 
 # Ignore mostly NumPy warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 # # Custom types and utilities
 Unchanged: TypeAlias = None
@@ -30,7 +25,7 @@ BPM:       TypeAlias = float
 Pixel:     TypeAlias = int
 
 # Recurring math constants
-TAU     = (2 * PI)
+TAU     = (2*PI)
 SQRT2   = (2**0.5)
 SQRT3   = (3**0.5)
 SQRT_PI = (PI**0.5)

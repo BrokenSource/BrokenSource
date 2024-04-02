@@ -7,6 +7,14 @@ from pathlib import Path
 sys.pycache_prefix = str(Path(__file__).parent.parent/".venv"/"pycache")
 
 # -------------------------------------------------------------------------------------------------|
+# Fix: typing.Self was implemented on Python<3.11, monkey patch it on older versions
+
+import typing
+
+if sys.version_info < (3, 11):
+    typing.Self = typing.Any
+
+# -------------------------------------------------------------------------------------------------|
 # Idk why but PyAPP isn't passing the argument on Linux
 
 import os
@@ -29,14 +37,6 @@ pretty_errors.configure(
 )
 
 # -------------------------------------------------------------------------------------------------|
-# Fix: typing.Self was implemented on Python<3.11, monkey patch it on older versions
-
-import typing
-
-if sys.version_info < (3, 11):
-    typing.Self = typing.Any
-
-# -------------------------------------------------------------------------------------------------|
 # Broken Library
 import importlib.metadata
 import importlib.resources
@@ -52,8 +52,6 @@ DEVELOPMENT: bool = (not RELEASE)
 VERSION:     str  = importlib.metadata.version("broken-source")
 
 import Broken.Resources as BrokenResources
-from Broken.Base import BrokenPath, BrokenPlatform
-from Broken.Logging import log
 from Broken.Project import BrokenProject
 
 BROKEN = BrokenProject(
@@ -78,8 +76,23 @@ def set_project(project: BrokenProject):
     PROJECT = project
 
 # -------------------------------------------------------------------------------------------------|
+
+# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
+# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
+# • File name collisions are unlikely with any Monorepo path (?)
+for i, arg in enumerate(sys.argv):
+    if any((
+        any((arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
+        bool(Path(arg).suffix) and Path(arg).exists(),
+    )):
+        sys.argv[i] = str(Path(arg).expanduser().resolve())
+
+# Safer measures: Store the first cwd that Broken is run, always start from there
+os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
+
+# -------------------------------------------------------------------------------------------------|
 # Small fixes
-# Numpy's blas broken multiprocessing on matmul
+
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 os.environ["OMP_NUM_THREADS"] = "1"
 
@@ -97,20 +110,3 @@ if PYINSTALLER:
 
     import pyi_splash  # type: ignore
     pyi_splash.close()
-
-
-if (sys.version_info>=(3, 12)) and (log.project=="Broken") and not (BrokenPlatform.OnLinux):
-    log.warning("You are on Python 3.12+, some project packages might require compilation")
-
-# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
-# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
-# • File name collisions are unlikely with any Monorepo path (?)
-for i, arg in enumerate(sys.argv):
-    if any((
-        any((arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
-        bool(Path(arg).suffix) and Path(arg).exists(),
-    )):
-        sys.argv[i] = str(BrokenPath(arg))
-
-# Safer measures: Store the first cwd that Broken is run, always start from there
-os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))

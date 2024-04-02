@@ -11,7 +11,7 @@
 
 !!! abstract "1. Select your Platform"
     === "✅ Windows"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;  border-radius: 20%;" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;  border-radius: 20%;" width="80"></div>
 
         !!! quote "2. Select the Project"
             === "🌊 DepthFlow"
@@ -20,7 +20,7 @@
             === "🎧 SpectroNote"
 
     === "🐧 Linux"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
 
         !!! quote "2. Select the Project"
             === "🌊 DepthFlow"
@@ -29,7 +29,7 @@
             === "🎧 SpectroNote"
 
     === "🍎 MacOS"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
 
         !!! quote "2. Select the Project"
             === "🌊 DepthFlow"
