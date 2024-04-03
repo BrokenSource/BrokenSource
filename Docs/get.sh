@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Find 'git', exit if not found
 git=""
 if [ -x "$(command -v git)" ]; then
   git=$(readlink -f $(which git))
@@ -9,6 +10,7 @@ else
   exit 1
 fi
 
+# Find 'rye', install if not found
 rye=""
 for attempt in $(seq 1 2); do
   if [ -x "$(command -v rye)" ]; then
@@ -31,17 +33,28 @@ for attempt in $(seq 1 2); do
   /bin/bash -c "$(curl -sSf https://rye-up.com/get)"
 done
 
-# # Get Code, Install Dependencies and Spawn Shell
+# # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
 
-printf "\n:: Cloning BrokenSource Repository\n\n"
-$git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
-cd BrokenSource
+# Only clone if not already on a BrokenSource Repository
+if [ ! -d "Broken" ]; then
+  printf "\n:: Cloning BrokenSource Repository and all Submodules\n\n"
+  $git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
+  cd BrokenSource
 
-printf "\n:: Checking out all submodules to Master\n"
-$git submodule foreach --recursive 'git checkout Master || true'
+  printf "\n:: Checking out all submodules to Master\n"
+  $git submodule foreach --recursive 'git checkout Master || true'
+else
+  printf "\n:: Already on a BrokenSource Repository\n"
+fi
+
+# Make scripts executable for later use
+chmod +x Docs/get.sh
+chmod +x ./activate.sh
 
 printf "\n:: Creating Virtual Environment and Installing Dependencies\n"
 $rye self update
+$rye config --set-bool behavior.use-uv=true
+$rye config --set-bool behavior.autosync=true
 $rye sync
 
 printf "\n:: Spawning a new Shell in the Virtual Environment\n"

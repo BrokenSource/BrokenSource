@@ -1,21 +1,37 @@
 #!/usr/bin/env pwsh
 
-# # Utility functions
+<# Kudos for your cautiousness in checking out the script before running it !
 
-# Workaround: Add expected path if we can't find winget
-$wingetPath = $env:LocalAppData + "\Microsoft\WindowsApps"
+    The script does the following:
 
+    - Install Winget if not found:
+        The official Microsoft's Package Manager
+    - Install Git and Rye using Winget:
+        To download the Projects and manage Python
+    - Add Rye shims to PATH:
+        So that 'rye' command is available in the shell
+    - Clone the BrokenSource Monorepo
+    - Create a Virtual Environment and install dependencies
+    - Spawn a new shell in the Virtual Environment
+#>
+
+# This function reloads the "PATH" environment variable so that we can
+# find newly installed applications on the same script execution
 function Reload-Path {
+    $wingetPath  = $env:LocalAppData + "\Microsoft\WindowsApps"
     $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
     $userPath    = [System.Environment]::GetEnvironmentVariable("Path", "User")
     $env:Path    = $machinePath + ";" + $userPath + ";" + $wingetPath
 }
 
+# Consistency in showing steps
 function Print-Step {
     echo "`n:: $args`n"
 }
 
-# Have Winget installed
+# This function immediately exits if Winget is found, else it tries to install it with
+# the official Microsoft docs 'Add-AppxPackage' method. If it still fails, it tries
+# to download the Appx package (.msibundle) and install it manually.
 function Have-Winget {
     Reload-Path
     if ((Get-Command winget -ErrorAction SilentlyContinue)) {
@@ -47,7 +63,7 @@ function Have-Winget {
 
     # If Winget is still not available, exit
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        echo "`n:: Winget Installation Error`n"
+        Print-Step "Winget was not found, and installation failed with Add-AppxPackage"
         echo "Winget was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://learn.microsoft.com/en-us/windows/package-manager/winget"
         echo "> Alternatively, install manually what previously failed"
@@ -55,14 +71,14 @@ function Have-Winget {
     }
 }
 
-# # Install basic dependencies
+# Install Git
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Print-Step "Git was not found, installing with Winget"
     Have-Winget
     winget install -e --id Git.Git
     Reload-Path
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-        echo "`n:: Git Installation Error`n"
+        Print-Step "Git was not found, and installation failed with Winget"
         echo "Git was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://git-scm.com/download/win"
         exit
@@ -71,13 +87,14 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Install Rye
 if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
     Print-Step "Rye was not found, installing with Winget"
     Have-Winget
     winget install --id=Rye.Rye -e
     Reload-Path
     if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
-        echo "`n:: Rye Installation Error`n"
+        Print-Step "Rye was not found, and installation failed with Winget"
         echo "Rye was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://rye-up.com"
         exit
@@ -87,26 +104,34 @@ if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
 }
 
 # Add %USERPROFILE%\.rye\shims to PATH permanently if not there
+# This is where the main 'rye' tool is located, make it available
 $ryePath = $env:USERPROFILE + "\.rye\shims"
 if ($env:Path -notlike "*$ryePath*") {
-    echo "Adding Rye Shims to PATH"
+    Print-Step "Adding Rye Shims to PATH as it was not found"
     [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $ryePath, "User")
     Reload-Path
 }
 
 Reload-Path
 
-# # Bootstrap BrokenSource Monorepo
+# # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
 
-Print-Step "Cloning BrokenSource Repository"
-git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
-cd BrokenSource
+# Skip cloning if already on a cloned directory
+if (-not (Test-Path -Path "Broken")) {
+    Print-Step "Cloning BrokenSource Repository and all Submodules"
+    git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
+    cd BrokenSource
 
-Print-Step "Checking out Master branch for all submodules"
-git submodule foreach --recursive 'git checkout Master || true'
+    Print-Step "Checking out Master branch for all submodules"
+    git submodule foreach --recursive 'git checkout Master || true'
+} else {
+    Print-Step "Already in a Cloned Directory, Skipping Cloning"
+}
 
 Print-Step "Creating Virtual Environment and Installing Dependencies"
 rye self update
+rye config --set-bool behavior.use-uv=true
+rye config --set-bool behavior.autosync=true
 rye sync
 
 Print-Step "Spawning a new Shell in the Virtual Environment"

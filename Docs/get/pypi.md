@@ -2,8 +2,6 @@
 
 !!! quote "The most reliable way to use the Projects | Direct Module CLI or Dependency"
 
-!!! warning "Updated Wheels are not available yet. Will do after this Website is great"
-
 ## ⚡️ Installing
 
 !!! success "All Projects are contained on this single dependency"

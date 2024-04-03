@@ -397,7 +397,7 @@ class BrokenCLI:
         with self.broken_typer.panel("🛡️ Core"):
             self.broken_typer.command(self.clean)
             self.broken_typer.command(self.docs)
-            self.broken_typer.command(self.build)
+            self.broken_typer.command(self.pypi)
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
@@ -478,13 +478,23 @@ class BrokenCLI:
         else:
             shell("mkdocs", "serve")
 
-    def build(self,
+    def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to TestPyPI")]=False,
     ) -> None:
         """🧀 Build all Projects and Publish to PyPI"""
-        shell("rye", "build", "--wheel", "--out", Broken.BROKEN.DIRECTORIES.BROKEN_WHEELS)
-        url = ("testpypi" if test else "pypi")
+        DIR = BrokenPath.resetdir(Broken.BROKEN.DIRECTORIES.BROKEN_WHEELS)
+        shell("rye", "build", "--wheel", "--out", DIR)
+        wheel = next(DIR.glob("*.whl"))
+
+        if publish:
+            shell(
+                "rye", "publish",
+                "--repository", ("testpypi" if test else "pypi"),
+                "--username", os.environ.get("PYPI_USERNAME"),
+                "--token", os.environ.get("PYPI_TOKEN"),
+                wheel
+            )
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
