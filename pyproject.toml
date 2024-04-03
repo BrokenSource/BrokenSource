@@ -1,6 +1,12 @@
+[project.urls]
+repository    = "https://github.com/BrokenSource/BrokenSource"
+homepage      = "https://brokensource.github.io"
+documentation = "https://brokensource.github.io"
+issues        = "https://brokensource.github.io/contact"
+
 [project]
 name         = "broken-source"
-version      = "1.0.0"
+version      = "0.1.1"
 description  = "Broken Source Software Framework"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"
@@ -49,6 +55,7 @@ dependencies = [
     "samplerate>=0.2.1",
     "scipy>=1.12.0",
     "yt-dlp>=2024.3.10",
+    "moderngl-window @ git+https://github.com/Tremeschin/moderngl-window",
 ]
 requires-python = ">=3.10"
 
@@ -78,7 +85,6 @@ dev-dependencies = [
 
 [tool.rye.workspace]
 members = [
-    "Meta/Fork/ModernGLW",
     "Projects/DepthFlow",
     "Projects/Pianola",
     "Projects/ShaderFlow",

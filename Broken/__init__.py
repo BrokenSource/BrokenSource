@@ -1,24 +1,18 @@
 # -------------------------------------------------------------------------------------------------|
-# Keep repository clean of __pycache__ and .pyc files by writing to .venv
 
+import os
 import sys
+import typing
 from pathlib import Path
 
+# Keep repository clean of __pycache__ and .pyc files by writing to .venv
 sys.pycache_prefix = str(Path(__file__).parent.parent/".venv"/"pycache")
 
-# -------------------------------------------------------------------------------------------------|
-# Fix: typing.Self was implemented on Python<3.11, monkey patch it on older versions
-
-import typing
-
+# Fix: typing.Self was implemented on Python >= 3.11
 if sys.version_info < (3, 11):
     typing.Self = typing.Any
 
-# -------------------------------------------------------------------------------------------------|
-# Idk why but PyAPP isn't passing the argument on Linux
-
-import os
-
+# PyAPP isn't passing the argument on Linux
 if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
     sys.argv.insert(0, sys.executable)
 
@@ -38,6 +32,7 @@ pretty_errors.configure(
 
 # -------------------------------------------------------------------------------------------------|
 # Broken Library
+
 import importlib.metadata
 import importlib.resources
 import sys

@@ -396,9 +396,11 @@ class BrokenProject:
         self.PACKAGE     = Path(self.PACKAGE)
 
         # Assign version - Package's parent folder name
-        self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name
-            .replace("Broken", "broken-source")
-        )
+        # Fixme: Split the projects into many packages
+        self.VERSION = Broken.VERSION
+        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name
+        #     .replace("Broken", "broken-source")
+        # )
 
         # Create default config
         self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
@@ -421,7 +423,6 @@ class BrokenProject:
 
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            log.minor(f"Loading environment variables at ({env})")
             dotenv.load_dotenv(env)
 
     def welcome(self):

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Annotated, List, Self
 
+import click
 import toml
 import typer
 from attr import Factory, define
@@ -389,7 +390,6 @@ class BrokenCLI:
         ))
 
         with self.broken_typer.panel("📦 Installation"):
-            self.broken_typer.command(self.install)
             self.broken_typer.command(self.uninstall)
             self.broken_typer.command(self.submodules, hidden=True)
             self.broken_typer.command(self.shortcut)
@@ -488,6 +488,8 @@ class BrokenCLI:
         wheel = next(DIR.glob("*.whl"))
 
         if publish:
+            if (not click.confirm(f"• Confirm publishing wheel ({wheel})")):
+                return
             shell(
                 "rye", "publish",
                 "--repository", ("testpypi" if test else "pypi"),
@@ -567,17 +569,6 @@ class BrokenCLI:
 
     # ---------------------------------------------------------------------------------------------|
     # Installation section
-
-    def install(self):
-        """➕ Default installation, runs {submodules}, {scripts} and {shortcut if Windows} in sequence"""
-        Broken.BROKEN.welcome()
-        if BrokenPlatform.OnWindows:
-            self.shortcut()
-        log.note(f"Running Broken at ({Broken.BROKEN.DIRECTORIES.REPOSITORY})")
-        log.note("• Tip: Avoid 'poetry run (broken | project)', prefer 'broken', it's faster 😉")
-        log.note("• Tip: Next Time, run 'python ./brakeit.py'" + BrokenPlatform.OnWindows*" or click the Desktop App Icon")
-        log.note("• Now run 'broken' for the full command list")
-        print()
 
     LINUX_DESKTOP_FILE = Broken.BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
 

@@ -5,7 +5,7 @@
 !!! success "[**🔥 From Source**](source.md) - **Recommended**"
     Standard Git Clone, Editable, Latest Features and Fixes
 
-!!! quote "[**📦 From PyPI**](pypi.md) - Coming Soon™"
+!!! success "[**📦 From PyPI**](pypi.md) - ⚠️ Experimental™"
     Direct Module CLI or Dependency, Reliable and Stable
 
 !!! quote "[**🔮 From Releases**](releases.md) - ⚠️ Experimental, Outdated"
