@@ -495,7 +495,8 @@ class BrokenCLI:
                 "--repository", ("testpypi" if test else "pypi"),
                 "--username", os.environ.get("PYPI_USERNAME"),
                 "--token", os.environ.get("PYPI_TOKEN"),
-                wheel
+                wheel,
+                echo=False
             )
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:

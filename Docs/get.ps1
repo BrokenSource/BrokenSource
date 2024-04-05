@@ -29,6 +29,12 @@ function Print-Step {
     echo "`n:: $args`n"
 }
 
+# Option to continue normally even on errors
+function Ask-Continue {
+    echo "`nPress Enter to continue normally, or Ctrl+C to exit"
+    Read-Host
+}
+
 # This function immediately exits if Winget is found, else it tries to install it with
 # the official Microsoft docs 'Add-AppxPackage' method. If it still fails, it tries
 # to download the Appx package (.msibundle) and install it manually.
@@ -67,7 +73,7 @@ function Have-Winget {
         echo "Winget was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://learn.microsoft.com/en-us/windows/package-manager/winget"
         echo "> Alternatively, install manually what previously failed"
-        exit
+        Ask-Continue
     }
 }
 
@@ -80,8 +86,8 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Print-Step "Git was not found, and installation failed with Winget"
         echo "Git was installed but still not found. Probably a Path issue or installation failure"
-        echo "> Please get it at https://git-scm.com/download/win"
-        exit
+        echo "> Please get it at https://git-scm.com"
+        Ask-Continue
     } else {
         echo "Git was installed successfully"
     }
@@ -97,7 +103,7 @@ if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
         Print-Step "Rye was not found, and installation failed with Winget"
         echo "Rye was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://rye-up.com"
-        exit
+        Ask-Continue
     } else {
         echo "Rye was installed successfully"
     }

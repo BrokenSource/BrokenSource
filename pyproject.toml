@@ -54,8 +54,9 @@ dependencies = [
     "midi2audio>=0.1.1",
     "samplerate>=0.2.1",
     "scipy>=1.12.0",
-    "yt-dlp>=2024.3.10",
     "moderngl-window @ git+https://github.com/Tremeschin/moderngl-window",
+    "streamlit>=1.33.0",
+    "yt-dlp>=2024.3.10",
 ]
 requires-python = ">=3.10"
 
@@ -128,7 +129,7 @@ exclude = ["*"]
 # # PyTorch
 
 [tool.poe.tasks]
-_transformers = "python -m pip install transformers==4.39.1 "
+_transformers = "python -m pip install transformers==4.39.1"
 _torch_base   = "python -m pip install torch==2.2.1 torchvision"
 _torch_cuda   = "python -m pip install torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/cu118"
 _torch_rocm   = "python -m pip install torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/rocm5.7"
