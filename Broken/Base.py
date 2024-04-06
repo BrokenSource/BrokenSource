@@ -103,10 +103,8 @@ def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
     """map(f, x) is lazy, this consumes the generator returning a list"""
     return list(map(callback, iterable))
 
-@easy_multiple
-def denum(*items: Any) -> Any:
-    """De-enumerates enum iterables to their value"""
-    return apply(lambda item: item.value if isinstance(item, Enum) else item, items)
+def denum(item: Any) -> Any:
+    return (item.value if isinstance(item, Enum) else item)
 
 @staticmethod
 def dunder(name: str) -> bool:

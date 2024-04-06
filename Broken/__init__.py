@@ -91,6 +91,11 @@ os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd())
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 os.environ["OMP_NUM_THREADS"] = "1"
 
+# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
+# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
+# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
+os.environ["__GL_YIELD"] = "USLEEP"
+
 # Patch torch.jit requiring inspect.getsource
 # https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
 if PYINSTALLER:

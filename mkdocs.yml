@@ -1,12 +1,12 @@
 site_name: Broken Source Software
-site_description: Unified Documentation of Broken Source Software
+site_description: Unified Documentation and Resources
 repo_url: https://github.com/BrokenSource/BrokenSource
-edit_uri: edit/Master/Docs/
+edit_uri: edit/Master/Website/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: © 2023-2024, Tremeschin 🇧🇷
-docs_dir: Docs
-site_dir: Build/Docs
+copyright: &copy 2023-2024, Tremeschin 🇧🇷
+docs_dir: Website
+site_dir: Build/Website
 nav:
   - Home:
     - index.md
@@ -20,6 +20,7 @@ nav:
       - PyTorch: get/pytorch.md
     - About:
       - Developers: about/developers.md
+      - Roadmap: about/roadmap.md
       - Contact: about/contact.md
       - License: about/license.md
 
@@ -99,7 +100,7 @@ plugins:
   - literate-nav
   - gen-files:
       scripts:
-        - Docs/make.py
+        - Website/make.py
   - mkdocstrings:
       handlers:
         python:

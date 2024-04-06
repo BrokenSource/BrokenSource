@@ -14,7 +14,7 @@
 
     I'm definitely more "real time" here
 
-    [:octicons-arrow-right-24:{.lg .middle} **Join**](https://t.me/BrokenSource)
+    [:octicons-arrow-right-24:{.lg.middle} **Join**](https://t.me/BrokenSource)
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub**
 
@@ -28,12 +28,9 @@
 
 </div>
 
-
 !!! note "I live on **UTC-4 Timezone**, so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
     - 🇧🇷 **Brazilian Portuguese**, my Native Language
 
     - 🇺🇸 **English**: I should practice speaking more 😅
-
-    - 🇪🇸 **Spanish**: I can read 70%+, but not else
