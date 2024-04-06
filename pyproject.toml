@@ -1,12 +1,12 @@
 [project.urls]
 repository    = "https://github.com/BrokenSource/BrokenSource"
-homepage      = "https://brokensource.github.io"
-documentation = "https://brokensource.github.io"
-issues        = "https://brokensource.github.io/contact"
+homepage      = "https://brokensrc.dev"
+documentation = "https://brokensrc.dev"
+issues        = "https://brokensrc.dev/contact"
 
 [project]
 name         = "broken-source"
-version      = "0.1.1"
+version      = "0.1.2"
 description  = "Broken Source Software Framework"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"

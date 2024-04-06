@@ -38,15 +38,15 @@ nav:
     - Installation: depthflow/get/index.md
     - Code Reference: depthflow/reference/
 
-  # - Pianola:
-  #   - pianola/index.md
-  #   - Installation: pianola/get/index.md
-  #   - Code Reference: pianola/reference/
+  - Pianola:
+    - pianola/index.md
+    - Installation: pianola/get/index.md
+    - Code Reference: pianola/reference/
 
-  # - SpectroNote:
-  #   - spectronote/index.md
-  #   - Installation: spectronote/get/index.md
-  #   - Code Reference: spectronote/reference/
+  - SpectroNote:
+    - spectronote/index.md
+    - Installation: spectronote/get/index.md
+    - Code Reference: spectronote/reference/
 
 extra_css:
   - css/extra.css

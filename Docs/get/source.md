@@ -15,7 +15,7 @@
         - Press ++ctrl+l++ , run `powershell` and execute:
 
         ```powershell
-        irm https://brokensource.github.io/get.ps1 | iex
+        irm https://brokensrc.dev/get.ps1 | iex
         ```
 
         ??? question "What is `irm` and `iex`?"
@@ -32,7 +32,7 @@
         **Open** a **Terminal** on some directory and run
 
         ```shell
-        /bin/bash -c "$(curl -sS https://brokensource.github.io/get.sh)"
+        /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
 
     === "🍎 MacOS"
@@ -41,7 +41,7 @@
         **Open** a **Terminal** on some directory and run
 
         ```zsh
-        /bin/bash -c "$(curl -sS https://brokensource.github.io/get.sh)"
+        /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
 
     === "🧭 Manual"

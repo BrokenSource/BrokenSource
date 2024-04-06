@@ -1,8 +1,8 @@
 <div align="center">
-  <a href="https://brokensource.github.io"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/Master/Broken/Resources/Images/Broken.png" width="200"></a>
+  <a href="https://brokensrc.dev"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/Master/Broken/Resources/Images/Broken.png" width="200"></a>
   <h2>Broken Source Software</h2>
   <br>
-  Here lies <b>Broken</b>: The <b>Shared Library</b> and <b>Manager</b>) + <b>Submodules</b> of all my <b>Projects</b>
+  Here lies <b>Broken</b>: The <b>Shared Library</b> and <b>Manager</b> + <b>Submodules</b> of all my <b>Projects</b>
 </div>
 
 <br>
@@ -15,7 +15,7 @@
 
 <div align="center">
   <h2>🍁 Learn More 🍁</h2>
-  <h3>✨ Check out my <a href="https://brokensource.github.io"><b>Awesome Website</b></a> instead of a boring Readme ✨</h3>
+  <h3>✨ Check out my <a href="https://brokensrc.dev"><b>Awesome Website</b></a> instead of a boring Readme ✨</h3>
   <h5>Installation Guides, Usage, Tips, Code Reference and More!</h5>
 </div>
 
