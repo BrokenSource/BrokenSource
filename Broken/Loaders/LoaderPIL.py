@@ -1,5 +1,6 @@
 import io
 from pathlib import Path
+from Broken.Logging import log
 from typing import Any, Optional, Union
 
 import numpy
@@ -37,16 +38,21 @@ class LoaderImage(BrokenLoader):
         if value is None:
             return None
 
-        elif isinstance(value, numpy.ndarray):
-            return PIL.Image.fromarray(value, **kwargs)
-
         elif isinstance(value, Image):
+            log.debug(f"Loading Image from Image")
             return value
 
+        elif isinstance(value, numpy.ndarray):
+            log.debug(f"Loading Image from Numpy Array")
+            return PIL.Image.fromarray(value, **kwargs)
+
         elif (path := BrokenPath(value, valid=True)):
+            log.debug(f"Loading Image from Path ({path})")
             return PIL.Image.open(path, **kwargs)
 
         elif validators.url(value):
+            log.debug(f"Loading Image from URL ({value})")
+
             if LoaderImage.cache():
                 return PIL.Image.open(io.BytesIO(LoaderImage.cache().get(value).content), **kwargs)
 
@@ -54,6 +60,7 @@ class LoaderImage(BrokenLoader):
             return PIL.Image.open(io.BytesIO(requests.get(value).content), **kwargs)
 
         elif isinstance(value, bytes):
+            log.debug(f"Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
         return None

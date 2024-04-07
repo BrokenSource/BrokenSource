@@ -437,9 +437,8 @@ class BrokenProject:
         rprint(Panel(
             Align.center(ascii),
             subtitle=' '.join((
-                f"Made with ❤️ by {self.APP_AUTHOR}.",
-                ("Release version." if Broken.RELEASE else "Development version"),
-                f"(Python {sys.version.split()[0]})"
+                f"Made with ❤️ by {self.APP_AUTHOR},",
+                f"Python {sys.version.split()[0]}"
             )),
             padding=1,
             title_align="center",

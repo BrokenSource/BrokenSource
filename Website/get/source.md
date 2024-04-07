@@ -94,8 +94,11 @@
     - **Windows**:
         - +PowerShell: `.venv\Scripts\Activate.ps1`
         - +CMD: `.venv\Scripts\Activate.bat`
-    - **Linux/MacOS**: `source .venv/bin/activate` or `source .venv/bin/activate.fish`
-
+    - **Linux**:
+        - +Bash: `source .venv/bin/activate`
+        - +Fish: `source .venv/bin/activate.fish`
+    - **MacOS**:
+        - +Zsh: `source .venv/bin/activate`
 
 <br>
 
