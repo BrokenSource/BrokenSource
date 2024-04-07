@@ -77,7 +77,7 @@
         ```
 
 ??? bug "Something Failed?"
-    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with us
+    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me
 
 <hr>
 
