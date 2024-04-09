@@ -23,7 +23,7 @@
             - `iex` is an alias for `Invoke-Expression` to run the script
             - The pipe symbol `|` sends the first command's output to the second
 
-        ??? tip "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
+        ??? question "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
             To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory where the Source Code is (Data, Downloads, Config, etc), please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**
 
     === "🐧 Linux"
@@ -88,7 +88,7 @@
 
 <hr>
 
-!!! tip "3. Next time, to use the Projects.."
+!!! abstract "3. Next time, to use the Projects.."
     You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> Folder and [**Source the Virtual Environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
     - **Windows**:

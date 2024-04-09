@@ -1,2 +1,2 @@
 #!/usr/bin/env pwsh
-.\Docs\get.ps1
+.\Website\get.ps1

@@ -4,7 +4,7 @@ repo_url: https://github.com/BrokenSource/BrokenSource
 edit_uri: edit/Master/Website/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: &copy 2023-2024, Tremeschin 🇧🇷
+copyright: © 2023-2024, Tremeschin 🇧🇷
 docs_dir: Website
 site_dir: Build/Website
 nav:
@@ -181,6 +181,9 @@ markdown_extensions:
   - tables
   - admonition
   - footnotes
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 extra:
   analytics:

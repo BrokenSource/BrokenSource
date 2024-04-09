@@ -105,12 +105,12 @@
     },
 
     // Auto remove unused imports
-    "[python]": {
-        "editor.codeActionsOnSave": {
-          "source.organizeImports": "explicit",
-          "source.unusedImports": "explicit",
-        }
-    },
+    // "[python]": {
+    //     "editor.codeActionsOnSave": {
+    //       "source.organizeImports": "explicit",
+    //       "source.unusedImports": "explicit",
+    //     }
+    // },
 
     // Ignore some stuff on Pylance
     "python.analysis.exclude": [

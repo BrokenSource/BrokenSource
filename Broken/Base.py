@@ -650,7 +650,7 @@ class BrokenPath(Path):
             response = requests.get(url, stream=True)
         except requests.exceptions.RequestException as error:
             log.error(f"Failed to download file ({url}) → ({output}): {error}", echo=echo)
-            return
+            return output
 
         size = int(response.headers.get('content-length', 0))
 
