@@ -36,6 +36,14 @@ class _BrokenProjectDirectories:
         args = (self.BROKEN_PROJECT.APP_AUTHOR, self.BROKEN_PROJECT.APP_NAME)
         self.APP_DIRS = AppDirs(*reversed(args) if (os.name == "nt") else args)
 
+    def mkdir(self, path: Path, resolve: bool=True) -> Path:
+        """Make a directory and return it"""
+        path = Path(path).resolve() if resolve else Path(path)
+        if not path.exists():
+            log.info(f"Creating directory: {path}")
+            path.mkdir(parents=True, exist_ok=True)
+        return path
+
     @property
     def PACKAGE(self) -> Path:
         """
@@ -45,12 +53,10 @@ class _BrokenProjectDirectories:
         When running from a Release:
             - Directory where the executable is located
         """
-        if Broken.PYINSTALLER:
+        if Broken.RELEASE:
             return Path(sys.executable).parent.resolve()
-        elif Broken.NUITKA:
-            return Path(sys.argv[0]).parent.resolve()
-        else:
-            return Path(self.BROKEN_PROJECT.PACKAGE).parent.resolve()
+
+        return Path(self.BROKEN_PROJECT.PACKAGE).parent.resolve()
 
     # # Convenience properties
 
@@ -62,21 +68,11 @@ class _BrokenProjectDirectories:
     def APP_AUTHOR(self) -> str:
         return self.BROKEN_PROJECT.APP_AUTHOR
 
-    # # Internal methods
-
-    def __mkdir__(self, path: Path, resolve: bool=True) -> Path:
-        """Make a directory and return it"""
-        path = Path(path).resolve() if resolve else Path(path)
-        if not path.exists():
-            log.info(f"Creating directory: {path}")
-            path.mkdir(parents=True, exist_ok=True)
-        return path
-
     # # Unknown / new project directories
 
     def __set__(self, name: str, value: Path) -> Path:
         """Create a new directory property if Path is given, else set the value"""
-        self.__dict__[name] = value if not isinstance(value, Path) else self.__mkdir__(value)
+        self.__dict__[name] = value if not isinstance(value, Path) else self.mkdir(value)
 
     def __setattr__(self, name: str, value: Path) -> Path:
         self.__set__(name, value)
@@ -89,98 +85,93 @@ class _BrokenProjectDirectories:
     @property
     def REPOSITORY(self) -> Path:
         """Broken Source's Monorepo directory"""
-        return self.__mkdir__(self.PACKAGE.parent)
+        return self.mkdir(self.PACKAGE.parent)
 
     @property
     def HOME(self) -> Path:
         """(Unix: /home/$USER), (Windows: C://Users//$USER)"""
-        return self.__mkdir__(Path.home())
+        return self.mkdir(Path.home())
 
     # # Common system directories
 
     @property
     def SYSTEM_ROOT(self) -> Path:
         """(Unix: /), (Windows: C://)"""
-        return self.__mkdir__("/")
+        return self.mkdir("/")
 
     @property
     def SYSTEM_TEMP(self) -> Path:
         """(Unix: /tmp), (Windows: C://Windows//Temp)"""
-        return self.__mkdir__(tempfile.gettempdir())
+        return self.mkdir(tempfile.gettempdir())
 
     # # Broken monorepo specific, potentially useful
 
     @property
-    def BROKEN_BRAKEIT(self) -> Path:
-        """Brakeit bootstrap script"""
-        return self.__mkdir__(self.REPOSITORY/"brakeit.py")
-
-    @property
     def BROKEN_RELEASES(self) -> Path:
         """Broken Source's Monorepo general Releases directory"""
-        return self.__mkdir__(self.REPOSITORY/"Release")
+        return self.mkdir(self.REPOSITORY/"Release")
 
     @property
     def BROKEN_BUILD(self) -> Path:
         """Broken Source's Monorepo general Build directory"""
-        return self.__mkdir__(self.REPOSITORY/"Build")
+        return self.mkdir(self.REPOSITORY/"Build")
 
     @property
     def BROKEN_WINEPREFIX(self) -> Path:
         """Broken Source's Monorepo Wineprefix directory for Build"""
-        return self.__mkdir__(self.BROKEN_BUILD/"Wineprefix")
+        return self.mkdir(self.BROKEN_BUILD/"Wineprefix")
 
     @property
     def BROKEN_WHEELS(self) -> Path:
         """Broken Source's Monorepo Wheels directory for Build"""
-        return self.__mkdir__(self.BROKEN_BUILD/"Wheels")
+        return self.mkdir(self.BROKEN_BUILD/"Wheels")
 
     @property
     def BROKEN_PROJECTS(self) -> Path:
         """Broken Source's Monorepo Projects directory"""
-        return self.__mkdir__(self.REPOSITORY/"Projects")
+        return self.mkdir(self.REPOSITORY/"Projects")
 
     @property
     def BROKEN_HOOK(self) -> Path:
         """Hook directory for other projects to be managed by Broken"""
-        return self.__mkdir__(self.PROJECTS/"Hook")
+        return self.mkdir(self.PROJECTS/"Hook")
 
     @property
     def BROKEN_META(self) -> Path:
         """Broken Source's Monorepo Meta directory (Many submodules there)"""
-        return self.__mkdir__(self.REPOSITORY/"Meta")
+        return self.mkdir(self.REPOSITORY/"Meta")
 
     @property
     def BROKEN_FORK(self) -> Path:
         """Broken Source's Monorepo Forks directory"""
-        return self.__mkdir__(self.BROKEN_META/"Fork")
+        return self.mkdir(self.BROKEN_META/"Fork")
 
     @property
     def BROKEN_PRIVATE(self) -> Path:
         """Broken Source's Monorepo Private directory"""
-        return self.__mkdir__(self.REPOSITORY/"Private")
+        return self.mkdir(self.REPOSITORY/"Private")
 
     # # Meta directories - Broken monorepo specific
 
     @property
     def DOCS(self) -> Path:
         """Broken Source's Monorepo Docs directory"""
-        return self.__mkdir__(self.REPOSITORY/"Docs")
+        return self.mkdir(self.REPOSITORY/"Docs")
 
     @property
     def WEBSITE(self) -> Path:
         """Broken Source's Website directory"""
-        return self.__mkdir__(self.REPOSITORY/"Website")
+        return self.mkdir(self.REPOSITORY/"Website")
 
     @property
     def PAPERS(self) -> Path:
         """Broken Source's Monorepo Papers directory"""
-        return self.__mkdir__(self.META/"Papers")
+        return self.mkdir(self.META/"Papers")
 
     @property
     def TEMPLATES(self) -> Path:
         """Broken Source's Monorepo Templates directory"""
-        return self.__mkdir__(self.META/"Templates")
+        return self.mkdir(self.META/"Templates")
 
     # # Workspace directories
 
@@ -188,101 +179,101 @@ class _BrokenProjectDirectories:
     def WORKSPACE(self) -> Path:
         """Root for the current Project's Workspace"""
         if (path := os.environ.get("WORKSPACE", None)):
-            return self.__mkdir__(Path(path)/self.APP_AUTHOR/self.APP_NAME)
+            return self.mkdir(Path(path)/self.APP_AUTHOR/self.APP_NAME)
         if (os.name == "nt"):
-            return self.__mkdir__(Path(self.APP_DIRS.user_data_dir))
+            return self.mkdir(Path(self.APP_DIRS.user_data_dir))
         else:
-            return self.__mkdir__(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
+            return self.mkdir(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
 
     @property
     def CONFIG(self) -> Path:
         """General config directory"""
-        return self.__mkdir__(self.WORKSPACE/"Config")
+        return self.mkdir(self.WORKSPACE/"Config")
 
     @property
     def LOGS(self) -> Path:
         """General logs directory"""
-        return self.__mkdir__(self.WORKSPACE/"Logs")
+        return self.mkdir(self.WORKSPACE/"Logs")
 
     @property
     def CACHE(self) -> Path:
         """General cache directory"""
-        return self.__mkdir__(self.WORKSPACE/"Cache")
+        return self.mkdir(self.WORKSPACE/"Cache")
 
     @property
     def DATA(self) -> Path:
         """General Data directory"""
-        return self.__mkdir__(self.WORKSPACE/"Data")
+        return self.mkdir(self.WORKSPACE/"Data")
 
     @property
     def MOCK(self) -> Path:
         """Mock directory for testing"""
-        return self.__mkdir__(self.WORKSPACE/"Mock")
+        return self.mkdir(self.WORKSPACE/"Mock")
 
     @property
     def PROJECTS(self) -> Path:
         """Projects directory (e.g. Video Editor or IDEs)"""
-        return self.__mkdir__(self.WORKSPACE/"Projects")
+        return self.mkdir(self.WORKSPACE/"Projects")
 
     @property
     def OUTPUT(self) -> Path:
         """Output directory if it makes more sense than .DATA or .PROJECTS"""
-        return self.__mkdir__(self.WORKSPACE/"Output")
+        return self.mkdir(self.WORKSPACE/"Output")
 
     @property
     def DOWNLOADS(self) -> Path:
         """Downloads directory"""
-        return self.__mkdir__(self.WORKSPACE/"Downloads")
+        return self.mkdir(self.WORKSPACE/"Downloads")
 
     @property
     def EXTERNALS(self) -> Path:
         """Third party dependencies"""
-        return self.__mkdir__(self.WORKSPACE/"Externals")
+        return self.mkdir(self.WORKSPACE/"Externals")
 
     @property
     def EXTERNAL_ARCHIVES(self) -> Path:
         """Third party archives"""
-        return self.__mkdir__(self.EXTERNALS/"Archives")
+        return self.mkdir(self.EXTERNALS/"Archives")
 
     @property
     def EXTERNAL_IMAGES(self) -> Path:
         """Third party images"""
-        return self.__mkdir__(self.EXTERNALS/"Images")
+        return self.mkdir(self.EXTERNALS/"Images")
 
     @property
     def EXTERNAL_AUDIO(self) -> Path:
         """Third party audio"""
-        return self.__mkdir__(self.EXTERNALS/"Audio")
+        return self.mkdir(self.EXTERNALS/"Audio")
 
     @property
     def EXTERNAL_FONTS(self) -> Path:
         """Third party fonts"""
-        return self.__mkdir__(self.EXTERNALS/"Fonts")
+        return self.mkdir(self.EXTERNALS/"Fonts")
 
     @property
     def EXTERNAL_SOUNDFONTS(self) -> Path:
         """Third party soundfonts"""
-        return self.__mkdir__(self.EXTERNALS/"Soundfonts")
+        return self.mkdir(self.EXTERNALS/"Soundfonts")
 
     @property
     def EXTERNAL_MIDIS(self) -> Path:
         """Third party midis"""
-        return self.__mkdir__(self.EXTERNALS/"Midis")
+        return self.mkdir(self.EXTERNALS/"Midis")
 
     @property
     def TEMP(self) -> Path:
         """Temporary directory for working files"""
-        return self.__mkdir__(self.WORKSPACE/"Temp")
+        return self.mkdir(self.WORKSPACE/"Temp")
 
     @property
     def DUMP(self) -> Path:
         """Dump directory for debugging (e.g. Shaders)"""
-        return self.__mkdir__(self.WORKSPACE/"Dump")
+        return self.mkdir(self.WORKSPACE/"Dump")
 
     @property
     def SCREENSHOTS(self) -> Path:
         """Screenshots directory"""
-        return self.__mkdir__(self.WORKSPACE/"Screenshots")
+        return self.mkdir(self.WORKSPACE/"Screenshots")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -404,7 +395,6 @@ class BrokenProject:
 
         # Create default config
         self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
-        self.CACHE  = BrokenDotmap(path=self.DIRECTORIES.SYSTEM_TEMP/f"{self.APP_NAME}.pickle")
 
         # Create logger based on configuration
         os.environ["BROKEN_CURRENT_PROJECT_NAME"] = self.APP_NAME

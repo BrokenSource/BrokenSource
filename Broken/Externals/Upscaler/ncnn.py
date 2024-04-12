@@ -1,12 +1,12 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 from subprocess import DEVNULL
 
 from attr import define, field
-from Base import shell
-from Externals.Upscaler import BrokenUpscaler
 
+from Broken.Base import BrokenPlatform, shell
 from Broken.BrokenEnum import BrokenEnum
+from Broken.Externals.Upscaler import BrokenUpscaler
 
 
 @define
@@ -79,6 +79,26 @@ class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
     def p(self, value: int):
         self.passes = value
 
+    # # Metadata for automatic downloads
+
+    @staticmethod
+    @abstractmethod
+    def _base_download() -> str:
+        """https://.../stuff-{platform}.zip"""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def _binary_name() -> str:
+        ...
+
+    def binary(self) -> Path:
+        if (binary := BrokenPath.which(self._binary_name())):
+            return binary
+        DOWNLOAD = self._base_download().format(BrokenPlatform.Name.replace("linux", "ubuntu"))
+        EXECUTABLE = self._binary_name() + (".exe"*BrokenPlatform.OnWindows)
+        return BrokenPath.make_executable(next(BrokenPath.get_external(DOWNLOAD).rglob(EXECUTABLE)))
+
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenWaifu2xModel(BrokenEnum):
@@ -90,8 +110,12 @@ class BrokenWaifu2xModel(BrokenEnum):
 class BrokenWaifu2x(BrokenUpscalerNCNN):
     model: BrokenWaifu2xModel = BrokenWaifu2xModel.Cunet.field()
 
-    @property
-    def binary(self) -> str:
+    @staticmethod
+    def _base_download() -> str:
+        return "https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download/20220728/waifu2x-ncnn-vulkan-20220728-{}.zip"
+
+    @staticmethod
+    def _binary_name() -> str:
         return "waifu2x-ncnn-vulkan"
 
     def __validate__(self):
@@ -109,7 +133,7 @@ class BrokenWaifu2x(BrokenUpscalerNCNN):
 
     def __upscale__(self, input: Path, output: Path, *, echo: bool=True):
         shell(
-            self.binary,
+            self.binary(),
             "-i", input,
             "-o", output,
             "-n", self.noise_level,
@@ -121,6 +145,7 @@ class BrokenWaifu2x(BrokenUpscalerNCNN):
             # "-m", self.model.value, # Fixme: Doko?
             stderr=DEVNULL,
             preexec_fn=self.preexec_fn,
+            cwd=self.binary().parent,
             echo=echo,
         )
 
@@ -136,14 +161,18 @@ class BrokenRealEsrganModel(BrokenEnum):
 class BrokenRealEsrgan(BrokenUpscalerNCNN):
     model: BrokenRealEsrganModel = BrokenRealEsrganModel.AnimeVideoV3.field()
 
-    @property
-    def binary(self) -> str:
+    @staticmethod
+    def _base_download() -> str:
+        return "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-{}.zip"
+
+    @staticmethod
+    def _binary_name() -> str:
         return "realesrgan-ncnn-vulkan"
 
     def __validate__(self):
         if not all(things := (
             self.passes >= 1,
-            self.scale in {2, 3, 4},
+            self.scale in {1, 2, 3, 4},
             (self.tile_size == 0) or (self.tile_size >= 32),
             self.model is not None,
             self.gpu >= 0,
@@ -155,7 +184,7 @@ class BrokenRealEsrgan(BrokenUpscalerNCNN):
 
     def __upscale__(self, input: Path, output: Path, *, echo: bool=True):
         shell(
-            self.binary,
+            self.binary(),
             "-i", input,
             "-o", output,
             "-n", self.model.value,
@@ -166,6 +195,7 @@ class BrokenRealEsrgan(BrokenUpscalerNCNN):
             "-x"*self.tta,
             stderr=DEVNULL,
             preexec_fn=self.preexec_fn,
+            cwd=self.binary().parent,
             echo=echo,
         )
 

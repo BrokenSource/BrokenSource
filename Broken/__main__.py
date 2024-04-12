@@ -474,7 +474,7 @@ class BrokenCLI:
         """📚 Generate or Deploy Documentation for all Projects"""
         GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
-            shell("mkdocs", "gh-deploy", "--remote-name", GITHUB_PAGE)
+            shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)
         else:
             shell("mkdocs", "serve")
 

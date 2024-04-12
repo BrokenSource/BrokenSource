@@ -47,8 +47,8 @@ for ROOT in PROJECTS:
                 f"::: {'.'.join(module.parts)}",
             )))
 
-    # This project's directory under the monorepo Docs
-    # Note: Avoid writing Broken/Docs to itself
+    # This project's directory under the monorepo Website
+    # Note: Avoid writing Broken/Website to itself
     BASE = PROJECT_NAME.lower().replace("broken", "")
 
     # Override the repository
@@ -60,12 +60,12 @@ for ROOT in PROJECTS:
     # This project's own paths
     WHAT_WHERE = [
         ((ROOT/"Resources"), "resources"),
-        ((ROOT.parent/"Docs"), ""),
+        ((ROOT.parent/"Website"), ""),
     ]
 
     # Only copy project's readme
     if (ROOT.name != "Broken"):
-        WHAT_WHERE.append((ROOT.parent/"Readme.md", "index.md"))
+        WHAT_WHERE.append((ROOT.parent/"Readme.md", "readme.md"))
 
     WANT_SUFFIXES = (".md", ".png", ".jpg", ".svg")
 

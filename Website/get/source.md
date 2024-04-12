@@ -14,6 +14,11 @@
 
         - Press ++ctrl+l++ , run `powershell` and execute:
 
+        ??? success "Read what `get.ps1` does"
+            ```powershell
+            {% include-markdown "get.ps1" %}
+            ```
+
         ```powershell
         irm https://brokensrc.dev/get.ps1 | iex
         ```

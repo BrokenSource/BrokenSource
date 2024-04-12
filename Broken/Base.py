@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 import types
+import uuid
 import warnings
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -856,6 +857,10 @@ class BrokenPath(Path):
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenUtils:
+
+    @staticmethod
+    def image_hash(image) -> str:
+        return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
 
     @staticmethod
     def truthy(items: List[Any]) -> List[Any]:

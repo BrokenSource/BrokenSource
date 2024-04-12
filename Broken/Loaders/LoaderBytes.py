@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Any, Optional, Union
-from Broken.Logging import log
 
 from attr import define
 
 from Broken.Base import BrokenPath
+from Broken.Logging import log
 
 from . import BrokenLoader
 
@@ -18,11 +18,11 @@ class LoaderBytes(BrokenLoader):
             return b""
 
         elif isinstance(value, bytes):
-            log.debug(f"Loading Bytes from Bytes")
+            log.debug("Loading Bytes from Bytes")
             return value
 
         elif isinstance(value, str):
-            log.debug(f"Loading Bytes from String")
+            log.debug("Loading Bytes from String")
             return value.encode()
 
         elif (path := BrokenPath(value, valid=True)):

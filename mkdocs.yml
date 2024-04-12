@@ -78,17 +78,16 @@ theme:
   palette:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
       accent: blue
       toggle:
         icon: material/weather-sunny
-        name: Switch to light mode
+        name: Switch to Light Mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       accent: blue
       toggle:
         icon: material/weather-night
-        name: Switch to dark mode
+        name: Switch to Dark Mode
 
 plugins:
   # - meta
@@ -152,6 +151,16 @@ plugins:
           remove_comments: true
       cache_safe: true
 
+  - include-markdown:
+      preserve_includer_indent: true
+      dedent: false
+      trailing_newlines: true
+      comments: false
+      rewrite_relative_urls: true
+      heading_offset: 0
+      # start: <!--start-->
+      # end: <!--end-->
+
 markdown_extensions:
   - pymdownx.arithmatex
   - pymdownx.magiclink
@@ -174,8 +183,6 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
-  - markdown_include.include:
-      base_path: Docs
   - md_in_html
   - attr_list
   - tables

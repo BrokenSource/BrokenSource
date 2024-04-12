@@ -1,6 +1,5 @@
 import io
 from pathlib import Path
-from Broken.Logging import log
 from typing import Any, Optional, Union
 
 import numpy
@@ -9,8 +8,9 @@ import validators
 from attr import define
 from PIL.Image import Image
 
-from Broken import BROKEN
+import Broken
 from Broken.Base import BrokenPath
+from Broken.Logging import log
 from Broken.Types import URL
 
 from . import BrokenLoader
@@ -26,7 +26,7 @@ class LoaderImage(BrokenLoader):
             import requests_cache
             if not LoaderImage._cache:
                 LoaderImage._cache = requests_cache.CachedSession(
-                    BROKEN.DIRECTORIES.CACHE/"LoaderImage.sqlite",
+                    Broken.BROKEN.DIRECTORIES.CACHE/"LoaderImage.sqlite",
                 )
         except ImportError:
             return None
@@ -35,18 +35,23 @@ class LoaderImage(BrokenLoader):
 
     @staticmethod
     def load(value: Any=None, **kwargs) -> Optional[Image]:
+
         if value is None:
             return None
 
         elif isinstance(value, Image):
-            log.debug(f"Loading Image from Image")
+            log.debug("Loading already an Instance of Image")
+            return value
+
+        elif value is Image:
+            log.debug("Loading already an Class of Image")
             return value
 
         elif isinstance(value, numpy.ndarray):
-            log.debug(f"Loading Image from Numpy Array")
+            log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
 
-        elif (path := BrokenPath(value, valid=True)):
+        elif (path := Path(value)).exists():
             log.debug(f"Loading Image from Path ({path})")
             return PIL.Image.open(path, **kwargs)
 
@@ -60,9 +65,9 @@ class LoaderImage(BrokenLoader):
             return PIL.Image.open(io.BytesIO(requests.get(value).content), **kwargs)
 
         elif isinstance(value, bytes):
-            log.debug(f"Loading Image from Bytes")
+            log.debug("Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
-        return None
+        return value
 
 LoadableImage = Union[Image, Path, URL, numpy.ndarray, bytes, None]

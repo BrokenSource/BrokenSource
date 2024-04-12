@@ -2,22 +2,20 @@ import contextlib
 import shutil
 import tempfile
 from abc import ABC, abstractmethod
-from ctypes import Union
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Union
 
 import PIL
 from attr import define, field
-from Base import BrokenPath
 from PIL.Image import Image
 
-from Broken.Externals import BrokenExternal
+from Broken.Base import BrokenPath
 from Broken.Loaders.LoaderPIL import LoadableImage, LoaderImage
 from Broken.Logging import log
 
 
 @define
-class BrokenUpscaler(BrokenExternal, ABC):
+class BrokenUpscaler(ABC):
     scale:  int = field(default=2, converter=int)
     width:  int = field(default=0, converter=int)
     height: int = field(default=0, converter=int)

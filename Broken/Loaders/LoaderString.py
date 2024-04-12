@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from attr import define
-from Broken.Logging import log
 
 from Broken.Base import BrokenPath
+from Broken.Logging import log
 
 from . import BrokenLoader
 
@@ -22,7 +22,7 @@ class LoaderString(BrokenLoader):
             return value
 
         elif isinstance(value, bytes):
-            log.debug(f"Loading String from Bytes")
+            log.debug("Loading String from Bytes")
             return value.decode(encoding="utf-8")
 
         elif (path := BrokenPath(value, valid=True)):

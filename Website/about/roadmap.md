@@ -3,6 +3,7 @@
 I have a pretty decent vision for any **two next weeks** of development, and work based on **priorities** that would give the **most value** and **quality of life** to the Projects.
 
 - Items may happen out of order, delayed, not at all, and retroactively apply
+- Minor unlisted items may be worked on instead of listed ones
 
 <hr>
 
@@ -14,6 +15,7 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 - [ ] Improve the Website and Documentation
 - [ ] Better ShaderFlow Shader Library include file
 - [ ] Improve User Experience on Pianola
+- [ ] Make DepthFlow's logic extensible and usable on ShaderFlow
 
 **Eta**: Q2 2024
 
@@ -34,7 +36,7 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 <hr>
 
 ## **Stage 3:** Get it Right
-??? quote "**Code Logistics** improvement and professionalism"
+??? quote "**Code Logistics** Improvement and Stability"
     <img src="https://github.com/BrokenSource/BrokenSource/assets/29046864/4f9c91c6-c080-462f-9387-64e315d84751"/>
 - [ ] General code stability improvements
 - [ ] Split packages of the main library
@@ -49,7 +51,6 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 ## **Eventually:** Out of my Scope
 !!! quote "What the future holds"
 - [ ] Logos for the projects
-- [ ] Move to somewhere cold for mor productivitiy
 
 **Eta**: 202X
 
