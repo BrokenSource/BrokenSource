@@ -8,18 +8,18 @@ import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import diskcache
 import dotenv
 from appdirs import AppDirs
 from attr import define, field
+from loguru import logger as log
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
 from typer import Typer
 
 import Broken
-from Broken.Base import BrokenPath
-from Broken.Dotmap import BrokenDotmap
-from Broken.Logging import log
+from Broken import BrokenLogging, BrokenPath
 
 
 @define(slots=False)
@@ -375,8 +375,6 @@ class BrokenProject:
     # Standard Broken objects for a project
     DIRECTORIES: _BrokenProjectDirectories = None
     RESOURCES:   _BrokenProjectResources   = None
-    CONFIG:      BrokenDotmap              = None
-    CACHE:       BrokenDotmap              = None
     VERSION:     str                       = None
 
     def __attrs_post_init__(self):
@@ -386,19 +384,10 @@ class BrokenProject:
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
         self.PACKAGE     = Path(self.PACKAGE)
 
-        # Assign version - Package's parent folder name
         # Fixme: Split the projects into many packages
+        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name.replace("Broken", "broken-source"))
         self.VERSION = Broken.VERSION
-        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name
-        #     .replace("Broken", "broken-source")
-        # )
-
-        # Create default config
-        self.CONFIG = BrokenDotmap(path=self.DIRECTORIES.CONFIG/f"{self.APP_NAME}.toml")
-
-        # Create logger based on configuration
-        os.environ["BROKEN_CURRENT_PROJECT_NAME"] = self.APP_NAME
-        self.__START_LOGGING__()
+        BrokenLogging.set_project(self.APP_NAME)
 
         # Convenience: Symlink Workspace to projects data directory
         if Broken.DEVELOPMENT:
@@ -435,34 +424,6 @@ class BrokenProject:
             subtitle_align="center",
         ))
         print()
-
-    @property
-    def LOGLEVEL(self) -> str:
-        return (
-            os.environ.get("LOGLEVEL", "").upper()
-            or self.CONFIG.logging.default("level", "info").upper()
-        )
-
-    @LOGLEVEL.setter
-    def LOGLEVEL(self, value: str):
-        self.CONFIG.logging.level = value
-        self.__START_LOGGING__()
-
-    def __START_LOGGING__(self):
-        log.stdout(self.LOGLEVEL)
-        # log.file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
-
-        # # Fixme: Two logging instances on the same file on Windows?
-        # try:
-        #     log.file(self.DIRECTORIES.LOGS/f"{self.APP_NAME}.log", self.LOGLEVEL)
-        # except PermissionError as e:
-        #     # Fixme: Two logging instances for the same file on Windows doesn't work
-        #     if os.name == "nt":
-        #         pass
-        #     else:
-        #         raise e
-        # except Exception as e:
-        #     raise e
 
 # -------------------------------------------------------------------------------------------------|
 

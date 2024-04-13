@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from attr import define
+from loguru import logger as log
 
-from Broken.Base import BrokenPath
-from Broken.Logging import log
+from Broken import BrokenPath
 
 from . import BrokenLoader
 
@@ -25,7 +25,7 @@ class LoaderBytes(BrokenLoader):
             log.debug("Loading Bytes from String")
             return value.encode()
 
-        elif (path := BrokenPath(value, valid=True)):
+        elif (path := BrokenPath(value).valid()):
             log.debug(f"Loading Bytes from Path ({path})")
             return path.read_bytes()
 

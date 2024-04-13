@@ -6,14 +6,12 @@ import numpy
 import PIL
 import validators
 from attr import define
+from loguru import logger as log
 from PIL.Image import Image
 
 import Broken
-from Broken.Base import BrokenPath
-from Broken.Logging import log
+from Broken.Loaders import BrokenLoader
 from Broken.Types import URL
-
-from . import BrokenLoader
 
 
 @define
@@ -68,6 +66,6 @@ class LoaderImage(BrokenLoader):
             log.debug("Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
-        return value
+        return None
 
 LoadableImage = Union[Image, Path, URL, numpy.ndarray, bytes, None]

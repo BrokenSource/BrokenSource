@@ -1,4 +1,4 @@
-from Broken.BrokenEnum import BrokenEnum
+from Broken import BrokenEnum
 
 # -------------------------------------------------------------------------------------------------|
 # Basic usage

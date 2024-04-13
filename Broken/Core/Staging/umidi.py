@@ -14,7 +14,7 @@ from typing import Any, Deque, Iterable, Self, Tuple, TypeAlias, Union
 
 from attr import Factory, define
 
-from Broken.Types import Seconds
+from Broken.Core.Types import Seconds
 
 __all__ = ["Midi", "Events", "Note"]
 

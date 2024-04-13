@@ -28,7 +28,7 @@
         ".cargo": "config",
 
         // Other
-        "Externals":  "resource",
+        "Externals":  "core",
         "Scenes":     "core",
         "User":       "home",
         "Premium":    "admin",
@@ -44,6 +44,7 @@
         "Brakeit":    "download",
         "Profile":    "admin",
         "Fork":       "less",
+        "Vectron":    "core",
 
         // Shaders
         "Fragment": "shader",

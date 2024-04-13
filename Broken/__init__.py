@@ -1,23 +1,7 @@
-# -------------------------------------------------------------------------------------------------|
-
 import os
 import sys
 import typing
 from pathlib import Path
-
-# Keep repository clean of __pycache__ and .pyc files by writing to .venv
-sys.pycache_prefix = str(Path(__file__).parent.parent/".venv"/"pycache")
-
-# Fix: typing.Self was implemented on Python >= 3.11
-if sys.version_info < (3, 11):
-    typing.Self = typing.Any
-
-# PyAPP isn't passing the argument on Linux
-if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
-    sys.argv.insert(0, sys.executable)
-
-# -------------------------------------------------------------------------------------------------|
-# Pretty... Errors !
 
 import pretty_errors
 
@@ -30,24 +14,89 @@ pretty_errors.configure(
     lines_after       = 10,
 )
 
+# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+os.environ["OMP_NUM_THREADS"] = "1"
+
+# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
+# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
+# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
+os.environ["__GL_YIELD"] = "USLEEP"
+
+# Keep repository clean of __pycache__ and .pyc files by writing to .venv
+if (_venv := Path(__file__).parent.parent/".venv").exists():
+    sys.pycache_prefix = str(_venv/"pycache")
+
+# Fix: typing.Self was implemented on Python >= 3.11
+if sys.version_info < (3, 11):
+    typing.Self = typing.Any
+
+# PyAPP isn't passing the argument on Linux
+if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
+    sys.argv.insert(0, sys.executable)
+
+# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
+# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
+# • File name collisions are unlikely with any Monorepo path (?)
+for _index, _arg in enumerate(sys.argv):
+    if any((
+        any((_arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
+        bool(Path(_arg).suffix) and Path(_arg).exists(),
+    )):
+        sys.argv[_index] = str(Path(_arg).expanduser().resolve())
+
+# Safer measures: Store the first cwd that Broken is run, always start from there
+os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
+
 # -------------------------------------------------------------------------------------------------|
-# Broken Library
 
 import importlib.metadata
 import importlib.resources
-import sys
-from pathlib import Path
 
 # Information about the release and version
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 NUITKA:      bool = ("__compiled__" in globals())
-RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP)
+PYPI:        bool = ("site-packages" in __file__.lower())
+RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
 VERSION:     str  = importlib.metadata.version("broken-source")
 
 import Broken.Resources as BrokenResources
-from Broken.Project import BrokenProject
+from Broken.Core import (
+    BIG_BANG,
+    apply,
+    clamp,
+    denum,
+    dunder,
+    extend,
+    flatten,
+    have_import,
+    image_hash,
+    last_locals,
+    nearest,
+    shell,
+)
+from Broken.Core.BrokenEnum import BrokenEnum
+from Broken.Core.BrokenLogging import BrokenLogging
+from Broken.Core.BrokenPath import BrokenPath
+from Broken.Core.BrokenPlatform import BrokenPlatform
+from Broken.Core.BrokenProfiler import BrokenProfiler, BrokenProfilerEnum
+from Broken.Core.BrokenProject import BrokenApp, BrokenProject
+from Broken.Core.BrokenResolution import BrokenResolution
+from Broken.Core.BrokenScheduler import BrokenScheduler, BrokenTask
+from Broken.Core.BrokenSpinner import BrokenSpinner
+from Broken.Core.BrokenThread import BrokenThread, BrokenThreadPool
+from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
+from Broken.Core.BrokenTyper import BrokenTyper
+from Broken.Core.BrokenUtils import (
+    BrokenAttrs,
+    BrokenFluentBuilder,
+    BrokenRelay,
+    BrokenSingleton,
+    BrokenWatchdog,
+    Ignore,
+    SameTracker,
+)
 
 BROKEN = BrokenProject(
     PACKAGE=__file__,
@@ -69,44 +118,3 @@ def set_project(project: BrokenProject):
     if PROJECT is not BROKEN:
         return
     PROJECT = project
-
-# -------------------------------------------------------------------------------------------------|
-
-# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
-# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
-# • File name collisions are unlikely with any Monorepo path (?)
-for i, arg in enumerate(sys.argv):
-    if any((
-        any((arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
-        bool(Path(arg).suffix) and Path(arg).exists(),
-    )):
-        sys.argv[i] = str(Path(arg).expanduser().resolve())
-
-# Safer measures: Store the first cwd that Broken is run, always start from there
-os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
-
-# -------------------------------------------------------------------------------------------------|
-# Small fixes
-
-# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
-os.environ["OMP_NUM_THREADS"] = "1"
-
-# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
-# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
-# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
-os.environ["__GL_YIELD"] = "USLEEP"
-
-# Patch torch.jit requiring inspect.getsource
-# https://github.com/pytorch/vision/issues/1899#issuecomment-598200938
-if PYINSTALLER:
-    try:
-        import torch.jit
-        def patch(object, **kwargs):
-            return object
-        torch.jit.script_method = patch
-        torch.jit.script = patch
-    except (ModuleNotFoundError, ImportError):
-        pass
-
-    import pyi_splash  # type: ignore
-    pyi_splash.close()

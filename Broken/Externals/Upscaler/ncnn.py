@@ -4,8 +4,7 @@ from subprocess import DEVNULL
 
 from attr import define, field
 
-from Broken.Base import BrokenPlatform, shell
-from Broken.BrokenEnum import BrokenEnum
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, shell
 from Broken.Externals.Upscaler import BrokenUpscaler
 
 
@@ -94,7 +93,7 @@ class BrokenUpscalerNCNN(BrokenUpscaler, ABC):
 
     def binary(self) -> Path:
         if (binary := BrokenPath.which(self._binary_name())):
-            return binary
+            return BrokenPath(binary)
         DOWNLOAD = self._base_download().format(BrokenPlatform.Name.replace("linux", "ubuntu"))
         EXECUTABLE = self._binary_name() + (".exe"*BrokenPlatform.OnWindows)
         return BrokenPath.make_executable(next(BrokenPath.get_external(DOWNLOAD).rglob(EXECUTABLE)))

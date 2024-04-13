@@ -7,18 +7,18 @@ from typing import Generator, Union
 
 import PIL
 from attr import define, field
+from loguru import logger as log
 from PIL.Image import Image
 
-from Broken.Base import BrokenPath
-from Broken.Loaders.LoaderPIL import LoadableImage, LoaderImage
-from Broken.Logging import log
+from Broken import BrokenPath
+from Broken.Loaders import LoadableImage, LoaderImage
 
 
 @define
 class BrokenUpscaler(ABC):
-    scale:  int = field(default=2, converter=int)
     width:  int = field(default=0, converter=int)
     height: int = field(default=0, converter=int)
+    scale:  int = field(default=2, converter=int)
     passes: int = field(default=1, converter=int)
 
     @property
@@ -44,12 +44,13 @@ class BrokenUpscaler(ABC):
 
     def output_size(self, width: int, height: int):
         """Get the output size after upscaling some input size"""
+
+        # Forces final resolution
         if (self.width and self.height):
             return (self.width, self.height)
 
-        # We upscale current times ratio at each pass
+        # Upscales input
         upscale_ratio = self.scale**self.passes
-
         return (width*upscale_ratio, height*upscale_ratio)
 
     # # Implementations
@@ -63,7 +64,8 @@ class BrokenUpscaler(ABC):
         input:  LoadableImage,
         output: Union[Path, Image]=Image,
         *,
-        echo: bool=True
+        echo: bool=True,
+        **config
     ) -> Union[Path, Image]:
         """
         Upscale some input image given by its path or Image object.
@@ -76,6 +78,8 @@ class BrokenUpscaler(ABC):
         Returns:
             The upscaled image as a PIL Image object if `output` is `Image`, else the output Path
         """
+        for key, val in config.items():
+            setattr(self, key, val)
         self.__validate__()
 
         # Load a Image out of the input or output, else Empty image
@@ -88,12 +92,13 @@ class BrokenUpscaler(ABC):
 
         # No need to upscaled if already on target size
         if (oimage.size == target):
-            log.success(f"Already upscaled to target size ({self.width}, {self.height}): {input}")
+            log.success(f"Already upscaled to target size ({self.width}, {self.height}): {oimage}")
             if output is Image:
                 return oimage
             return output
+
         if (iimage.size == target):
-            log.success(f"Already upscaled to target size ({self.width}, {self.height}): {input}")
+            log.success(f"Already upscaled to target size ({self.width}, {self.height}): {iimage}")
             if output is Image:
                 return iimage
             return output
@@ -107,17 +112,15 @@ class BrokenUpscaler(ABC):
                     self.__upscale__(input=temp_input, output=temp_output, echo=echo)
                     input = temp_output
 
+                # Load the upscaled final image
+                final = PIL.Image.open(temp_output)
+                final = final.resize(target, PIL.Image.LANCZOS)
+
                 # Return the Path of the Image
                 if isinstance(output, Path):
-                    oimage = PIL.Image.open(temp_output)
-                    oimage = oimage.resize(target, PIL.Image.LANCZOS)
-                    oimage.save(output, quality=95)
+                    final.save(output, quality=95)
                     return output
-
-                # Return an Image object
-                output = PIL.Image.open(temp_output)
-                output = output.resize(target, PIL.Image.LANCZOS)
-                return output
+                return final
 
     @abstractmethod
     def __validate__(self):
@@ -146,13 +149,11 @@ class BrokenUpscaler(ABC):
 
         with tempfile.NamedTemporaryFile(suffix=f".{format}") as file:
             file = BrokenPath(file.name)
-
             if isinstance(image, Image):
                 image.save(file, quality=95)
             elif image is Image:
                 pass
             elif Path(image).exists():
                 shutil.copyfile(image, file)
-
             yield file
 

@@ -11,10 +11,12 @@ import toml
 import typer
 from attr import Factory, define
 from dotmap import DotMap
+from loguru import logger as log
 from typer import Argument, Context, Option, Typer
 
 import Broken
-from Broken.Base import (
+from Broken import (
+    BrokenEnum,
     BrokenPath,
     BrokenPlatform,
     BrokenProfiler,
@@ -24,11 +26,7 @@ from Broken.Base import (
     flatten,
     shell,
 )
-from Broken.BrokenEnum import BrokenEnum
-from Broken.Logging import log
-from Broken.Spinner import BrokenSpinner
 
-# -------------------------------------------------------------------------------------------------|
 
 class ProjectLanguage(BrokenEnum):
     Python  = "python"
@@ -348,9 +346,8 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        with BrokenSpinner("Finding Projects"):
-            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-            self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)
+        self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+        self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
@@ -708,12 +705,12 @@ class BrokenCLI:
             log.note(f"• Path: {project.path}")
 
             # Follow Project's Workspace folder
-            if (workspace := BrokenPath(project.path/"Workspace", valid=True)):
+            if (workspace := BrokenPath(project.path/"Workspace").valid()):
                 log.minor("Now removing the Project Workspace directory")
                 BrokenPath.remove(workspace, echo=False, confirm=True)
 
         # Finally, remove the root venv
-        if (venv := BrokenPath(Broken.BROKEN.DIRECTORIES.REPOSITORY/".venv", valid=True)):
+        if (venv := BrokenPath(Broken.BROKEN.DIRECTORIES.REPOSITORY/".venv").valid()):
             log.minor("Now removing the Repository Virtual Environment")
             BrokenPath.remove(venv, echo=False, confirm=True)
 
