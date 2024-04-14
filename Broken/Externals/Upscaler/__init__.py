@@ -147,13 +147,16 @@ class BrokenUpscaler(ABC):
         """
         image = LoaderImage(image) or image
 
-        with tempfile.NamedTemporaryFile(suffix=f".{format}") as file:
+        try:
+            file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{format}")
             file = BrokenPath(file.name)
             if isinstance(image, Image):
                 image.save(file, quality=95)
             elif image is Image:
                 pass
             elif Path(image).exists():
-                shutil.copyfile(image, file)
+                PIL.Image.open(image).save(file, quality=95)
             yield file
+        finally:
+            file.unlink()
 

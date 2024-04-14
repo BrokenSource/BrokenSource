@@ -144,6 +144,10 @@ def shell(
     kwargs["env"] = os.environ | (env or {})
     kwargs["shell"] = shell
 
+    # preexec_fn is not supported on windows, pop from kwargs
+    if (os.name == "nt") and (_ := kwargs.pop("preexec_fn", None)):
+        log.minor("preexec_fn is not supported on Windows, ignoring..")
+
     # Run the command and return specified object
     if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
     if Popen:  return subprocess.Popen(command, **kwargs)

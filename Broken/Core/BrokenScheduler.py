@@ -17,30 +17,30 @@ class BrokenTask:
     Client configuration for BrokenScheduler
 
     # Function:
-    - callback:   Function callable to call every synchronization
-    - args:       Arguments to pass to callback
-    - kwargs:     Keyword arguments to pass to callback
-    - output:     Output of callback (returned value)
-    - context:    Context to use when calling callback (with statement)
-    - lock:       Lock to use when calling callback (with statement)
+    - task:       Function callable to call every synchronization
+    - args:       Arguments to pass to task
+    - kwargs:     Keyword arguments to pass to task
+    - output:     Output of task (returned value)
+    - context:    Context to use when calling task (with statement)
+    - lock:       Lock to use when calling task (with statement)
     - enabled:    Whether to enable this client or not
     - once:       Whether to call this client only once or not
 
     # Synchronization
-    - frequency:  Frequency of callback calls
+    - frequency:  Frequency of task calls
     - frameskip:  Constant deltatime mode (False) or real deltatime mode (True)
     - decoupled:  "Rendering" mode, do not sleep on real time, implies frameskip False
 
     # Timing:
-    - next_call:  Next time to call callback (initializes $now+next_call, value in now() seconds)
-    - last_call:  Last time callback was called (initializes $now+last_call, value in now() seconds)
+    - next_call:  Next time to call task (initializes $now+next_call, value in now() seconds)
+    - last_call:  Last time task was called (initializes $now+last_call, value in now() seconds)
     - started:    Time when client was started (initializes $now+started, value in now() seconds)
-    - time:       Whether to pass time (time since first call) to callback
-    - dt:         Whether to pass dt (time since last call) to callback
+    - time:       Whether to pass time (time since first call) to task
+    - dt:         Whether to pass dt (time since last call) to task
     """
 
-    # Callback
-    callback: callable       = None
+    # task
+    task:     callable       = None
     args:     List[Any]      = field(factory=list, repr=False)
     kwargs:   Dict[str, Any] = field(factory=dict, repr=False)
     output:   Any            = field(default=None, repr=False)
@@ -63,7 +63,7 @@ class BrokenTask:
     _dt:       bool    = False
 
     def __attrs_post_init__(self):
-        signature = inspect.signature(self.callback)
+        signature = inspect.signature(self.task)
         self._dt   = ("dt"   in signature.parameters)
         self._time = ("time" in signature.parameters)
 
@@ -112,7 +112,7 @@ class BrokenTask:
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
         # - Positive means to wait, negative we are behind
-        wait = (self.next_call - time.bang_counter())
+        wait = max(0, (self.next_call - time.bang_counter()))
 
         if self.decoupled:
             pass
@@ -120,7 +120,7 @@ class BrokenTask:
             if self.precise:
                 time.precise_sleep(wait)
             else:
-                time.sleep(max(0, wait))
+                time.sleep(wait)
         elif wait > 0:
             return None
 
@@ -129,10 +129,10 @@ class BrokenTask:
         if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
         if self._time: self.kwargs["time"] = (now - self.started)
 
-        # Enter or not the given context, call callback with args and kwargs
+        # Enter or not the given context, call task with args and kwargs
         with (self.lock or contextlib.nullcontext()):
             with (self.context or contextlib.nullcontext()):
-                self.output = self.callback(*self.args, **self.kwargs)
+                self.output = self.task(*self.args, **self.kwargs)
 
         # Fixme: This is a better way to do it, but on decoupled it's not "dt perfect"
         # self.next_call = self.period * (math.floor(now/self.period) + 1)
@@ -156,17 +156,17 @@ class BrokenScheduler:
         self.clients.append(client)
         return client
 
-    def new(self, *a, **k) -> BrokenTask:
+    def new(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_task(BrokenTask(*a, **k))
+        return self.add_task(BrokenTask(task=task, *a, **k))
 
-    def once(self, *a, **k) -> BrokenTask:
+    def once(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_task(BrokenTask(*a, **k, once=True))
+        return self.add_task(BrokenTask(task=task, *a, **k, once=True))
 
-    def partial(self, callable: Callable, *a, **k) -> BrokenTask:
+    def partial(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.once(callable=functools.partial(callable, *a, **k))
+        return self.once(task=functools.partial(task=task, *a, **k))
 
     # # Filtering
 

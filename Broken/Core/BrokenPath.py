@@ -116,7 +116,6 @@ class BrokenPath(pathlib.Path):
 
         return path
 
-    @staticmethod
     def touch(path: Path, *, echo=True) -> Path:
         """Creates a file, fail safe™"""
         if (path := BrokenPath(path)).exists():
@@ -126,7 +125,6 @@ class BrokenPath(pathlib.Path):
         path.touch()
         return path
 
-    @staticmethod
     def mkdirs(path: Path, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath(path)
@@ -138,7 +136,6 @@ class BrokenPath(pathlib.Path):
         path.mkdir(parents=True, exist_ok=True)
         return path
 
-    @staticmethod
     def resetdir(path: Path, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         BrokenPath.remove(path, echo=echo)
@@ -202,7 +199,6 @@ class BrokenPath(pathlib.Path):
         virtual.symlink_to(real)
         return virtual
 
-    @staticmethod
     def make_executable(path: Path, *, echo=False) -> Path:
         """Make a file executable"""
         path = BrokenPath(path)
@@ -212,7 +208,6 @@ class BrokenPath(pathlib.Path):
             shell("attrib", "+x", path, echo=echo)
         return path
 
-    @staticmethod
     def zip(path: Path, output: Path=None, *, format: ShutilFormat=ShutilFormat.Zip, echo: bool=True) -> Path:
         format = ShutilFormat(format)
         output = BrokenPath(output or path).with_suffix(f".{format}")
@@ -222,7 +217,6 @@ class BrokenPath(pathlib.Path):
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
-    @staticmethod
     def stem(path: Path) -> str:
         """
         Get the "true stem" of a path, as pathlib's only gets the last dot one
@@ -233,7 +227,6 @@ class BrokenPath(pathlib.Path):
             continue
         return str(stem)
 
-    @staticmethod
     def sha256sum(data: Union[Path, str, bytes]) -> Optional[str]:
         """Get the sha256sum of a file, directory or bytes"""
 
@@ -262,7 +255,6 @@ class BrokenPath(pathlib.Path):
 
         return
 
-    @staticmethod
     def extract(
         path: Path,
         output: Path=None,
@@ -299,7 +291,6 @@ class BrokenPath(pathlib.Path):
         if PATH: BrokenPath.add_to_path(path=output, recursively=True, echo=echo)
         return output/BrokenPath.stem(path)
 
-    @staticmethod
     def download(
         url: str,
         output: Path=None,

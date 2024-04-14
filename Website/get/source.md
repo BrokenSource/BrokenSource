@@ -125,7 +125,13 @@ After that, you can **pull** the latest changes of all Repositories with
 git pull --recurse-submodules
 ```
 
-!!! note "You might need to add `--force` if you want to override Local Changes. Be careful with data loss!"
+If you have any local modifications and want to keep them,
+
+```bash title="Command"
+git pull --recurse-submodules --rebase
+```
+
+!!! note "You can add `--force` to override Local Changes. Be careful with data loss!"
 
 <hr>
 
