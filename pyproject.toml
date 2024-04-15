@@ -187,5 +187,10 @@ ignore = ["F401", "E402", "E701"]
 # url  = "https://download.pytorch.org/whl/rocm5.7"
 
 [tool.pyright]
-exclude = [".venv/**", "dist/**"]
-include = ["src/**"]
+exclude = [".venv/**"]
+
+# Tests
+
+[tool.pytest.ini_options]
+addopts      = "-ra --no-header --durations=0 -v -p no:cacheprovider"
+python_files = ["**/__test__.py"]

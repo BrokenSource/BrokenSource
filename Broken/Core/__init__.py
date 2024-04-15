@@ -215,8 +215,8 @@ def last_locals(level: int=1, self: bool=True) -> dict:
 def image_hash(image) -> str:
     return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
 
-def nearest(number: Number, multiple: Number, *, type=int, operation: Callable=round) -> Number:
-    return type(multiple * operation(number/multiple))
+def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
+    return type(multiple * operator(number/multiple))
 
 def extend(base: type, name: str=None, as_property: bool=False) -> type:
     """

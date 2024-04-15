@@ -7,69 +7,82 @@ from Broken import nearest
 class BrokenResolution:
 
     @staticmethod
-    def round(width: Number, height: Number) -> Tuple[int, int]:
+    def round(width: Number, height: Number, *, scale: Number=1) -> Tuple[int, int]:
         """FFmpeg likes multiples of 2, so let it be"""
         return (
-            max(1, nearest(width,  multiple=2, type=int)),
-            max(1, nearest(height, multiple=2, type=int))
+            max(1, nearest(scale*width,  multiple=2, type=int, operator=round)),
+            max(1, nearest(scale*height, multiple=2, type=int, operator=round))
         )
 
     @staticmethod
     def fitscar(
-        w: int=None,
-        h: int=None,
-        s: float=1,
+        ow: int,
+        oh: int,
+        nw: int=None,
+        nh: int=None,
+        sc: float=1.0,
         ar: float=None
     ) -> Tuple[int, int]:
+        """(Fit), (Sc)ale and force (A)spect (R)atio on a base to target resolution
+
+        This method solves the following problem:
+            "A window is at some initial size (ow, oh) and a resize was asked to (nw, nh); what
+            final resolution the window should be, optionally enforcing an aspect ratio (ar)?"
+
+        To which, the behavior is as follows in the two branches:
+            No aspect ratio (ar=None) is send:
+                - Returns the original resolution overrided by any new (nw, nh)
+
+            Aspect ratio (ar!=None) is send:
+                - If any of the new (nw, nh) is missing, find the other based on the aspect ratio
+                - Else, prioritize width changes, and downscale/upscale accordingly
+
+        Notes
+        -----
+            - The resolution is rounded to the nearest multiple of 2, so FFmpeg is happy
+
+        Parameters
+        ----------
+        ow
+            Original width
+        oh
+            Original height
+        nw
+            Target width
+        nh
+            Target height
+        sc
+            Scale factor
+        ar
+            Force aspect ratio, if any
+
+        Returns
+        -------
+        (int, int)
+            The new best-fit width and height
         """
-        "(Fit), (Sc)ale, (A)spect (R)atio a (w)idth and (h)eight to a base resolution (x, y)"
-        """
-        if ar is None:
-            return BrokenResolution.round(w, h)
+        (w, h) = (nw or ow, nh or oh)
 
-        if (w is h is None):
-            raise ValueError("Both w and h cannot be None")
+        if (ar is None):
+            pass
 
-        # Build from height or from width
-        A = (w, w/ar)
-        B = (h*ar, h)
-        R = A if (A>B) else B
-        R = map(int, (c*s for c in R))
-        return BrokenResolution.round(*R)
-
-    @staticmethod
-    def fitscar_pro(
-        x: int,
-        y: int,
-        w: int=None,
-        h: int=None,
-        s: float=1,
-        ar: float=None
-    ) -> Tuple[int, int]:
-        """
-        "(Fit), (Sc)ale, (A)spect (R)atio a (w)idth and (h)eight to a base resolution (x, y)"
-
-        Given a base resolution (x, y), calculates the final resolution (w, h) such that:
-        - When both (w, h) are given, forces the resolution to (w, h)
-        - When either (w,) or (h,) are given, calculates the other value respecting the aspect ratio
-        - When none (w, h) are given, returns the base resolution itself (x, y)
-        - Post-multiplies the final resolution by a scale factor (s,)
-
-        This is useful when calculating an upscaled or target resolution knowing only one component
-        or applying an upscaling factor (s,) to the resolution.
-        """
-        ar = ar or (x/y)
-
-        # Both are forced
-        if (bool(w) == bool(h)):
-            resolution = (
-                int(s*(w or x)),
-                int(s*(h or y))
-            )
         else:
-            resolution = (
-                int(s*((h or 0)*ar or w)),
-                int(s*((w or 0)/ar or h))
-            )
+            # Build from width (W) or from height (H)
+            W = (w, w/ar)
+            H = (h*ar, h)
 
-        return BrokenResolution.round(*resolution)
+            # Pick the non missing component's
+            if (nh is None):
+                (w, h) = W
+            elif (nw is None):
+                (w, h) = H
+
+            # Based on upscale or downscale
+            elif (nw != ow):
+                (w, h) = W
+            elif (nh != oh):
+                (w, h) = H
+            else:
+                (w, h) = (w, h)
+
+        return BrokenResolution.round(w, h, scale=sc)
