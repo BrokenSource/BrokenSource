@@ -1,3 +1,4 @@
+import math
 from numbers import Number
 from typing import Tuple
 
@@ -20,6 +21,8 @@ class BrokenResolution:
         oh: int,
         nw: int=None,
         nh: int=None,
+        mw: int=math.inf,
+        mh: int=math.inf,
         sc: float=1.0,
         ar: float=None
     ) -> Tuple[int, int]:
@@ -51,6 +54,10 @@ class BrokenResolution:
             Target width
         nh
             Target height
+        mw
+            Maximum width
+        mh
+            Maximum height
         sc
             Scale factor
         ar
@@ -61,7 +68,7 @@ class BrokenResolution:
         (int, int)
             The new best-fit width and height
         """
-        (w, h) = (nw or ow, nh or oh)
+        (w, h) = ((nw or ow), (nh or oh))
 
         if (ar is None):
             pass

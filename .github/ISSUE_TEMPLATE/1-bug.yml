@@ -1,0 +1,125 @@
+name: 🐞 New Bug Report
+description: Facing some unexpected behavior or error? Let me help you!
+title: Try describing all the main important points on the title
+assignees:
+  - Tremeschin
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      Hi, some **quick notes** and **helpful resources**:
+      • Consider getting in touch on [**Discord**](https://discord.com/invite/KjqvcYwRHm) or [**Telegram**](https://t.me/brokensource) first, for faster and real-time responses
+      • **Languages I speak**, in order of preference: (English 🇺🇸) (Portuguese 🇧🇷)
+      • This template is generic, use your best judgement to fill needed parts
+      • [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
+      <hr>
+
+- type: dropdown
+  attributes:
+    label: Operating System
+    description: What Operating Systems you're experiencing and tested the problem
+    options:
+      - Windows 11
+      - Windows 10
+      - Linux (Ubuntu-like)
+      - Linux (Fedora-like)
+      - Linux (Arch-like)
+      - Linux (Others)
+      - macOS 23 (Sonoma)
+      - macOS 22 (Ventura)
+      - macOS 21 (Monterey)
+      - macOS 20 (Big Sur)
+      - macOS 19 (Catalina)
+      - N/A
+    multiple: true
+    default: 0
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Python Version
+    description: If running direclty from Source Code, Rye will use the `.python-version` one (Currently 3.11), but it's your choice when running from PyPI, some things might differ
+    options:
+      - Python 3.10
+      - Python 3.11
+      - Python 3.12
+      - Python 3.13
+      - N/A
+    multiple: true
+    default: 1
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Runtime Enviroment
+    description: Where are you running the project from
+    options:
+      - <b>Source Code</b> (Install Scripts or Manual)
+      - <b>PyPI Wheels</b> (pip, poetry, pdm, etc)
+      - <b>PyAPP Executables</b> (experimental)
+      - <b>N/A</b>
+    multiple: true
+    default: 3
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: GPU Vendor (if applicable)
+    description: Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc. Not all projects use GPUs.
+    options:
+      - NVIDIA Proprietary
+      - NVIDIA Nouveau
+      - AMDGPU Proprietary
+      - AMDGPU Mesa
+      - Intel Graphics
+      - Intel Arc
+      - N/A
+    multiple: true
+    default: 6
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: <hr>
+
+- type: textarea
+  attributes:
+    label: "Description"
+    placeholder: >
+      • Sometimes, just saying a certain Code or Feature is failing is enough
+
+      • Issues might be File or Hardware Specific if the project deals with Audio or Video, try testing on a different one also
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Reproducing the Issue (if applicable)"
+    description: |
+      • If it's a non-internal bug or unexpected behavior, please provide a script I can `python
+    render: python
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: "Logs"
+    placeholder: |
+      • You can add Screenshots, Videos or `.log` file at `@Project/Workspace/Logs/*` to help explain the problem (`LOGLEVEL=debug (project)`)
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: "Solution"
+    placeholder: |
+      • If you're feeling like it, you can provide a solution, workaround or the idea of one
+
+      • Any non-trivial doubts on what went wrong? Feel free to add them
+  validations:
+    required: false

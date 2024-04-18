@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discord Group
+    url: https://discord.com/invite/KjqvcYwRHm
+    about: "Consider getting in touch on Discord or Telegram first, for faster and real-time responses (..)"
+  - name: Telegram Channel
+    url: https://t.me/brokensource
+    about: "(..), I prefer GitHub Issues for formalizing and tracking non-trivial requests"
