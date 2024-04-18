@@ -1,6 +1,6 @@
 name: 🐞 New Bug Report
 description: Facing some unexpected behavior or error? Let me help you!
-title: Try describing all the main important points on the title
+title: Try describing all the main important points. Don't worry, I can edit later
 assignees:
   - Tremeschin
 
@@ -8,17 +8,16 @@ body:
 - type: markdown
   attributes:
     value: |
-      Hi, some **quick notes** and **helpful resources**:
-      • Consider getting in touch on [**Discord**](https://discord.com/invite/KjqvcYwRHm) or [**Telegram**](https://t.me/brokensource) first, for faster and real-time responses
-      • **Languages I speak**, in order of preference: (English 🇺🇸) (Portuguese 🇧🇷)
-      • This template is generic, use your best judgement to fill needed parts
+      Hi, **quick notes** and **helpful resources**:
+      • **Consider** getting in touch on [**Discord**](https://discord.com/invite/KjqvcYwRHm) or [**Telegram**](https://t.me/brokensource) first
+      • **Languages** I speak: (🇺🇸 English) (🇧🇷 Portuguese)
       • [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
       <hr>
 
 - type: dropdown
   attributes:
     label: Operating System
-    description: What Operating Systems you're experiencing and tested the problem
+    description: Where you're experiencing and tested the problem
     options:
       - Windows 11
       - Windows 10
@@ -40,14 +39,15 @@ body:
 - type: dropdown
   attributes:
     label: Python Version
-    description: If running direclty from Source Code, Rye will use the `.python-version` one (Currently 3.11), but it's your choice when running from PyPI, some things might differ
+    description: |
+      • **If running directly from Source Code**, Rye will use the `.python-version` file (Currently 3.11)
+      • **If running from PyPI Wheels**, check yours Python verstion with `python -V`
     options:
       - Python 3.10
       - Python 3.11
       - Python 3.12
       - Python 3.13
       - N/A
-    multiple: true
     default: 1
   validations:
     required: true
@@ -57,11 +57,10 @@ body:
     label: Runtime Enviroment
     description: Where are you running the project from
     options:
-      - <b>Source Code</b> (Install Scripts or Manual)
-      - <b>PyPI Wheels</b> (pip, poetry, pdm, etc)
-      - <b>PyAPP Executables</b> (experimental)
-      - <b>N/A</b>
-    multiple: true
+      - Source Code (Install Scripts or Manual)
+      - PyPI Wheels (pip, poetry, pdm, etc)
+      - PyAPP Executables (experimental)
+      - N/A
     default: 3
   validations:
     required: true
@@ -69,12 +68,12 @@ body:
 - type: dropdown
   attributes:
     label: GPU Vendor (if applicable)
-    description: Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc. Not all projects use GPUs.
+    description: "**Not all projects use GPUs**. Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc."
     options:
-      - NVIDIA Proprietary
-      - NVIDIA Nouveau
-      - AMDGPU Proprietary
-      - AMDGPU Mesa
+      - NVIDIA (Proprietary)
+      - NVIDIA (Nouveau)
+      - AMDGPU (Proprietary)
+      - AMDGPU (Mesa)
       - Intel Graphics
       - Intel Arc
       - N/A
