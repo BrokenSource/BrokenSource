@@ -48,7 +48,7 @@ else
 fi
 
 # Make scripts executable for later use
-chmod +x Docs/get.sh
+chmod +x Website/get.sh
 chmod +x ./activate.sh
 
 printf "\n:: Creating Virtual Environment and Installing Dependencies\n"

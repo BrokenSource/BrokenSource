@@ -2,6 +2,8 @@ import math
 from numbers import Number
 from typing import Tuple
 
+from loguru import logger as log
+
 from Broken import nearest
 
 
@@ -16,21 +18,22 @@ class BrokenResolution:
         )
 
     @staticmethod
-    def fitscar(
+    def fit(
         ow: int,
         oh: int,
         nw: int=None,
         nh: int=None,
-        mw: int=math.inf,
-        mh: int=math.inf,
         sc: float=1.0,
-        ar: float=None
+        ar: float=None,
+        mw: int=None,
+        mh: int=None,
     ) -> Tuple[int, int]:
-        """(Fit), (Sc)ale and force (A)spect (R)atio on a base to target resolution
+        """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
 
         This method solves the following problem:
             "A window is at some initial size (ow, oh) and a resize was asked to (nw, nh); what
-            final resolution the window should be, optionally enforcing an aspect ratio (ar)?"
+            final resolution the window should be, optionally enforcing an aspect ratio (ar),
+            and limited by the monitor resolution (mw, mh)?"
 
         To which, the behavior is as follows in the two branches:
             No aspect ratio (ar=None) is send:
@@ -38,7 +41,8 @@ class BrokenResolution:
 
             Aspect ratio (ar!=None) is send:
                 - If any of the new (nw, nh) is missing, find the other based on the aspect ratio
-                - Else, prioritize width changes, and downscale/upscale accordingly
+                - Else, prioritize width changes, and downscale/upscale accordingly;
+                - Limits the resolution to (mw, mh) by multiplying both components to max fit it
 
         Notes
         -----
@@ -54,20 +58,23 @@ class BrokenResolution:
             Target width
         nh
             Target height
-        mw
-            Maximum width
-        mh
-            Maximum height
         sc
             Scale factor
         ar
             Force aspect ratio, if any
+        mw
+            Maximum width
+        mh
+            Maximum height
 
         Returns
         -------
         (int, int)
             The new best-fit width and height
         """
+        log.debug(f"Fit resolution: ({ow}, {oh}) -> ({nw}, {nh})^({mw}, {mh}) @ {sc}x, AR {ar}")
+
+        # Force or keep either component
         (w, h) = ((nw or ow), (nh or oh))
 
         if (ar is None):
@@ -92,4 +99,11 @@ class BrokenResolution:
             else:
                 (w, h) = (w, h)
 
-        return BrokenResolution.round(w, h, scale=sc)
+        # Limit the resolution
+        reduce = max(
+            w/min(w, mw or math.inf),
+            h/min(h, mh or math.inf)
+        )
+        w, h = (w/reduce, h/reduce)
+
+        return BrokenResolution.round(width=w, height=h, scale=sc)

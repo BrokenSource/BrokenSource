@@ -65,7 +65,7 @@ class BrokenTyper:
             self.__panel__ = None
 
     def command(self,
-        callable: Callable,
+        target: Callable,
         help: str=None,
         add_help_option: bool=True,
         name: str=None,
@@ -75,15 +75,15 @@ class BrokenTyper:
         **kwargs,
     ):
         # Command must be implemented
-        if getattr(callable, "__isabstractmethod__", False):
+        if getattr(target, "__isabstractmethod__", False):
             return
 
         # Maybe get callable name
-        name = name or callable.__name__
+        name = name or target.__name__
 
         # Create Typer command
         self.app.command(
-            help=help or callable.__doc__ or None,
+            help=help or target.__doc__ or None,
             add_help_option=add_help_option,
             name=name,
             rich_help_panel=panel or self.__panel__ ,
@@ -92,7 +92,7 @@ class BrokenTyper:
                 ignore_unknown_options=True,
             ) if context else None,
             **kwargs,
-        )(callable)
+        )(target)
 
         # Add to known commands
         self.commands.append(name)

@@ -19,9 +19,6 @@
 [submodule "Projects/SpectroNote"]
 	path = Projects/SpectroNote
 	url  = https://github.com/BrokenSource/SpectroNote
-[submodule "Meta/PyAPP"]
-	path = Meta/Fork/PyAPP
-	url  = https://github.com/Tremeschin/pyapp
 [submodule "Projects/FastCutter"]
 	path = Projects/Others/FastCutter
 	url  = https://github.com/BrokenSource/FastCutter

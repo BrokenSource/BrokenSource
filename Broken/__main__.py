@@ -8,7 +8,6 @@ from typing import Annotated, List, Self
 
 import click
 import toml
-import typer
 from attr import Factory, define
 from dotmap import DotMap
 from loguru import logger as log
@@ -388,11 +387,8 @@ class BrokenCLI:
 
         with self.broken_typer.panel("📦 Installation"):
             self.broken_typer.command(self.uninstall)
-            self.broken_typer.command(self.submodules, hidden=True)
-            self.broken_typer.command(self.shortcut)
 
         with self.broken_typer.panel("🛡️ Core"):
-            self.broken_typer.command(self.clean)
             self.broken_typer.command(self.docs)
             self.broken_typer.command(self.pypi)
             self.broken_typer.command(self.sync)
@@ -400,12 +396,9 @@ class BrokenCLI:
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.tremeschin, hidden=True)
 
-        with self.broken_typer.panel("⚠️ Experimental"):
-            self.broken_typer.command(self.pillow, hidden=True)
-
         for project in self.projects:
             self.broken_typer.command(
-                callable=project.cli,
+                target=project.cli,
                 name=project.name.lower(),
                 help=project.description_pretty_language,
                 panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
@@ -430,42 +423,6 @@ class BrokenCLI:
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
-
-    def clean(self,
-        isort: bool=True,
-        pycache: bool=True,
-        build: bool=False,
-        releases: bool=False,
-        wheels: bool=False,
-        all: bool=False
-    ) -> None:
-        """🧹 Sorts imports, cleans .pyc files and __pycache__ directories"""
-        ROOT = Broken.BROKEN.DIRECTORIES.REPOSITORY
-
-        # Sort imports, ignore "Releases" folder
-        if all or isort:
-            shell("isort", ROOT,
-                "--force-single-line-imports",
-                "--skip", ROOT/".venvs",
-                "--skip", Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES,
-                "--skip", Broken.BROKEN.DIRECTORIES.BROKEN_BUILD,
-            )
-
-        # Remove all .pyc files and __pycache__ folders
-        if all or pycache:
-            for path in ROOT.rglob("__pycache__"):
-                BrokenPath.remove(path)
-            for path in ROOT.rglob("*.pyc"):
-                BrokenPath.remove(path)
-
-        # Remove all .whl files
-        if all or wheels:
-            for path in ROOT.rglob("*.whl"):
-                BrokenPath.remove(path)
-
-        # Remove build and releases folders if requested
-        if all or build:    BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_BUILD)
-        if all or releases: BrokenPath.remove(Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES)
 
     def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy Documentation for all Projects"""
@@ -565,131 +522,6 @@ class BrokenCLI:
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
 
-    # ---------------------------------------------------------------------------------------------|
-    # Installation section
-
-    LINUX_DESKTOP_FILE = Broken.BROKEN.DIRECTORIES.HOME/".local/share/applications/Brakeit.desktop"
-
-    def shortcut(self):
-        """🧭 Creates a Desktop App Shortcut to run the current {brakeit.py}"""
-        if BrokenPlatform.OnLinux:
-            log.info(f"Creating Desktop file at ({BrokenCLI.LINUX_DESKTOP_FILE})")
-            BrokenCLI.LINUX_DESKTOP_FILE.write_text('\n'.join((
-                "[Desktop Entry]",
-                "Type=Application",
-                "Name=Brakeit",
-                f"Exec={Broken.BROKEN.DIRECTORIES.BROKEN_BRAKEIT}",
-                f"Icon={Broken.BROKEN.RESOURCES.ICON}",
-                "Comment=Brakeit Bootstrapper",
-                "Terminal=true",
-                "Categories=Development",
-            )))
-
-        # Workaround: Do not print KeyError of `pyshortcuts.windows.get_conda_active_env`
-        elif BrokenPlatform.OnWindows:
-            os.environ["CONDA_DEFAULT_ENV"] = "base"
-            import pyshortcuts
-            pyshortcuts.make_shortcut(
-                script=str(Broken.BROKEN.DIRECTORIES.BROKEN_BRAKEIT),
-                name="Brakeit",
-                description="Broken Source Software Development Environment Entry Script",
-                icon=str(Broken.BROKEN.RESOURCES.ICON_ICO),
-            )
-        else:
-            log.error(f"Unknown Platform ({BrokenPlatform.Name})")
-            return
-
-    def submodules(self,
-        root:     Annotated[Path, Option("--root",     "-r", help="(Basic) Root path to search for Submodules")]=Broken.BROKEN.DIRECTORIES.REPOSITORY,
-        auth:     Annotated[bool, Option("--auth",     "-a", help="(Basic) Prompt Username and Password privately for Private clones")]=False,
-        username: Annotated[str,  Option("--username", "-u", help="(Auth ) Username to use for git clone")]=None,
-        password: Annotated[str,  Option("--password", "-p", help="(Auth ) Password to use for git clone")]=None,
-        pull:     Annotated[bool, Option("--pull",           help="(Git  ) Run git pull on all submodules")]=False,
-        force:    Annotated[bool, Option("--force",    "-f", help="(Git  ) Force pull (overrides local changes)")]=False,
-    ):
-        """🔽 Safely init and clone submodules, skip private ones, optional authentication"""
-
-        # --------------------------------------| Pathing
-
-        root = BrokenPath(root)
-
-        # Read .gitmodules if it exists
-        if not (gitmodules := root/".gitmodules").exists():
-            return
-
-        # Init submodules
-        with BrokenPath.pushd(root, echo=False):
-            shell("git", "submodule", "init")
-            shell("git", "pull", "--quiet", "--force"*force, do=pull)
-
-        # --------------------------------------| Authentication
-
-        # Maybe get username and password from env
-        username = os.environ.get("GIT_USERNAME", None)
-        password = os.environ.get("GIT_PASSWORD", None)
-
-        # Ask for authentication if requested but not provided yet
-        if auth and not (username and password):
-            username = username or typer.prompt("Git Username")
-            password = password or typer.prompt("Git Password", hide_input=True)
-
-        # Update credentials on env vars (it might have been just prompted)
-        os.environ["GIT_USERNAME"] = username or ""
-        os.environ["GIT_PASSWORD"] = password or ""
-
-        # `auth` now means if we have credentials
-        auth = auth or bool(username and password)
-
-        # --------------------------------------| Reading dot file
-        # Read .gitmodules
-        import configparser
-        config = configparser.ConfigParser()
-        config.read(gitmodules)
-
-        # Get all submodules
-        for section in config.sections():
-            submodule = config[section]
-
-            # Build the absolute path
-            path = root/submodule["path"]
-            url  = submodule["url"]
-
-            # Skip private submodule
-            if submodule.get("private", False) and not auth:
-                log.skip(f"Submodule is private ({path})")
-                continue
-
-            # Clone with authentication
-            url = url.replace("https://", f"https://{username}:{password}@") if auth else url
-
-            # Clone the submodule
-            with BrokenPath.pushd(path, echo=False):
-
-                # Fixme: Any better way to check if a submodule is healthy?
-                if not list(path.iterdir()):
-
-                    # Set the url to clone this repository with authentication
-                    shell("git", "remote", "set-url", "origin", url)
-
-                    # Fetch the submodule's content with the credentials provided
-                    if shell("git", "fetch").returncode != 0:
-                        log.warning(f"Failed to Fetch Submodule ({path})")
-                        log.warning("• You can safely ignore this if you don't need this submodule")
-                        log.warning("• You might not have permissions to this repository")
-                        log.warning("• You might have provided wrong credentials")
-                        continue
-
-                    # Init and update submodule we know we have access to
-                    # Switch to main branch, as detached head is clumsy
-                    shell("git", "submodule", "update", "--init", path)
-                    shell("git", "checkout", "Master")
-                    log.success(f"Submodule cloned  ({path})")
-
-                # Pull changes after initial clone
-                shell("git", "pull", "--quiet", "--force"*force, do=pull)
-
-            self.submodules(path, username=username, password=password)
-
     def uninstall(self):
         """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
         log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
@@ -713,13 +545,6 @@ class BrokenCLI:
         if (venv := BrokenPath(Broken.BROKEN.DIRECTORIES.REPOSITORY/".venv").valid()):
             log.minor("Now removing the Repository Virtual Environment")
             BrokenPath.remove(venv, echo=False, confirm=True)
-
-    # # Experimental
-
-    def pillow(self):
-        """Use Pillow-SIMD for faster Image processing"""
-        os.environ["CC"] = "cc -mavx2"
-        shell("pip", "install", "-U", "--force-reinstall", "pillow-simd")
 
 # -------------------------------------------------------------------------------------------------|
 
