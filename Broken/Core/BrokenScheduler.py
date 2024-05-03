@@ -13,52 +13,59 @@ from Broken.Types import Hertz, Seconds
 
 @define
 class BrokenTask:
-    """
-    Client configuration for BrokenScheduler
+    """A BrokenScheduler's client dataclass"""
 
-    # Function:
-    - task:       Function callable to call every synchronization
-    - args:       Arguments to pass to task
-    - kwargs:     Keyword arguments to pass to task
-    - output:     Output of task (returned value)
-    - context:    Context to use when calling task (with statement)
-    - lock:       Lock to use when calling task (with statement)
-    - enabled:    Whether to enable this client or not
-    - once:       Whether to call this client only once or not
+    # # Basic
 
-    # Synchronization
-    - frequency:  Frequency of task calls
-    - frameskip:  Constant deltatime mode (False) or real deltatime mode (True)
-    - decoupled:  "Rendering" mode, do not sleep on real time, implies frameskip False
+    task: callable = None
+    """Function callable to call every synchronization"""
 
-    # Timing:
-    - next_call:  Next time to call task (initializes $now+next_call, value in now() seconds)
-    - last_call:  Last time task was called (initializes $now+last_call, value in now() seconds)
-    - started:    Time when client was started (initializes $now+started, value in now() seconds)
-    - time:       Whether to pass time (time since first call) to task
-    - dt:         Whether to pass dt (time since last call) to task
-    """
+    args: List[Any] = field(factory=list, repr=False)
+    """Method's positional arguments"""
 
-    # task
-    task:     callable       = None
-    args:     List[Any]      = field(factory=list, repr=False)
-    kwargs:   Dict[str, Any] = field(factory=dict, repr=False)
-    output:   Any            = field(default=None, repr=False)
-    context:  Any            = None
-    lock:     Lock           = None
-    enabled:  bool           = True
-    once:     bool           = False
+    kwargs: Dict[str, Any] = field(factory=dict, repr=False)
+    """Method's keyword arguments"""
 
-    # Synchronization
-    frequency:  Hertz = 60.0
-    frameskip:  bool  = True
-    decoupled:  bool  = False
-    precise:    bool  = False
+    output: Any = field(default=None, repr=False)
+    """Method's return value after last call"""
 
-    # Timing
-    started:   Seconds = Factory(lambda: time.bang_counter())
+    context: Any = None
+    """Context to use when calling task (with statement)"""
+
+    lock: Lock = None
+    """Threading Lock to use when calling task (with statement)"""
+
+    enabled: bool = True
+    """Whether to enable this client or not"""
+
+    once: bool = False
+    """Client will be removed after next call"""
+
+    # # Synchronization
+
+    frequency: Hertz = 60.0
+    """Ideal frequency of task calls"""
+
+    frameskip: bool = True
+    """Constant deltatime mode (False) or real deltatime mode (True)"""
+
+    decoupled: bool = False
+    """"Rendering" mode, do not sleep on real time"""
+
+    precise: bool = False
+    """Use precise time sleeping for near-perfect frametimes"""
+
+    # # Timing
+    started: Seconds = Factory(lambda: time.bang_counter())
+    """Time when client was started (initializes $now+started, value in now() seconds)"""
+
     next_call: Seconds = None
+    """Next time to call task (initializes $now+next_call, value in now() seconds)"""
+
     last_call: Seconds = None
+    """Last time task was called (initializes $now+last_call, value in now() seconds)"""
+
+    # # Flags
     _time:     bool    = False
     _dt:       bool    = False
 

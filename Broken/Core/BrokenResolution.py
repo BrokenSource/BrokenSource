@@ -99,7 +99,9 @@ class BrokenResolution:
             else:
                 (w, h) = (w, h)
 
-        # Limit the resolution
+        # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
+        # - The idea is to find the maximum reduce factor for either component so it normalizes
+        #   to the respective (mw, mh), and apply it to both components to scale down
         reduce = max(
             w/min(w, mw or math.inf),
             h/min(h, mh or math.inf)
