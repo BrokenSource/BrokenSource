@@ -23,7 +23,7 @@ import click
 from loguru import logger as log
 
 
-def precise_sleep(seconds: float) -> None:
+def precise_sleep(seconds: float, *, error: float=1e-3) -> None:
     """
     Sleep for a precise amount of time. This function is very interesting for some reasons:
     - time.sleep() obviously uses syscalls, and it's up to the OS to implement it
@@ -55,8 +55,8 @@ def precise_sleep(seconds: float) -> None:
 
     # Sleep close to the due time
     start = time.perf_counter()
-    ahead = max(0, seconds - 1e-3)
-    time.sleep(max(0, ahead))
+    ahead = max(0, seconds - error)
+    time.sleep(ahead)
 
     # Spin the thread until the time is up (precise Sleep)
     while (time.perf_counter() - start) < seconds:
@@ -70,8 +70,10 @@ time.precise_sleep = precise_sleep
 
 def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
     """
-    Flatten nested list like iterables to a 1D list
-    [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
+    Flatten nested array-like iterables (list, tuple, Generator) to a 1D list
+    - [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
+    - [(x for x in "abc"), "def"] -> ["a", "b", "c", "def"]
+    - range(3) -> [0, 1, 2]
     """
     # Fixme: Add allow_none argument
     iterables = (list, tuple, Generator)
@@ -157,10 +159,11 @@ def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))
 
 def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
-    """map(f, x) is lazy, this consumes the generator returning a list"""
+    """map(f, x) is lazy, this consumes the generator, returning a list"""
     return list(map(callback, iterable))
 
-def denum(item: Any) -> Any:
+def denum(item: Union[enum.Enum, Any]) -> Any:
+    """De-enumerates an item: Returns the item's value if Enum else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
 @staticmethod
@@ -213,9 +216,11 @@ def last_locals(level: int=1, self: bool=True) -> dict:
     return locals
 
 def image_hash(image) -> str:
+    """A Fast-ish method to get an object's hash that implements .tobytes()"""
     return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
 
 def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
+    """Finds the nearest multiple of a base number"""
     return type(multiple * operator(number/multiple))
 
 def extend(base: type, name: str=None, as_property: bool=False) -> type:
@@ -262,7 +267,6 @@ def extend(base: type, name: str=None, as_property: bool=False) -> type:
             return base
 
     return extender
-
 
 def have_import(module: str, *, load: bool=False) -> bool:
     if load:

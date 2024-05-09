@@ -96,8 +96,6 @@ class BrokenResolution:
                 (w, h) = W
             elif (nh != oh):
                 (w, h) = H
-            else:
-                (w, h) = (w, h)
 
         # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
         # - The idea is to find the maximum reduce factor for either component so it normalizes

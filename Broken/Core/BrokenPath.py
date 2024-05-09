@@ -116,15 +116,6 @@ class BrokenPath(pathlib.Path):
 
         return path
 
-    def touch(path: Path, *, echo=True) -> Path:
-        """Creates a file, fail safe™"""
-        if (path := BrokenPath(path)).exists():
-            log.success(f"File ({path}) already touched", echo=echo)
-            return
-        log.info(f"Touching file {path}", echo=echo)
-        path.touch()
-        return path
-
     def mkdirs(path: Path, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath(path)

@@ -2,8 +2,9 @@ import contextlib
 import functools
 import inspect
 import time
+from collections import deque
 from threading import Lock
-from typing import Any, Callable, Dict, Iterable, List, Self
+from typing import Any, Callable, Deque, Dict, Iterable, List, Self
 
 from attr import Factory, define, field
 
@@ -156,7 +157,7 @@ class BrokenTask:
 
 @define
 class BrokenScheduler:
-    clients: List[BrokenTask] = Factory(list)
+    clients: Deque[BrokenTask] = Factory(deque)
 
     def add_task(self, client: BrokenTask) -> BrokenTask:
         """Adds a client to the manager with immediate next call"""
