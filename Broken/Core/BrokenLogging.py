@@ -54,6 +54,7 @@ class BrokenLogging:
         self.level("INFO", None, "bright_white")
         self.level("SUCCESS", None, "green")
         self.level("MINOR", 25, "grey42")
+        self.level("SKIP", 25, "grey42")
         self.level("FIXME", 25, "cyan")
         self.level("TODO", 25, "dark_blue")
         self.level("WARNING", None, "yellow")

@@ -102,8 +102,12 @@ class BrokenTask:
         self.frequency = 1/value
 
     @property
-    def should_delete(self) -> bool:
+    def tag_delete(self) -> bool:
         return self.once and (not self.enabled)
+
+    @property
+    def tag_alive(self) -> bool:
+        return not self.tag_delete
 
     # # Sorting
 
@@ -191,11 +195,8 @@ class BrokenScheduler:
         return min(self.enabled_tasks)
 
     def _sanitize(self) -> None:
-        """Removes disabled 'once' clients"""
-        length = len(self.clients)
-        for i, client in enumerate(reversed(self.clients)):
-            if client.should_delete:
-                del self.clients[length - i - 1]
+        """Removes not enabled 'once' clients"""
+        self.clients = list(filter(lambda client: client.tag_alive, self.clients))
 
     # # Actions
 

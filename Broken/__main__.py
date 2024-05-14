@@ -4,7 +4,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self
+from typing import Annotated, Generator, List, Self
 
 import click
 import toml
@@ -15,6 +15,7 @@ from typer import Argument, Context, Option, Typer
 
 import Broken
 from Broken import (
+    BROKEN,
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
@@ -382,7 +383,7 @@ class BrokenCLI:
         self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software Monorepo manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️ Broken Source Software, AGPL-3.0-only License."
+            "©️ Broken Source Software, AGPL-3.0 License"
         ))
 
         with self.broken_typer.panel("📦 Installation"):
@@ -395,6 +396,7 @@ class BrokenCLI:
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.tremeschin, hidden=True)
+            self.broken_typer.command(self.ryedeps, hidden=True)
 
         for project in self.projects:
             self.broken_typer.command(
@@ -423,6 +425,23 @@ class BrokenCLI:
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
+
+    def ryedeps(self) -> None:
+        """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
+        import re
+
+        pyproject = DotMap(toml.loads((BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml").read_text()))
+
+        def update_dependencies(data: List[str], *, dev: bool=False) -> None:
+            for dependency in data:
+                name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
+                if (compare == "=="):
+                    continue
+                shell("rye", "add", name, "--dev"*dev, "--no-sync")
+
+        update_dependencies(pyproject.project.dependencies)
+        update_dependencies(pyproject.tool.rye["dev-dependencies"], dev=True)
+        shell("rye", "sync")
 
     def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy Documentation for all Projects"""
