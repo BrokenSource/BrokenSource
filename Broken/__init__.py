@@ -37,15 +37,12 @@ if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
 # As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
 # binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
 # • File name collisions are unlikely with any Monorepo path (?)
-for _index, _arg in enumerate(sys.argv):
+for _index, _item in enumerate(sys.argv):
     if any((
-        any((_arg.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
-        bool(Path(_arg).suffix) and Path(_arg).exists(),
+        any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
+        bool(Path(_item).suffix) and Path(_item).exists(),
     )):
-        sys.argv[_index] = str(Path(_arg).expanduser().resolve())
-
-# Safer measures: Store the first cwd that Broken is run, always start from there
-os.chdir(os.environ.setdefault("BROKEN_PREVIOUS_WORKING_DIRECTORY", os.getcwd()))
+        sys.argv[_index] = str(Path(_item).expanduser().resolve())
 
 # -------------------------------------------------------------------------------------------------|
 

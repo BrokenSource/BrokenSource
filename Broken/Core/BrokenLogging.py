@@ -67,7 +67,8 @@ class BrokenLogging:
             message = " ".join(map(str, args))
             if not echo:
                 return message
-            log.log(level, message, **kwargs)
+            for line in message.splitlines():
+                log.log(level, line, **kwargs)
             return message
 
         # Assign log function to logger. Workaround to set icon=color

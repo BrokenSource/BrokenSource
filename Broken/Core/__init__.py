@@ -69,8 +69,7 @@ time.bang_counter = (lambda: time.perf_counter() - BIG_BANG)
 time.precise_sleep = precise_sleep
 
 def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
-    """
-    Flatten nested array-like iterables (list, tuple, Generator) to a 1D list
+    """Flatten nested iterables (list, tuple, Generator) to a 1D list
     - [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
     - [(x for x in "abc"), "def"] -> ["a", "b", "c", "def"]
     - range(3) -> [0, 1, 2]
