@@ -49,6 +49,7 @@ class BrokenPath(pathlib.Path):
         # Use absolute expanded user always. Note that we do not want
         # to .resolve() as having symlink paths _can_ be wanted
         instance = super().__new__(cls, *args, **kwargs)
+        instance._raw_paths = list(map(str, args))
         return instance.expanduser().absolute()
 
     def pathlib(self) -> pathlib.Path:
