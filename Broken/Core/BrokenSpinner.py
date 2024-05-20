@@ -11,11 +11,12 @@ class Spinners:
 
 @define
 class BrokenSpinner:
+
     text: str = ""
-    """The text to display next to the spinner. Also defines if the spinner is active."""
+    """The text to display next to the spinner. Also defines if the spinner is active"""
 
     spinner: Union[str, List[str]] = Spinners.Simple
-    """A Sequence or list of printable objects to use as the spinner."""
+    """A Sequence or list of printable objects to use as the spinner"""
 
     framerate: float = 10
     """Update rate of the spinner"""

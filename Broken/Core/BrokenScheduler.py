@@ -4,7 +4,7 @@ import inspect
 import time
 from collections import deque
 from threading import Lock
-from typing import Any, Callable, Deque, Dict, Iterable, List, Self
+from typing import Any, Callable, Deque, Dict, Iterable, List, Self, Optional
 
 from attr import Factory, define, field
 
@@ -119,7 +119,7 @@ class BrokenTask:
 
     # # Implementation
 
-    def next(self, block: bool=True) -> None | Any:
+    def next(self, block: bool=True) -> Self:
 
         # Time to wait for next call if block
         # - Next call at 110 seconds, now=100, wait=10
@@ -190,7 +190,7 @@ class BrokenScheduler:
                 yield client
 
     @property
-    def next_task(self) -> BrokenTask | None:
+    def next_task(self) -> Optional[BrokenTask]:
         """Returns the next client to be called"""
         return min(self.enabled_tasks)
 
@@ -200,7 +200,7 @@ class BrokenScheduler:
 
     # # Actions
 
-    def next(self, block=True) -> None | Any:
+    def next(self, block=True) -> Optional[BrokenTask]:
         try:
             if (client := self.next_task):
                 return client.next(block=block)
@@ -218,7 +218,7 @@ class BrokenScheduler:
 
     __work__: bool = False
 
-    def smart_next(self) -> None | Any:
+    def smart_next(self) -> Optional[BrokenTask]:
         # Note: Proof of concept. The frametime Ticking might be enough for ShaderFlow
 
         # Too close to the next known call, call blocking

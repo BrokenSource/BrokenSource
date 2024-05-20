@@ -290,6 +290,12 @@ class _BrokenProjectResources:
 
     def __attrs_post_init__(self):
         if self.BROKEN_PROJECT.RESOURCES:
+
+            # Fixme (#spec): Python 3.9 workaround; Spec-less packages
+            if (sys.version_info < (3, 10)):
+                spec = self.BROKEN_PROJECT.RESOURCES.__spec__
+                spec.origin = spec.submodule_search_locations[0] + "/WorkaroundIgnore"
+
             self.__RESOURCES__ = importlib.resources.files(self.BROKEN_PROJECT.RESOURCES)
 
     def __div__(self, name: str) -> Path:
@@ -384,7 +390,7 @@ class BrokenProject:
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
         self.PACKAGE     = Path(self.PACKAGE)
 
-        # Fixme: Split the projects into many packages
+        # Fixme (#spec): Split the projects into many packages
         # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name.replace("Broken", "broken-source"))
         self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
@@ -403,6 +409,9 @@ class BrokenProject:
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             dotenv.load_dotenv(env)
+
+        if (os.environ.get("WELCOME", "0") == "1") and (self.APP_NAME != "Broken"):
+            self.welcome()
 
     def welcome(self):
         """Pretty Welcome Message!"""

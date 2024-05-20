@@ -10,23 +10,24 @@ from Broken import nearest
 class BrokenResolution:
 
     @staticmethod
-    def round(width: Number, height: Number, *, scale: Number=1) -> Tuple[int, int]:
-        """FFmpeg likes multiples of 2, so let it be"""
-        return (
-            max(1, nearest(scale*width,  multiple=2, type=int, operator=round)),
-            max(1, nearest(scale*height, multiple=2, type=int, operator=round))
-        )
+    def round_component(component: Number, *, scale: Number=1) -> int:
+        return max(1, nearest(scale*component, multiple=2, type=int, operator=round))
+
+    @staticmethod
+    def round_resolution(width: Number, height: Number, *, scale: Number=1) -> Tuple[int, int]:
+        """FFmpeg likes multiples of 2, so let's make it happy"""
+        return tuple(map(BrokenResolution.round_component, (scale*width, scale*height)))
 
     @staticmethod
     def fit(
-        ow: int,
-        oh: int,
-        nw: int=None,
-        nh: int=None,
-        sc: float=1.0,
-        ar: float=None,
-        mw: int=None,
-        mh: int=None,
+        old_width: int,
+        old_height: int,
+        new_width: int=None,
+        new_height: int=None,
+        scale: float=1.0,
+        aspect_ratio: float=None,
+        maximum_width: int=None,
+        maximum_height: int=None,
     ) -> Tuple[int, int]:
         """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
 
@@ -72,38 +73,38 @@ class BrokenResolution:
         (int, int)
             The new best-fit width and height
         """
-        log.debug(f"Fit resolution: ({ow}, {oh}) -> ({nw}, {nh})^({mw}, {mh}) @ {sc}x, AR {ar}")
+        log.debug(f"Fit resolution: ({old_width}, {old_height}) -> ({new_width}, {new_height})^({maximum_width}, {maximum_height}) @ {scale}x, AR {aspect_ratio}")
 
         # Force or keep either component
-        (w, h) = ((nw or ow), (nh or oh))
+        (width, height) = ((new_width or old_width), (new_height or old_height))
 
-        if (ar is None):
+        if (aspect_ratio is None):
             pass
 
         else:
             # Build from width (W) or from height (H)
-            W = (w, w/ar)
-            H = (h*ar, h)
+            from_width  = (width, width/aspect_ratio)
+            from_height = (height*aspect_ratio, height)
 
             # Pick the non missing component's
-            if (nh is None):
-                (w, h) = W
-            elif (nw is None):
-                (w, h) = H
+            if (new_height is None):
+                (width, height) = from_width
+            elif (new_width is None):
+                (width, height) = from_height
 
             # Based on upscale or downscale
-            elif (nw != ow):
-                (w, h) = W
-            elif (nh != oh):
-                (w, h) = H
+            elif (new_width != old_width):
+                (width, height) = from_width
+            elif (new_height != old_height):
+                (width, height) = from_height
 
         # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
         # - The idea is to find the maximum reduce factor for either component so it normalizes
         #   to the respective (mw, mh), and apply it to both components to scale down
         reduce = max(
-            w/min(w, mw or math.inf),
-            h/min(h, mh or math.inf)
-        )
-        w, h = (w/reduce, h/reduce)
+            width/(min(width, maximum_width or math.inf) or 1),
+            height/(min(height, maximum_height or math.inf) or 1)
+        ) or 1
+        width, height = (width/reduce, height/reduce)
 
-        return BrokenResolution.round(width=w, height=h, scale=sc)
+        return BrokenResolution.round_resolution(width=width, height=height, scale=scale)

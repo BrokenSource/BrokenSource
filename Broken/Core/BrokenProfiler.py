@@ -41,23 +41,21 @@ class BrokenProfiler:
         if not self.enabled:
             return self
 
-        match self.profiler:
-            case BrokenProfilerEnum.cprofile:
-                log.trace("Profiling with cProfile")
-                import cProfile
-                self.__profiler__ = cProfile.Profile()
-                self.__profiler__.enable()
-                return self
+        if (self.profiler == BrokenProfilerEnum.cprofile):
+            log.trace("Profiling with cProfile")
+            import cProfile
+            self.__profiler__ = cProfile.Profile()
+            self.__profiler__.enable()
+            return self
 
     def __exit__(self, *args) -> None:
         if not self.enabled:
             return
 
-        match self.profiler:
-            case BrokenProfilerEnum.cprofile:
-                log.trace("Finishing cProfile")
-                output = self.output.with_suffix(".prof")
-                self.__profiler__.disable()
-                self.__profiler__.dump_stats(output)
-                shell("snakeviz", output)
-                return
+        if (self.profiler == BrokenProfilerEnum.cprofile):
+            log.trace("Finishing cProfile")
+            output = self.output.with_suffix(".prof")
+            self.__profiler__.disable()
+            self.__profiler__.dump_stats(output)
+            shell("snakeviz", output)
+            return

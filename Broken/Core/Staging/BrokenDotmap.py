@@ -111,23 +111,22 @@ class BrokenDotmap:
 
         # Load data from file
         try:
-            match format:
-                case ".toml":
-                    import toml
-                    data = toml.loads(path.read_text())
-                case ".json":
-                    import json
-                    data = json.loads(path.read_text())
-                case ".yaml":
-                    import yaml
-                    data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
-                case ".pickle":
-                    import pickle
-                    data = pickle.loads(path.read_bytes())
-                case _:
-                    log.error(f"• BrokenDotmap: Unknown file format ({format})")
-                    log.error(f"└─ File: ({path})")
-                    return
+            if (format == ".toml"):
+                import toml
+                data = toml.loads(path.read_text())
+            elif (format == ".json"):
+                import json
+                data = json.loads(path.read_text())
+            elif (format == ".yaml"):
+                import yaml
+                data = yaml.load(path.read_text(), Loader=yaml.FullLoader)
+            elif (format == ".pickle"):
+                import pickle
+                data = pickle.loads(path.read_bytes())
+            else:
+                log.error(f"• BrokenDotmap: Unknown file format ({format})")
+                log.error(f"└─ File: ({path})")
+                return
 
         except Exception as e:
             log.error(f"• BrokenDotmap: Failed to load file ({path})")
@@ -237,19 +236,18 @@ class BrokenDotmap:
         dict = self.to_dict()
 
         # Load file based on format
-        match self.__ext__:
-            case ".toml":
-                import toml
-                self.__path__.write_text(toml.dumps(dict))
-            case ".json":
-                import json
-                self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
-            case ".yaml":
-                import yaml
-                self.__path__.write_text(yaml.dump(dict))
-            case ".pickle":
-                import pickle
-                self.__path__.write_bytes(pickle.dumps(dict))
-            case _:
-                log.error(f"BrokenDotmap: Unknown file format ({self.__ext__}), cannot save to file")
-                return
+        if (self.__ext__ == ".toml"):
+            import toml
+            self.__path__.write_text(toml.dumps(dict))
+        elif (self.__ext__ == ".json"):
+            import json
+            self.__path__.write_text(json.dumps(dict, indent=2, ensure_ascii=False))
+        elif (self.__ext__ == ".yaml"):
+            import yaml
+            self.__path__.write_text(yaml.dump(dict))
+        elif (self.__ext__ == ".pickle"):
+            import pickle
+            self.__path__.write_bytes(pickle.dumps(dict))
+        else:
+            log.error(f"BrokenDotmap: Unknown file format ({self.__ext__}), cannot save to file")
+            return

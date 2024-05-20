@@ -25,9 +25,9 @@ from Broken.Types import FileExtensions
 class ShutilFormat(BrokenEnum):
     Zip   = "zip"
     Tar   = "tar"
-    GzTar = "tar.gz"
-    BzTar = "tar.bz2"
-    XzTar = "tar.xz"
+    TarGz = "tar.gz"
+    TarBz = "tar.bz2"
+    TarXz = "tar.xz"
 
 class BrokenPath(pathlib.Path):
     """
@@ -53,23 +53,23 @@ class BrokenPath(pathlib.Path):
         return instance.expanduser().absolute()
 
     def pathlib(self) -> pathlib.Path:
-        """Some packages test `var == pathlib.Path` instead of `isinstance(var, pathlib.Path)`"""
+        """Some packages test `type(var) == pathlib.Path` instead of `isinstance(var, pathlib.Path)`"""
         return pathlib.Path(self)
 
     def str(self) -> str:
         return str(self)
 
-    def valid(path: BrokenPath) -> Optional[BrokenPath]:
+    def valid(path: Optional[BrokenPath]) -> Optional[BrokenPath]:
         """Returns the BrokenPath if it exists, else None"""
-        if (path := BrokenPath(path)) is None:
+        if (path is None):
             return None
-        if path.exists():
-            return path
+        if (path := Path(path)).exists():
+            return BrokenPath(path)
         return None
 
     @staticmethod
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
-        src, dst = BrokenPath(src, dst)
+        src, dst = BrokenPath(src), BrokenPath(dst)
         BrokenPath.mkdirs(dst.parent, echo=False)
         if src.is_dir():
             log.info(f"Copying Directory ({src})\n → ({dst})", echo=echo)
@@ -81,7 +81,7 @@ class BrokenPath(pathlib.Path):
 
     @staticmethod
     def move(src: Path, dst: Path, *, echo=True) -> Path:
-        src, dst = BrokenPath(src, dst)
+        src, dst = BrokenPath(src), BrokenPath(dst)
         log.info(f"Moving ({src})\n → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
@@ -129,9 +129,8 @@ class BrokenPath(pathlib.Path):
         return path
 
     def resetdir(path: Path, *, echo=True) -> Path:
-        """Creates a directory and its parents, fail safe™"""
-        BrokenPath.remove(path, echo=echo)
-        return BrokenPath.mkdirs(path, echo=echo)
+        """Delete and re-create a directory"""
+        return BrokenPath.mkdirs(BrokenPath.remove(path, echo=echo), echo=echo)
 
     @contextlib.contextmanager
     def pushd(path: Path, *, echo: bool=True) -> Generator[Path, None, None]:
@@ -193,7 +192,6 @@ class BrokenPath(pathlib.Path):
 
     def make_executable(path: Path, *, echo=False) -> Path:
         """Make a file executable"""
-        path = BrokenPath(path)
         if BrokenPlatform.OnUnix:
             shell("chmod", "+x", path, echo=echo)
         elif BrokenPlatform.OnWindows:
@@ -201,11 +199,11 @@ class BrokenPath(pathlib.Path):
         return path
 
     def zip(path: Path, output: Path=None, *, format: ShutilFormat=ShutilFormat.Zip, echo: bool=True) -> Path:
-        format = ShutilFormat(format)
+        format = ShutilFormat.get(format)
         output = BrokenPath(output or path).with_suffix(f".{format}")
         path   = BrokenPath(path)
-        BrokenPath.remove(output, echo=echo)
         log.info(f"Zipping ({path})\n → ({output})", echo=echo)
+        BrokenPath.remove(output, echo=echo)
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
@@ -295,9 +293,7 @@ class BrokenPath(pathlib.Path):
         # Link must be valid
         if not validators.url(url):
             log.error(f"The string ({url}) doesn't look like a valid URL", echo=echo)
-            return
-
-        import requests
+            return None
 
         # Default to Broken's Download directory
         if (output is None):
@@ -308,24 +304,26 @@ class BrokenPath(pathlib.Path):
             output /= Path(url.split("#")[0].split("?")[0].split("/")[-1])
 
         # Without size check, the existence of the file is enough
-        if output.exists() and (not size_check):
+        if (not size_check) and output.exists():
             log.info(f"Already Downloaded ({output})", echo=echo)
             log.minor("• Size check was skipped, the file might be incomplete", echo=echo)
-            return
+            return None
 
-        # Send the GET request, we might be offline!
         try:
+            import requests
             response = requests.get(url, stream=True)
         except requests.exceptions.RequestException as error:
             log.error(f"Failed to download file ({url}) → ({output}): {error}", echo=echo)
+            # Note: Return output as it might be downloaded but we're without internet
             return output
 
-        size = int(response.headers.get('content-length', 0))
+        expected_size = int(response.headers.get('content-length', 0))
 
         # The file might already be (partially) downloaded
         if output.exists():
-            A, B = (output.stat().st_size, size)
-            if (A == B):
+            downloaded_size = output.stat().st_size
+
+            if (downloaded_size == expected_size):
                 log.info(f"Already Downloaded ({output})", echo=echo)
                 return output
             else:
@@ -337,20 +335,22 @@ class BrokenPath(pathlib.Path):
         # It is binary prefix, right? kibi, mebi, gibi, etc. as we're dealing with raw bytes
         with open(output, "wb") as file, tqdm.tqdm(
             desc=f"Downloading ({output.name})",
-            total=size, unit="iB", unit_scale=True, unit_divisor=1024,
+            total=expected_size, unit="iB", unit_scale=True, unit_divisor=1024,
             mininterval=1/30, maxinterval=0.5, leave=False
         ) as progress:
             for data in response.iter_content(chunk_size=chunk):
                 progress.update(file.write(data))
 
-        # Url was invalid
+        downloaded_size = output.stat().st_size
+
+        # Url was invalid or something
         if (response.status_code != 200):
             log.error(f"Failed to Download File at ({url}):", echo=echo)
             log.error(f"• HTTP Error: {response.status_code}", echo=echo)
             return
 
         # Wrong downloaded and expected size
-        elif (output.stat().st_size != size):
+        elif (downloaded_size != expected_size):
             log.error(f"File ({output}) was not downloaded correctly", echo=echo)
             return
 
@@ -361,7 +361,7 @@ class BrokenPath(pathlib.Path):
     def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
         file = BrokenPath.download(denum(url), echo=echo)
 
-        # File is a Archive, extract
+        # File is an Archive, extract
         if any((str(file).endswith(ext) for ext in ShutilFormat.values)):
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_ARCHIVES
             return BrokenPath.extract(file, directory, PATH=True, echo=echo)
@@ -381,6 +381,7 @@ class BrokenPath(pathlib.Path):
             directory = Broken.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
         else:
             directory = Broken.BROKEN.DIRECTORIES.EXTERNALS
+
         return BrokenPath.move(file, directory/subdir, echo=echo)
 
     @staticmethod
@@ -390,13 +391,13 @@ class BrokenPath(pathlib.Path):
 
     @staticmethod
     def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
-        path = path or Broken.BROKEN.DIRECTORIES.EXTERNALS
+        path = (path or Broken.BROKEN.DIRECTORIES.EXTERNALS)
         return BrokenPath.add_to_path(path, recursively=True, echo=echo)
 
     @staticmethod
     def on_path(path: Path) -> bool:
         """Check if a path is on PATH, works with symlinks"""
-        return BrokenPath(path) in map(BrokenPath, os.environ.get("PATH", "").split(os.pathsep))
+        return (Path(path) in map(Path, os.environ.get("PATH", "").split(os.pathsep)))
 
     @staticmethod
     def add_to_path(
@@ -420,28 +421,38 @@ class BrokenPath(pathlib.Path):
         """
         path = BrokenPath(path)
 
-        # Can't recurse on file or non existing directories
-        if (not path.exists()) and path.is_file() and recursively:
-            log.warning(f"Can't add non existing path or file recursively to Path ({path})", echo=echo)
-            return path
+        # Can't recurse on files
+        if (path.is_file() and recursively):
+            raise RuntimeError(f"Can't add a 'file' recursively to Path ({path})")
+
+        # Can't recurse on non existing directories
+        if (not path.exists()) and recursively:
+            log.warning(f"Not adding anything to PATH as directory is non existing ({path})", echo=echo)
 
         log.debug(f"Adding to Path (Recursively: {recursively}, Persistent: {persistent}): ({path})", echo=echo)
 
-        for other in (path.rglob("*") if recursively else [path]):
+        for other in list(path.rglob("*") if recursively else []) + [path]:
+
+            # Skip conditions
             if other.is_file():
                 continue
             if BrokenPath.on_path(other):
                 continue
+
+            # Actual logic
             if persistent:
                 import userpath
                 userpath.append(str(other))
             else:
                 if preferential:
-                    os.environ["PATH"] = (str(other)+os.pathsep+os.environ["PATH"])
+                    log.debug(f"• Prepending: ({other})", echo=echo)
+                    os.environ["PATH"] = (str(other) + os.pathsep + os.environ["PATH"])
                     sys.path.insert(0, str(other))
                 else:
-                    os.environ["PATH"] = (os.environ["PATH"]+os.pathsep+str(other))
+                    log.debug(f"• Appending: ({other})", echo=echo)
+                    os.environ["PATH"] = (os.environ["PATH"] + os.pathsep + str(other))
                     sys.path.append(str(other))
+
         return path
 
     # # Specific / "Utils"

@@ -2,6 +2,7 @@ import enum
 import hashlib
 import inspect
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,7 @@ from typing import (
     Generator,
     Iterable,
     List,
+    Optional,
     Union,
 )
 
@@ -146,7 +148,7 @@ def shell(
     kwargs["shell"] = shell
 
     # preexec_fn is not supported on windows, pop from kwargs
-    if (os.name == "nt") and (_ := kwargs.pop("preexec_fn", None)):
+    if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("preexec_fn is not supported on Windows, ignoring..")
 
     # Run the command and return specified object
@@ -165,9 +167,49 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: Returns the item's value if Enum else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
-@staticmethod
 def dunder(name: str) -> bool:
     return name.startswith("__") and name.endswith("__")
+
+def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
+    """
+    Yields the numbers in a hyphenated CSV range, just like when selecting what pages to print
+    - Accepts "-", "..", "...", or a hyphenated range
+
+    Example:
+        ```python
+        hyphen_range("2,3") # 2, 3
+        hyphen_range("2-5") # 2, 3, 4, 5
+        hyphen_range("1-3, 5") # 1, 2, 3, 5
+        ```
+    """
+    if not bool(string):
+        return None
+
+    for part in string.split(","):
+        if ("-" in part):
+            start, end = map(int, re.split("-|\.\.|\.\.\.", part))
+            yield from range(start, end + int(inclusive))
+        else:
+            yield int(part)
+
+def image_hash(image) -> str:
+    """A Fast-ish method to get an object's hash that implements .tobytes()"""
+    return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
+
+def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
+    """Finds the nearest multiple of a base number"""
+    return type(multiple * operator(number/multiple))
+
+def have_import(module: str, *, load: bool=False) -> bool:
+    if load:
+        try:
+            __import__(module)
+            return True
+        except ImportError:
+            return False
+    return sys.modules.get(module, False)
+
+# -------------------------------------------------------------------------------------------------|
 
 def transcends(method, base, generator: bool=False):
     """
@@ -214,14 +256,6 @@ def last_locals(level: int=1, self: bool=True) -> dict:
 
     return locals
 
-def image_hash(image) -> str:
-    """A Fast-ish method to get an object's hash that implements .tobytes()"""
-    return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
-
-def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
-    """Finds the nearest multiple of a base number"""
-    return type(multiple * operator(number/multiple))
-
 def extend(base: type, name: str=None, as_property: bool=False) -> type:
     """
     Extend a class with another class's methods or a method directly.
@@ -266,12 +300,3 @@ def extend(base: type, name: str=None, as_property: bool=False) -> type:
             return base
 
     return extender
-
-def have_import(module: str, *, load: bool=False) -> bool:
-    if load:
-        try:
-            __import__(module)
-            return True
-        except ImportError:
-            return False
-    return sys.modules.get(module, False)

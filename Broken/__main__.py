@@ -432,15 +432,17 @@ class BrokenCLI:
 
         pyproject = DotMap(toml.loads((BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml").read_text()))
 
-        def update_dependencies(data: List[str], *, dev: bool=False) -> None:
+        def update_dependencies(data: List[str], *, dev: bool=False, optional: str=None) -> None:
             for dependency in data:
                 name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
                 if (compare == "=="):
                     continue
-                shell("rye", "add", name, "--dev"*dev, "--no-sync")
+                shell("rye", "add", name, "--dev"*dev, ["--optional", optional] if optional else None, "--no-sync")
 
         update_dependencies(pyproject.project.dependencies)
         update_dependencies(pyproject.tool.rye["dev-dependencies"], dev=True)
+        for (optional, items) in pyproject.project["optional-dependencies"].items():
+            update_dependencies(items, optional=optional)
         shell("rye", "sync")
 
     def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:

@@ -68,6 +68,7 @@ from Broken.Core import (
     extend,
     flatten,
     have_import,
+    hyphen_range,
     image_hash,
     last_locals,
     nearest,
