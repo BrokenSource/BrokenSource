@@ -14,12 +14,14 @@
     - Reset time when pressing "o" for resetting the Scene
     - Set `repeat=False` on shader texture, as it was wrapping pixels on `ssaa<1`
     - Progress bar no longer interfered with window visibility `log.info` (changed to `log.debug`)
+    - Improve precision of finding a (numerator, denominator) on glfw.set_window_aspect_ratio
 
 - **Additions**:
     - Initial logic for batch exporting:
         - Add `hyphen_range` parser to the shared library for that
         - New `--batch/-b` command on ShaderScene's main
     - The `scale` is now an attribute, rather than carrying pre-multiplication on width and height
+    - Performance improvement on not importing full `arrow` on `ShaderScene.main`
 
 **Pianola**:
 - Improved visuals, note border and beat markers

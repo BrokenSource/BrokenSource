@@ -18,6 +18,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Tuple,
     Union,
 )
 
@@ -199,6 +200,19 @@ def image_hash(image) -> str:
 def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
     """Finds the nearest multiple of a base number"""
     return type(multiple * operator(number/multiple))
+
+def limited_integer_ratio(number: Optional[float], *, limit: float=None) -> Optional[Tuple[int, int]]:
+    """Same as Number.as_integer_ratio but with an optional upper limit and optional return"""
+    if number is None:
+        return None
+
+    num, den = number.as_integer_ratio()
+
+    if limit and (den > limit or num > limit):
+        normalize = limit/min(num, den)
+        num, den = int(num * normalize), int(den * normalize)
+
+    return num, den
 
 def have_import(module: str, *, load: bool=False) -> bool:
     if load:
