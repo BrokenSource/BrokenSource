@@ -390,8 +390,8 @@ class BrokenProject:
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
         self.PACKAGE     = Path(self.PACKAGE)
 
-        # Fixme (#spec): Split the projects into many packages
-        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name.replace("Broken", "broken-source"))
+        # Fixme (#spec): Projects don't have their own spec as they are included
+        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name)
         self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 

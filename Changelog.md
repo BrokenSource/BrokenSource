@@ -1,9 +1,7 @@
 
 <!------------------------------------------------------------------------------------------------>
 
-# • [0.2.2] - (Staging)
-
-> Implemented stuff awaiting a release
+# • [0.2.2] - Staging changes awaiting a release
 
 **General**:
     - The new minimum Python version is 3.9
@@ -16,12 +14,13 @@
     - Progress bar no longer interfered with window visibility `log.info` (changed to `log.debug`)
     - Improve precision of finding a (numerator, denominator) on glfw.set_window_aspect_ratio
 
-- **Additions**:
+- **Additions/Changes**:
     - Initial logic for batch exporting:
         - Add `hyphen_range` parser to the shared library for that
         - New `--batch/-b` command on ShaderScene's main
     - The `scale` is now an attribute, rather than carrying pre-multiplication on width and height
     - Performance improvement on not importing full `arrow` on `ShaderScene.main`
+    - Renamed `SHADERFLOW_BACKEND` to `WINDOW_BACKEND` env configuration
 
 **Pianola**:
 - Improved visuals, note border and beat markers
