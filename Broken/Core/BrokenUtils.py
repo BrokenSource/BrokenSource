@@ -20,13 +20,13 @@ class SameTracker:
 
     def __call__(self, value: Any) -> bool:
         """
-        If a value is the same, returns True, else updates it and returns False
+        If a value is the same, returns False, else updates it and returns True
         • Useful on ignoring expensive calls where parameters doesn't changes
         """
         if self.value != value:
             self.value = value
-            return False
-        return True
+            return True
+        return False
 
 class Ignore:
     """A class that does nothing. No-operation faster Mock"""

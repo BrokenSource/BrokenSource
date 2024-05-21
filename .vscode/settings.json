@@ -101,11 +101,6 @@
         {"tag": "optimization", "color": "#3498DB"}
     ],
 
-    // Fixme: Remove when only a single Python venv is used
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportMissingImports": "none"
-    },
-
     // Auto remove unused imports
     // "[python]": {
     //     "editor.codeActionsOnSave": {

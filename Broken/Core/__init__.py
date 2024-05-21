@@ -1,3 +1,4 @@
+import contextlib
 import enum
 import hashlib
 import inspect
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import (
     Any,
     Callable,
+    Dict,
     Generator,
     Iterable,
     List,
@@ -149,7 +151,7 @@ def shell(
     kwargs["shell"] = shell
 
     # preexec_fn is not supported on windows, pop from kwargs
-    if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
+    if (os.name == "nt") and (kwargs.pop("preexec_fn")):
         log.minor("preexec_fn is not supported on Windows, ignoring..")
 
     # Run the command and return specified object
@@ -222,6 +224,16 @@ def have_import(module: str, *, load: bool=False) -> bool:
         except ImportError:
             return False
     return sys.modules.get(module, False)
+
+@contextlib.contextmanager
+def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
+    """Temporarily sets environment variables"""
+    old = os.environ.copy()
+    os.environ.clear()
+    os.environ.update({k: str(v) for k, v in (old | env).items() if v})
+    yield
+    os.environ.clear()
+    os.environ.update(old)
 
 # -------------------------------------------------------------------------------------------------|
 

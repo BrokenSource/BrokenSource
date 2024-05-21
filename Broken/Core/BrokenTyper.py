@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import contextlib
 import shlex
 from typing import (
@@ -14,28 +12,17 @@ from typer import Typer
 
 import Broken
 from Broken import flatten
-from Broken.Core.BrokenUtils import Ignore
 
 
 @define
 class BrokenTyper:
-    """
-    A wrap around Typer with goodies
-
-    • Why? Automation.
-    • Stupid? Absolutely.
-    • Useful? Maybe.
-    • Fun? Yes.
-    • Worth it? Probably not.
-    • Will I use it? Yes.
-    """
+    """A wrap around Typer with goodies. # Todo: Maybe try Cyclopts"""
     description: str       = ""
     app:         Typer     = None
     chain:       bool      = False
     commands:    List[str] = Factory(list)
     default:     str       = None
     help_option: bool      = False
-    exit_hook:   Callable  = Factory(Ignore)
     __first__:   bool      = True
     epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
@@ -117,13 +104,11 @@ class BrokenTyper:
             try:
                 self.app(args)
             except SystemExit:
-                self.exit_hook()
+                log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:
-                log.success("BrokenTyper stopped by user")
-                self.exit_hook()
-            except Exception as e:
-                self.exit_hook()
-                raise e
+                log.success("BrokenTyper exit KeyboardInterrupt")
+            except Exception as error:
+                raise error
 
             # Don't continue on non BrokenShell mode
             if not shell:

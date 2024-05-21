@@ -5,6 +5,7 @@
 
 **General**:
     - The new minimum Python version is 3.9
+    - Added `Broken.temp_env` context, might be useful later
 
 **ShaderFlow**:
 
@@ -13,6 +14,8 @@
     - Set `repeat=False` on shader texture, as it was wrapping pixels on `ssaa<1`
     - Progress bar no longer interfered with window visibility `log.info` (changed to `log.debug`)
     - Improve precision of finding a (numerator, denominator) on glfw.set_window_aspect_ratio
+    - Integration on values close to target in Dynamics should not be skipped
+    - Use multiple threads in PyTorch due NumPy import with `OMP_NUM_THREADS=1`
 
 - **Additions/Changes**:
     - Initial logic for batch exporting:
@@ -21,6 +24,9 @@
     - The `scale` is now an attribute, rather than carrying pre-multiplication on width and height
     - Performance improvement on not importing full `arrow` on `ShaderScene.main`
     - Renamed `SHADERFLOW_BACKEND` to `WINDOW_BACKEND` env configuration
+    - Add `.instant = True` mode on DynamicNumber, should be useful later on
+    - Always build scenes when initializing, so it's not explicit or not assumes else;
+        - Side effect: When one just wants the CLI, the full window and shader shall be loaded
 
 **Pianola**:
 - Improved visuals, note border and beat markers
