@@ -36,7 +36,7 @@ class BrokenPath(pathlib.Path):
     - Clever mechanism: Functions aren't staticmethods but still can be called from the outside,
         they just imply self. For example: Both BrokenPath("/tmp").valid() or BrokenPath.valid("/tmp") works
 
-    - Convenience: Can use BrokenPath(None), BrokenPath("/ok/stuff", None, "file.mp4")
+    - Convenience: Can use BrokenPath(None), BrokenPath("/ok", None, "file.mp4") -> "/ok/file.mp4"
     """
     _flavour = type(pathlib.Path())._flavour
 
@@ -67,7 +67,6 @@ class BrokenPath(pathlib.Path):
             return BrokenPath(path)
         return None
 
-    @staticmethod
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath(src), BrokenPath(dst)
         BrokenPath.mkdirs(dst.parent, echo=False)
@@ -79,14 +78,12 @@ class BrokenPath(pathlib.Path):
             shutil.copy2(src, dst)
         return dst
 
-    @staticmethod
     def move(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath(src), BrokenPath(dst)
         log.info(f"Moving ({src})\n → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
-    @staticmethod
     def remove(path: Path, *, confirm=False, echo=True) -> Path:
 
         # Already removed or doesn't exist
@@ -143,7 +140,6 @@ class BrokenPath(pathlib.Path):
         log.info(f"Popd  ({path})", echo=echo)
         os.chdir(cwd)
 
-    @staticmethod
     def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
         """
         Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the target
@@ -357,7 +353,6 @@ class BrokenPath(pathlib.Path):
         log.success(f"Downloaded file ({output}) from ({url})", echo=echo)
         return output
 
-    @staticmethod
     def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
         file = BrokenPath.download(denum(url), echo=echo)
 
@@ -384,22 +379,18 @@ class BrokenPath(pathlib.Path):
 
         return BrokenPath.move(file, directory/subdir, echo=echo)
 
-    @staticmethod
     def which(name: str) -> Optional[Path]:
         BrokenPath.update_externals_path()
         return BrokenPath(shutil.which(name))
 
-    @staticmethod
     def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
         path = (path or Broken.BROKEN.DIRECTORIES.EXTERNALS)
         return BrokenPath.add_to_path(path, recursively=True, echo=echo)
 
-    @staticmethod
     def on_path(path: Path) -> bool:
         """Check if a path is on PATH, works with symlinks"""
         return (Path(path) in map(Path, os.environ.get("PATH", "").split(os.pathsep)))
 
-    @staticmethod
     def add_to_path(
         path: Path,
         *,
@@ -421,9 +412,8 @@ class BrokenPath(pathlib.Path):
         """
         path = BrokenPath(path)
 
-        # Can't recurse on files
-        if (path.is_file() and recursively):
-            raise RuntimeError(f"Can't add a 'file' recursively to Path ({path})")
+        if (path.is_file()):
+            raise RuntimeError(f"Can't add a 'file' to Path ({path})")
 
         # Can't recurse on non existing directories
         if (not path.exists()) and recursively:
@@ -457,7 +447,6 @@ class BrokenPath(pathlib.Path):
 
     # # Specific / "Utils"
 
-    @staticmethod
     def open_in_file_explorer(path: Path):
         """Opens a path in the file explorer"""
         path = BrokenPath(path)
@@ -470,11 +459,9 @@ class BrokenPath(pathlib.Path):
 
     # Fixme: Untested functions, needs better name; are these useful?
 
-    @staticmethod
     def non_empty_file(path: Path) -> bool:
         return path.exists() and path.is_file() and path.stat().st_size > 0
 
-    @staticmethod
     def empty_file(path: Path, create: bool=True) -> bool:
         if create and not path.exists():
             path.parent.mkdirs(parents=True, exist_ok=True)

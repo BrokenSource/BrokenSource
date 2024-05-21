@@ -101,3 +101,13 @@ class BrokenResolution:
         ) or 1
 
         return BrokenResolution.round_resolution(width/reduce, height/reduce)
+
+# -------------------------------------------------------------------------------------------------|
+# Test
+
+class _PyTest:
+
+    def test_round_component(self):
+        assert BrokenResolution.round_component(100) == 100
+        assert BrokenResolution.round_component(2.5) == 2
+        assert BrokenResolution.round_component(3.2) == 4

@@ -197,5 +197,15 @@ exclude = [".venv/**"]
 # Tests
 
 [tool.pytest.ini_options]
-addopts      = "-ra --no-header --durations=0 -v -p no:cacheprovider"
-python_files = ["**/__test__.py"]
+addopts = [
+    "--import-mode=importlib",
+    "-p no:cacheprovider",
+    "--durations=0",
+    "--no-header",
+    "--tb=native",
+    "-ra",
+]
+python_classes = "_PyTest"
+python_files = [
+    "Core/BrokenEnum.py",
+]
