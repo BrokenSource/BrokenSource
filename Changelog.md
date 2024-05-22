@@ -6,6 +6,7 @@
 **General**:
     - The new minimum Python version is 3.9
     - Added `Broken.temp_env` context, might be useful later
+    - Added `OnceTracker` complimentary to `SameTracker`
 
 **ShaderFlow**:
 

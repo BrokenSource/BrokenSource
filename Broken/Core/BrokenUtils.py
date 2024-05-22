@@ -15,18 +15,25 @@ from Broken import flatten
 
 @define
 class SameTracker:
-    """Doumo same desu"""
+    """Doumo same desu. If a value is the same, returns False, else updates it and returns True
+    • Useful on ignoring expensive calls where parameters doesn't changes"""
     value: Any = None
 
-    def __call__(self, value: Any) -> bool:
-        """
-        If a value is the same, returns False, else updates it and returns True
-        • Useful on ignoring expensive calls where parameters doesn't changes
-        """
+    def __call__(self, value: Any=True) -> bool:
         if self.value != value:
             self.value = value
             return True
         return False
+
+@define
+class OnceTracker:
+    _first: bool = False
+
+    def __call__(self) -> bool:
+        if not self._first:
+            self._first = True
+            return False
+        return True
 
 class Ignore:
     """A class that does nothing. No-operation faster Mock"""
@@ -48,8 +55,9 @@ class BrokenAttrs:
             if method := cls.__dict__.get("__post__"):
                 method(self)
 
+    @abstractmethod
     def __post__(self) -> None:
-        pass
+        ...
 
 class BrokenWatchdog(ABC):
 
