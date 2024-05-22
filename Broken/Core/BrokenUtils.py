@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import copy
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Self,
-)
+from typing import Any, Self
 
 from attr import Factory, define
 from loguru import logger as log
@@ -27,6 +24,7 @@ class SameTracker:
 
 @define
 class OnceTracker:
+    """Returns False the first time it's called, never nest style: `if once/already(): return`"""
     _first: bool = False
 
     def __call__(self) -> bool:
