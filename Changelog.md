@@ -28,9 +28,13 @@
     - Add `.instant = True` mode on DynamicNumber, should be useful later on
     - Always build scenes when initializing, so it's not explicit or not assumes else;
         - Side effect: When one just wants the CLI, the full window and shader shall be loaded
+    - Add `.duration` property to ShaderPiano, rename some attributes
 
 **Pianola**:
 - Improved visuals, note border and beat markers
+- Set initial time to minus roll time, so notes don't suddenly appear
+- Set the Scene runtime to the Midi's one when loading
+- Unify Midi loading on a `.load_midi` function
 
 <br>
 
