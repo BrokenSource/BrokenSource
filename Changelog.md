@@ -4,9 +4,10 @@
 # • [0.2.2] - Staging changes awaiting a release
 
 **General**:
-    - The new minimum Python version is 3.9
-    - Added `Broken.temp_env` context, might be useful later
-    - Added `OnceTracker` complimentary to `SameTracker`
+- The new minimum Python version is 3.9
+- Added `Broken.temp_env` context, might be useful later
+- Added `OnceTracker`, complementing `SameTracker` values
+- Fix `StopIteration` on `BrokenPath.*.extract().rglob()` due bad Path with double output stems
 
 **ShaderFlow**:
 

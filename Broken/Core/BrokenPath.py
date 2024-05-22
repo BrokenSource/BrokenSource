@@ -275,7 +275,7 @@ class BrokenPath(pathlib.Path):
 
         extract_flag.touch()
         if PATH: BrokenPath.add_to_path(path=output, recursively=True, echo=echo)
-        return output/BrokenPath.stem(path)
+        return output
 
     def download(
         url: str,
