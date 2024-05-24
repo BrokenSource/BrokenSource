@@ -535,9 +535,7 @@ class BrokenCLI:
 
         for project in self.projects:
             for file in flatten(
-                (root/"poetry.toml"),
-                (root/".gitignore"),
-                (root/".github"/"Funding.yml"),
+                (root/".github"/"funding.yml"),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.md"),
             ):
                 target = project.path/file.relative_to(root)

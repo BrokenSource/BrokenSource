@@ -31,10 +31,10 @@ class ShutilFormat(BrokenEnum):
 
 class BrokenPath(pathlib.Path):
     """
-    Extended pathlib.BrokenPath with utilities and always use absolute expanded user paths.
+    Extended pathlib.Path with utilities, absolute paths always, accepts None
 
     - Clever mechanism: Functions aren't staticmethods but still can be called from the outside,
-        they just imply self. For example: Both BrokenPath("/tmp").valid() or BrokenPath.valid("/tmp") works
+        they just imply self eg. Both BrokenPath("/tmp").valid() or BrokenPath.valid("/tmp") works
 
     - Convenience: Can use BrokenPath(None), BrokenPath("/ok", None, "file.mp4") -> "/ok/file.mp4"
     """
@@ -49,7 +49,7 @@ class BrokenPath(pathlib.Path):
         # Use absolute expanded user always. Note that we do not want
         # to .resolve() as having symlink paths _can_ be wanted
         instance = super().__new__(cls, *args, **kwargs)
-        instance._raw_paths = list(map(str, args))
+        instance._raw_paths = list(map(str, args)) # Py312 fix
         return instance.expanduser().absolute()
 
     def pathlib(self) -> pathlib.Path:
