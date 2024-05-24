@@ -12,15 +12,15 @@ from Broken import flatten
 
 @define
 class SameTracker:
-    """Doumo same desu. If a value is the same, returns False, else updates it and returns True
+    """Doumo same desu. If a value is the same, returns True, else updates it and returns False
     • Useful on ignoring expensive calls where parameters doesn't changes"""
     value: Any = None
 
     def __call__(self, value: Any=True) -> bool:
         if self.value != value:
             self.value = value
-            return True
-        return False
+            return False
+        return True
 
 @define
 class OnceTracker:

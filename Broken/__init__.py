@@ -14,12 +14,14 @@ pretty_errors.configure(
     lines_after       = 10,
 )
 
+# Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
+# Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 os.environ["OMP_NUM_THREADS"] = "1"
 
+# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
 # https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
-# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
 os.environ["__GL_YIELD"] = "USLEEP"
 
 # Keep repository clean of __pycache__ and .pyc files by writing to .venv

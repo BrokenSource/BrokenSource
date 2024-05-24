@@ -31,6 +31,11 @@
         - Side effect: When one just wants the CLI, the full window and shader shall be loaded
     - Add `.duration` property to ShaderPiano, rename some attributes
 
+**DepthFlow**:
+
+- **Additions/Changes**:
+    - Refactor `parallax_*` attributes to a state dictionary
+
 **Pianola**:
 - Improved visuals, note border and beat markers
 - Set initial time to minus roll time, so notes don't suddenly appear

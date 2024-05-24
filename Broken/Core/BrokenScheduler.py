@@ -4,7 +4,7 @@ import inspect
 import time
 from collections import deque
 from threading import Lock
-from typing import Any, Callable, Deque, Dict, Iterable, List, Self, Optional
+from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 
 from attr import Factory, define, field
 
@@ -28,7 +28,7 @@ class BrokenTask:
     """Method's keyword arguments"""
 
     output: Any = field(default=None, repr=False)
-    """Method's return value after last call"""
+    """Method's return value of the last call"""
 
     context: Any = None
     """Context to use when calling task (with statement)"""
@@ -50,8 +50,8 @@ class BrokenTask:
     frameskip: bool = True
     """Constant deltatime mode (False) or real deltatime mode (True)"""
 
-    decoupled: bool = False
-    """"Rendering" mode, do not sleep on real time"""
+    freewheel: bool = False
+    """"Rendering" mode, do not sleep on real time, exact virtual frametimes"""
 
     precise: bool = False
     """Use precise time sleeping for near-perfect frametimes"""
@@ -76,7 +76,7 @@ class BrokenTask:
         self._time = ("time" in signature.parameters)
 
         # Assign idealistic values for decoupled
-        if self.decoupled: self.started = BIG_BANG
+        if self.freewheel: self.started = BIG_BANG
         self.last_call = (self.last_call or self.started)
         self.next_call = (self.next_call or self.started)
 
@@ -126,7 +126,7 @@ class BrokenTask:
         # - Positive means to wait, negative we are behind
         wait = max(0, (self.next_call - time.bang_counter()))
 
-        if self.decoupled:
+        if self.freewheel:
             pass
         elif block:
             if self.precise:
@@ -137,7 +137,7 @@ class BrokenTask:
             return None
 
         # The assumed instant the code below will run instantly
-        now = self.next_call if self.decoupled else time.bang_counter()
+        now = self.next_call if self.freewheel else time.bang_counter()
         if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
         if self._time: self.kwargs["time"] = (now - self.started)
 
