@@ -30,11 +30,14 @@
     - Always build scenes when initializing, so it's not explicit or not assumes else;
         - Side effect: When one just wants the CLI, the full window and shader shall be loaded
     - Add `.duration` property to ShaderPiano, rename some attributes
+    - The camera 2D Projection plane is now generic, slightly more costly but worth it
+        - The plane is defined by `camera.plane_point` and `camera.plane_normal` on manual inits
 
 **DepthFlow**:
 
 - **Additions/Changes**:
     - Refactor `parallax_*` attributes to a state dictionary
+    - Implement a new static-projections focal depth plane attribute
 
 **Pianola**:
 - Improved visuals, note border and beat markers
