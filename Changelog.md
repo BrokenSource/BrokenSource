@@ -1,7 +1,17 @@
 
 <!------------------------------------------------------------------------------------------------>
 
-# • [0.2.2] - Staging changes awaiting a release
+# • [0.3.1] - Staging changes awaiting a release
+
+Empty list so far
+
+<br>
+
+<!------------------------------------------------------------------------------------------------>
+
+# • [0.3.0] - (2024.05.25)
+
+> A bag of new featurs that will stabilize in the upcoming patch versions
 
 **General**:
 - The new minimum Python version is 3.9
@@ -28,8 +38,9 @@
     - Renamed `SHADERFLOW_BACKEND` to `WINDOW_BACKEND` env configuration
     - Add `.instant = True` mode on DynamicNumber, should be useful later on
     - Always build scenes when initializing, so it's not explicit or not assumes else;
-        - Side effect: When one just wants the CLI, the full window and shader shall be loaded
+        - Fixme: When one just wants the CLI, the full window and shader shall be loaded
     - Add `.duration` property to ShaderPiano, rename some attributes
+    - Fix and rename the Motion Blur scene. Instead of bindless textures, return `vec4` switch case
     - The camera 2D Projection plane is now generic, slightly more costly but worth it
         - The plane is defined by `camera.plane_point` and `camera.plane_normal` on manual inits
 
