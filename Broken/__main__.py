@@ -23,6 +23,7 @@ from Broken import (
     BrokenTorch,
     BrokenTyper,
     TorchFlavor,
+    denum,
     flatten,
     shell,
 )
@@ -228,45 +229,12 @@ class BrokenProjectCLI:
 
         if self.is_python:
             BrokenCLI.rust()
-            BrokenTorch.write_flavor(self.path/self.name/"Resources", torch)
-            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD
+            BrokenTorch.season(self.path/self.name/"Resources", torch)
+            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Rust"
 
-            # Build all path dependencies for a project recursively, return their path
-            def convoluted_wheels(path: Path, projects: List[Path]=None) -> List[Path]:
-                with BrokenPath.pushd(path := BrokenPath(path)):
-
-                    # Avoid rebuilding the same project or recurse
-                    if path not in (projects := projects or list()):
-                        log.info(f"Building project at ({path})")
-                        projects.append(path)
-                    else:
-                        return
-
-                    # Load pyproject dictionary
-                    pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
-
-                    # Iterate on all dependencies, find only 'path=' ones
-                    for name, dependency in pyproject.tool.poetry["dev-dependencies"].items():
-                        if isinstance(dependency, str):
-                            continue
-                        if not dependency.path:
-                            continue
-                        convoluted_wheels(path=dependency.path, projects=projects)
-
-                    # Remove previous builds
-                    BrokenPath.remove(path/"dist")
-
-                    # Build the current project
-                    if ("tool.poetry" in pyproject):
-                        shell("poetry", "build", "--format", "wheel")
-                    else:
-                        shell(sys.executable, "-m", "build", "--wheel")
-
-                return projects
-
-            # Build all projects wheels. Main project is the first returned
-            path_projects = convoluted_wheels(self.path)
-            wheels = [next(project.glob("dist/*.whl")) for project in path_projects]
+            # Build the monorepo wheel, which includes all projects
+            with BrokenPath.pushd(Broken.BROKEN.DIRECTORIES.REPOSITORY):
+                wheel = BrokenCLI.pypi()
 
             # Remove previous build cache for pyapp but no other crate
             for path in BUILD_DIR.rglob("*"):
@@ -275,11 +243,13 @@ class BrokenProjectCLI:
 
             # Pyapp configuration
             os.environ.update(dict(
-                PYAPP_PROJECT_PATH=str(wheels[0]),
-                PYAPP_LOCAL_WHEELS=(";".join(str(x) for x in wheels[1:])),
+                PYAPP_PROJECT_PATH=str(wheel),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
+                PYAPP_UV_ENABLED="1",
+                # Fixme (#pyapp): De-spaghetti when we can send env vars
+                PYAPP_SELF_COMMAND=denum(TorchFlavor.get(torch)) or "self",
             ))
 
             # Cache Rust compilation across projects
@@ -287,31 +257,14 @@ class BrokenProjectCLI:
             shell("rustup", "target", "add", target.rust)
 
             # Build the final binary
-            if (_OFFICIAL := False):
-                if shell("cargo", "install",
-                    "pyapp", "--force",
-                    "--root", BUILD_DIR,
-                    "--target", target.rust
-                ).returncode != 0:
-                    log.error("Failed to compile PyAPP")
-                    exit(1)
-            elif (_FORKED := True):
-                with BrokenPath.pushd(Broken.BROKEN.DIRECTORIES.BROKEN_FORK/"PyAPP"):
-                    if shell("cargo", "install",
-                        "--path", ".",
-                        "--force",
-                        "--root", BUILD_DIR,
-                        "--target", target.rust
-                    ).returncode != 0:
-                        log.error("Failed to compile PyAPP")
-                        exit(1)
-            else:
-                raise RuntimeError("No Pyapp build method selected")
-
-            # Remove build wheel artifacts
-            for project in path_projects:
-                BrokenPath.remove(project/"dist")
-                BrokenTorch.remove_flavor(project)
+            if shell("cargo", "install",
+                "--version", "0.19.0",
+                "pyapp", "--force",
+                "--root", BUILD_DIR,
+                "--target", target.rust
+            ).returncode != 0:
+                log.error("Failed to compile PyAPP")
+                exit(1)
 
             # Find the compiled binary
             binary = next((BUILD_DIR/"bin").glob("pyapp*"))
@@ -319,7 +272,7 @@ class BrokenProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Rename project binary according to the Broken naming convention
-            version = wheels[0].name.split("-")[1]
+            version = wheel.name.split("-")[1]
             release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                 f"{self.name.lower()}-",
                 (f"{torch.name.lower()}-" if torch else ""),
@@ -328,6 +281,8 @@ class BrokenProjectCLI:
                 f"{version}",
                 f"{target.extension}",
             ))
+
+            # Overwrite previous binary
             BrokenPath.remove(release_path)
             binary.rename(release_path)
 
@@ -453,10 +408,11 @@ class BrokenCLI:
         else:
             shell("mkdocs", "serve")
 
-    def pypi(self,
+    @staticmethod
+    def pypi(
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to TestPyPI")]=False,
-    ) -> None:
+    ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         DIR = BrokenPath.resetdir(Broken.BROKEN.DIRECTORIES.BROKEN_WHEELS)
         shell("rye", "build", "--wheel", "--out", DIR)
@@ -473,6 +429,8 @@ class BrokenCLI:
                 wheel,
                 echo=False
             )
+
+        return wheel
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""

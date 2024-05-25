@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -8,10 +11,10 @@ from Broken import BrokenEnum, BrokenPath, shell
 
 
 class TorchFlavor(BrokenEnum):
-    # BASE = ""
-    CPU  = "cpu"
-    CUDA = "cu121"
-    ROCM = "rocm5.7"
+    # BASE = "2.2.1"
+    CPU  = "2.2.1+cpu"
+    CUDA = "2.2.1+cu121"
+    ROCM = "2.2.1+rocm5.7"
 
 class BrokenTorch:
     """
@@ -28,33 +31,38 @@ class BrokenTorch:
     def manage(resources: Path):
 
         # Maybe install a PyTorch flavor
-        if (pytorch := BrokenPath(resources/BrokenTorch.flavor_file).valid()):
-            full = pytorch.read_text().strip()
-            version, flavor = full.split("+")
+        # if (pytorch := BrokenPath(resources/BrokenTorch.flavor_file).valid()):
+            # full = pytorch.read_text().strip()
+            # version, flavor = full.split("+")
 
-            if not TorchFlavor.get(flavor):
-                raise ValueError(f"Invalid PyTorch Flavor ({flavor})")
+        # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
+        version, flavor = os.environ.get("PYAPP_COMMAND_NAME").split("+")
+        full = f"{version}+{flavor}"
 
-            # Try getting current installed flavor, if any, without loading torch
-            site_packages = Path(__import__("site").getsitepackages()[0])
-            if (torch_version := (site_packages/"torch"/"version.py")).exists():
-                exec(torch_version.read_text(), namespace := {})
-                current_flavor = namespace["__version__"].split("+")[1]
-            else:
-                current_flavor = None
+        if not TorchFlavor.get(flavor):
+            raise ValueError(f"Invalid PyTorch Flavor ({flavor})")
 
-            # If flavors mismatch, install the correct one
-            if (current_flavor != flavor):
-                log.info(f"Installing PyTorch Flavor ({full}), current is ({current_flavor})")
-                PIP = (sys.executable, "-m", "pip")
-                source_url = f"https://download.pytorch.org/whl/{flavor}"
-                shell(PIP, "uninstall", "torch", "torchvision", "torchaudio", "-y")
-                shell(PIP, "install", f"torch=={version}", "torchvision", "torchaudio", "--index-url", source_url)
-            else:
-                log.info(f"PyTorch Flavor ({full}) already installed")
+        # Try getting current installed flavor, if any, without loading torch
+        site_packages = Path(__import__("site").getsitepackages()[0])
+        if (torch_version := (site_packages/"torch"/"version.py")).exists():
+            exec(torch_version.read_text(), namespace := {})
+            current_flavor = namespace["__version__"].split("+")[1]
+        else:
+            current_flavor = None
+
+        # If flavors mismatch, install the correct one
+        if (current_flavor != flavor):
+            log.info(f"Installing PyTorch Flavor ({full}), current is ({current_flavor})")
+            PIP = (sys.executable, "-m", "pip")
+            source_url = f"https://download.pytorch.org/whl/{flavor}"
+            shell(PIP, "uninstall", "torch", "-y")
+            shell(PIP, "install", f"torch=={version}", "--index-url", source_url)
+            shell(PIP, "install", "transformers")
+        else:
+            log.info(f"PyTorch Flavor ({full}) already installed")
 
     @staticmethod
-    def write_flavor(resources: Path, flavor: Optional[TorchFlavor]) -> Optional[Path]:
+    def season(resources: Path, flavor: Optional[TorchFlavor]) -> Optional[Path]:
         if not bool(flavor):
             return None
         flavor = (f"+{flavor.value}" * bool(flavor.value))
@@ -63,6 +71,6 @@ class BrokenTorch:
         return file
 
     @staticmethod
-    def remove_flavor(resources: Path) -> None:
+    def unseason(resources: Path) -> None:
         for file in resources.rglob(BrokenTorch.flavor_file):
             BrokenPath.remove(file)

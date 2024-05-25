@@ -3,7 +3,10 @@
 
 # • [0.3.1] - Staging changes awaiting a release
 
-Empty list so far
+**General**:
+- Fixed PyApp releases of the projects in the new single wheel architecture
+    - The venv is shared across same-version projects and managed by uv
+    - **Fixme hack:** PyTorch flavor is being passed as `PYAPP_SELF_COMMAND` until we can send envs
 
 <br>
 

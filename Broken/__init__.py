@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import typing
 from pathlib import Path
@@ -32,13 +33,11 @@ if (_venv := Path(__file__).parent.parent/".venv").exists():
 if sys.version_info < (3, 11):
     typing.Self = typing.Any
 
-# PyAPP isn't passing the argument on Linux
-if bool(os.environ.get("PYAPP", False)) and (os.name != "nt"):
-    sys.argv.insert(0, sys.executable)
+# Replace argv[0] of "-c" with PyApp's managed python
+if (_pyapp_binary := os.environ.get("PYAPP", False)):
+    sys.argv[0] = sys.executable
 
-# As a safety measure, make all relative and strings with suffix ok paths absolute. We might run
-# binaries from other cwd, so make sure to always use non-ambiguous absolute paths if found
-# • File name collisions are unlikely with any Monorepo path (?)
+# Expand "../paths" and existing ("-o", "file.ext") to abolute paths: Unanbiguously naming paths
 for _index, _item in enumerate(sys.argv):
     if any((
         any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
