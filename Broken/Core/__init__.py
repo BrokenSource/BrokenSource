@@ -151,7 +151,7 @@ def shell(
     kwargs["shell"] = shell
 
     # preexec_fn is not supported on windows, pop from kwargs
-    if (os.name == "nt") and (kwargs.pop("preexec_fn")):
+    if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("preexec_fn is not supported on Windows, ignoring..")
 
     # Run the command and return specified object

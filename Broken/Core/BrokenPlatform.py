@@ -70,11 +70,12 @@ class BrokenPlatform:
 
         @property
         def rust(self) -> str:
+            windows_compiler = ("msvc" if BrokenPlatform.OnWindows else "gnu")
             return {
                 self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
                 self.LinuxARM:     "aarch64-unknown-linux-gnu",
-                self.WindowsAMD64: "x86_64-pc-windows-gnu",
-                self.WindowsARM:   "aarch64-pc-windows-gnu",
+                self.WindowsAMD64: "x86_64-pc-windows-" + windows_compiler,
+                self.WindowsARM:   "aarch64-pc-windows-" + windows_compiler,
                 self.MacosAMD64:   "x86_64-apple-darwin",
                 self.MacosARM:     "aarch64-apple-darwin",
             }[self]

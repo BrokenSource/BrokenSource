@@ -1,12 +1,22 @@
+<!------------------------------------------------------------------------------------------------>
+
+# • [0.3.2] - Staging changes awaiting a release
+
+Empty list at the moment
+
+<br>
 
 <!------------------------------------------------------------------------------------------------>
 
-# • [0.3.1] - Staging changes awaiting a release
+# • [0.3.1] - (2024.05.27)
 
 **General**:
 - Fixed PyApp releases of the projects in the new single wheel architecture
     - The venv is shared across same-version projects and managed by uv
     - **Fixme hack:** PyTorch flavor is being passed as `PYAPP_SELF_COMMAND` until we can send envs
+
+**DepthFlow**:
+- Use `SSAA=1.5` by default, for sharper images than brute forcing `quality` parameter
 
 <br>
 

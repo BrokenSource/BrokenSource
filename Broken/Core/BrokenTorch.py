@@ -11,10 +11,9 @@ from Broken import BrokenEnum, BrokenPath, shell
 
 
 class TorchFlavor(BrokenEnum):
-    # BASE = "2.2.1"
     CPU  = "2.2.1+cpu"
     CUDA = "2.2.1+cu121"
-    ROCM = "2.2.1+rocm5.7"
+    ROCM = "2.2.1+rocm6.0"
 
 class BrokenTorch:
     """
@@ -24,23 +23,18 @@ class BrokenTorch:
     flavor_file: str = "PyTorch.txt"
     """A relative path to a Project's Resources defining the PyTorch Flavor"""
 
-    version: str = "2.2.1"
-    """Version of Torch to install"""
-
     @staticmethod
     def manage(resources: Path):
 
-        # Maybe install a PyTorch flavor
-        # if (pytorch := BrokenPath(resources/BrokenTorch.flavor_file).valid()):
-            # full = pytorch.read_text().strip()
-            # version, flavor = full.split("+")
-
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
-        version, flavor = os.environ.get("PYAPP_COMMAND_NAME").split("+")
-        full = f"{version}+{flavor}"
+        full = os.environ.get("PYAPP_COMMAND_NAME", "")
 
-        if not TorchFlavor.get(flavor):
-            raise ValueError(f"Invalid PyTorch Flavor ({flavor})")
+        if ("+" not in full):
+            return None
+        if not TorchFlavor.get(full):
+            raise ValueError(f"Invalid PyTorch Flavor ({full})")
+
+        version, flavor = full.split("+")
 
         # Try getting current installed flavor, if any, without loading torch
         site_packages = Path(__import__("site").getsitepackages()[0])

@@ -29,14 +29,6 @@ os.environ["__GL_YIELD"] = "USLEEP"
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
-# Fix: typing.Self was implemented on Python >= 3.11
-if sys.version_info < (3, 11):
-    typing.Self = typing.Any
-
-# Replace argv[0] of "-c" with PyApp's managed python
-if (_pyapp_binary := os.environ.get("PYAPP", False)):
-    sys.argv[0] = sys.executable
-
 # Expand "../paths" and existing ("-o", "file.ext") to abolute paths: Unanbiguously naming paths
 for _index, _item in enumerate(sys.argv):
     if any((
@@ -44,6 +36,14 @@ for _index, _item in enumerate(sys.argv):
         bool(Path(_item).suffix) and Path(_item).exists(),
     )):
         sys.argv[_index] = str(Path(_item).expanduser().resolve())
+
+# Replace argv[0] of "-c" with PyApp's managed python
+if bool(os.environ.get("PYAPP", None)):
+    sys.argv[0] = sys.executable
+
+# Fix: typing.Self was implemented on Python >= 3.11
+if sys.version_info < (3, 11):
+    typing.Self = typing.Any
 
 # -------------------------------------------------------------------------------------------------|
 

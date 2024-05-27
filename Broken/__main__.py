@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import shutil
 import sys
@@ -229,7 +230,6 @@ class BrokenProjectCLI:
 
         if self.is_python:
             BrokenCLI.rust()
-            BrokenTorch.season(self.path/self.name/"Resources", torch)
             BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Rust"
 
             # Build the monorepo wheel, which includes all projects
@@ -256,9 +256,11 @@ class BrokenProjectCLI:
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
             shell("rustup", "target", "add", target.rust)
 
+            # We're not 'installing' a utility, remove warning
+            BrokenPath.add_to_path(BUILD_DIR/"bin")
+
             # Build the final binary
             if shell("cargo", "install",
-                "--version", "0.19.0",
                 "pyapp", "--force",
                 "--root", BUILD_DIR,
                 "--target", target.rust
@@ -272,25 +274,18 @@ class BrokenProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Rename project binary according to the Broken naming convention
-            version = wheel.name.split("-")[1]
-            release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
-                f"{self.name.lower()}-",
-                (f"{torch.name.lower()}-" if torch else ""),
-                f"{target.name}-",
-                f"{target.architecture}-",
-                f"{version}",
-                f"{target.extension}",
-            ))
+            for version in ("latest", wheel.name.split("-")[1]):
+                release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+                    f"{self.name.lower()}-",
+                    (f"{torch.name.lower()}-" if torch else ""),
+                    f"{target.name}-",
+                    f"{target.architecture}-",
+                    f"{version}",
+                    f"{target.extension}",
+                ))
+                BrokenPath.copy(src=binary, dst=release_path)
+                log.success(f"Built Project Release at ({release_path})")
 
-            # Overwrite previous binary
-            BrokenPath.remove(release_path)
-            binary.rename(release_path)
-
-            # Create a sha265sum file for integrity verification
-            sha256sum = BrokenPath.sha256sum(release_path)
-            release_path.with_suffix(".sha256").write_text(sha256sum)
-            log.info(f"• SHA256: {sha256sum}")
-            log.success(f"Built project at ({Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES/release_path})")
             return release_path
 
 # -------------------------------------------------------------------------------------------------|
@@ -456,14 +451,14 @@ class BrokenCLI:
             BrokenPath.add_to_path(Path.home()/".cargo"/"bin")
 
             if not BrokenPath.which("rustup"):
-                log.note("Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
-                log.note("• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
-                log.note("• Please restart your shell for Rust toolchain to be on PATH")
+                log.warning("Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
+                log.warning("• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
+                log.warning("• Please restart your shell for Rust toolchain to be on PATH")
                 exit(0)
 
         # Install Visual C++ Build Tools on Windows
         if BrokenPlatform.OnWindows and build_tools:
-            log.note("You must install Microsoft Visual C++ Build Tools, we will try, else install manually")
+            log.warning("You must install Microsoft Visual C++ Build Tools, we will try, else install manually")
             shell((
                 'winget install Microsoft.VisualStudio.2022.BuildTools --override '
                 '"--wait --passive'
@@ -509,9 +504,9 @@ class BrokenCLI:
 
         # Remove all known projects stuff
         for project in self.projects:
-            log.note()
-            log.note(f"Project: {project.name}")
-            log.note(f"• Path: {project.path}")
+            log.info()
+            log.info(f"Project: {project.name}")
+            log.info(f"• Path: {project.path}")
 
             # Follow Project's Workspace folder
             if (workspace := BrokenPath(project.path/"Workspace").valid()):

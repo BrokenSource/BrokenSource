@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.metadata
 import importlib.resources
 import os
+import shutil
+import subprocess
 import sys
 import tempfile
 from abc import ABC, abstractmethod
@@ -395,6 +397,17 @@ class BrokenProject:
         self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 
+        if (self.APP_NAME != "Broken"):
+            self.pyapp_new_binary_restore_hook()
+
+            # Print version information and exit when only "--version/-V" is the only argument
+            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
+                print(f"{self.APP_NAME} {self.VERSION}")
+                exit(0)
+
+            if (os.environ.get("WELCOME", "0") == "1"):
+                self.welcome()
+
         # Convenience: Symlink Workspace to projects data directory
         if Broken.DEVELOPMENT:
             try:
@@ -409,9 +422,6 @@ class BrokenProject:
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             dotenv.load_dotenv(env)
-
-        if (os.environ.get("WELCOME", "0") == "1") and (self.APP_NAME != "Broken"):
-            self.welcome()
 
     def welcome(self):
         """Pretty Welcome Message!"""
@@ -433,6 +443,26 @@ class BrokenProject:
             subtitle_align="center",
         ))
         print()
+
+    def pyapp_new_binary_restore_hook(self):
+        if not (pyapp_binary := os.environ.get("PYAPP", False)):
+            return
+
+        import hashlib
+        venv_path = Path(os.environ["VIRTUAL_ENV"])
+        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}-{self.VERSION}.sha256"
+        this_hash = hashlib.sha256(open(pyapp_binary, "rb").read()).hexdigest()
+        old_hash  = hash_file.read_text() if hash_file.exists() else None
+        hash_file.write_text(this_hash)
+
+        # "If either hash differs and not on the first run"
+        if (old_hash is not None) and (old_hash != this_hash):
+            log.info(f"Detected different binary hash for this release version {self.VERSION}")
+            log.info(f"• Path: ({venv_path})")
+            log.info("• Reinstalling the virtual environment alongside dependencies")
+            print("-"*shutil.get_terminal_size().columns)
+            subprocess.call([pyapp_binary, os.environ["PYAPP_COMMAND_NAME"], "restore"], stdout=subprocess.DEVNULL)
+            sys.exit(subprocess.call([pyapp_binary] + sys.argv[1:]))
 
 # -------------------------------------------------------------------------------------------------|
 
