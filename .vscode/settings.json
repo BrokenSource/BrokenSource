@@ -12,12 +12,6 @@
         "**/__pycache__": true,
     },
 
-    // Icons
-
-    "material-icon-theme.files.associations": {
-        "brakeit": "python"
-    },
-
     "material-icon-theme.folders.associations": {
         // Broken Stuff
         "Broken": "src",
