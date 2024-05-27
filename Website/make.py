@@ -1,9 +1,12 @@
+import shutil
 import sys
 from pathlib import Path
 
 import mkdocs_gen_files
 
-UNWANTED = (
+print("\n\n", "-"*(shutil.get_terminal_size().columns-2), "\n\n")
+
+UNWANTED_PYTHON = (
     "Resources",
     "Community",
     "__",
@@ -28,7 +31,7 @@ for ROOT in PROJECTS:
     for python in reversed(list(ROOT.rglob("*.py"))):
 
         # Skip unwanted files
-        if any(ban in str(python) for ban in UNWANTED):
+        if any(ban in str(python) for ban in UNWANTED_PYTHON):
             continue
 
         # Get the module import statement and url path
@@ -58,20 +61,20 @@ for ROOT in PROJECTS:
     # # Virtually copy all of Project's stuff to
 
     # This project's own paths
-    WHAT_WHERE = [
+    ORIGINAL_2_VIRTUAL = [
         ((ROOT/"Resources"), "resources"),
         ((ROOT.parent/"Website"), ""),
     ]
 
     # Only copy project's readme
     if (ROOT.name != "Broken"):
-        WHAT_WHERE.append((ROOT.parent/"Readme.md", "readme.md"))
+        ORIGINAL_2_VIRTUAL.append((ROOT.parent/"Readme.md", "readme.md"))
 
     WANT_SUFFIXES = (".md", ".png", ".jpg", ".svg")
 
     # Rebase "$what/*" to "$name/$where/*" local documentation
-    for (what, where) in WHAT_WHERE:
-        paths = (what.rglob("*") if what.is_dir() else [what])
+    for (original, virtual) in ORIGINAL_2_VIRTUAL:
+        paths = (original.rglob("*") if original.is_dir() else [original])
 
         for real in paths:
 
@@ -81,10 +84,11 @@ for ROOT in PROJECTS:
             if real.suffix not in WANT_SUFFIXES:
                 continue
 
-            virtual = Path(BASE, where, str(real.relative_to(what)).lower())
+            ghost = Path(BASE, virtual, str(real.relative_to(original)).lower())
+            ghost = str(ghost).replace("readme", "index")
 
-            print(f"• Copying ({real}) -> ({virtual})")
+            print(f"• Copying ({real}) -> ({ghost})")
 
-            with mkdocs_gen_files.open(virtual, "wb") as file:
+            with mkdocs_gen_files.open(ghost, "wb") as file:
                 file.write(real.read_bytes())
 

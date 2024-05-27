@@ -344,7 +344,7 @@ class BrokenCLI:
             self.broken_typer.command(self.uninstall)
 
         with self.broken_typer.panel("🛡️ Core"):
-            self.broken_typer.command(self.docs)
+            self.broken_typer.command(self.website)
             self.broken_typer.command(self.pypi)
             self.broken_typer.command(self.sync)
             self.broken_typer.command(self.rust)
@@ -399,8 +399,8 @@ class BrokenCLI:
             update_dependencies(items, optional=optional)
         shell("rye", "sync")
 
-    def docs(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Documentation to GitHub Pages")]=False) -> None:
-        """📚 Generate or Deploy Documentation for all Projects"""
+    def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
+        """📚 Generate or Deploy the Unified Broken Source Software Website"""
         GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
             shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)

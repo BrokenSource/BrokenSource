@@ -416,7 +416,7 @@ class BrokenPath(pathlib.Path):
         Add a path, recursively or not, to System's Path or this Python process's Path
 
         Args:
-            recursively: Also add all subdirectories of the given path
+            recurse: Also add all subdirectories of the given path
             persistent: Use 'userpath' package to add to the Shell's or Registry PATH
             preferential: Prepends the path for less priority on system binaries
 

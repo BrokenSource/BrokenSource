@@ -190,7 +190,7 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
 
     for part in string.split(","):
         if ("-" in part):
-            start, end = map(int, re.split("-|\.\.|\.\.\.", part))
+            start, end = map(int, re.split(r"-|\.\.|\.\.\.", part))
             yield from range(start, end + int(inclusive))
         else:
             yield int(part)

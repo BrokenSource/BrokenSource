@@ -147,8 +147,8 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `value`: Value of the member to get
-            `must`:  Whether to raise an error if the member is not found
+            value: Value of the member to get
+            must: Whether to raise an error if the member is not found
 
         Returns:
             The enum member with the given value if found, None otherwise
@@ -260,7 +260,7 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `value`: Value to get the enum member from, can be the member's name or value
+            value: Value to get the enum member from, can be the member's name or value
 
         Returns:
             The enum member with the given value if found, None otherwise
@@ -298,7 +298,7 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `value`: Value to get the next enum member from, can be the Option's name or value
+            value: Value to get the next enum member from, can be the Option's name or value
 
         Returns:
             The next enum member (in position) from the given value
@@ -332,7 +332,7 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `value`: Value to get the previous enum member from, can be the Option's name or value
+            value: Value to get the previous enum member from, can be the Option's name or value
 
         Returns:
             The previous enum member (in position) from the given value
@@ -362,15 +362,15 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `name`:  Name of the new member
-            `value`: Value of the new member
+            name:  Name of the new member
+            value: Value of the new member
 
         Returns:
             Fluent interface, the class that was extended
         """
         raise NotImplementedError("This method is not implemented yet")
 
-    def field(self, **kwargs) -> attrs.Attribute:
+    def field(self, **kwargs: Dict[str, Any]) -> attrs.Attribute:
         """
         Make a attrs.field() with this member as default and enum class's get method as converter
 
@@ -392,7 +392,7 @@ class BrokenEnum(enum.Enum):
             ```
 
         Args:
-            `kwargs`: Keyword arguments to pass to the field, may override default and converter
+            kwargs: Keyword arguments to pass to the field, may override default and converter
         """
         return attrs.field(default=self, converter=self.__class__.get, **kwargs)
 

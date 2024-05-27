@@ -1,7 +1,7 @@
 import functools
 import time
 from threading import Thread
-from typing import Callable, List
+from typing import Any, Callable, Dict, List
 
 from attr import define
 
@@ -54,7 +54,7 @@ class BrokenThread:
     @staticmethod
     def new(
         target: Callable,
-        *args,
+        *args: List[Any],
         start: bool=True,
         join: bool=False,
         loop: bool=False,
@@ -64,7 +64,7 @@ class BrokenThread:
         locals: bool=False,
         self: bool=False,
         callback: Callable=None,
-        **kwargs
+        **kwargs: Dict[str, Any],
     ) -> Thread:
         """
         Create a thread on a callable, yeet whatever you think it works

@@ -27,17 +27,17 @@ nav:
   - Broken:
     - Code Reference: broken/reference/
 
-  - ShaderFlow:
-    - shaderflow/index.md
-    - Installation: shaderflow/get/index.md
-    - Usage:
-      - 🎮 Controls: shaderflow/controls.md
-    - Code Reference: shaderflow/reference/
-
   - DepthFlow:
     - depthflow/index.md
     - Installation: depthflow/get/index.md
     - Code Reference: depthflow/reference/
+
+  - ShaderFlow:
+    - shaderflow/index.md
+    - Installation: shaderflow/get/index.md
+    - Usage:
+      - Controls: shaderflow/controls.md
+    - Code Reference: shaderflow/reference/
 
   - Pianola:
     - pianola/index.md
@@ -92,7 +92,6 @@ theme:
 plugins:
   # - meta
   # - social
-  # - section-index
   - search
   - autorefs
   # - privacy
