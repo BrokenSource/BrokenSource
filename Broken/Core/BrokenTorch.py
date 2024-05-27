@@ -8,7 +8,7 @@ from typing import Optional
 from loguru import logger as log
 
 import Broken
-from Broken import BrokenEnum, BrokenPath, shell
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, shell
 
 
 class TorchFlavor(BrokenEnum):
@@ -45,15 +45,19 @@ class BrokenTorch:
         elif (current_flavor is None) or (os.environ.get("MANAGE_TORCH", "0") == "1"):
             from rich.prompt import Prompt
             log.warning("This project requires PyTorch but it is not installed.")
-            version_flavor = Prompt.ask("\n".join((
-                    "\nCheck Hardware/Platform availability at:",
-                    "• (https://pytorch.org/get-started/locally)",
-                    "• (https://brokensrc.dev/get/pytorch)",
-                    "\n:: What PyTorch flavor do you want to use?"
-                )),
-                choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor],
-                default="cpu",
-            )
+
+            if BrokenPlatform.OnMacOS:
+                version_flavor = TorchFlavor.MACOS
+            else:
+                version_flavor = Prompt.ask("\n".join((
+                        "\nCheck Hardware/Platform availability at:",
+                        "• (https://pytorch.org/get-started/locally)",
+                        "• (https://brokensrc.dev/get/pytorch)",
+                        "\n:: What PyTorch flavor do you want to use?"
+                    )),
+                    choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor],
+                    default="cpu",
+                )
         else:
             return
 

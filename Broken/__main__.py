@@ -228,6 +228,10 @@ class BrokenProjectCLI:
         if ("windows" in target.name) and (torch == TorchFlavor.ROCM):
             return
 
+        # We should only target MACOS flavor for MacOS
+        if (torch == TorchFlavor.MACOS) and ("macos" not in target.name):
+            return
+
         if self.is_python:
             BrokenCLI.rust()
             BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Rust"
