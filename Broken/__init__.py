@@ -120,3 +120,4 @@ def set_project(project: BrokenProject):
     if PROJECT is not BROKEN:
         return
     PROJECT = project
+    PROJECT.pyapp_new_binary_restore_hook()

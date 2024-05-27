@@ -38,7 +38,6 @@ dependencies = [
     "pygame>=2.5.2",
     # Image Processing
     "opencv-contrib-python>=4.9.0.80",
-    "pyturbojpeg>=1.7.3",
     "pillow>=10.3.0",
     # Internet
     "requests-cache>=1.2.0",
@@ -74,6 +73,7 @@ samplerate = [
     "samplerate>=0.2.1",
 ]
 staging = [
+    "pyturbojpeg>=1.7.3",
     "streamlit>=1.35.0",
     "yt-dlp>=2024.5.26",
     "schedule>=1.2.2",

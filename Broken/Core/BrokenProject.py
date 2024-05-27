@@ -10,7 +10,6 @@ import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import diskcache
 import dotenv
 from appdirs import AppDirs
 from attr import define, field
@@ -21,7 +20,7 @@ from rich.panel import Panel
 from typer import Typer
 
 import Broken
-from Broken import BrokenLogging, BrokenPath
+from Broken import BrokenLogging, BrokenPath, BrokenPlatform, flatten, shell
 
 
 @define(slots=False)
@@ -398,7 +397,6 @@ class BrokenProject:
         BrokenLogging.set_project(self.APP_NAME)
 
         if (self.APP_NAME != "Broken"):
-            self.pyapp_new_binary_restore_hook()
 
             # Print version information and exit when only "--version/-V" is the only argument
             if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
@@ -444,6 +442,7 @@ class BrokenProject:
         ))
         print()
 
+    # Note: Call once on the top-most project, otherwise DepthFlow might be considered as ShaderFlow
     def pyapp_new_binary_restore_hook(self):
         if not (pyapp_binary := os.environ.get("PYAPP", False)):
             return
@@ -457,12 +456,23 @@ class BrokenProject:
 
         # "If either hash differs and not on the first run"
         if (old_hash is not None) and (old_hash != this_hash):
-            log.info(f"Detected different binary hash for this release version {self.VERSION}")
-            log.info(f"• Path: ({venv_path})")
-            log.info("• Reinstalling the virtual environment alongside dependencies")
             print("-"*shutil.get_terminal_size().columns)
-            subprocess.call([pyapp_binary, os.environ["PYAPP_COMMAND_NAME"], "restore"], stdout=subprocess.DEVNULL)
-            sys.exit(subprocess.call([pyapp_binary] + sys.argv[1:]))
+            log.info(f"Detected different binary hash for this release version {self.VERSION} of the Project {self.APP_NAME}")
+            log.info(f"• Path: ({venv_path})")
+            log.info("• Reinstalling the Virtual Environment alongside dependencies")
+
+            # Fixme (#ntfs): 🤓 https://superuser.com/questions/488127"
+            # Fixme (#ntfs): 💪 https://unix.stackexchange.com/questions/49299
+            if BrokenPlatform.OnWindows:
+                previous = venv_path.with_name("0.0.0")
+                BrokenPath.remove(previous)
+                venv_path.rename(previous)
+                input("\nPlease, reopen this Executable due internal reasons of Windows NTFS. Press Enter to exit.\n")
+                exit(0)
+            else:
+                shell(pyapp_binary, os.environ["PYAPP_COMMAND_NAME"], "restore", stdout=subprocess.DEVNULL)
+                print("-"*shutil.get_terminal_size().columns)
+                sys.exit(shell(pyapp_binary, sys.argv[1:]).returncode)
 
 # -------------------------------------------------------------------------------------------------|
 
