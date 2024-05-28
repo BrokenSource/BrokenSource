@@ -340,10 +340,7 @@ class BrokenCLI:
             "©️ Broken Source Software, AGPL-3.0 License"
         ))
 
-        with self.broken_typer.panel("📦 Installation"):
-            self.broken_typer.command(self.uninstall)
-
-        with self.broken_typer.panel("🛡️ Core"):
+        with self.broken_typer.panel("📦 Development"):
             self.broken_typer.command(self.website)
             self.broken_typer.command(self.pypi)
             self.broken_typer.command(self.sync)
@@ -497,30 +494,6 @@ class BrokenCLI:
             ):
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
-
-    def uninstall(self):
-        """➖ Selectively removes Data or Artifacts created by Projects outside of the Repository"""
-        log.warning("Selectively Uninstalling Broken Source Convenience and Projects Data")
-
-        if BrokenPlatform.OnLinux and BrokenCLI.LINUX_DESKTOP_FILE.exists():
-            log.minor("Now deleting Linux dot Desktop Shortcut file")
-            BrokenPath.remove(BrokenCLI.LINUX_DESKTOP_FILE, echo=False, confirm=True)
-
-        # Remove all known projects stuff
-        for project in self.projects:
-            log.info()
-            log.info(f"Project: {project.name}")
-            log.info(f"• Path: {project.path}")
-
-            # Follow Project's Workspace folder
-            if (workspace := BrokenPath(project.path/"Workspace").valid()):
-                log.minor("Now removing the Project Workspace directory")
-                BrokenPath.remove(workspace, echo=False, confirm=True)
-
-        # Finally, remove the root venv
-        if (venv := BrokenPath(Broken.BROKEN.DIRECTORIES.REPOSITORY/".venv").valid()):
-            log.minor("Now removing the Repository Virtual Environment")
-            BrokenPath.remove(venv, echo=False, confirm=True)
 
 # -------------------------------------------------------------------------------------------------|
 

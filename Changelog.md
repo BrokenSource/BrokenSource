@@ -2,7 +2,16 @@
 
 # • [0.3.2] - Staging changes awaiting a release
 
-Empty list at the moment
+**General**:
+- Iterate over `site.getsitepackages()` for finding PyTorch version instead of `[-1]`
+
+**ShaderFlow**:
+- Fix early Shader rendering when they weren't compiled on Windows
+    - Caused by the hidden GLFW window signaling a resize when final resolution was set calculated
+
+**DepthFlow**:
+- Add Depth of Field and Vignette post processing effects.
+    - Disabled by default until better parameters are found, and maybe a faster blur
 
 <br>
 

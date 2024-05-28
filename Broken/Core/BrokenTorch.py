@@ -27,21 +27,29 @@ class BrokenTorch:
 
     @staticmethod
     def manage(resources: Path):
-        import site
+        if os.environ.get("SKIP_TORCH", "0") == "1":
+            return
 
-        # Try getting current installed flavor, if any, without loading torch
-        site_packages = Path(site.getsitepackages()[-1])
-        if (torch_version := (site_packages/"torch"/"version.py")).exists():
-            exec(torch_version.read_text(), namespace := {})
-            current_flavor = namespace["__version__"].split("+")[1]
-        else:
-            current_flavor = None
+        import site
+        current_flavor = None
+
+        # Try getting current installed flavor, if any, without importing torch
+        # Note: Reversed as Windows lists system first, and we might have multiple on Linux
+        for site_packages in reversed(site.getsitepackages()):
+            site_packages = Path(site_packages)
+
+            if (torch_version := (site_packages/"torch"/"version.py")).exists():
+                exec(torch_version.read_text(), namespace := {})
+                current_flavor = namespace["__version__"].split("+")[1]
+                break
 
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
         if Broken.PYAPP:
             version_flavor = os.environ.get("PYAPP_COMMAND_NAME", "")
             if ("+" not in version_flavor):
                 return None
+
+        # Development mode: No PyTorch was found
         elif (current_flavor is None) or (os.environ.get("MANAGE_TORCH", "0") == "1"):
             from rich.prompt import Prompt
             log.warning("This project requires PyTorch but it is not installed.")
@@ -55,7 +63,7 @@ class BrokenTorch:
                         "• (https://brokensrc.dev/get/pytorch)",
                         "\n:: What PyTorch flavor do you want to use?"
                     )),
-                    choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor],
+                    choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor] + ["none"],
                     default="cpu",
                 )
         else:
