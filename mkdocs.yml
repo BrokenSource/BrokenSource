@@ -12,41 +12,41 @@ nav:
     - index.md
     - Installation:
       - get/index.md
-      - From Source: get/source.md
-      - From PyPI: get/pypi.md
-      - From Releases: get/releases.md
-      - Uninstalling: get/uninstalling.md
+      - 📦 From Releases: get/releases.md
+      - 🔥 From Source: get/source.md
+      - 🧀 From PyPI: get/pypi.md
+      - ♻️ Uninstalling: get/uninstalling.md
     - Special:
-      - PyTorch: get/pytorch.md
+      - 🔦 PyTorch: get/pytorch.md
     - About:
-      - Developers: about/developers.md
-      - Roadmap: about/roadmap.md
-      - Contact: about/contact.md
-      - License: about/license.md
+      - 👤 Developers: about/developers.md
+      - 🧭 Roadmap: about/roadmap.md
+      - 💬 Contact: about/contact.md
+      - ⚖️ License: about/license.md
 
   - Broken:
     - Code Reference: broken/reference/
 
   - DepthFlow:
     - depthflow/index.md
-    - Installation: depthflow/get/index.md
+    - 📦 Installation: depthflow/get/index.md
     - Code Reference: depthflow/reference/
 
   - ShaderFlow:
     - shaderflow/index.md
-    - Installation: shaderflow/get/index.md
+    - 📦 Installation: shaderflow/get/index.md
     - Usage:
       - Controls: shaderflow/controls.md
     - Code Reference: shaderflow/reference/
 
   - Pianola:
     - pianola/index.md
-    - Installation: pianola/get/index.md
+    - 📦 Installation: pianola/get/index.md
     - Code Reference: pianola/reference/
 
   - SpectroNote:
     - spectronote/index.md
-    - Installation: spectronote/get/index.md
+    - 📦 Installation: spectronote/get/index.md
     - Code Reference: spectronote/reference/
 
 extra_css:
@@ -96,6 +96,7 @@ plugins:
   - autorefs
   # - privacy
   - literate-nav
+  - git-revision-date-localized
   - gen-files:
       scripts:
         - Website/make.py

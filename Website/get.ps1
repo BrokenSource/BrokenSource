@@ -4,12 +4,9 @@
 
     The script does the following:
 
-    - Install Winget if not found:
-        The official Microsoft's Package Manager
-    - Install Git and Rye using Winget:
-        To download the Projects and manage Python
-    - Add Rye shims to PATH:
-        So that 'rye' command is available in the shell
+    - Install Winget if not found: The official Microsoft's Package Manager
+    - Install Git and Rye using Winget: To download the Projects and manage Python
+    - Add Rye shims to PATH: So that 'rye' command is available in the shell
     - Clone the BrokenSource Monorepo
     - Create a Virtual Environment and install dependencies
     - Spawn a new shell in the Virtual Environment

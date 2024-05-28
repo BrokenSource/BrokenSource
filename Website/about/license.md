@@ -1,1 +1,3 @@
-# ⚖️ License
+---
+title: License
+---

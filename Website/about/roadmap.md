@@ -1,4 +1,8 @@
-# 🧭 Roadmap
+---
+title: Roadmap
+---
+
+!!! warning "Some opportunities and IRL obligations are being focused on"
 
 I have a pretty decent vision for any **two next weeks** of development, and work based on **priorities** that would give the **most value** and **quality of life** to the Projects.
 
@@ -17,7 +21,7 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 - [ ] Improve User Experience on Pianola
 - [ ] Make DepthFlow's logic extensible and usable on ShaderFlow
 
-**Eta**: Q2 2024
+**Eta**: Q3 2024
 
 <hr>
 
@@ -31,7 +35,7 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 - [ ] More "fully featured" Scenes than tech demos
 - [ ] More Scientific Audio DSP of value magnitudes
 
-**Eta**: Q3 2024
+**Eta**: Q4 2024
 
 <hr>
 
@@ -39,12 +43,11 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 ??? quote "**Code Logistics** Improvement and Stability"
     <img src="https://github.com/BrokenSource/BrokenSource/assets/29046864/4f9c91c6-c080-462f-9387-64e315d84751"/>
 - [ ] General code stability improvements
-- [ ] Split packages of the main library
 - [ ] Split projects into their own packages[^1]
 - [ ] Write Test units for the code
 - [ ] Simplify stuff, automate code
 
-**Eta**: Q4 2024++
+**Eta**: Q1 2025++
 
 <hr>
 

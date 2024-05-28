@@ -1,12 +1,35 @@
+---
+title: Get Started
+---
+
 # Installation
 
-- There are **three ways** to get started with the Projects
+- There are **three ways** to get started with the Projects:
 
-!!! success "[**🔥 From Source**](source.md) - **Recommended**"
-    Standard Git Clone, Editable, Latest Features and Fixes
+### [**📦 From Releases**](releases.md)
 
-!!! success "[**📦 From PyPI**](pypi.md) - ⚠️ Experimental™"
-    Direct Module CLI or Dependency, Reliable and Stable
+!!! success "**The most convenient** way to use the Projects"
+    - Executable files, convenient and portable
+    - Not as much configurable at the moment
 
-!!! quote "[**🔮 From Releases**](releases.md) - ⚠️ Experimental, Outdated"
-    Executable Binary Files, Convenient and Portable
+    <sup><b>Recommended for:</b> Basic Users</sup>
+
+<hr>
+
+### [**🧀 From PyPI**](pypi.md)
+
+!!! success "**The most reliable** way to use the Projects"
+    - Requires basic Python knowledge and lurking
+    - Direct Module CLI or as a dependency
+
+    <sup><b>Recommended for:</b> Basic and Advanced Users, Developers</sup>
+
+<hr>
+
+### [**🔥 From Source**](source.md)
+
+!!! success "**The most flexible** way to use the Projects"
+    - **Automatic** install scripts, highly configurable
+    - Latest features, bugs, fixes
+
+    <sup><b>Recommended for:</b> Contributors, Developers, Advanced Users</sup>

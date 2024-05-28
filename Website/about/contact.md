@@ -1,4 +1,6 @@
-# 💬 Contact
+---
+title: Contact
+---
 
 !!! success "You can reach me through the following platforms:"
 

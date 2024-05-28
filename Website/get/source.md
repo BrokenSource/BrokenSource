@@ -1,6 +1,9 @@
-# 🔥 From Source
+---
+title: Source
+---
 
-!!! quote "The most flexible way to use the Projects | Latest features, editable, standard git clone"
+!!! quote "**The most flexible** way to use the Projects • Latest features, bugs, fixes, git clone"
+    **Recommended for**: Advanced Users, Contributors, Developers
 
 ## ⚡️ Installing
 
@@ -14,40 +17,54 @@
 
         - Press ++ctrl+l++ , run `powershell` and execute:
 
+        ```powershell
+        # Simply run the line below: 'irm' downloads, 'iex' executes, '|' links the two
+        irm https://brokensrc.dev/get.ps1 | iex
+        ```
+
+        <hr>
+
         ??? success "Read what `get.ps1` does"
             ```powershell
             {% include-markdown "get.ps1" %}
             ```
 
-        ```powershell
-        irm https://brokensrc.dev/get.ps1 | iex
-        ```
+        ??? quote "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
+            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory (Data, Downloads, Config, etc) where the Source Code is, please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**.
 
-        ??? question "What is `irm` and `iex`?"
-            - `irm` is an alias for `Invoke-RestMethod` to download the script
-            - `iex` is an alias for `Invoke-Expression` to run the script
-            - The pipe symbol `|` sends the first command's output to the second
-
-        ??? question "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
-            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory where the Source Code is (Data, Downloads, Config, etc), please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**
+            - This will also drastically speed up Virtual Environment creation
 
     === "🐧 Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
         **Open** a **Terminal** on some directory and run
 
-        ```shell
+        ```shell title="Terminal"
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
+
+        <hr>
+
+        ??? success "Read what `get.sh` does"
+            ```powershell
+            {% include-markdown "get.sh" %}
+            ```
 
     === "🍎 MacOS"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
 
         **Open** a **Terminal** on some directory and run
 
-        ```zsh
+        ```zsh title="Terminal"
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
+
+        <hr>
+
+        ??? success "Read what `get.sh` does"
+            ```powershell
+            {% include-markdown "get.sh" %}
+            ```
 
     === "🧭 Manual"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
@@ -81,8 +98,12 @@
         depthflow
         ```
 
+<hr>
+
 ??? bug "Something Failed?"
-    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me
+    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me, or create an **Issue** on GitHub
+
+    - Please, show some effort or try solving the problem first, often you'll get it :)
 
 <hr>
 
@@ -94,16 +115,9 @@
 <hr>
 
 !!! abstract "3. Next time, to use the Projects.."
-    You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> Folder and [**Source the Virtual Environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
+    You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> directory and [**Source the Virtual Environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
-    - **Windows**:
-        - +PowerShell: `.venv\Scripts\Activate.ps1`
-        - +CMD: `.venv\Scripts\Activate.bat`
-    - **Linux**:
-        - +Bash: `source .venv/bin/activate`
-        - +Fish: `source .venv/bin/activate.fish`
-    - **MacOS**:
-        - +Zsh: `source .venv/bin/activate`
+    - Alternatively, run the `activate.sh` if on **Linux/MacOS** or `activate.ps1` if on **Windows**
 
 <br>
 
