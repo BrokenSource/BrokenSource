@@ -3,14 +3,14 @@ title: Source
 ---
 
 !!! quote "**The most flexible** way to use the Projects • Latest features, bugs, fixes, git clone"
-    **Recommended for**: Advanced Users, Contributors, Developers
+    **Recommended for**: Contributors, Developers, Advanced users
 
 ## ⚡️ Installing
 
 !!! success "Running any of my Projects takes only two commands"
 
 !!! abstract "1. Select your Platform"
-    === "✅ Windows"
+    === ":simple-windows: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
         **Open** some folder to download the code on **Windows Explorer**
@@ -34,7 +34,7 @@ title: Source
 
             - This will also drastically speed up Virtual Environment creation
 
-    === "🐧 Linux"
+    === ":simple-linux: Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
         **Open** a **Terminal** on some directory and run
@@ -50,7 +50,7 @@ title: Source
             {% include-markdown "get.sh" %}
             ```
 
-    === "🍎 MacOS"
+    === ":simple-apple: MacOS"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
 
         **Open** a **Terminal** on some directory and run
@@ -66,7 +66,7 @@ title: Source
             {% include-markdown "get.sh" %}
             ```
 
-    === "🧭 Manual"
+    === ":simple-git: Manual"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
         - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) on your Platform

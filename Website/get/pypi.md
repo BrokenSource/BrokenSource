@@ -3,37 +3,37 @@ title: PyPI
 ---
 
 !!! quote "**The most reliable** way to use the Projects • As a dependency or direct module CLI"
-    **Recommended for**: Basic and Advanced Users, Developers
+    **Recommended for**: Basic users, Advanced users, Developers
 
 ## ⚡️ Installing
 
 !!! success "All Projects are contained on this single dependency"
 
 !!! abstract "Install the Package"
-    === "Pip"
+    === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip install broken-source
         ```
 
-    === "Poetry"
+    === ":simple-poetry: Poetry"
         ```shell title="Command"
         python -m poetry add broken-source
         ```
 
-    === "Rye"
+    === ":simple-rye: Rye"
         ```shell title="Command"
         rye add broken-source
         ```
 
-    === "PDM"
+    === ":simple-pdm: PDM"
         ```shell title="Command"
         pdm add broken-source
         ```
 
-    !!! info annotate "Some Projects or Optionals require specifying a <a href="https://pytorch.org/get-started/locally/" target="_blank"><b>PyTorch</b></a> flavor (1)"
+!!! info annotate "Some Projects or Optionals require specifying a <a href="https://pytorch.org/get-started/locally/" target="_blank"><b>PyTorch</b></a> flavor (1)"
 
-    1.  - No sense to me to force any of CUDA, CPU or ROCm
-        - It's a large dependency and not always needed
+1.  - No sense to me to force any of CUDA, CPU or ROCm
+    - It's a large dependency and not always needed
 
 ## ⭐️ Usage
 After **Installing** the Package, you can simply import it in your Code
@@ -58,22 +58,22 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 ## 🚀 Upgrading
 
 !!! abstract "Simply **upgrade the dependency** on your Python project"
-    === "Pip"
+    === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip install --upgrade broken-source
         ```
 
-    === "Poetry"
+    === ":simple-poetry: Poetry"
         ```shell title="Command"
         python -m poetry update broken-source
         ```
 
-    === "Rye"
+    === ":simple-rye: Rye"
         ```shell title="Command"
         rye add broken-source
         ```
 
-    === "PDM"
+    === ":simple-pdm: PDM"
         ```shell title="Command"
         pdm update broken-source
         ```
@@ -87,22 +87,22 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 ## ♻️ Uninstalling
 
 !!! abstract "Simply **uninstall the package** on your Python Package Manager of choice"
-    === "Pip"
+    === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip uninstall broken-source
         ```
 
-    === "Poetry"
+    === ":simple-poetry: Poetry"
         ```shell title="Command"
         python -m poetry remove broken-source
         ```
 
-    === "Rye"
+    === ":simple-rye: Rye"
         ```shell title="Command"
         rye remove broken-source
         ```
 
-    === "PDM"
+    === ":simple-pdm: PDM"
         ```shell title="Command"
         pdm remove broken-source
         ```

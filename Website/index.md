@@ -15,15 +15,17 @@ title: Home
 
 ⭐️ Learn about my projects:
 
-- [**DepthFlow**](depthflow): Image to → 2.5D Parallax Effect Video.
-- [**ShaderFlow**](shaderflow): Audio Reactive Shader Render engine
-- [**Pianola**](pianola): World's smoothest Piano Roll, spring physics
-- [**SpectroNote**](spectronote): Unlock a Hidden Perfect Pitch in You
+- [**DepthFlow**](depthflow/index.md): Image to → 2.5D Parallax Effect Video.
+- [**ShaderFlow**](shaderflow/index.md): Audio Reactive Shader Render engine
+- [**Pianola**](pianola/index.md): World's smoothest Piano Roll, spring physics
+- [**SpectroNote**](spectronote/index.md): Unlock a Hidden Perfect Pitch in You
+
+<hr>
+
+💬 Join the [**Community**](about/contact.md) servers on **Discord** and **Telegram**
 
 <hr>
 
 🚀 Meet the [**Development Team**](about/developers.md) <sup>..of one 😅</sup>
 
 <hr>
-
-💬 Join the [**Community**](about/contact.md) servers on **Discord** and **Telegram**

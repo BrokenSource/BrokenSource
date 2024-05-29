@@ -4,6 +4,7 @@
 .md-typeset details {
     border-width: 0;
     border-left-width: 4px;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Un-bold Admonition titles */
@@ -75,3 +76,25 @@
 --md-default-bg-color--lighter: hsla(0, 0%, 27.5%, 0.26);
 --md-default-bg-color--lightest: hsla(0, 0%, 30%, 0.07);
 } */
+
+/* https://github.com/squidfunk/mkdocs-material/issues/3430#issuecomment-1005966126 */
+.md-typeset .md-typeset__table {
+    display: block;
+}
+
+.md-typeset__table table:not([class]) {
+    display: table;
+}
+
+/* Stretch a button to the full width */
+.md-button--stretch {
+    text-align: center;
+    width: 100%;
+}
+
+/* Disabled buttons */
+.md-button--disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.5;
+}

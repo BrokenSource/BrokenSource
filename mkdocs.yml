@@ -12,9 +12,9 @@ nav:
     - index.md
     - Installation:
       - get/index.md
-      - 📦 From Releases: get/releases.md
-      - 🔥 From Source: get/source.md
       - 🧀 From PyPI: get/pypi.md
+      - 🔥 From Source: get/source.md
+      - 📦 From Releases: get/releases.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - 🔦 PyTorch: get/pytorch.md

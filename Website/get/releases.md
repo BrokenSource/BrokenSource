@@ -9,47 +9,108 @@ title: Releases
 
 !!! success "I make self-installing executables using [**PyApp**](https://github.com/ofek/pyapp) for your convenience!"
 
-!!! abstract "1. Select your Platform"
-    === "✅ Windows"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle;  border-radius: 20%;" width="80"></div>
-        !!! quote "2. Select the Project"
-            === "🌊 DepthFlow"
-                - [**Download**](https://github.com/BrokenSource/DepthFlow/releases/download/latest/depthflow-cpu-windows-amd64-latest.exe) (CPU)
-                - [**Download**](https://github.com/BrokenSource/DepthFlow/releases/download/latest/depthflow-cuda-windows-amd64-latest.exe) (CUDA)
-            === "🎹 Pianola"
-                - [**Download**](https://github.com/BrokenSource/Pianola/releases/download/latest/pianola-windows-amd64-latest.exe)
-            === "🌵 ShaderFlow"
-                - [**Download**](https://github.com/BrokenSource/ShaderFlow/releases/download/latest/shaderflow-windows-amd64-latest.exe)
-            === "🎧 SpectroNote"
-                - [**Download**](https://github.com/BrokenSource/SpectroNote/releases/download/latest/spectronote-windows-amd64-latest.exe)
+!!! warning "Customization options are limited at the moment. Prefer [**From Source**](source.md) or [**From PyPI**](pypi.md)"
 
-    === "🐧 Linux"
+
+!!! abstract "Select your Platform"
+    === ":simple-windows: Windows"
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
+        <table display="block">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>:octicons-cpu-16: Any (CPU)</th>
+                    <th>:simple-nvidia: NVIDIA (CUDA)</th>
+                    <th>:simple-amd: Radeon (ROCm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="../depthflow"><b>DepthFlow</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">:octicons-download-16: CPU</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">:octicons-download-16: CUDA</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: ROCm</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../shaderflow"><b>ShaderFlow</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../pianola"><b>Pianola</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../spectronote"><b>SpectroNote</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                </tr>
+            </tbody>
+        </table>
+    === ":simple-linux: Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
-
-        !!! quote "2. Select the Project"
-            === "🌊 DepthFlow"
-                - [**Download**](https://github.com/BrokenSource/DepthFlow/releases/download/latest/depthflow-cpu-linux-amd64-latest.bin) (CPU)
-                - [**Download**](https://github.com/BrokenSource/DepthFlow/releases/download/latest/depthflow-cuda-linux-amd64-latest.bin) (CUDA)
-                - [**Download**](https://github.com/BrokenSource/DepthFlow/releases/download/latest/depthflow-rocm-linux-amd64-latest.bin) (ROCm)
-            === "🎹 Pianola"
-                - [**Download**](https://github.com/BrokenSource/Pianola/releases/download/latest/pianola-linux-amd64-latest.bin)
-            === "🌵 ShaderFlow"
-                - [**Download**](https://github.com/BrokenSource/ShaderFlow/releases/download/latest/shaderflow-linux-amd64-latest.bin)
-            === "🎧 SpectroNote"
-                - [**Download**](https://github.com/BrokenSource/SpectroNote/releases/download/latest/spectronote-linux-amd64-latest.bin)
-
-    === "🍎 MacOS"
+        <table display="block">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>:octicons-cpu-16: Any (CPU)</th>
+                    <th>:simple-nvidia: NVIDIA (CUDA)</th>
+                    <th>:simple-amd: Radeon (ROCm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="../depthflow"><b>DepthFlow</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">:octicons-download-16: CPU</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">:octicons-download-16: CUDA</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">:octicons-download-16: ROCm</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../shaderflow"><b>ShaderFlow</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../pianola"><b>Pianola</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../spectronote"><b>SpectroNote</b></a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                </tr>
+            </tbody>
+        </table>
+    === ":simple-apple: MacOS"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
-
-        !!! quote "2. Select the Project"
-            === "🌊 DepthFlow"
-                !!! bug "Help needed, I don't have the Hardware to compile or test"
-            === "🎹 Pianola"
-                !!! bug "Help needed, I don't have the Hardware to compile or test"
-            === "🌵 ShaderFlow"
-                !!! bug "Help needed, I don't have the Hardware to compile or test"
-            === "🎧 SpectroNote"
-                !!! bug "Help needed, I don't have the Hardware to compile or test"
+        <table display="block">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>:octicons-cpu-16: Apple Intel (AMD64)</th>
+                    <th>:simple-nvidia: Apple Silicon (ARM64)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="../depthflow"><b>DepthFlow</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../shaderflow"><b>ShaderFlow</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../pianola"><b>Pianola</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                </tr>
+                <tr>
+                    <td><a href="../spectronote"><b>SpectroNote</b></a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
+                </tr>
+            </tbody>
+        </table>
+        !!! bug "Help needed, I don't have the Hardware to compile or test"
 
 ## ⭐️ Usage
 Simply **double click** and run the executable on your platform
@@ -74,11 +135,8 @@ Simply **double click** and run the executable on your platform
 
     - Downloading the models on the first execution takes a while, progress is seen running on Terminal
 
-!!! warning "Customization options are limited at the moment. Prefer [**From Source**](source.md) or [**From PyPI**](pypi.md)"
-
-
 ## 🚀 Upgrading
 Download a newer release from **GitHub** or from your **Package Manager**
 
 ## ♻️ Uninstalling
-See the <a href="../uninstalling" target="_blank"><b>Uninstalling</b></a> page
+See the <a href="../uninstalling"><b>Uninstalling</b></a> page
