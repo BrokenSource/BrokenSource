@@ -8,6 +8,8 @@
 **ShaderFlow**:
 - Fix early Shader rendering when they weren't compiled on Windows
     - Caused by the hidden GLFW window signaling a resize when final resolution was set calculated
+- Temporary Debug UI modules contents are expanded by default
+- Add an opt-out `EGL=1` env var for Linux Headless rendering
 
 **DepthFlow**:
 - Add Depth of Field and Vignette post processing effects.
