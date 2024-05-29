@@ -6,7 +6,7 @@ issues        = "https://brokensrc.dev/contact"
 
 [project]
 name         = "broken-source"
-version      = "0.3.2"
+version      = "0.3.3"
 description  = "🚀 Broken Source Software Framework and All Projects in One Place"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"

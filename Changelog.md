@@ -1,6 +1,15 @@
+
 <!------------------------------------------------------------------------------------------------>
 
-# • [0.3.2] - Staging changes awaiting a release
+# • [0.3.3] - (Staging changes awaiting a release)
+
+Empty list at the moment
+
+<br>
+
+<!------------------------------------------------------------------------------------------------>
+
+# • [0.3.2] - (2024.05.29)
 
 **General**:
 - Iterate over `site.getsitepackages()` for finding PyTorch version instead of `[-1]`
