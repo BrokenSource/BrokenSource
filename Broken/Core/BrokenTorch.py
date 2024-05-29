@@ -35,9 +35,7 @@ class BrokenTorch:
 
         # Try getting current installed flavor, if any, without importing torch
         # Note: Reversed as Windows lists system first, and we might have multiple on Linux
-        for site_packages in reversed(site.getsitepackages()):
-            site_packages = Path(site_packages)
-
+        for site_packages in map(Path, reversed(site.getsitepackages())):
             if (torch_version := (site_packages/"torch"/"version.py")).exists():
                 exec(torch_version.read_text(), namespace := {})
                 current_flavor = namespace["__version__"].split("+")[1]
