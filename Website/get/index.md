@@ -33,3 +33,5 @@ title: Installation
     - {==Not as much configurable at the moment==}
 
     <sup><b>Recommended for:</b> Basic Users</sup>
+
+<hr>

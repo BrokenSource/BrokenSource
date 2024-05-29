@@ -96,7 +96,6 @@ plugins:
   - autorefs
   # - privacy
   - literate-nav
-  - git-revision-date-localized
   - gen-files:
       scripts:
         - Website/make.py
@@ -146,7 +145,7 @@ plugins:
   - minify:
       minify_html: true
       minify_js: true
-      minify_css: true
+      minify_css: false
       htmlmin_opts:
           remove_comments: true
       cache_safe: true
