@@ -11,7 +11,7 @@ When a project requires PyTorch, a Propmt will pop up to `pip install` a flavor
 - Alternatively, when inside the **Virtual Environment**, choose a below and run:
 
 !!! abstract "1. Select your Platform"
-    === "✅ Windows"
+    === ":simple-windows: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         === "⚡️ NVIDIA GPU (CUDA)"
@@ -39,7 +39,7 @@ When a project requires PyTorch, a Propmt will pop up to `pip install` a flavor
             poe cpu
             ```
 
-    === "🐧 Linux"
+    === ":simple-linux: Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         === "⚡️ NVIDIA GPU (CUDA)"
@@ -72,7 +72,7 @@ When a project requires PyTorch, a Propmt will pop up to `pip install` a flavor
 
             !!! note "Slow option, but works on any System"
 
-    === "🍎 MacOS"
+    === ":simple-apple: MacOS"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
 
         ```shell title="Command"

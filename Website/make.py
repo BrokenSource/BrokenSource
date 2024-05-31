@@ -39,7 +39,7 @@ for ROOT in PROJECTS:
 
         # Get the module import statement and url path
         module   = python.relative_to(ROOT).with_suffix("")
-        markdown = Path(ROOT.name, "reference", module).with_suffix(".md")
+        markdown = Path(PROJECT_NAME, "reference", module).with_suffix(".md")
         url_path = str(markdown).lower()
 
         # Write the virtual markdown file with documentation

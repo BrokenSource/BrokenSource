@@ -15,7 +15,7 @@ title: Home
 
 ⭐️ Learn about my projects:
 
-- [**DepthFlow**](depthflow/index.md): Image to → 2.5D Parallax Effect Video.
+- [**DepthFlow**](depthflow/index.md): Image to → 2.5D Parallax Effect Video
 - [**ShaderFlow**](shaderflow/index.md): Audio Reactive Shader Render engine
 - [**Pianola**](pianola/index.md): World's smoothest Piano Roll, spring physics
 - [**SpectroNote**](spectronote/index.md): Unlock a Hidden Perfect Pitch in You

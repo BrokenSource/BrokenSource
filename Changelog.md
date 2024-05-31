@@ -3,7 +3,9 @@
 
 # • [0.3.3] - (Staging changes awaiting a release)
 
-Empty list at the moment
+**ShaderFlow**:
+- Prompt the user to install audio server packages if `soundcard` import fails
+- Always use EGL for creating the OpenGL context, disableable with `WINDOW_EGL=0`
 
 <br>
 

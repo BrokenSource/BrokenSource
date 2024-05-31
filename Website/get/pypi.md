@@ -85,24 +85,4 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 
 
 ## ♻️ Uninstalling
-
-!!! abstract "Simply **uninstall the package** on your Python Package Manager of choice"
-    === ":simple-python: Pip"
-        ```shell title="Command"
-        python -m pip uninstall broken-source
-        ```
-
-    === ":simple-poetry: Poetry"
-        ```shell title="Command"
-        python -m poetry remove broken-source
-        ```
-
-    === ":simple-rye: Rye"
-        ```shell title="Command"
-        rye remove broken-source
-        ```
-
-    === ":simple-pdm: PDM"
-        ```shell title="Command"
-        pdm remove broken-source
-        ```
+See the <a href="../uninstalling"><b>Uninstalling</b></a> page

@@ -30,7 +30,7 @@ title: Contact
 
 </div>
 
-!!! note "I live on **UTC-4 Timezone**, so I might be sleeping when you send me a message"
+!!! note "I live on **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
     - 🇧🇷 **Brazilian Portuguese**, my Native Language

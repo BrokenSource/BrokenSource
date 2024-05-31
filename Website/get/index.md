@@ -30,8 +30,8 @@ title: Installation
 
 !!! example "**The most convenient** way to use the Projects"
     - Self-installing {==portable executable files==}
-    - {==Not as much configurable at the moment==}
+    - {==Not as much configurable==} {>>at the moment<<}
 
-    <sup><b>Recommended for:</b> Basic Users</sup>
+    <sup><b>Recommended for:</b> Basic users</sup>
 
 <hr>

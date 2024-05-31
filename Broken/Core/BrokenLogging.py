@@ -6,6 +6,9 @@ import rich
 from attr import define
 from loguru import logger as log
 
+# Don't log contiguous long paths
+console = rich.get_console()
+console.soft_wrap = True
 
 @define
 class BrokenLogging:

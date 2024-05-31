@@ -50,20 +50,36 @@ class BrokenTorch:
         # Development mode: No PyTorch was found
         elif (current_flavor is None) or (os.environ.get("MANAGE_TORCH", "0") == "1"):
             from rich.prompt import Prompt
-            log.warning("This project requires PyTorch but it is not installed.")
+            log.warning("")
 
             if BrokenPlatform.OnMacOS:
                 version_flavor = TorchFlavor.MACOS
             else:
-                version_flavor = Prompt.ask("\n".join((
-                        "\nCheck Hardware/Platform availability at:",
-                        "• (https://pytorch.org/get-started/locally)",
-                        "• (https://brokensrc.dev/get/pytorch)",
-                        "\n:: What PyTorch flavor do you want to use?"
-                    )),
-                    choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor] + ["none"],
-                    default="cpu",
-                )
+                log.warning("\n".join((
+                    "This project requires PyTorch, but it was not found",
+                    "  on the current virtual environment's site packages",
+                    "",
+                    "Check Hardware/Platform availability at:",
+                    "• https://pytorch.org/get-started/locally",
+                    "• https://brokensrc.dev/get/pytorch",
+                    "",
+                    "As a rule of thumb:",
+                    "• [royal_blue1](Windows + Linux)[/royal_blue1] NVIDIA GPU (>= GTX 700): 'cuda'",
+                    "• [royal_blue1](Linux)[/royal_blue1] AMD GPU (>= Radeon RX 5000): 'rocm'",
+                    "• [royal_blue1](Other)[/royal_blue1] Intel ARC, No dGPU: 'cpu'",
+                    "",
+                    "Tip: You can use 'SKIP_TORCH=1' to bypass this check next time",
+                    "Tip: You can use 'MANAGE_TORCH=1' to get back here next time",
+                    "Tip: Set 'HSA_OVERRIDE_GFX_VERSION=10.3.0' for RX 5000 Series"
+                ))),
+                try:
+                    version_flavor = Prompt.ask(
+                        "\n:: What PyTorch flavor do you want to install?\n\n",
+                        choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor],
+                        default="cpu"
+                    )
+                except KeyboardInterrupt:
+                    exit(0)
         else:
             return
 

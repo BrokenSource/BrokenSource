@@ -18,6 +18,7 @@ nav:
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - 🔦 PyTorch: get/pytorch.md
+      - ❤️ Sponsors: about/sponsors.md
     - About:
       - 👤 Developers: about/developers.md
       - 🧭 Roadmap: about/roadmap.md
@@ -49,8 +50,13 @@ nav:
     - 📦 Installation: spectronote/get/index.md
     - Code Reference: spectronote/reference/
 
+exclude_docs: |
+  make.py
+  CNAME
+
 extra_css:
   - css/extra.css
+
 theme:
   name: material
   logo: resources/images/broken.png
@@ -91,9 +97,10 @@ theme:
 
 plugins:
   # - meta
-  # - social
+  - social
   - search
   - autorefs
+  - site-urls
   # - privacy
   - literate-nav
   - gen-files:

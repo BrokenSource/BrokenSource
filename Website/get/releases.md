@@ -3,7 +3,7 @@ title: Releases
 ---
 
 !!! quote "**The most convenient** way to use the Projects • Double-click and run, hopefully"
-    **Recommended for**: Basic Users
+    **Recommended for**: Basic users
 
 ## ⚡️ Installing
 
