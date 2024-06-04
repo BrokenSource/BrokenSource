@@ -52,7 +52,6 @@ nav:
 
 exclude_docs: |
   make.py
-  CNAME
 
 extra_css:
   - css/extra.css

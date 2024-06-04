@@ -4,7 +4,7 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
-print("\n\n", "-"*(shutil.get_terminal_size().columns-2), "\n\n")
+print("\n", "-"*(shutil.get_terminal_size().columns-2), "\n")
 
 # Constants
 BUILD_CODE_REFERENCE = True
