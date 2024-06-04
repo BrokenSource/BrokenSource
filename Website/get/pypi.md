@@ -85,4 +85,4 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 
 
 ## ♻️ Uninstalling
-See the <a href="../uninstalling"><b>Uninstalling</b></a> page
+See the <a href="site:get/uninstalling"><b>Uninstalling</b></a> page

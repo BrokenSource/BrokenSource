@@ -65,6 +65,7 @@ theme:
     text: Roboto Slab
   icon:
     annotation: material/plus-circle-outline
+    repo: fontawesome/brands/github
   features:
     - navigation.tracking
     - navigation.tabs
@@ -83,6 +84,7 @@ theme:
     - content.tabs.link
   palette:
     - media: "(prefers-color-scheme: dark)"
+      primary: black
       scheme: slate
       accent: blue
       toggle:
@@ -101,7 +103,7 @@ plugins:
   - search
   - autorefs
   - site-urls
-  # - privacy
+  - privacy
   - literate-nav
   - gen-files:
       scripts:
@@ -179,6 +181,10 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.highlight:
       linenums: true
       use_pygments: true

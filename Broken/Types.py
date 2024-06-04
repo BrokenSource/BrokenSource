@@ -1,13 +1,6 @@
 import warnings
 from math import pi as PI
-
-from typing import Union
-
-# Python 3.9
-try:
-    from typing import TypeAlias
-except ImportError:
-    from typing_extensions import TypeAlias
+from typing import TypeAlias, Union
 
 # Ignore mostly NumPy warnings
 warnings.filterwarnings("ignore")

@@ -58,12 +58,12 @@ class BrokenThread:
         start: bool=True,
         join: bool=False,
         loop: bool=False,
+        period: float=0.0,
         pool: str=None,
         max: int=1,
         daemon: bool=False,
         locals: bool=False,
         self: bool=False,
-        callback: Callable=None,
         **kwargs: Dict[str, Any],
     ) -> Thread:
         """
@@ -77,6 +77,7 @@ class BrokenThread:
             start:  Start the thread immediately after creation
             join:   Wait for the thread to finish after creation
             loop:   Wrap the target callable in a loop
+            period: Time in seconds to wait between calls in loop=True
             pool:   Name of the pool to append the thread to, see BrokenThreadPool
             max:    Maximum threads in the pool
             daemon: When the main thread exits, daemon threads are also terminated
@@ -84,7 +85,6 @@ class BrokenThread:
         Advanced:
             locals:   Whether to pass the current scope locals to the callable or not
             self:     Include "self" in the locals if locals=True
-            callback: Function to call after the thread finishes
 
         Returns:
             The created Thread object
@@ -99,15 +99,8 @@ class BrokenThread:
         def looped(*args, **kwargs):
             while True:
                 target(*args, **kwargs)
+                time.sleep(period)
         the_target = (looped if loop else the_target)
-
-        # Wrap the target in a callback
-        @functools.wraps(target)
-        def callbacked(*args, **kwargs):
-            target(*args, **kwargs)
-            if callback is not None:
-                callback()
-        the_target = (callbacked if callback else the_target)
 
         # Create Thread object
         parallel = Thread(

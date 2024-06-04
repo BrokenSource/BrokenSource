@@ -3,7 +3,7 @@ title: Source
 ---
 
 !!! quote "**The most flexible** way to use the Projects • Latest features, bugs, fixes, git clone"
-    **Recommended for**: Contributors, Developers, Advanced users
+    **Recommended for**: Advanced users, Contributors, Developers
 
 ## ⚡️ Installing
 

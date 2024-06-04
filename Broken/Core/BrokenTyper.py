@@ -66,7 +66,7 @@ class BrokenTyper:
             return
 
         # Maybe get callable name
-        name = name or target.__name__
+        name = (name or target.__name__).replace("_", "-")
 
         # Create Typer command
         self.app.command(
@@ -89,7 +89,7 @@ class BrokenTyper:
 
     def __call__(self, *args, shell: bool=False):
         while True:
-            args = flatten(args)
+            args = tuple(map(str, flatten(args)))
 
             # Insert default implied command
             first = (args[0] if (len(args) > 0) else None)

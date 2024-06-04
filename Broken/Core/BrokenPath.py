@@ -40,7 +40,7 @@ class BrokenPath(pathlib.Path):
     """
     _flavour = type(pathlib.Path())._flavour
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, valid: bool=False, **kwargs):
 
         # Return None if all args are falsy
         if not (args := list(filter(None, args))):
@@ -50,6 +50,8 @@ class BrokenPath(pathlib.Path):
         # to .resolve() as having symlink paths _can_ be wanted
         instance = super().__new__(cls, *args, **kwargs)
         instance._raw_paths = list(map(str, args)) # Py312 fix
+        if (valid and not instance.exists()):
+            return None
         return instance.expanduser().absolute()
 
     def pathlib(self) -> pathlib.Path:
@@ -359,7 +361,7 @@ class BrokenPath(pathlib.Path):
 
     def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
         file = BrokenPath.url_filename(denum(url))
-        ARCHIVE = any((str(file).endswith(ext) for ext in ShutilFormat.values))
+        ARCHIVE = any((str(file).endswith(ext) for ext in ShutilFormat.values()))
 
         # File is some known type, move to their own external directory
         if bool(subdir):

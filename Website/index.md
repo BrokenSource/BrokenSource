@@ -23,9 +23,3 @@ title: Home
 <hr>
 
 💬 Join the [**Community**](about/contact.md) servers on **Discord** and **Telegram**
-
-<hr>
-
-🚀 Meet the [**Development Team**](about/developers.md) <sup>..of one 😅</sup>
-
-<hr>

@@ -86,6 +86,11 @@
     display: table;
 }
 
+/* Always align table headers */
+table > thead > tr > th {
+    text-align: center !important;
+}
+
 /* Stretch a button to the full width */
 .md-button--stretch {
     text-align: center;
@@ -97,4 +102,9 @@
     cursor: not-allowed;
     pointer-events: none;
     opacity: 0.5;
+}
+
+/* Elegant button */
+.md-button--elegant {
+    border: 1px solid !important;
 }

@@ -40,9 +40,12 @@ for _index, _item in enumerate(sys.argv):
 if bool(os.environ.get("PYAPP", None)):
     sys.argv[0] = sys.executable
 
-# Fix: typing.Self was implemented on Python >= 3.11
-if sys.version_info < (3, 11):
-    typing.Self = typing.Any
+# Python <= 3.10 typing fixes
+if sys.version_info <= (3, 10):
+    import typing # noqa
+    from typing_extensions import Self, TypeAlias
+    typing.TypeAlias = TypeAlias
+    typing.Self = Self
 
 # -------------------------------------------------------------------------------------------------|
 

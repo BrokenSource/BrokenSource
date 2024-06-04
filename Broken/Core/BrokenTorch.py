@@ -12,9 +12,9 @@ from Broken import BrokenEnum, BrokenPath, BrokenPlatform, shell
 
 
 class TorchFlavor(BrokenEnum):
-    CPU   = "2.2.1+cpu"
-    CUDA  = "2.2.1+cu121"
-    ROCM  = "2.2.1+rocm6.0"
+    CPU   = "2.3.0+cpu"
+    CUDA  = "2.3.0+cu121"
+    ROCM  = "2.3.0+rocm6.0"
     MACOS = ""
 
 class BrokenTorch:
@@ -57,7 +57,7 @@ class BrokenTorch:
             else:
                 log.warning("\n".join((
                     "This project requires PyTorch, but it was not found",
-                    "  on the current virtual environment's site packages",
+                    "• Checked all site.getsitepackages() locations",
                     "",
                     "Check Hardware/Platform availability at:",
                     "• https://pytorch.org/get-started/locally",
@@ -66,7 +66,7 @@ class BrokenTorch:
                     "As a rule of thumb:",
                     "• [royal_blue1](Windows + Linux)[/royal_blue1] NVIDIA GPU (>= GTX 700): 'cuda'",
                     "• [royal_blue1](Linux)[/royal_blue1] AMD GPU (>= Radeon RX 5000): 'rocm'",
-                    "• [royal_blue1](Other)[/royal_blue1] Intel ARC, No dGPU: 'cpu'",
+                    "• [royal_blue1](Other)[/royal_blue1] Intel ARC, No discrete GPU: 'cpu'",
                     "",
                     "Tip: You can use 'SKIP_TORCH=1' to bypass this check next time",
                     "Tip: You can use 'MANAGE_TORCH=1' to get back here next time",

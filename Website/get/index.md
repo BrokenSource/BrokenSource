@@ -6,7 +6,7 @@ title: Installation
 
 - There are **three ways** to get started with the Projects:
 
-### [**🧀 From PyPI**](pypi.md)
+### [**🧀 From PyPI**](site:get/pypi)
 
 !!! success "**The most reliable** way to use the Projects"
     - {==Requires basic Python knowledge==} {>>(and lurking)<<}
@@ -16,17 +16,17 @@ title: Installation
 
 <hr>
 
-### [**🔥 From Source**](source.md)
+### [**🔥 From Source**](site:get/source)
 
 !!! success "**The most flexible** way to use the Projects"
     - {==**Automatic** install scripts==}, spend more time **using** the projects
     - Latest features, bugs, fixes, {==highly configurable==}
 
-    <sup><b>Recommended for:</b> Contributors, Developers, Advanced users</sup>
+    <sup><b>Recommended for:</b usersb> Advanced users, Contributors, Developers</sup>
 
 <hr>
 
-### [**📦 From Releases**](releases.md)
+### [**📦 From Releases**](site:get/releases)
 
 !!! example "**The most convenient** way to use the Projects"
     - Self-installing {==portable executable files==}

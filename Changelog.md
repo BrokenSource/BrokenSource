@@ -3,9 +3,17 @@
 
 # • [0.3.3] - (Staging changes awaiting a release)
 
+**Broken**:
+- Fix: Always `.upper()` values from `LOGLEVEL`
+- Add `valid: bool` on `BrokenPath` initialization istself, as `BrokenPath(None).valid()` is invalid
+- Fix: `BrokenTyper` replace '_' with '-' on given command names and `tuple(map(str, args))` them
+
 **ShaderFlow**:
 - Prompt the user to install audio server packages if `soundcard` import fails
 - Always use EGL for creating the OpenGL context, disableable with `WINDOW_EGL=0`
+- Safety checks for all modules to be initialized with `Module(self=instance(ShaderScene))`
+    - Don't worry, a scene itself defaults `self.scene = self` so it is a scene !
+    - This enables type hinting on the Module class, that depends on Scene, which depends on Module
 
 <br>
 

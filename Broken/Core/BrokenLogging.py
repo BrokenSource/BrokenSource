@@ -43,7 +43,7 @@ class BrokenLogging:
         log.add(
             rich.print,
             format=self.broken_format,
-            level=os.environ.get("LOGLEVEL", "INFO"),
+            level=os.environ.get("LOGLEVEL", "INFO").upper(),
             colorize=False,
             backtrace=True,
             diagnose=True,
