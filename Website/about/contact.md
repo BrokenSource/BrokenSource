@@ -10,25 +10,37 @@ title: Contact
 
     Quick questions, feedback and support
 
-    [:octicons-arrow-right-24:{.lg .middle} **Join**](https://discord.gg/KjqvcYwRHm)
+    - Community help, showcase
+
+    [:octicons-arrow-right-24:{.lg .middle} **Join Server**](https://discord.gg/KjqvcYwRHm)
 
 -   :fontawesome-brands-telegram:{.lg .middle} **Telegram**
 
-    I'm definitely more "real time" here
+    I'm more "real time" here than Discord
 
-    [:octicons-arrow-right-24:{.lg.middle} **Join**](https://t.me/BrokenSource)
+    - Larger uploads can be useful
+
+    [:octicons-arrow-right-24:{.lg.middle} **Join Group**](https://t.me/BrokenSource)
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub**
 
     Officialize your Requests or Issues
 
+    - One repository per project
+
     [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories)
 
--   :fontawesome-solid-envelope:{.lg .middle} **Email**
+-   :fontawesome-solid-envelope:{.lg .middle} **Email** [^1]
 
-    Not really my preference, sorry 😅
+    Get in touch directly and privately
+
+    - Business and Formal
+
+    [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:tremeschin.dev@outlook.com)
 
 </div>
+
+[^1]: Feel free to Direct Message me on [**Discord**](https://discord.com/users/183692720064299008) or [**Telegram**](https://t.me/Tremeschin) for Formal enquiries as well
 
 !!! note "I live on **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:

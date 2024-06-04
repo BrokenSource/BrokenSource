@@ -4,7 +4,7 @@ repo_url: https://github.com/BrokenSource/BrokenSource
 edit_uri: edit/Master/Website/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: © 2023-2024, Tremeschin 🇧🇷
+copyright: © 2023-2024, <a href="https://github.com/Tremeschin" target="_blank">Tremeschin</a> 🇧🇷
 docs_dir: Website
 site_dir: Build/Website
 nav:
