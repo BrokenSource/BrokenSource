@@ -1,5 +1,0 @@
-# Your GPU must show up for Hardware Acceleration. 'llvmpipe' is software rendering
-# Note: On Windows, you might encountry a Mesa D3D12 adapter, which is right
-FROM broken-base:latest
-RUN apt install -y mesa-utils
-CMD eglinfo -B | grep -v '^[0-9]'

@@ -6,7 +6,7 @@ services:
     image: broken-base
     build:
       context: .
-      dockerfile: Docker/dockerfile.base
+      dockerfile: Docker/base.dockerfile
 
     volumes:
       - /usr/lib/wsl:/usr/lib/wsl # WSL .SOs
@@ -27,7 +27,7 @@ services:
     image: eglinfo
     build:
       context: .
-      dockerfile: Docker/dockerfile.eglinfo
+      dockerfile: Docker/eglinfo.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -38,7 +38,7 @@ services:
     image: shaderflow
     build:
       context: .
-      dockerfile: Docker/dockerfile.shaderflow
+      dockerfile: Docker/shaderflow.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -47,7 +47,7 @@ services:
     image: depthflow
     build:
       context: .
-      dockerfile: Docker/dockerfile.depthflow
+      dockerfile: Docker/depthflow.dockerfile
     depends_on:
       - broken-base
     <<: *common
