@@ -40,8 +40,8 @@ for _index, _item in enumerate(sys.argv):
 if bool(os.environ.get("PYAPP", None)):
     sys.argv[0] = sys.executable
 
-# Python <= 3.10 typing fixes
-if sys.version_info <= (3, 10):
+# Python < 3.11 typing fixes
+if sys.version_info < (3, 11):
     import typing # noqa
     from typing_extensions import Self, TypeAlias
     typing.TypeAlias = TypeAlias
@@ -60,6 +60,7 @@ PYPI:        bool = ("site-packages" in __file__.lower())
 RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
 VERSION:     str  = importlib.metadata.version("broken-source")
+DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (

@@ -24,4 +24,6 @@ My _**deepest grattitude**_ for all the amazing people who have made this possib
 
 </div>
 
+<hr>
+
 <!-- !!! heart "Hello" -->

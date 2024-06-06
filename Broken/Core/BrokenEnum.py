@@ -175,7 +175,7 @@ class BrokenEnum(enum.Enum):
     @functools.lru_cache()
     def options(cls) -> Tuple[enum.Enum]:
         """Get all members of the enum"""
-        return cls.members
+        return cls.members()
 
     @classmethod
     @functools.lru_cache()
@@ -304,7 +304,7 @@ class BrokenEnum(enum.Enum):
         """
         cls   = type(self)
         value = cls.get(value or self)
-        return cls.options[(cls.options.index(value) + offset) % len(cls)]
+        return cls.options()[(cls.options().index(value) + offset) % len(cls)]
 
     def __next__(self) -> Self:
         """Alias for .next, but as a method"""
