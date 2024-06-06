@@ -5,6 +5,7 @@ ___*
 .vscode
 Build
 Meta
+*.env
 
 # Common files across projects
 **/Workspace

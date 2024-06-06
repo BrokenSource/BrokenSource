@@ -6,7 +6,7 @@ issues        = "https://brokensrc.dev/contact"
 
 [project]
 name         = "broken-source"
-version      = "0.3.3"
+version      = "0.3.3.dev1"
 description  = "🚀 Broken Source Software Framework and All Projects in One Place"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"
@@ -97,7 +97,7 @@ dev-dependencies = [
     "mkdocs-autorefs>=1.0.1",
     "mkdocs-literate-nav>=0.6.1",
     "mkdocs-section-index>=0.3.9",
-    "mkdocs-material[imaging]>=9.5.25",
+    "mkdocs-material[imaging]>=9.5.26",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocs-git-revision-date-localized-plugin>=1.2.6",
     "mkdocs-include-markdown-plugin>=6.1.1",

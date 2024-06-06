@@ -1,5 +1,7 @@
 #!/bin/bash
 
+{ # Prevent execution if partially downloaded
+
 # Find 'git', exit if not found
 git=""
 if [ -x "$(command -v git)" ]; then
@@ -60,3 +62,5 @@ $rye sync
 printf "\n:: Spawning a new Shell in the Virtual Environment\n"
 source .venv/bin/activate
 exec $SHELL
+
+}

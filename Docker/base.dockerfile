@@ -1,4 +1,4 @@
-FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu22.04
+FROM nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Base requirements
