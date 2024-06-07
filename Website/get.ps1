@@ -99,7 +99,7 @@ if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
     if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
         Print-Step "Rye was not found, and installation failed with Winget"
         echo "Rye was installed but still not found. Probably a Path issue or installation failure"
-        echo "> Please get it at https://rye-up.com"
+        echo "> Please get it at https://rye.astral.sh"
         Ask-Continue
     } else {
         echo "Rye was installed successfully"

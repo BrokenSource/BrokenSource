@@ -1,2 +1,2 @@
-FROM broken-base:latest
+FROM broken-base-local
 CMD ["python3", "Docker/Scripts/depthflow.py"]

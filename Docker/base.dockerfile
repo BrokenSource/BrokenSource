@@ -3,7 +3,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 # Base requirements
-RUN apt update && apt install -y python3 python3-pip curl
+RUN apt update && apt install -y python3 python3-pip python-is-python3 curl
 RUN pip install torch==2.3.0 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install transformers
 

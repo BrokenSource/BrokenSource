@@ -25,14 +25,14 @@ for attempt in $(seq 1 2); do
     echo "Rye wasn't found after an installation attempt"
     echo "• Do you have the Shims directory on PATH?"
     echo "• Try restarting the Shell and retrying"
-    echo "• Get it at (https://rye-up.com)"
+    echo "• Get it at (https://rye.astral.sh)"
     exit 1
   fi
 
   echo "• Rye wasn't found, will attempt to install it"
   export RYE_TOOLCHAIN_VERSION="cpython@3.11"
   export RYE_INSTALL_OPTION="--yes"
-  /bin/bash -c "$(curl -sSf https://rye-up.com/get)"
+  /bin/bash -c "$(curl -sSf https://rye.astral.sh/get)"
 done
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
