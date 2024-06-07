@@ -9,7 +9,7 @@ services:
       dockerfile: Docker/base.dockerfile
 
     volumes:
-      - /usr/lib/wsl:/usr/lib/wsl # WSL .SOs
+      - /usr/lib/wsl:/usr/lib/wsl
       - .:/app
 
     # "--gpus=all"
@@ -24,10 +24,10 @@ services:
   # Sanity checks, assertions
 
   eglinfo:
-    image: eglinfo
+    image: glinfo
     build:
       context: .
-      dockerfile: Docker/eglinfo.dockerfile
+      dockerfile: Docker/glinfo.dockerfile
     depends_on:
       - broken-base
     <<: *common

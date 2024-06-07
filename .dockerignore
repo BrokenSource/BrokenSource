@@ -6,6 +6,7 @@ ___*
 Build
 Meta
 *.env
+*.dockerfile
 
 # Common files across projects
 **/Workspace

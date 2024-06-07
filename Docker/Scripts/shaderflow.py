@@ -4,5 +4,5 @@ from ShaderFlow.Scene import ShaderScene
 class Default(ShaderScene):
     ...
 
-scene = Default()
+scene = Default(backend="headless")
 scene.main(output="/tmp/video.mp4")

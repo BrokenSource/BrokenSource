@@ -45,10 +45,19 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 <hr>
 
 - (NVIDIA) Install the [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt){:target="_blank"} for your Distro
-    - I don't have to say _"Have NVIDIA Drivers installed"_, on the host system, do I?
+    - I don't have to say _"Have NVIDIA Drivers installed"_, on the **host system**, do I?
     - **Windows**: Follow the `apt` instructions on the link above, inside WSL
 
 !!! warning "**DO NOT INSTALL NVIDIA OR DISPLAY DRIVERS (MESA) ON THE WSL DISTRO [**PER NVIDIA DOCS**](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#step-1-install-nvidia-driver-for-gpu-support){:target="_blank"}**"
+
+<hr>
+
+**Restart** the Docker Engine:
+
+- (Linux) Run `sudo systemctl restart docker` on the Terminal
+- (Others) Close and open Docker Desktop on the System Tray
+
+!!! note "(Windows) It may be a good idea to reboot the whole system"
 
 <hr>
 
@@ -56,7 +65,7 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 
 ## 🚀 Context
 
-Per Monorepo structure, I've configured a `.docker-compose.yml` file that builds a `base.dockerfile` with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
+Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/Master/docker-compose.yml){:target="_blank"} file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/Master/Docker/base.dockerfile){:target="_blank"} with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
 
 ??? tip "Have enough RAM and don't want to hurt your SSD's TBW?"
     Edit or create the file `sudo nano /etc/docker/daemon.json` and add:
@@ -125,11 +134,11 @@ ENV NVIDIA_DRIVER_CAPABILITIES="all"
 **Additionally**, for ShaderFlow to use EGL, and not GLFW, set
 
 ```dockerfile
-# Can disable with WINDOW_EGL=0
+# Can disable with WINDOW_EGL=0 (sends backend=None to Window class)
 ENV WINDOW_BACKEND="headless"
 
-# Alternatively, use scene class args
-scene = Scene(backend="headless")
+# Alternatively, use shaderflow scene class args
+scene = ShaderScene(backend="headless")
 ```
 
 !!! note "For pure ModernGL users:"
@@ -147,20 +156,11 @@ scene = Scene(backend="headless")
 
 <h3>Checking stuff is working</h3>
 
-I've configured a Dockerfile for you to test your setup:
+I've configured a Dockerfile for you to test your setup. Check its output messages:
 
 ```ps title="Terminal"
-docker-compose run --build eglinfo
+docker-compose run --build glinfo
 ```
-
-- Make sure that:
-
-!!! warning "**You must** see your GPU name on final command output above"
-    For example: <b>[EGL vendor string: NVIDIA]</b> or <b>[D3D12 (NVIDIA GeForce RTX 3060)]</b>
-
-!!! warning "**You must** see a `libEGL_nvidia.so.*` files listed on the output"
-    - `/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.550.78`
-    - `/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0`
 
 If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 

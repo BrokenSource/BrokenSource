@@ -61,6 +61,7 @@ RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
 VERSION:     str  = importlib.metadata.version("broken-source")
 DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
+WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
