@@ -1,6 +1,5 @@
 ___*
 .cache
-.github
 .venv
 .vscode
 Build
@@ -11,3 +10,4 @@ Meta
 # Common files across projects
 **/Workspace
 **/Website
+**/.github

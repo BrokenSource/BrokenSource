@@ -1,2 +1,2 @@
 FROM broken-base-local
-CMD ["python3", "Docker/Scripts/shaderflow.py"]
+CMD /bin/bash /App/Docker/Scripts/main.sh shaderflow

@@ -43,7 +43,7 @@ from Broken import (
     nearest,
     shell,
 )
-from Broken.Types import Hertz, Range, Seconds
+from Broken.Types import Bytes, Hertz, Range, Seconds
 
 # ----------------------------------------------|
 # Resolution
@@ -1220,7 +1220,7 @@ class BrokenAudioReader:
     chunk:       Seconds     = 0.1
     format:      FFmpegPCM   = FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN
     echo:        bool        = False
-    _time:       Seconds     = 0
+    _read:       Bytes       = 0
     _channels:   int         = None
     _samplerate: Hertz       = None
     _dtype:      numpy.dtype = None
@@ -1229,7 +1229,7 @@ class BrokenAudioReader:
 
     @property
     def time(self) -> Seconds:
-        return self._time
+        return self._read / self.bytes_per_second
 
     @property
     def channels(self) -> int:
@@ -1257,8 +1257,9 @@ class BrokenAudioReader:
 
     @property
     def stream(self) -> Generator[numpy.ndarray, None, None]:
-        self.path = BrokenPath(self.path).valid()
-        if (self.path is None):
+        self.path = BrokenPath(self.path)
+
+        if (not self.path.exists()):
             return None
 
         # Get audio file attributes
@@ -1267,7 +1268,7 @@ class BrokenAudioReader:
         self.format = FFmpegPCM.get(self.format)
         self._dtype = self.format.dtype
         self._size = self.format.size
-        self._time = 0
+        self._read = 0
 
         # Note: Stderr to null as we might not read all the audio, won't log errors
         self._ffmpeg = (
@@ -1296,9 +1297,10 @@ class BrokenAudioReader:
         """
         target = 0
 
-        while (target := target + self.chunk):
+        while True:
+            target += self.chunk
 
-            # Calculate the length of the next read to best match the target time
+            # Calculate the length of the next read to best match the target time,
             # but do not carry over temporal conversion errors
             length = (target - self.time) * self.bytes_per_second
             length = nearest(length, self.bytes_per_sample, type=int)
@@ -1307,7 +1309,7 @@ class BrokenAudioReader:
             if len(data) == 0: break
 
             # Increment precise time and read time
-            self._time += len(data)/self.bytes_per_second
             yield numpy.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)
+            self._read += len(data)
 
         return self.time

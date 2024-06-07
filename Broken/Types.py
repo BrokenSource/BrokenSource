@@ -18,6 +18,7 @@ Minutes:   TypeAlias = float
 Hours:     TypeAlias = float
 Hertz:     TypeAlias = float
 Samples:   TypeAlias = int
+Bytes:     TypeAlias = int
 Degrees:   TypeAlias = float
 Radians:   TypeAlias = float
 BPM:       TypeAlias = float

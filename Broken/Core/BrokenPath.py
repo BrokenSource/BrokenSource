@@ -50,9 +50,10 @@ class BrokenPath(pathlib.Path):
         # to .resolve() as having symlink paths _can_ be wanted
         instance = super().__new__(cls, *args, **kwargs)
         instance._raw_paths = list(map(str, args)) # Py312 fix
+        instance = instance.expanduser().absolute()
         if (valid and not instance.exists()):
             return None
-        return instance.expanduser().absolute()
+        return instance
 
     def pathlib(self) -> pathlib.Path:
         """Some packages test `type(var) == pathlib.Path` instead of `isinstance(var, pathlib.Path)`"""
