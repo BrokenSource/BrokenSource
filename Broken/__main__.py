@@ -313,15 +313,11 @@ class BrokenCLI:
 
         for directory in path.iterdir():
 
-            # Avoid hidden directories and workspace
+            # Avoid hidden, workspace, recursion
             if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
                 continue
-
-            # Must be a directory
             if directory.is_file():
                 continue
-
-            # Avoid recursion
             if BrokenPath(directory) == Broken.BROKEN.DIRECTORIES.REPOSITORY:
                 continue
 

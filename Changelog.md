@@ -7,6 +7,7 @@
 - Fix: Always `.upper()` values from `LOGLEVEL`
 - Add `valid: bool` on `BrokenPath` initialization istself, as `BrokenPath(None).valid()` is invalid
 - Fix: `BrokenTyper` replace '_' with '-' on given command names and `tuple(map(str, args))` them
+- Fixed BrokenAudioReader not yielding data if `chunk=0` when entering the context
 
 **ShaderFlow**:
 - Prompt the user to install audio server packages if `soundcard` import fails
@@ -14,6 +15,9 @@
 - Safety checks for all modules to be initialized with `Module(self=instance(ShaderScene))`
     - Don't worry, a scene itself defaults `self.scene = self` so it is a scene !
     - This enables type hinting on the Module class, that depends on Scene, which depends on Module
+- Always swap buffers even if on headless, NVIDIA driver was softlocking/hanging on benchmark mode
+- Rename `ShaderScene.main(end)` to `ShaderScene.main(time)`
+- The default quality level is now `50%`, for equal options on increasing or decreasing
 
 <br>
 
