@@ -417,6 +417,44 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         yield self.all("-cq", self.cq)
         yield self.all("-gpu", self.gpu)
 
+class FFmpegVideoCodecVP9(FFmpegModuleBase):
+    """https://trac.ffmpeg.org/wiki/Encode/VP9"""
+    codec: Literal["libvpx-vp9"] = "libvpx-vp9"
+
+    crf: int = Field(default=26, gt=-1, lt=64)
+    """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#constantq
+    """
+
+    speed: int = Field(default=0, gt=-1, lt=6)
+    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed
+    """
+
+    deadline: Optional[Literal[
+        "good", # General cases
+        "best", # Offline renders
+        "realtime",
+    ]] = Field(default="best")
+    """Tweak the encoding time philosophy. 'good' for general cases, 'best' for offline renders when
+    there's plenty time available and best quality, 'realtime' for streams and low latency
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality
+    """
+
+    row_multithreading: bool = Field(default=True)
+    """Faster encodes by splitting rows into multiple threads. Slight innacuracy on the rate control.
+    Recommended for >= 1080p videos. Requires libvpx >= 1.7.0 (you should have it)
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt
+    """
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "libvpx-vp9")
+        yield ("-crf", self.crf)
+        yield ("-b:v", 0)
+        yield ("-deadline", self.deadline)
+        yield ("-cpu-used", self.speed)
+        yield ("-row-mt", "1") * self.row_multithreading
+
 class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
     """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
     • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
@@ -462,44 +500,6 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
         yield ("-preset", self.preset)
         yield ("-svtav1-params", "tune=0")
 
-class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """https://trac.ffmpeg.org/wiki/Encode/VP9"""
-    codec: Literal["libvpx-vp9"] = "libvpx-vp9"
-
-    crf: int = Field(default=26, gt=-1, lt=64)
-    """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#constantq
-    """
-
-    speed: int = Field(default=0, gt=-1, lt=6)
-    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed
-    """
-
-    deadline: Optional[Literal[
-        "good", # General cases
-        "best", # Offline renders
-        "realtime",
-    ]] = Field(default="best")
-    """Tweak the encoding time philosophy. 'good' for general cases, 'best' for offline renders when
-    there's plenty time available and best quality, 'realtime' for streams and low latency
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality
-    """
-
-    row_multithreading: bool = Field(default=True)
-    """Faster encodes by splitting rows into multiple threads. Slight innacuracy on the rate control.
-    Recommended for >= 1080p videos. Requires libvpx >= 1.7.0 (you should have it)
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt
-    """
-
-    def command(self) -> Iterable[str]:
-        yield ("-c:v", "libvpx-vp9")
-        yield ("-crf", self.crf)
-        yield ("-b:v", 0)
-        yield ("-deadline", self.deadline)
-        yield ("-cpu-used", self.speed)
-        yield ("-row-mt", "1") * self.row_multithreading
-
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
     codec: Literal["rawvideo"] = "rawvideo"
 
@@ -517,9 +517,9 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecH264_NVENC,
     FFmpegVideoCodecH265,
     FFmpegVideoCodecH265_NVENC,
+    FFmpegVideoCodecVP9,
     FFmpegVideoCodecAV1_LIBAOM,
     FFmpegVideoCodecAV1_SVT,
-    FFmpegVideoCodecVP9,
     FFmpegVideoCodecRawvideo,
     FFmpegVideoCodecCopy,
 ]
@@ -751,19 +751,19 @@ class BrokenFFmpeg(SerdeBaseModel):
         self.video_codec = FFmpegVideoCodecH265_NVENC(**kwargs)
         return self
 
+    @functools.wraps(FFmpegVideoCodecVP9)
+    def vp9(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecVP9(**kwargs)
+        return self
+
     @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
-    def av1_libaom(self, **kwargs) -> Self:
+    def libaom(self, **kwargs) -> Self:
         self.video_codec = FFmpegVideoCodecAV1_LIBAOM(**kwargs)
         return self
 
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
-    def av1_svt(self, **kwargs) -> Self:
+    def svt(self, **kwargs) -> Self:
         self.video_codec = FFmpegVideoCodecAV1_SVT(**kwargs)
-        return self
-
-    @functools.wraps(FFmpegVideoCodecVP9)
-    def vp9(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecVP9(**kwargs)
         return self
 
     @functools.wraps(FFmpegVideoCodecRawvideo)
@@ -774,6 +774,18 @@ class BrokenFFmpeg(SerdeBaseModel):
     @functools.wraps(FFmpegVideoCodecCopy)
     def copy_video(self, **kwargs) -> Self:
         self.video_codec = FFmpegVideoCodecCopy(**kwargs)
+        return self
+
+    def apply_vcodec_str(self, codec: str) -> Self:
+        if   (codec == "h264"      ): self.h264()
+        elif (codec == "h264_nvenc"): self.h264_nvenc()
+        elif (codec == "h265"      ): self.h265()
+        elif (codec == "h265_nvenc"): self.h265_nvenc()
+        elif (codec == "hevc_nvenc"): self.h265_nvenc()
+        elif (codec == "vp9"       ): self.vp9()
+        elif (codec == "libaom"    ): self.libaom()
+        elif (codec == "svt"       ): self.svt()
+        else: raise ValueError(f"Unknown Video Codec: {codec}")
         return self
 
     # Audio codecs
@@ -811,6 +823,17 @@ class BrokenFFmpeg(SerdeBaseModel):
     @functools.wraps(FFmpegAudioCodecEmpty)
     def empty_audio(self, **kwargs) -> Self:
         self.audio_codec = FFmpegAudioCodecEmpty(**kwargs)
+        return self
+
+    def apply_acodec_str(self, codec: str) -> Self:
+        if   (codec == "aac"   ): self.aac()
+        elif (codec == "mp3"   ): self.mp3()
+        elif (codec == "opus"  ): self.opus()
+        elif (codec == "flac"  ): self.flac()
+        elif (codec == "copy"  ): self.copy_audio()
+        elif (codec == "none"  ): self.no_audio()
+        elif (codec == "empty" ): self.empty_audio()
+        else: raise ValueError(f"Unknown Audio Codec: {codec}")
         return self
 
     # Filters
