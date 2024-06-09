@@ -3,7 +3,7 @@ import time
 from threading import Thread
 from typing import Any, Callable, Dict, List
 
-from attr import define
+from attrs import define
 
 from Broken import last_locals
 
@@ -11,7 +11,7 @@ from Broken import last_locals
 @define
 class BrokenThreadPool:
     threads: List[Thread] = []
-    max:     int          = 1
+    max: int = 1
 
     @property
     def alive(self) -> List[Thread]:

@@ -1,10 +1,8 @@
-import os
 import platform
 
 import distro
-from loguru import logger as log
 
-from Broken import BrokenEnum, shell
+from Broken import BrokenEnum, log
 
 
 class BrokenPlatform:
@@ -96,16 +94,6 @@ class BrokenPlatform:
             return self.value.split("-")[1]
 
     CurrentTarget: str = f"{Name}-{Architecture}"
-
-    @staticmethod
-    def clear_terminal(**kwargs):
-        if not kwargs.get("do", True):
-            return
-
-        if BrokenPlatform.OnWindows:
-            os.system("cls")
-        else:
-            shell("clear", **kwargs)
 
     @staticmethod
     def log_system_info():

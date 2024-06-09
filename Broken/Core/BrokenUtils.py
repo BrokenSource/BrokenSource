@@ -5,9 +5,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Self
 
 from attr import Factory, define
-from loguru import logger as log
 
-from Broken import flatten
+from Broken import flatten, log
 
 
 @define

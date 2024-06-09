@@ -1,6 +1,7 @@
-import os
-import sys
-import typing
+# -------------------------------------------------------------------------------------------------|
+# Tracebacks
+
+import site
 from pathlib import Path
 
 import pretty_errors
@@ -13,6 +14,18 @@ pretty_errors.configure(
     lines_before      = 10,
     lines_after       = 10,
 )
+
+# Remove long call stack tracebacks from some libraries
+for sitepackages in site.getsitepackages():
+    for library in ("typer", "click"):
+        pretty_errors.blacklist(Path(sitepackages)/library)
+
+# -------------------------------------------------------------------------------------------------|
+# General fixes and safety
+
+import os
+import sys
+import typing
 
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
 # Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
@@ -48,29 +61,29 @@ if sys.version_info < (3, 11):
     typing.Self = Self
 
 # -------------------------------------------------------------------------------------------------|
+# Actual package
 
 import importlib.metadata
 import importlib.resources
+import time
 
 # Information about the release and version
+VERSION:     str  = importlib.metadata.version("broken-source")
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 NUITKA:      bool = ("__compiled__" in globals())
 PYPI:        bool = ("site-packages" in __file__.lower())
-RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
-DEVELOPMENT: bool = (not RELEASE)
-VERSION:     str  = importlib.metadata.version("broken-source")
 DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
 WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
+RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
+DEVELOPMENT: bool = (not RELEASE)
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
-    BIG_BANG,
     apply,
     clamp,
     denum,
     dunder,
-    extend,
     flatten,
     have_import,
     hyphen_range,
@@ -82,7 +95,7 @@ from Broken.Core import (
     temp_env,
 )
 from Broken.Core.BrokenEnum import BrokenEnum
-from Broken.Core.BrokenLogging import BrokenLogging
+from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenProfiler import BrokenProfiler, BrokenProfilerEnum
@@ -104,12 +117,8 @@ from Broken.Core.BrokenUtils import (
     SameTracker,
 )
 
-BROKEN = BrokenProject(
-    PACKAGE=__file__,
-    APP_NAME="Broken",
-    APP_AUTHOR="BrokenSource",
-    RESOURCES=BrokenResources,
-)
+BROKEN = BrokenProject(PACKAGE=__file__, RESOURCES=BrokenResources)
+"""The main library's BrokenProject instance. Useful for common downloads"""
 
 PROJECT = BROKEN
 """
@@ -125,3 +134,13 @@ def set_project(project: BrokenProject):
         return
     PROJECT = project
     PROJECT.pyapp_new_binary_restore_hook()
+
+# -------------------------------------------------------------------------------------------------|
+# Temporal
+
+
+time.zero = time.perf_counter()
+"""Precise time at which the program started (since OS boot)"""
+
+time.since_zero = (lambda: time.perf_counter() - time.zero)
+"""Precise time since the program started, 'normalized time.perf_counter()'"""

@@ -13,14 +13,13 @@ from pathlib import Path
 import dotenv
 from appdirs import AppDirs
 from attr import define, field
-from loguru import logger as log
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
 from typer import Typer
 
 import Broken
-from Broken import BrokenLogging, BrokenPath, BrokenPlatform, flatten, shell
+from Broken import BrokenLogging, BrokenPath, BrokenPlatform, log, shell
 
 
 @define(slots=False)

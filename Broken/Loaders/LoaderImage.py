@@ -6,10 +6,10 @@ import numpy
 import PIL
 import validators
 from attr import define
-from loguru import logger as log
 from PIL.Image import Image
 
 import Broken
+from Broken import log
 from Broken.Loaders import BrokenLoader
 from Broken.Types import URL
 

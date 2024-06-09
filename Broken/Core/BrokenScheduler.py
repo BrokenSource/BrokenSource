@@ -6,10 +6,24 @@ from collections import deque
 from threading import Lock
 from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 
-from attr import Factory, define, field
+from attrs import Factory, define, field
 
-from Broken import BIG_BANG
-from Broken.Types import Hertz, Seconds
+
+def precise_sleep(seconds: float, *, error: float=0.005) -> None:
+    """A precise alternative of time.sleep(), low cpu near-end thread spin"""
+    if (seconds < 0):
+        return
+
+    # Sleep close to the due time
+    start = time.perf_counter()
+    ahead = max(0, seconds - error)
+    time.sleep(ahead)
+
+    # Spin the thread until the time is up (precise Sleep)
+    while (time.perf_counter() - start) < seconds:
+        pass
+
+time.precise_sleep = precise_sleep
 
 
 @define
@@ -18,8 +32,9 @@ class BrokenTask:
 
     # # Basic
 
-    task: callable = None
-    """Function callable to call every synchronization"""
+    task: Callable = None
+    """Function callable to call every synchronization. Automatically sends a 'time' or 'dt'
+    argument if the function's signature contains it"""
 
     args: List[Any] = field(factory=list, repr=False)
     """Method's positional arguments"""
@@ -44,7 +59,7 @@ class BrokenTask:
 
     # # Synchronization
 
-    frequency: Hertz = 60.0
+    frequency: float = 60.0
     """Ideal frequency of task calls"""
 
     frameskip: bool = True
@@ -57,18 +72,19 @@ class BrokenTask:
     """Use precise time sleeping for near-perfect frametimes"""
 
     # # Timing
-    started: Seconds = Factory(lambda: time.bang_counter())
+
+    started: float = Factory(lambda: time.since_zero())
     """Time when client was started (initializes $now+started, value in now() seconds)"""
 
-    next_call: Seconds = None
+    next_call: float = None
     """Next time to call task (initializes $now+next_call, value in now() seconds)"""
 
-    last_call: Seconds = None
+    last_call: float = None
     """Last time task was called (initializes $now+last_call, value in now() seconds)"""
 
     # # Flags
-    _time:     bool    = False
-    _dt:       bool    = False
+    _time: bool = False
+    _dt: bool = False
 
     def __attrs_post_init__(self):
         signature = inspect.signature(self.task)
@@ -76,7 +92,7 @@ class BrokenTask:
         self._time = ("time" in signature.parameters)
 
         # Assign idealistic values for decoupled
-        if self.freewheel: self.started = BIG_BANG
+        if self.freewheel: self.started = time.zero
         self.last_call = (self.last_call or self.started)
         self.next_call = (self.next_call or self.started)
 
@@ -86,35 +102,39 @@ class BrokenTask:
     # # Useful properties
 
     @property
-    def fps(self) -> Hertz:
+    def fps(self) -> float:
         return self.frequency
 
     @fps.setter
-    def fps(self, value: Hertz):
+    def fps(self, value: float):
         self.frequency = value
 
     @property
-    def period(self) -> Seconds:
-        return 1/self.frequency
+    def period(self) -> float:
+        return (1 / self.frequency)
 
     @period.setter
-    def period(self, value: Seconds):
-        self.frequency = 1/value
+    def period(self, value: float):
+        self.frequency = (1 / value)
 
     @property
-    def tag_delete(self) -> bool:
+    def _tag_delete(self) -> bool:
         return self.once and (not self.enabled)
 
     @property
-    def tag_alive(self) -> bool:
-        return not self.tag_delete
+    def _tag_alive(self) -> bool:
+        return not self._tag_delete
 
     # # Sorting
 
     def __lt__(self, other: Self) -> bool:
+        if (self.once and not other.once):
+            return True
         return self.next_call < other.next_call
 
     def __gt__(self, other: Self) -> bool:
+        if (not self.once and other.once):
+            return True
         return self.next_call > other.next_call
 
     # # Implementation
@@ -122,9 +142,7 @@ class BrokenTask:
     def next(self, block: bool=True) -> Self:
 
         # Time to wait for next call if block
-        # - Next call at 110 seconds, now=100, wait=10
-        # - Positive means to wait, negative we are behind
-        wait = max(0, (self.next_call - time.bang_counter()))
+        wait = max(0, (self.next_call - time.since_zero()))
 
         if self.freewheel:
             pass
@@ -137,26 +155,22 @@ class BrokenTask:
             return None
 
         # The assumed instant the code below will run instantly
-        now = self.next_call if self.freewheel else time.bang_counter()
+        now = self.next_call if self.freewheel else time.since_zero()
         if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
         if self._time: self.kwargs["time"] = (now - self.started)
+        self.last_call = now
 
         # Enter or not the given context, call task with args and kwargs
         with (self.lock or contextlib.nullcontext()):
             with (self.context or contextlib.nullcontext()):
                 self.output = self.task(*self.args, **self.kwargs)
 
-        # Fixme: This is a better way to do it, but on decoupled it's not "dt perfect"
-        # self.next_call = self.period * (math.floor(now/self.period) + 1)
-
-        # Update future and past states
-        self.last_call = now
+        # Find a future multiple of period
         while self.next_call <= now:
             self.next_call += self.period
 
         # (Disabled && Once) clients gets deleted
         self.enabled = not self.once
-
         return self
 
 @define
@@ -176,15 +190,10 @@ class BrokenScheduler:
         """Wraps around BrokenVsync for convenience"""
         return self.add_task(BrokenTask(task=task, *a, **k, once=True))
 
-    def partial(self, task: Callable, *a, **k) -> BrokenTask:
-        """Wraps around BrokenVsync for convenience"""
-        return self.once(task=functools.partial(task=task, *a, **k))
-
     # # Filtering
 
     @property
     def enabled_tasks(self) -> Iterable[BrokenTask]:
-        """Returns a list of enabled clients"""
         for client in self.clients:
             if client.enabled:
                 yield client
@@ -192,11 +201,11 @@ class BrokenScheduler:
     @property
     def next_task(self) -> Optional[BrokenTask]:
         """Returns the next client to be called"""
-        return min(self.enabled_tasks)
+        return min(self.enabled_tasks, default=None)
 
     def _sanitize(self) -> None:
         """Removes not enabled 'once' clients"""
-        self.clients = list(filter(lambda client: client.tag_alive, self.clients))
+        self.clients = deque(filter(lambda client: client._tag_alive, self.clients))
 
     # # Actions
 
@@ -213,26 +222,3 @@ class BrokenScheduler:
             if client.once:
                 client.next()
         self._sanitize()
-
-    # # Block-free next
-
-    __work__: bool = False
-
-    def smart_next(self) -> Optional[BrokenTask]:
-        # Note: Proof of concept. The frametime Ticking might be enough for ShaderFlow
-
-        # Too close to the next known call, call blocking
-        if abs(time.bang_counter() - self.next_task.next_call) < 0.005:
-            return self.next(block=True)
-
-        # By chance any "recently added" client was added
-        if (call := self.next(block=False)):
-            self.__work__ = True
-            return call
-
-        # Next iteration, wait for work but don't spin lock
-        if not self.__work__:
-            time.sleep(0.001)
-
-        # Flag that there was not work done
-        self.__work__ = False

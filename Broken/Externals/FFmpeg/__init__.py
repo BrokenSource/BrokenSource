@@ -1,20 +1,15 @@
-"""State of the art FFmpeg class. See BrokenFFmpeg for more info"""
-
 from __future__ import annotations
 
 import functools
-import inspect
 import io
 import re
+import shutil
 import subprocess
-import time
+from abc import ABC, abstractmethod
 from collections import deque
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from threading import Thread
 from typing import (
-    Any,
-    Deque,
     Generator,
     Iterable,
     List,
@@ -22,161 +17,30 @@ from typing import (
     Optional,
     Self,
     Tuple,
+    TypeAlias,
     Union,
 )
 
 import numpy
 import PIL
-from attr import Factory, define, field
-from dotmap import DotMap
-from loguru import logger as log
+import PIL.Image
+from attrs import define
+from pydantic import BaseModel, Field, field_validator
 
 from Broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
     BrokenSpinner,
-    BrokenThread,
-    apply,
-    denum,
     flatten,
+    log,
     nearest,
     shell,
 )
-from Broken.Types import Bytes, Hertz, Range, Seconds
+from Broken.Types import Bytes, Hertz, Seconds
 
-# ----------------------------------------------|
-# Resolution
-
-@define
-class FFmpegResolution:
-    width:  int = field(converter=int)
-    height: int = field(converter=int)
-
-    @width.validator
-    @height.validator
-    def check(self, attribute, value):
-        if value < 0:
-            raise ValueError(f"FFmpegResolution {attribute.name} must be positive")
-
-    def __mul__(self, ratio: float) -> Self:
-        self.width  *= ratio
-        self.height *= ratio
-        return self
-
-    def __truediv__(self, ratio: float) -> Self:
-        self.width  /= ratio
-        self.height /= ratio
-        return self
-
-    def aspect_ratio(self) -> float:
-        return self.width / self.height
-
-    def __str__(self) -> str:
-        return f"{self.width}x{self.height}"
-
-class FFmpegResolutionEnum(BrokenEnum):
-    """
-    Common resolutions for videos and images enumerator
-
-    Aspect ratios:
-        - Standard:  4:3
-        - Wide:      16:9 or 16:10
-        - UltraWide: 21:9
-        - SuperWide: 32:9
-        - Univisium: 2:1
-
-    Resolutions:
-        - SD:   480p
-        - HD:   720p
-        - FHD: 1080p
-        - QHD: 1440p
-        - 4K:  2160p
-        - 8K:  4320p
-        - 16K: 8640p
-    """
-
-    # 480p
-    Standard_480p_SD     = FFmpegResolution(  640,  480)
-    Wide16x9_480p_SD     = FFmpegResolution(  854,  480)
-    Wide16x10_480p_SD    = FFmpegResolution(  720,  534)
-    UltraWide_480p_SD    = FFmpegResolution( 1140,  480)
-    SuperWide_480p_SD    = FFmpegResolution( 1706,  480)
-    Univisium_480p_SD    = FFmpegResolution(  960,  480)
-
-    # 720p
-    Standard_720p_HD     = FFmpegResolution(  960,  720)
-    Wide16x9_720p_HD     = FFmpegResolution( 1280,  720)
-    Wide16x10_720p_HD    = FFmpegResolution( 1280,  800)
-    UltraWide_720p_HD    = FFmpegResolution( 1720,  720)
-    SuperWide_720p_HD    = FFmpegResolution( 2560,  720)
-    Univisium_720p_HD    = FFmpegResolution( 1440,  720)
-
-    # 1080p
-    Standard_1080p_FHD   = FFmpegResolution( 1440, 1080)
-    Wide16x9_1080p_FHD   = FFmpegResolution( 1920, 1080)
-    Wide16x10_1080p_FHD  = FFmpegResolution( 1920, 1200)
-    UltraWide_1080p_FHD  = FFmpegResolution( 2560, 1080)
-    SuperWide_1080p_FHD  = FFmpegResolution( 3840, 1080)
-    Univisium_1080p_FHD  = FFmpegResolution( 2160, 1080)
-
-    # 1440p
-    Standard_1440p_QHD   = FFmpegResolution( 1920, 1440)
-    Wide16x9_1440p_QHD   = FFmpegResolution( 2560, 1440)
-    Wide16x10_1440p_QHD  = FFmpegResolution( 2560, 1600)
-    UltraWide_1440p_QHD  = FFmpegResolution( 3440, 1440)
-    SuperWide_1440p_QHD  = FFmpegResolution( 5120, 1440)
-    Univisium_1440p_QHD  = FFmpegResolution( 2880, 1440)
-
-    # 2160p
-    Standard_2160p_4K    = FFmpegResolution( 2880, 2160)
-    Wide16x9_2160p_4K    = FFmpegResolution( 3840, 2160)
-    Wide16x10_2160p_4K   = FFmpegResolution( 3840, 2400)
-    UltraWide_2160p_4K   = FFmpegResolution( 5120, 2160)
-    SuperWide_2160p_4K   = FFmpegResolution( 7680, 2160)
-    Univisium_2160p_4K   = FFmpegResolution( 4320, 2160)
-
-    # 4320p
-    Standard_4320p_8K    = FFmpegResolution( 5760, 4320)
-    Wide16x9_4320p_8K    = FFmpegResolution( 7680, 4320)
-    Wide16x10_4320p_8K   = FFmpegResolution( 7680, 4800)
-    UltraWide_4320p_8K   = FFmpegResolution(10240, 4320)
-    SuperWide_4320p_8K   = FFmpegResolution(15360, 4320)
-    Univisium_4320p_8K   = FFmpegResolution( 8640, 4320)
-
-    # 8640p
-    Standard_8640p_16K   = FFmpegResolution(11520, 8640)
-    Wide16x9_8640p_16K   = FFmpegResolution(15360, 8640)
-    Wide16x10_8640p_16K  = FFmpegResolution(15360, 9600)
-    UltraWide_8640p_16K  = FFmpegResolution(20480, 8640)
-    SuperWide_8640p_16K  = FFmpegResolution(30720, 8640)
-    Univisium_8640p_16K  = FFmpegResolution(17280, 8640)
-
-# ----------------------------------------------|
-# Codecs
-
-class FFmpegVideoCodec(BrokenEnum):
-    """-c:v ffmpeg option"""
-    # H264, AVC - Advanced Video Coding
-    H264       = "libx264"
-    H264_NVENC = "h264_nvenc"
-
-    # H265, HEVC - High Efficiency Video Encoding
-    H265       = "libx265"
-    H265_NVENC = "hevc_nvenc"
-
-    # Alliance for Open Media Video Codec - AV1
-    AV1        = "libaom-av1"
-    AV1_NVENC  = "av1_nvenc"
-
-    # Raw, special
-    Rawvideo   = "rawvideo"
-    Copy       = "copy"
-
-    @staticmethod
-    def is_nvenc(option: FFmpegVideoCodec):
-        option = FFmpegVideoCodec.get(option)
-        return "nvenc" in option.value
+# -------------------------------------------------------------------------------------------------|
+# Enum's land
 
 class FFmpegPCM(BrokenEnum):
     # Raw pcm formats `ffmpeg -formats | grep PCM`
@@ -215,393 +79,804 @@ class FFmpegPCM(BrokenEnum):
         type = self.value.split("_")[1][0]
         return numpy.dtype(f"{self.endian}{type}{self.size}")
 
-class FFmpegAudioCodec(BrokenEnum):
-    """-c:a ffmpeg option"""
-    AAC    = "aac"
-    MP3    = "libmp3lame"
-    VORBIS = "libvorbis"
-    OPUS   = "libopus"
-    FLAC   = "flac"
-    AC3    = "ac3"
-    Copy   = "copy"
+# -------------------------------------------------------------------------------------------------|
 
-# ----------------------------------------------|
-# H264
+class FFmpegModuleBase(BaseModel, ABC):
 
-class FFmpegH264Preset(BrokenEnum):
-    """-preset ffmpeg option"""
-    Ultrafast = "ultrafast"
-    Superfast = "superfast"
-    Veryfast  = "veryfast"
-    Faster    = "faster"
-    Fast      = "fast"
-    Medium    = "medium"
-    Slow      = "slow"
-    Slower    = "slower"
-    Veryslow  = "veryslow"
+    @abstractmethod
+    def command(self) -> Iterable[str]:
+        ...
 
-class FFmpegH264Tune(BrokenEnum):
-    """-tune ffmpeg option"""
-    Film        = "film"
-    Animation   = "animation"
-    Grain       = "grain"
-    Stillimage  = "stillimage"
-    PSNR        = "psnr"
-    SSIM        = "ssim"
-    Fastdecode  = "fastdecode"
-    Zerolatency = "zerolatency"
-
-class FFmpegH264Profile(BrokenEnum):
-    """-profile:v ffmpeg option"""
-    Baseline  = "baseline"
-    Main      = "main"
-    High      = "high"
-    High10    = "high10"
-    High422   = "high422"
-    High444   = "high444"
-    High444p  = "high444predictive"
-    High444ip = "high444intra"
-
-class FFmpegH264Quality(BrokenEnum):
-    """-crf ffmpeg option"""
-    Low      = 51
-    Medium   = 23
-    High     = 18
-    Veryhigh = 15
-    Ultra    = 10
-    Lossless = 0
-
-# ----------------------------------------------|
-# H265
-
-class FFmpegH265Preset(BrokenEnum):
-    """-preset ffmpeg option"""
-    Ultrafast = "ultrafast"
-    Superfast = "superfast"
-    Veryfast  = "veryfast"
-    Faster    = "faster"
-    Fast      = "fast"
-    Medium    = "medium"
-    Slow      = "slow"
-    Slower    = "slower"
-    Veryslow  = "veryslow"
-
-class FFmpegH265Tune(BrokenEnum):
-    """-tune ffmpeg option"""
-    PSNR        = "psnr"
-    SSIM        = "ssim"
-    Grain       = "grain"
-    Fastdecode  = "fastdecode"
-    Zerolatency = "zerolatency"
-
-class FFmpegH265Profile(BrokenEnum):
-    """-profile:v ffmpeg option"""
-    Main   = "main"
-    Main10 = "main10"
-    Main12 = "main12"
-
-class FFmpegH265Quality(BrokenEnum):
-    """-crf ffmpeg option"""
-    Low      = 51
-    Medium   = 23
-    High     = 18
-    Veryhigh = 15
-    Ultra    = 10
-    Lossless = 0
-
-# ----------------------------------------------|
-# Generic NVENC
-
-class FFmpegNVENC_Preset(BrokenEnum):
-    """-preset h264_nvenc ffmpeg option"""
-    # Default is P4
-    Default = "default"
-
-    # Similar to H264 Software
-    HQ2PassesSlow = "slow"
-    HQ1PassMedium = "medium"
-    HP1PassFast   = "fast"
-
-    HP = "hp"
-    HQ = "hq"
-    BD = "bd"
-
-    # Streaming ones
-    LowLatency   = "ll"
-    LowLatencyHQ = "llhq"
-    LowLatencyHP = "llhp"
-    Lossless     = "lossless"
-    LosslessHP   = "losslesshp"
-
-    # "Common" ones
-    Fastest = "p1"
-    Faster  = "p2"
-    Fast    = "p3"
-    Medium  = "p4"
-    Slow    = "p5"
-    Slower  = "p6"
-    Slowest = "p7"
-
-class FFmpegNVENC_Tune(BrokenEnum):
-    """-tune h264_nvenc ffmpeg option"""
-    HighQuality     = "hq"
-    LowLatency      = "ll"
-    UltraLowLatency = "ull"
-    Lossless        = "lossless"
-
-class FFmpegNVENC_Level(BrokenEnum):
-    """-level h264_nvenc ffmpeg option"""
-    Auto    = "auto"
-    Level10 = "1"
-    Level1b = "1b"
-    Level11 = "1.1"
-    Level12 = "1.2"
-    Level13 = "1.3"
-    Level20 = "2.0"
-    Level21 = "2.1"
-    Level22 = "2.2"
-    Level30 = "3.0"
-    Level31 = "3.1"
-    Level32 = "3.2"
-    Level40 = "4.0"
-    Level41 = "4.1"
-    Level42 = "4.2"
-    Level50 = "5.0"
-    Level51 = "5.1"
-    Level52 = "5.2"
-    Level60 = "6.0"
-    Level61 = "6.1"
-    Level62 = "6.2"
-
-class FFmpegNVENC_RC(BrokenEnum):
-    """-rc h264_nvenc ffmpeg option"""
-    ConstantQP                 = "constqp"
-    VariableBitrate            = "vbr"
-    VariableBitrateHighQuality = "vbr_hq"
-    ConstantBitrate            = "cbr"
-    ConstantBitrateHighQuality = "cbr_hq"
-
-class FFmpegNVENC_B_Ref_Mode(BrokenEnum):
-    Disabled = "disabled"
-    Each     = "each"
-    Middle   = "middle"
-
-# ----------------------------------------------|
-# H264 NVENC
-
-class FFmpegH264_NVENC_Profile(BrokenEnum):
-    """-profile h264_nvenc ffmpeg option"""
-    Baseline = "baseline"
-    Main     = "main"
-    High     = "high"
-    High444  = "high444"
-
-# ----------------------------------------------|
-# H265 NVENC
-
-class FFmpegH265_NVENC_Profile(BrokenEnum):
-    """-profile hevc_nvenc ffmpeg option"""
-    Main   = "main"
-    Main10 = "main10"
-    Rext   = "rext"
-
-class FFmpegH265_NVENC__Tier(BrokenEnum):
-    """-tier hevc_nvenc ffmpeg option"""
-    Main = "main"
-    High = "high"
-
-# ----------------------------------------------|
-# Formats
-
-class FFmpegPixelFormat(BrokenEnum):
-    """-pix_fmt ffmpeg option"""
-    RGB24   = "rgb24"
-    RGBA    = "rgba"
-    YUV420P = "yuv420p"
-    YUV422P = "yuv422p"
-    YUV444P = "yuv444p"
-
-class FFmpegFormat(BrokenEnum):
-    """-f ffmpeg option"""
-    Rawvideo   = "rawvideo"
-    Null       = "null"
-    Image2pipe = "image2pipe"
-
-    # Raw pcm formats `ffmpeg -formats | grep PCM`
-    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "f32be"
-    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "f32le"
-    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "f64be"
-    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "f64le"
-    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "s16be"
-    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "s16le"
-    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "s24be"
-    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "s24le"
-    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "s32be"
-    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "s32le"
-    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "u16be"
-    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "u16le"
-    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "u24be"
-    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "u24le"
-    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "u32be"
-    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "u32le"
-    PCM_UNSIGNED_8_BITS                = "u8"
-    PCM_SIGNED_8_BITS                  = "s8"
-
-# ----------------------------------------------|
-# Loglevel
-
-class FFmpegLogLevel(BrokenEnum):
-    """-loglevel ffmpeg option"""
-    Quiet   = "quiet"
-    Panic   = "panic"
-    Fatal   = "fatal"
-    Error   = "error"
-    Warning = "warning"
-    Info    = "info"
-    Verbose = "verbose"
-    Debug   = "debug"
-    Trace   = "trace"
-
-# ----------------------------------------------|
-# Filters
-
-class FFmpegScaleFilter(BrokenEnum):
-    Lanczos  = "lanczos"
-    Bicubic  = "bicubic"
-    Bilinear = "fast_bilinear"
-    Point    = "point"
-    Spline   = "spline"
-
-class FFmpegFilterFactory:
-    def scale(
-        width: Union[Tuple[int, int], int],
-        height: int=None,
-        filter: FFmpegScaleFilter=FFmpegScaleFilter.Lanczos
-    ) -> str:
-        width, height = flatten(width, height)
-        filter = FFmpegScaleFilter.get(filter).value
-        return f"scale={width}:{height}:flags={filter}"
-
-    def flip_vertical() -> str:
-        return "vflip"
-
-# ----------------------------------------------|
-# Vsync
-
-class FFmpegVsync(BrokenEnum):
-    """-vsync ffmpeg option"""
-    # "Each frame is passed with its timestamp from the demuxer to the muxer"
-    Passthrough = "passthrough"
-
-    # "Frames will be duplicated and dropped to achieve exactly the requested constant framerate"
-    ConstantFramerate = "cfr"
-
-    # "Frames are passed through with their timestamp or dropped so as to prevent 2 frames from having the same timestamp"
-    VariableFramerate = "vfr"
-
-    # "As passthrough but destroys all timestamps, making the muxer generate fresh timestamps based on frame-rate."
-    Drop = "drop"
-
-    # "Chooses between 1 and 2 depending on muxer capabilities."
-    Auto = "auto"
-
-# ----------------------------------------------|
-# Hardware acceleration
-
-class FFmpegHWAccel(BrokenEnum):
-    """-hwaccel ffmpeg option"""
-    Auto  = "auto"
-    CUVID = "cuvid"
-    DXVA2 = "dxva2"
-    QSV   = "qsv"
-    VDPAU = "vdpau"
-    VAAPI = "vaapi"
+    def all(self, *args) -> List[Optional[str]]:
+        if (None in args) or ('' in args):
+            return []
+        return args
 
 # -------------------------------------------------------------------------------------------------|
 
-@define
-class BrokenFFmpeg:
+class FFmpegInputPath(FFmpegModuleBase):
+    # type: Literal["path"] = "path"
+    path: Path
+
+    def command(self) -> Iterable[str]:
+        return ("-i", self.path)
+
+class FFmpegInputPipe(FFmpegModuleBase):
+    type: Literal["pipe"] = "pipe"
+
+    format: Optional[Literal[
+        "rawvideo",
+        "image2pipe",
+        "null",
+    ]] = Field(default="rawvideo")
+
+    pixel_format: Literal[
+        "rgb24",
+        "rgba"
+    ] = Field(default="rgb24")
+
+
+    width: int = Field(default=1920, gt=0)
+    height: int = Field(default=1080, gt=0)
+
+    framerate: float = Field(default=60.0, gt=-1.0)
+
+    @field_validator("framerate", mode="plain")
+    def validate_framerate(cls, value: Union[float, str]) -> float:
+        return eval(str(value))
+
+    def command(self) -> Iterable[str]:
+        yield ("-f", self.format)
+        yield ("-s", f"{self.width}x{self.height}")
+        yield ("-pix_fmt", self.pixel_format)
+        yield ("-r", self.framerate)
+        yield ("-i", "-")
+
+FFmpegInputType: TypeAlias = Union[
+    FFmpegInputPipe,
+    FFmpegInputPath
+]
+
+# -------------------------------------------------------------------------------------------------|
+
+class FFmpegOutputPipe(FFmpegModuleBase):
+    type: Literal["pipe"] = "pipe"
+    format: Optional[Literal[
+        "rawvideo",
+        "image2pipe",
+        "null",
+    ]] = Field(default=None)
+
+    pixel_format: Literal[
+        "rgb24",
+        "rgba"
+    ] = Field(default=None)
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-f", self.format)
+        yield self.all("-pix_fmt", self.pixel_format)
+        yield "-"
+
+class FFmpegOutputPath(FFmpegModuleBase):
+    type: Literal["path"] = "path"
+    overwrite: bool = True
+    path: Path
+
+    def command(self) -> Iterable[str]:
+        return (self.path, self.overwrite*"-y")
+
+FFmpegOutputType = Union[
+    FFmpegOutputPipe,
+    FFmpegOutputPath,
+]
+
+# -------------------------------------------------------------------------------------------------|
+# Todo: QSV, AMF, VVC ?
+
+class FFmpegVideoCodecH264(FFmpegModuleBase):
+    """https://trac.ffmpeg.org/wiki/Encode/H.264"""
+    codec: Literal["h264"] = "h264"
+
+    crf: int = Field(default=23, ge=0, le=51)
+    """Constant Rate Factor. 0 is lossless, 51 is the worst quality
+    • https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue
     """
-    Your Premium Fluent FFmpeg Class 💎
 
-    The way it works is that it keeps a list of "options" that can be called in a fluent way.
-    · On any given moment, only some options are available, depending on the previous options called.
-    · If you try to call an option that is not available, it will print a list of available options.
-    · Ideally all options have fail safes and input checking, for example .input() must be a valid file.
+    bitrate: Optional[int] = Field(default=None, gt=-1)
 
-    It is quite hard defining what options to remove at any point, feel free to refine the class
-    and send a pull request if you think you can improve it.
-
-    # Example usage:
-
-    ```python
-
-    # Get video basic information
-    print("Video frames:    ", BrokenFFmpeg.video_total_frames("input.mp4"))
-    print("Video resolution:", BrokenFFmpeg.video_resolution("input.mp4"))
-
-    # Iterate on all video frames as buffers
-    for i, frame in enumerate(BrokenFFmpeg.video_frames("input.mp4")):
-        print("Read frame", i)
-
-    # Video transcoding with filters
-    ffmpeg = (
-        BrokenFFmpeg()
-        .overwrite()
-        .stats()
-        .input("input.mp4")
-        .video_codec(FFmpegVideoCodec.H264)
-        .pixel_format(FFmpegPixelFormat.YUV444P)
-        .preset(FFmpegH264Preset.Slow)
-        .quality(FFmpegH264Quality.Ultra)
-        .filter(FFmpegFilterFactory.scale(1280, 720))
-        .output("output.mp4")
-    ).run()
+    preset: Optional[Literal[
+        "ultrafast",
+        "superfast",
+        "veryfast",
+        "faster",
+        "fast",
+        "medium",
+        "slow",
+        "slower",
+        "veryslow",
+    ]] = Field(default="slow")
+    """How much time to spend on encoding. Slower options gives better compression
+    • https://trac.ffmpeg.org/wiki/Encode/H.264#Preset
     """
 
-    options:     DotMap    = Factory(DotMap)
-    filters:     List[str] = Factory(list)
-    __command__: List[str] = Factory(list)
-    binary:      Path      = None
+    tune: Optional[Literal[
+        "film",
+        "animation",
+        "grain",
+        "stillimage",
+        "fastdecode",
+        "zerolatency"
+    ]] = Field(default=None)
+    """Tune x264 to keep and optimize for certain aspects of the input media. See link for more:
+    • https://trac.ffmpeg.org/wiki/Encode/H.264#Tune
+    """
 
-    def __private_to_option__(self, string: str) -> str:
-        """Option commands are the string between the first two dunder"""
-        if "__" not in string:
-            return string
-        return string.split("__")[1]
+    profile: Optional[Literal[
+        "baseline",
+        "main",
+        "high",
+        "high10",
+        "high422",
+        "high444",
+    ]] = Field(default=None)
+    """What features the encoder can use. The playback device must support the same profile level
+    • https://trac.ffmpeg.org/wiki/Encode/H.264#Profile
+    """
 
-    def __call__(self, *args, **kwargs) -> Self:
+    faststart: bool = Field(default=False)
+
+    rgb: bool = Field(default=False)
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:v", "libx264rgb" if self.rgb else "libx264")
+        yield self.all("-profile", self.profile)
+        yield self.all("-preset", self.preset)
+        yield self.all("-tune", self.tune)
+        yield self.all("-crf", str(self.crf))
+        yield self.all("-movflags", "+faststart"*self.faststart)
+        yield self.all("-b:v", self.bitrate)
+
+class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
+    """`ffmpeg -h encoder=h264_nvenc`"""
+    codec: Literal["h264_nvenc"] = "h264_nvenc"
+
+    preset: Optional[Literal[
+        "default", # Defaults to p4
+        "slow", # High quality 2 passes
+        "medium", # High quality 1 pass
+        "fast", # High quality 1 pass
+        "hp", # High performance
+        "hq", # High quality
+        "bd", # Balanced
+        "ll", # Low latency
+        "llhq", # Low latency high quality
+        "llhp", # Low latency high performance
+        "lossless", # Lossless
+        "losslesshp", # Lossless high performance
+        "p1", # fastest
+        "p2", # faster
+        "p3", # fast
+        "p4", # medium
+        "p5", # slow
+        "p6", # slower
+        "p7", # slowest
+    ]] = Field(default="p5")
+
+    tune: Optional[Literal[
+        "hq", # High quality
+        "ll", # Low latency
+        "ull", # Ultra low latency
+        "lossless" # Lossless
+    ]] = Field(default="hq")
+
+    profile: Optional[Literal[
+        "baseline", # Very old devices
+        "main", # Relatively modern devices
+        "high", # Modern devices
+        "high444p" # Modern devices
+    ]] = Field(default=None)
+
+    rc: Optional[Literal[
+        "constqp", # Constant Quality 'Factor'
+        "vbr", # Variable bitrate
+        "cbr", # Constant bitrate
+    ]] = Field(default="vbr")
+    """'Rate Control' mode"""
+
+    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    """Number of frames to look ahead for the rate control"""
+
+    surfaces: Optional[int] = Field(default=32, gt=-1, lt=65)
+    """Number of concurrent surfaces (0-64)"""
+
+    cbr: bool = Field(default=False)
+    """Use Constant Bitrate mode"""
+
+    gpu: int = Field(default=0, gt=-1)
+    """Use the Nth NVENC capable GPU for encoding"""
+
+    cq: int = Field(default=25, gt=-1)
+    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:v", "h264_nvenc")
+        yield self.all("-preset", self.preset)
+        yield self.all("-tune", self.tune)
+        yield self.all("-profile", self.profile)
+        yield self.all("-rc", self.rc)
+        yield self.all("-rc-lookahead", self.rc_lookahead)
+        yield self.all("-surfaces", self.surfaces)
+        yield self.all("-cbr", int(self.cbr))
+        yield self.all("-cq", self.cq)
+        yield self.all("-gpu", self.gpu)
+
+
+class FFmpegVideoCodecH265(FFmpegModuleBase):
+    """https://trac.ffmpeg.org/wiki/Encode/H.265"""
+    codec: Literal["h265"] = "h265"
+
+    crf: int = Field(default=23, ge=0, le=51)
+    """Constant Rate Factor. 0 is lossless, 51 is the worst quality"""
+
+    bitrate: Optional[int] = Field(default=None, gt=-1)
+
+    preset: Optional[Literal[
+        "ultrafast",
+        "superfast",
+        "veryfast",
+        "faster",
+        "fast",
+        "medium",
+        "slow",
+        "slower",
+        "veryslow",
+    ]] = Field(default="slow")
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:v", "libx265")
+        yield self.all("-preset", self.preset)
+        yield self.all("-crf", str(self.crf))
+        yield self.all("-b:v", self.bitrate)
+
+class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
+    """`ffmpeg -h encoder=hevc_nvenc`"""
+    codec: Literal["hevc_nvenc"] = "hevc_nvenc"
+
+    preset: Optional[Literal[
+        "default", # Defaults to p4
+        "slow", # High quality 2 passes
+        "medium", # High quality 1 pass
+        "fast", # High quality 1 pass
+        "hp", # High performance
+        "hq", # High quality
+        "bd", # Balanced
+        "ll", # Low latency
+        "llhq", # Low latency high quality
+        "llhp", # Low latency high performance
+        "lossless", # Lossless
+        "losslesshp", # Lossless high performance
+        "p1", # fastest
+        "p2", # faster
+        "p3", # fast
+        "p4", # medium
+        "p5", # slow
+        "p6", # slower
+        "p7", # slowest
+    ]] = Field(default="p5")
+
+    tune: Optional[Literal[
+        "hq", # High quality
+        "ll", # Low latency
+        "ull", # Ultra low latency
+        "lossless" # Lossless
+    ]] = Field(default="hq")
+
+    profile: Optional[Literal[
+        "main", # Modern devices
+        "main10", # HDR 10 bits
+        "rext"
+    ]] = Field(default=None)
+
+    tier: Optional[Literal[
+        "main",
+        "high",
+    ]] = Field(default="high")
+
+    rc: Optional[Literal[
+        "constqp", # Constant Quality 'Factor'
+        "vbr", # Variable bitrate
+        "cbr", # Constant bitrate
+    ]] = Field(default="vbr")
+    """'Rate Control' mode"""
+
+    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    """Number of frames to look ahead for the rate control"""
+
+    surfaces: Optional[int] = Field(default=32, gt=-1, lt=65)
+    """Number of concurrent surfaces (0-64)"""
+
+    cbr: bool = Field(default=False)
+    """Use Constant Bitrate mode"""
+
+    gpu: int = Field(default=0, gt=-1)
+    """Use the Nth NVENC capable GPU for encoding"""
+
+    cq: int = Field(default=25, gt=-1)
+    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:v", "hevc_nvenc")
+        yield self.all("-preset", self.preset)
+        yield self.all("-tune", self.tune)
+        yield self.all("-profile", self.profile)
+        yield self.all("-tier", self.tier)
+        yield self.all("-rc", self.rc)
+        yield self.all("-rc-lookahead", self.rc_lookahead)
+        yield self.all("-surfaces", self.surfaces)
+        yield self.all("-cbr", int(self.cbr))
+        yield self.all("-cq", self.cq)
+        yield self.all("-gpu", self.gpu)
+
+class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
+    """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
+    """
+    codec: Literal["libaom-av1"] = "libaom-av1"
+
+    crf: int = Field(default=23, gt=-1, lt=64)
+    """Constant Rate Factor (0-63). Lower values mean better quality, AV1 CRF 23 == x264 CRF 19
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality
+    """
+
+    speed: int = Field(default=3, gt=-1, lt=7)
+    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality
+    """
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "libaom-av1")
+        yield ("-crf", self.crf)
+        yield ("-cpu-used", self.speed)
+        yield ("-row-mt", 1)
+        yield ("-tiles", "2x2")
+
+class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
+    """The official codec for future development of AV1. Faster than libaom reference
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#SVT-AV1
+    """
+    codec: Literal["libsvtav1"] = "libsvtav1"
+
+    crf: int = Field(default=25, gt=-1, lt=64)
+    """Constant Rate Factor (0-63). Lower values mean better quality,
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#CRF
+    """
+
+    preset: int = Field(default=3, gt=-1, lt=9)
+    """The speed of the encoding, 0 is slowest, 8 is fastest. Decreases compression efficiency.
+    • https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes
+    """
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "libsvtav1")
+        yield ("-crf", self.crf)
+        yield ("-preset", self.preset)
+        yield ("-svtav1-params", "tune=0")
+
+class FFmpegVideoCodecVP9(FFmpegModuleBase):
+    """https://trac.ffmpeg.org/wiki/Encode/VP9"""
+    codec: Literal["libvpx-vp9"] = "libvpx-vp9"
+
+    crf: int = Field(default=26, gt=-1, lt=64)
+    """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#constantq
+    """
+
+    speed: int = Field(default=0, gt=-1, lt=6)
+    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed
+    """
+
+    deadline: Optional[Literal[
+        "good", # General cases
+        "best", # Offline renders
+        "realtime",
+    ]] = Field(default="best")
+    """Tweak the encoding time philosophy. 'good' for general cases, 'best' for offline renders when
+    there's plenty time available and best quality, 'realtime' for streams and low latency
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality
+    """
+
+    row_multithreading: bool = Field(default=True)
+    """Faster encodes by splitting rows into multiple threads. Slight innacuracy on the rate control.
+    Recommended for >= 1080p videos. Requires libvpx >= 1.7.0 (you should have it)
+    • https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt
+    """
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "libvpx-vp9")
+        yield ("-crf", self.crf)
+        yield ("-b:v", 0)
+        yield ("-deadline", self.deadline)
+        yield ("-cpu-used", self.speed)
+        yield ("-row-mt", "1") * self.row_multithreading
+
+class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
+    codec: Literal["rawvideo"] = "rawvideo"
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "rawvideo")
+
+class FFmpegVideoCodecCopy(FFmpegModuleBase):
+    codec: Literal["copy"] = "copy"
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "copy")
+
+FFmpegVideoCodecType: TypeAlias = Union[
+    FFmpegVideoCodecH264,
+    FFmpegVideoCodecH264_NVENC,
+    FFmpegVideoCodecH265,
+    FFmpegVideoCodecH265_NVENC,
+    FFmpegVideoCodecAV1_LIBAOM,
+    FFmpegVideoCodecAV1_SVT,
+    FFmpegVideoCodecVP9,
+    FFmpegVideoCodecRawvideo,
+    FFmpegVideoCodecCopy,
+]
+
+# -------------------------------------------------------------------------------------------------|
+
+class FFmpegAudioCodecAAC(FFmpegModuleBase):
+    codec: Literal["aac"] = "aac"
+
+    bitrate: int = Field(default=192, gt=-1)
+    """Bitrate in kilobits per second. This value is shared between all audio channels"""
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:a", "aac")
+        yield self.all("-b:a", f"{self.bitrate}k")
+
+class FFmpegAudioCodecMP3(FFmpegModuleBase):
+    """https://trac.ffmpeg.org/wiki/Encode/MP3"""
+    codec: Literal["mp3"] = "mp3"
+
+    qscale: int = Field(default=2, gt=-1)
+    """Quality scale, 0-9, Variable Bitrate"""
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:a", "libmp3lame")
+        yield self.all("-qscale:a", self.qscale)
+
+class FFmpegAudioCodecOpus(FFmpegModuleBase):
+    codec: Literal["libopus"] = "libopus"
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:a", "libopus")
+
+class FFmpegAudioCodecVorbis(FFmpegModuleBase):
+    codec: Literal["libvorbis"] = "libvorbis"
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:a", "libvorbis")
+
+class FFmpegAudioCodecFLAC(FFmpegModuleBase):
+    codec: Literal["flac"] = "flac"
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:a", "flac")
+
+class FFmpegAudioCodecCopy(FFmpegModuleBase):
+    codec: Literal["copy"] = "copy"
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:a", "copy")
+
+class FFmpegAudioCodecNone(FFmpegModuleBase):
+    codec: Literal["none"] = "none"
+
+    def command(self) -> Iterable[str]:
+        yield ("-an")
+
+class FFmpegAudioCodecEmpty(FFmpegModuleBase):
+    codec: Literal["anullsrc"] = "anullsrc"
+    samplerate: float = 44100
+
+    def command(self) -> Iterable[str]:
+        yield ("-f", "lavfi", "-i", f"anullsrc=channel_layout=stereo:sample_rate={self.samplerate}")
+
+FFmpegAudioCodecType: TypeAlias = Union[
+    FFmpegAudioCodecAAC,
+    FFmpegAudioCodecMP3,
+    FFmpegAudioCodecOpus,
+    FFmpegAudioCodecFLAC,
+    FFmpegAudioCodecCopy,
+    FFmpegAudioCodecNone,
+    FFmpegAudioCodecEmpty,
+]
+
+# -------------------------------------------------------------------------------------------------|
+
+class FFmpegFilterBase(BaseModel, ABC):
+
+    @abstractmethod
+    def string(self) -> Iterable[str]:
+        ...
+
+    def __str__(self) -> str:
+        return self.string()
+
+class FFmpegFilterScale(FFmpegFilterBase):
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    resample: Literal[
+        "lanczos",
+        "bicubic",
+        "fast_bilinear",
+        "point",
+        "spline",
+    ] = Field(default="lanczos")
+
+    def string(self) -> str:
+        return f"scale={self.width}:{self.height}:flags={self.resample}"
+
+class FFmpegFilterVerticalFlip(FFmpegFilterBase):
+    def string(self) -> str:
+        return "vflip"
+
+class FFmpegFilterCustom(FFmpegFilterBase):
+    content: str
+
+    def string(self) -> str:
+        return self.content
+
+FFmpegFilterType: TypeAlias = Union[
+    FFmpegFilterScale,
+    FFmpegFilterVerticalFlip,
+    FFmpegFilterCustom
+]
+
+# -------------------------------------------------------------------------------------------------|
+
+class SerdeBaseModel(BaseModel):
+    def serialize(self, json: bool=True) -> Union[dict, str]:
+        if json: return self.model_dump_json()
+        return self.model_dump()
+
+    @classmethod
+    def deserialize(cls, value: Union[dict, str]) -> Self:
+        if isinstance(value, dict):
+            return cls.model_validate(value)
+        elif isinstance(value, str):
+            return cls.model_validate_json(value)
+        else:
+            raise ValueError(f"Can't deserialize value of type {type(value)}")
+
+# -------------------------------------------------------------------------------------------------|
+
+class BrokenFFmpeg(SerdeBaseModel):
+    hide_banner: bool = True
+    shortest: bool = False
+
+    loglevel: Literal[
+        "error",
+        "info",
+        "verbose",
+        "debug",
+        "warning",
+        "panic",
+        "fatal",
+    ] = Field(default="info")
+
+    hwaccel: Optional[Literal[
+        "auto",
+        "cuda",
+        "nvdec",
+    ]] = Field(default=None)
+    """https://trac.ffmpeg.org/wiki/HWAccelIntro"""
+
+    threads: int = Field(default=0, gt=-1)
+    """The number of threads FFmpeg should use. Generally speaking, more threads yields worse quality
+    and compression ratios, but drastically improves performance. Behavior changes depending on codecs,
+    some might not use more than a few depending on settings. '0' finds the optimal automatically"""
+
+    vsync: Literal[
+        "auto",
+        "passthrough",
+        "cfr",
+        "vfr",
+    ] = Field(default="cfr")
+
+    inputs: List[FFmpegInputType] = Field(default_factory=list)
+
+    filters: List[FFmpegFilterType] = Field(default_factory=list)
+
+    outputs: List[FFmpegOutputType] = Field(default_factory=list)
+    """A list of outputs. Yes, FFmpeg natively supports multi-encoding targets"""
+
+    video_codec: Optional[FFmpegVideoCodecType] = Field(default=None)
+    """The video codec to use and its configuration"""
+
+    audio_codec: Optional[FFmpegAudioCodecType] = Field(default=None)
+    """The audio codec to use and its configuration"""
+
+    def quiet(self) -> Self:
+        self.hide_banner = True
+        self.loglevel = "error"
         return self
 
-    def __attrs_post_init__(self):
-        self.set_ffmpeg_binary()
+    # ---------------------------------------------------------------------------------------------|
+    # Wrappers for all classes
 
-        # Add default available options
-        self.__add_option__(
-            self.custom,
-            self.input,
-            self.resolution,
-            self.hwaccel,
-            self.pixel_format,
-            self.output,
-            self.loglevel,
-            self.hide_banner,
-            self.quiet,
-            self.framerate,
-            self.overwrite,
-            self.shortest,
-            self.stats,
-            self.filter,
-            self.format,
-            self.vsync,
-            self.no_audio,
-            self.advanced,
-            self.audio_codec,
-        )
+    # Inputs and Outputs
+
+    @functools.wraps(FFmpegInputPath)
+    def input(self, **kwargs) -> Self:
+        self.inputs.append(FFmpegInputPath(**kwargs))
+        return self
+
+    @functools.wraps(FFmpegInputPipe)
+    def pipe(self, **kwargs) -> Self:
+        self.inputs.append(FFmpegInputPipe(**kwargs))
+        return self
+
+    @functools.wraps(FFmpegOutputPath)
+    def output(self, **kwargs) -> Self:
+        self.outputs.append(FFmpegOutputPath(**kwargs))
+        return self
+
+    @functools.wraps(FFmpegOutputPipe)
+    def pipe_output(self, **kwargs) -> Self:
+        self.outputs.append(FFmpegOutputPipe(**kwargs))
+        return self
+
+    # Video codecs
+
+    @functools.wraps(FFmpegVideoCodecH264)
+    def h264(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecH264(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecH264_NVENC)
+    def h264_nvenc(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecH264_NVENC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecH265)
+    def h265(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecH265(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecH265_NVENC)
+    def h265_nvenc(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecH265_NVENC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
+    def av1_libaom(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecAV1_LIBAOM(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecAV1_SVT)
+    def av1_svt(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecAV1_SVT(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecVP9)
+    def vp9(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecVP9(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecRawvideo)
+    def rawvideo(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecRawvideo(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecCopy)
+    def copy_video(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecCopy(**kwargs)
+        return self
+
+    # Audio codecs
+
+    @functools.wraps(FFmpegAudioCodecAAC)
+    def aac(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecAAC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecMP3)
+    def mp3(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecMP3(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecOpus)
+    def opus(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecOpus(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecFLAC)
+    def flac(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecFLAC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecCopy)
+    def copy_audio(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecCopy(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecNone)
+    def no_audio(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecNone(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecEmpty)
+    def empty_audio(self, **kwargs) -> Self:
+        self.audio_codec = FFmpegAudioCodecEmpty(**kwargs)
+        return self
+
+    # Filters
+
+    @functools.wraps(FFmpegFilterScale)
+    def scale(self, **kwargs) -> Self:
+        self.filters.append(FFmpegFilterScale(**kwargs))
+        return self
+
+    @functools.wraps(FFmpegFilterVerticalFlip)
+    def vflip(self, **kwargs) -> Self:
+        self.filters.append(FFmpegFilterVerticalFlip(**kwargs))
+        return self
+
+    @functools.wraps(FFmpegFilterCustom)
+    def filter(self, **kwargs) -> Self:
+        self.filters.append(FFmpegFilterCustom(**kwargs))
+        return self
+
+    # ---------------------------------------------------------------------------------------------|
+    # Command building and running
+
+    @property
+    def command(self) -> List[str]:
+        if (not self.inputs):
+            raise ValueError("At least one input is required for FFmpeg")
+        if (not self.outputs):
+            raise ValueError("At least one output is required for FFmpeg")
+
+        command = deque()
+
+        def extend(*objects: Union[FFmpegModuleBase, Iterable[FFmpegModuleBase]]):
+            for item in flatten(objects):
+                if isinstance(item, FFmpegModuleBase):
+                    command.extend(flatten(item.command()))
+                else:
+                    command.append(item)
+
+        extend(shutil.which("ffmpeg"))
+        extend("-hide_banner"*self.hide_banner)
+        extend("-loglevel", self.loglevel)
+        extend(("-hwaccel", self.hwaccel)*bool(self.hwaccel))
+        extend(self.inputs)
+
+        # Note: https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs
+        for output in self.outputs:
+            extend(self.video_codec)
+            extend(("-vf", ",".join(map(str, self.filters)))*bool(self.filters))
+            extend(self.audio_codec)
+            extend(output)
+
+        extend("-shortest"*self.shortest)
+        return list(map(str, flatten(command)))
+
+    def run(self, **kwargs) -> subprocess.CompletedProcess:
+        return shell(self.command, **kwargs)
+
+    def popen(self, **kwargs) -> subprocess.Popen:
+        return shell(self.command, Popen=True, **kwargs)
+
+    # ---------------------------------------------------------------------------------------------|
+    # High level functions
 
     @staticmethod
     def install() -> None:
-        if all(map(BrokenPath.which, ("ffmpeg", "ffprobe"))):
+        if all(map(shutil.which, ("ffmpeg", "ffprobe"))):
             return
 
         if not BrokenPlatform.OnMacOS:
@@ -618,500 +893,36 @@ class BrokenFFmpeg:
             for binary in ("ffmpeg", "ffprobe"):
                 BrokenPath.get_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
 
-    def set_ffmpeg_binary(self, binary: Path=None) -> Self:
-        """Set the ffmpeg binary to use, by default it is 'ffmpeg'"""
-        if binary:
-            log.debug(f"Using FFmpeg binary at ({binary})")
-            self.binary = binary
-            return self
-
-        BrokenFFmpeg.install()
-
-        # Try finding with shutil
-        if (binary := BrokenPath.which("ffmpeg")):
-            log.debug(f"Using FFmpeg binary at ({binary})")
-            self.binary = binary
-            return self
-
-        import imageio_ffmpeg
-
-        binary = Path(imageio_ffmpeg.get_ffmpeg_exe())
-        log.debug(f"Using ImageIO FFmpeg binary at ({binary})")
-
-        if not binary:
-            log.error("Could not find (FFmpeg) binary on System Path or Externals, and don't have (ImageIO FFmpeg) package")
-            exit(1)
-
-        self.binary = binary
-        return self
-
-    # ---------------------------------------------------------------------------------------------|
-    # Options related
-
-    def __add_option__(self, *options: callable) -> Self:
-        """Add a private callback as an option for the next allowed command pipeline"""
-        for option in flatten(options):
-            self.options[self.__private_to_option__(option.__name__)] = option
-        return self
-
-    def __del_option__(self, *options: callable) -> Self:
-        """Remove a private callback as an option for the next allowed command pipeline"""
-        for option in flatten(options):
-            self.options.pop(self.__private_to_option__(option.__name__))
-        return self
-
-    def __option_exists__(self, option: str) -> bool:
-        """Check if an option exists, for fail safes for example"""
-        return option in self.options
-
-    def __no_option__(self) -> Self:
-        """Make no option available (reset), useful after all inputs are set"""
-        self.options = DotMap()
-        return self
-
-    def __skip__(self, *a, **k):
-        """
-        Some Fluent option errored out, continue the chain
-        · It is dangerous, can yield to unexpected results and broken commands, but we shouldn't exit()
-        """
-        log.warning(f"Skipped Fluent Option with args {a or None} and kwargs {k or None}")
-        return self
-
-    def __smart__(self,
-        *items: list[Any],
-        delete: Union[callable, list[callable]]=None,
-        add:    Union[callable, list[callable]]=None,
-    ) -> Self:
-        """Append items to the command, maybe delete or add new callbacks to the options"""
-        log.debug(f"BrokenFFmpeg Append: {items}")
-        self.__command__ = flatten(self.__command__, items)
-        self.__del_option__(delete)
-        self.__add_option__(add)
-        return self
-
-    # # Deal with next option - to call it or list available options
-
-    def log_options(self, _error: str=None):
-        """Log available next commands"""
-        _log = log.error if _error else log.info
-
-        if _error:
-            _log(f"Fluent BrokenFFmpeg has no attribute ({_error}) at this point. Available attributes are:")
-        else:
-            _log("Fluent BrokenFFmpeg has the following options available:")
-
-        for key, callable in self.options.items():
-            _log(f"• {str(key).ljust(16)} {inspect.signature(callable)}: {callable.__doc__}")
-
-    def __getattr__(self, name) -> Self:
-        """
-        Returns a callable on Options if it exists, else errors out
-        · This is done such that users cannot access private methods, only allowed ones
-        · Private methods namings are defined on the self.__private_to_option__ method
-        """
-        # Next command exists and is allowed
-        if callable := self.options.get(name):
-            return callable
-
-        # Command not allowed or doesn't exist
-        self.log_options(_error=name)
-
-        # Skip this fluent command
-        return self.__skip__
-
-    # ---------------------------------------------------------------------------------------------|
-    # Custom
-
-    def custom(self, *command: list[str]) -> Self:
-        """Add an custom command on the pipeline"""
-        self.__command__ += command
-        return self
-
-    # ---------------------------------------------------------------------------------------------|
-    # Formats
-
-    def pixel_format(self, option: FFmpegPixelFormat) -> Self:
-        return self.__smart__("-pix_fmt", FFmpegPixelFormat.get(option), delete=self.pixel_format)
-
-    def format(self, option: FFmpegFormat) -> Self:
-        return self.__smart__("-f", FFmpegFormat.get(option), delete=self.format)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Loglevel, stats
-
-    def loglevel(self, option: FFmpegLogLevel=FFmpegLogLevel.Error) -> Self:
-        return self.__smart__("-loglevel", FFmpegLogLevel.get(option), delete=self.loglevel)
-
-    def quiet(self) -> Self:
-        """Shorthand for loglevel error and hide banner"""
-        self.loglevel(FFmpegLogLevel.Error)
-        self.hide_banner()
-        return self
-
-    def stats(self) -> Self:
-        """Shorthand for only showing important stats"""
-        self.loglevel(FFmpegLogLevel.Error)
-        self.hide_banner()
-        return self.__smart__("-stats", delete=self.stats)
-
-    def hide_banner(self) -> Self:
-        return self.__smart__("-hide_banner", delete=self.hide_banner)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Bitrate
-
-    def audio_bitrate(self, option: int) -> Self:
-        return self.__smart__("-b:a", str(option), delete=self.audio_bitrate)
-
-    def video_bitrate(self, option: int) -> Self:
-        return self.__smart__("-b:v", str(option), delete=self.video_bitrate)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Special
-
-    def hwaccel(self, option: FFmpegHWAccel=FFmpegHWAccel.Auto) -> Self:
-        return self.__smart__("-hwaccel", FFmpegHWAccel.get(option), delete=self.hwaccel)
-
-    def overwrite(self) -> Self:
-        return self.__smart__("-y", delete=self.overwrite)
-
-    def shortest(self) -> Self:
-        return self.__smart__("-shortest", delete=self.shortest)
-
-    def no_audio(self) -> Self:
-        return self.__smart__("-an", delete=self.no_audio)
-
-    def map(self, input_stream: int, stream: Literal["v", "a"], output_stream: int) -> Self:
-        """
-        Map input stream to output stream, for example `-map 0:v:0 -map 1:a:0 maps` does:
-        - Input (v)ideo stream 0, to output (v)ideo stream 0
-        - Input (a)udio stream 1, to output (a)udio stream 0
-        """
-        self.__command__ += ["-map", f"{input_stream}:{stream}:{output_stream}"]
-        return self
-
-    def advanced(self, *command: list[str]) -> Self:
-        """Add an custom advanced command on the pipeline"""
-        self.__command__ += command
-        return self
-
-    def empty_audio_track(self, samplerate: float) -> Self:
-        return self.__smart__(
-            "-f", "lavfi",
-            "-i", f"anullsrc=channel_layout=stereo:sample_rate={samplerate}",
-        )
-
-    # ---------------------------------------------------------------------------------------------|
-    # Input, output
-
-    def input(self, path: str) -> Self:
-        """Input some audio file, video file, or pipe '-' from stdin"""
-
-        # Allow pipe from stdin
-        if path == "-":
-            pass
-
-        elif not (path := BrokenPath(path)).exists():
-            log.error(f"Input file ({path}) does not exist")
-            return self
-
-        # Add command
-        self.__smart__("-i", path, add=(
-            self.resolution,
-            self.video_codec,
-            self.framerate,
-            self.audio_bitrate,
-            self.video_bitrate,
-            self.map,
-            self.pixel_format,
-            self.no_video
-        ))
-        return self
-
-    def output(self, path: str) -> Self:
-        """Output some audio file, video file"""
-        BrokenPath.mkdirs(Path(path).parent, echo=False)
-
-        # Add video filters
-        if self.filters:
-            log.debug("BrokenFFmpeg Filters:")
-            for filter in self.filters:
-                log.debug(f"• {filter}")
-            self.__command__ += ["-vf", ",".join(self.filters)]
-
-        # Add command
-        self.__no_option__()
-        return self.__smart__(path, delete=self.overwrite)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Sizes, framerates, filter
-
-    def filter(self, *filters: str) -> Self:
-        """Send filters strings from FFmpegFilterFactory or manually (advanced)"""
-        self.filters.extend(filters)
-        return self
-
-    def resolution(self, width: FFmpegResolution | int, height: int=None) -> Self:
-        if isinstance(width, (list, tuple)):
-            width, height = width
-        if not isinstance(width, FFmpegResolution):
-            width = FFmpegResolution(width, height)
-        return self.__smart__("-s", str(width), delete=self.resolution)
-
-    def framerate(self, option: int) -> Self:
-        return self.__smart__("-framerate", option, delete=self.framerate)
-
-    def vsync(self, option: FFmpegVsync=FFmpegVsync.ConstantFramerate) -> Self:
-        return self.__smart__("-vsync", option, delete=self.vsync)
-
-    def no_video(self) -> Self:
-        """More like NVIDIA"""
-        return self.__smart__("-vn", delete=self.no_video)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Base codecs
-
-    def video_codec(self, codec: FFmpegVideoCodec=FFmpegVideoCodec.H264) -> Self:
-        codec = FFmpegVideoCodec.get(codec)
-
-        # Add codec parameters options based on selected
-        if codec == FFmpegVideoCodec.H264:
-            self.__add_option__(
-                self.__preset__h264,
-                self.__tune__h264,
-                self.__profile__h264,
-                self.__quality__h264,
-            )
-        elif FFmpegVideoCodec.is_nvenc(codec):
-            self.__add_option__(
-                self.__preset__nvenc,
-                self.__tune__nvenc,
-                self.__level__nvenc,
-                self.__rc__nvenc,
-                self.__gpu__nvenc,
-                self.__rate_control_lookahead__nvenc,
-                self.__surfaces__nvenc,
-                self.__qp__nvenc,
-                self.__bref_mode__nvenc,
-            )
-            if codec == FFmpegVideoCodec.H264_NVENC:
-                self.__add_option__(
-                    self.__profile__h264_nvenc,
-                )
-            elif codec == FFmpegVideoCodec.H265_NVENC:
-                self.__add_option__(
-                    self.__profile__h265_nvenc,
-                    self.__tier__h265_nvenc,
-                )
-            elif codec == FFmpegVideoCodec.AV1_NVENC:
-                log.error("We don't have any RTX 4000 card to test AV1 NVENC")
-                return self.__skip__
-
-        elif codec == FFmpegVideoCodec.H265:
-            self.__add_option__(
-                self.__preset__h265,
-                self.__tune__h265,
-                self.__profile__h265,
-                self.__quality__h265,
-            )
-        elif codec == FFmpegVideoCodec.AV1:
-            raise NotImplementedError("AV1 is not supported yet")
-        elif codec == FFmpegVideoCodec.Copy:
-            pass # Copy is self contained
-        elif codec == FFmpegVideoCodec.Rawvideo:
-            pass # Configured with format
-        else:
-            log.error(f"Video codec {codec} not supported")
-            return self.__skip__
-
-        return self.__smart__("-c:v", codec, delete=(
-            self.video_codec,
-            self.hwaccel,
-        ))
-
-    def audio_codec(self, codec: Union[FFmpegAudioCodec, FFmpegPCM]=FFmpegAudioCodec.AAC) -> Self:
-        codec = FFmpegAudioCodec.get(codec) or FFmpegPCM.get(codec)
-        return self.__smart__("-c:a", codec, delete=self.audio_codec)
-
-    # ---------------------------------------------------------------------------------------------|
-    # Generic NVENC
-
-    def __gpu__nvenc(self, option: int=0) -> Self:
-        return self.__smart__("-gpu", option, delete=self.__gpu__nvenc)
-
-    def __rate_control_lookahead__nvenc(self, option: int=0) -> Self:
-        return self.__smart__("-rc-lookahead", option, delete=self.__rate_control_lookahead__nvenc)
-
-    def __surfaces__nvenc(self, option: Union[int, Range[0, 65]]=0) -> Self:
-        return self.__smart__("-surfaces", min(max(option, 0), 64), delete=self.__surfaces__nvenc)
-
-    def __qp__nvenc(self, option: Union[int, Range[-1, 51]]=-1) -> Self:
-        return self.__smart__("-qp", option, delete=self.__qp__nvenc)
-
-    def __bref_mode__nvenc(self, option: FFmpegNVENC_B_Ref_Mode=FFmpegNVENC_B_Ref_Mode.Disabled) -> Self:
-        log.warning("B Frames requires Turing or newer architecture (RTX 2000+)")
-        return self.__smart__("-b_ref_mode", FFmpegNVENC_B_Ref_Mode.get(option), delete=self.__bref_mode__nvenc)
-
-    def __preset__nvenc(self, option: FFmpegNVENC_Preset=FFmpegNVENC_Preset.Slower) -> Self:
-        return self.__smart__("-preset", FFmpegNVENC_Preset.get(option), delete=self.__preset__nvenc)
-
-    def __tune__nvenc(self, option: FFmpegNVENC_Tune=FFmpegNVENC_Tune.HighQuality) -> Self:
-        return self.__smart__("-tune", FFmpegNVENC_Tune.get(option), delete=self.__tune__nvenc)
-
-    def __level__nvenc(self, option: FFmpegNVENC_Level=FFmpegNVENC_Level.Auto) -> Self:
-        return self.__smart__("-level", FFmpegNVENC_Level.get(option), delete=self.__level__nvenc)
-
-    def __rc__nvenc(self, option: FFmpegNVENC_RC=FFmpegNVENC_RC.VariableBitrateHighQuality) -> Self:
-        return self.__smart__("-rc", FFmpegNVENC_RC.get(option), delete=self.__rc__nvenc)
-
-    # ---------------------------------------------------------------------------------------------|
-    # H264 NVENC
-
-    def __profile__h264_nvenc(self, option: FFmpegH264_NVENC_Profile=FFmpegH264_NVENC_Profile.Main) -> Self:
-        return self.__smart__("-profile", FFmpegH264_NVENC_Profile.get(option), delete=self.__profile__h264_nvenc)
-
-    # ---------------------------------------------------------------------------------------------|
-    # H265 NVENC
-
-    def __profile__h265_nvenc(self, option: FFmpegH265_NVENC_Profile=FFmpegH265_NVENC_Profile.Main) -> Self:
-        return self.__smart__("-profile", FFmpegH265_NVENC_Profile.get(option), delete=self.__profile__h265_nvenc)
-
-    def __tier__h265_nvenc(self, option: FFmpegH265_NVENC__Tier=FFmpegH265_NVENC__Tier.Main) -> Self:
-        return self.__smart__("-tier", FFmpegH265_NVENC__Tier.get(option), delete=self.__tier__h265_nvenc)
-
-    # ---------------------------------------------------------------------------------------------|
-    # H264
-
-    def __preset__h264(self, option: FFmpegH264Preset=FFmpegH264Preset.Slow) -> Self:
-        return self.__smart__("-preset", FFmpegH264Preset.get(option), delete=self.__preset__h264)
-
-    def __tune__h264(self, option: FFmpegH264Tune=FFmpegH264Tune.Film) -> Self:
-        return self.__smart__("-tune", FFmpegH264Tune.get(option), delete=self.__tune__h264)
-
-    def __profile__h264(self, option: FFmpegH264Profile=FFmpegH264Profile.Main) -> Self:
-        return self.__smart__("-profile:v", FFmpegH264Profile.get(option), delete=self.__profile__h264)
-
-    def __quality__h264(self, option: FFmpegH264Quality=FFmpegH264Quality.High) -> Self:
-        return self.__smart__("-crf", FFmpegH264Quality.get(option), delete=self.__quality__h264)
-
-    # ---------------------------------------------------------------------------------------------|
-    # H265
-
-    def __preset__h265(self, option: FFmpegH265Preset=FFmpegH265Preset.Slow) -> Self:
-        return self.__smart__("-preset", FFmpegH265Preset.get(option), delete=self.__preset__h265)
-
-    def __tune__h265(self, option: FFmpegH265Tune) -> Self:
-        return self.__smart__("-tune", FFmpegH265Tune.get(option), delete=self.__tune__h265)
-
-    def __profile__h265(self, option: FFmpegH265Profile=FFmpegH265Profile.Main) -> Self:
-        return self.__smart__("-profile:v", FFmpegH265Profile.get(option), delete=self.__profile__h265)
-
-    def __quality__h265(self, option: FFmpegH264Quality.High) -> Self:
-        return self.__smart__("-crf", FFmpegH264Quality.get(option), delete=self.__quality__h265)
-
-    # ---------------------------------------------------------------------------------------------|
-    # End user manual actions
-
-    @property
-    def command(self) -> List[str]:
-        return apply(denum, flatten(self.binary, self.__command__))
-
-    def run(self, **kwargs) -> subprocess.CompletedProcess:
-        return shell(self.command, **kwargs)
-
-    def Popen(self, **kwargs) -> subprocess.Popen:
-        return shell(self.command, Popen=True, **kwargs)
-
-    def pipe(self, *args, **kwargs) -> object:
-        """Spawns a Popen process of BrokenFFmpeg that is buffered, use .write(data: bytes) and .close()"""
-
-        @define
-        class BrokenFFmpegPopenBuffered:
-            ffmpeg: subprocess.Popen
-            buffer: int          = 10
-            frames: Deque[bytes] = Factory(deque)
-            thread: Thread       = None
-
-            def __attrs_post_init__(self):
-                self.ffmpeg = self.ffmpeg.Popen(stdin=PIPE)
-                self.thread = BrokenThread.new(self.__worker__)
-
-            @property
-            def stdin(self) -> Self:
-                return self
-
-            def write(self, frame: bytes):
-                """Write a frame to the pipe, if the buffer is full, wait for it to be empty"""
-                self.frames.append(frame)
-                while len(self.frames) >= self.buffer:
-                    time.sleep(0.001)
-
-            __stop__: bool = False
-
-            def close(self):
-                """Wait for all frames to be written and close the pipe"""
-                self.__stop__ = True
-                with BrokenSpinner() as spinner:
-                    while self.frames:
-                        spinner.text = f"BrokenFFmpeg: Waiting for ({len(self.frames):4}) frames to be written to FFmpeg"
-                        time.sleep(0.016)
-                    spinner.text = "BrokenFFmpeg: Waiting FFmpeg process to Finish"
-                    while self.ffmpeg.poll() is None:
-                        time.sleep(0.016)
-
-            def __worker__(self):
-                while self.frames or (not self.__stop__):
-                    try:
-                        frame = self.frames.popleft()
-                        self.ffmpeg.stdin.write(frame)
-                    except IndexError:
-                        time.sleep(0.01)
-
-                self.ffmpeg.stdin.close()
-
-        return BrokenFFmpegPopenBuffered(ffmpeg=self, *args, **kwargs)
-
-    # ---------------------------------------------------------------------------------------------|
-    # High level functions
-
     @staticmethod
     @functools.lru_cache
-    def get_resolution(path: Path, *, echo: bool=True) -> Tuple[Optional[int], Optional[int]]:
+    def get_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
-        if not (path := BrokenPath.valid(path)):
-            return (None, None)
+        if not (path := Path(path).resolve()).exists():
+            return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Video Resolution of ({path})")
-        return PIL.Image.open(io.BytesIO(
-            (BrokenFFmpeg()
-                .quiet()
-                .input(path)
-                .advanced("-vframes", "1")
-                .format(FFmpegFormat.Image2pipe)
-                .output("-")
-            ).run(stdout=PIPE, echo=echo).stdout
-        ), formats=["jpeg"]).size
+        log.minor(f"Getting Video Resolution of ({path})", echo=echo)
+        return PIL.Image.open(io.BytesIO(shell(
+            shutil.which("ffmpeg"), "-hide_banner", "-loglevel", "error",
+            "-i", path, "-vframes", "1", "-f", "image2pipe", "-",
+            stdout=PIPE, echo=echo
+        ).stdout), formats=["jpeg"]).size
 
     @staticmethod
     def get_frames(path: Path, *, skip: int=0, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
-        if not (path := BrokenPath.valid(path)):
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Streaming Video Frames from file ({path})")
+        log.minor(f"Streaming Video Frames from file ({path})", echo=echo)
         (width, height) = BrokenFFmpeg.get_resolution(path)
-        ffmpeg = (BrokenFFmpeg()
-            .hwaccel(FFmpegHWAccel.Auto)
-            .vsync(FFmpegVsync.ConstantFramerate)
-            .loglevel(FFmpegLogLevel.Panic)
-            .input(path)
-            .filter(f"select='gte(n\\,{skip})'")
-            .video_codec(FFmpegVideoCodec.Rawvideo)
-            .format(FFmpegFormat.Rawvideo)
-            .pixel_format(FFmpegPixelFormat.RGB24)
+        ffmpeg = (BrokenFFmpeg(vsync="cfr")
+            .quiet()
+            .input(path=path)
+            .filter(content=f"select='gte(n\\,{skip})'")
+            .rawvideo()
             .no_audio()
-            .output("-")
-        ).Popen(stdout=PIPE, echo=echo)
+            .pipe_output(format="rawvideo")
+        ).popen(stdout=PIPE, echo=echo)
 
         # Keep reading frames until we run out, each pixel is 3 bytes !
         while (raw := ffmpeg.stdout.read(width * height * 3)):
@@ -1121,25 +932,23 @@ class BrokenFFmpeg:
     @functools.lru_cache
     def get_total_frames(path: Path, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video by decode voiding and parsing stats output"""
-        if not (path := BrokenPath.valid(path)):
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
-        with BrokenSpinner(log.minor(f"Getting video total frames of ({path}), might take a while..")):
-            return int(re.compile(r"frame=\s*(\d+)").findall((BrokenFFmpeg()
-                .vsync(FFmpegVsync.ConstantFramerate)
-                .input(path)
-                .format(FFmpegFormat.Null)
-                .output("-")
+        with BrokenSpinner(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
+            return int(re.compile(r"frame=\s*(\d+)").findall((
+                BrokenFFmpeg(vsync="cfr")
+                .input(path=path)
+                .pipe_output(format="null")
             ).run(stderr=PIPE, echo=echo).stderr.decode())[-1])
 
     @staticmethod
     @functools.lru_cache
-    def get_video_duration(path: Path, *, echo: bool=True) -> Optional[Seconds]:
-        """Get the duration of a video"""
-        if not (path := BrokenPath.valid(path)):
+    def get_video_duration(path: Path, *, echo: bool=True) -> Optional[float]:
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Video Duration of file ({path})")
+        log.minor(f"Getting Video Duration of file ({path})", echo=echo)
         return float(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
@@ -1150,9 +959,9 @@ class BrokenFFmpeg:
 
     @staticmethod
     @functools.lru_cache
-    def get_framerate(path: Path, *, precise: bool=False, echo: bool=True) -> Optional[Hertz]:
+    def get_framerate(path: Path, *, precise: bool=False, echo: bool=True) -> Optional[float]:
         """Get the framerate of a video"""
-        if not (path := BrokenPath.valid(path)):
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
@@ -1171,9 +980,8 @@ class BrokenFFmpeg:
 
     @staticmethod
     @functools.lru_cache
-    def get_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[Hertz]:
-        """Get the samplerate of a audio file"""
-        if not (path := BrokenPath.valid(path)):
+    def get_audio_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[float]:
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
@@ -1188,8 +996,7 @@ class BrokenFFmpeg:
     @staticmethod
     @functools.lru_cache
     def get_audio_channels(path: Path, *, stream: int=0, echo: bool=True) -> Optional[int]:
-        """Get the number of channels of a audio file"""
-        if not (path := BrokenPath.valid(path)):
+        if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
@@ -1202,8 +1009,8 @@ class BrokenFFmpeg:
         ).strip().splitlines()[stream])
 
     @staticmethod
-    def get_audio_duration(path: Path, *, echo: bool=True) -> Optional[Seconds]:
-        if not (path := BrokenPath.valid(path)):
+    def get_audio_duration(path: Path, *, echo: bool=True) -> Optional[float]:
+        if not (path := Path(path).resolve()).exists():
             return
         try:
             generator = BrokenAudioReader(path=path, chunk=10).stream
@@ -1228,7 +1035,7 @@ class BrokenAudioReader:
     _ffmpeg:     Popen       = None
 
     @property
-    def time(self) -> Seconds:
+    def time(self) -> Seconds: # noqa
         return self._read / self.bytes_per_second
 
     @property
@@ -1264,7 +1071,7 @@ class BrokenAudioReader:
 
         # Get audio file attributes
         self._channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=self.echo)
-        self._samplerate = BrokenFFmpeg.get_samplerate(self.path, echo=self.echo)
+        self._samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=self.echo)
         self.format = FFmpegPCM.get(self.format)
         self._dtype = self.format.dtype
         self._size = self.format.size
@@ -1281,7 +1088,7 @@ class BrokenAudioReader:
             .custom("-ar", self.samplerate)
             .custom("-ac", self.channels)
             .output("-")
-        ).Popen(stdout=PIPE, stderr=DEVNULL, echo=self.echo)
+        ).popen(stdout=PIPE, stderr=DEVNULL, echo=self.echo)
 
         """
         One could think the following code is the way, but it is not

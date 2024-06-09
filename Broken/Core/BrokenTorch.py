@@ -5,10 +5,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from loguru import logger as log
-
 import Broken
-from Broken import BrokenEnum, BrokenPath, BrokenPlatform, shell
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, log, shell
 
 
 class TorchFlavor(BrokenEnum):

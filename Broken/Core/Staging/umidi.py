@@ -14,8 +14,6 @@ from typing import Any, Deque, Iterable, Self, Tuple, TypeAlias, Union
 
 from attr import Factory, define
 
-from Broken.Core.Types import Seconds
-
 __all__ = ["Midi", "Events", "Note"]
 
 # -------------------------------------------------------------------------------------------------|
@@ -25,8 +23,6 @@ MICROSECONDS_PER_MINUTE: int = 60_000_000
 BIT_SHIFT_4: int = int(2**4)
 BIT_SHIFT_7: int = int(2**7)
 BIT_SHIFT_8: int = int(2**8)
-
-Hertz: TypeAlias = float
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -58,7 +54,7 @@ class Note:
 
     @classmethod
     @functools.lru_cache
-    def from_frequency(cls, frequency: Hertz, **kwargs) -> Self:
+    def from_frequency(cls, frequency: float, **kwargs) -> Self:
         return cls(note=Note.frequency_to_index(frequency), **kwargs)
 
     @classmethod
@@ -70,7 +66,7 @@ class Note:
             return cls.from_index(object, **kwargs)
         elif isinstance(object, str):
             return cls.from_name(object, **kwargs)
-        elif isinstance(object, Hertz):
+        elif isinstance(object, float):
             return cls.from_frequency(object, **kwargs)
         return cls(**kwargs)
 
@@ -83,7 +79,7 @@ class Note:
 
     @staticmethod
     @functools.lru_cache
-    def index_to_frequency(index: int) -> Hertz:
+    def index_to_frequency(index: int) -> float:
         return 440 * 2**((index - 69)/12)
 
     @staticmethod
@@ -94,27 +90,27 @@ class Note:
 
     @staticmethod
     @functools.lru_cache
-    def name_to_frequency(name: str) -> Hertz:
+    def name_to_frequency(name: str) -> float:
         return Note.index_to_frequency(Note.name_to_index(name))
 
     @staticmethod
     @functools.lru_cache
-    def frequency_to_index(frequency: Hertz) -> int:
+    def frequency_to_index(frequency: float) -> int:
         return round(12*math.log2(frequency/440) + 69)
 
     @staticmethod
     @functools.lru_cache
-    def frequency_to_name(frequency: Hertz) -> str:
+    def frequency_to_name(frequency: float) -> str:
         return Note.index_to_name(Note.frequency_to_index(frequency))
 
     # # Utilities
 
     @property
-    def frequency(self) -> Hertz:
+    def frequency(self) -> float:
         return Note.index_to_frequency(self.note)
 
     @frequency.setter
-    def frequency(self, value: Hertz):
+    def frequency(self, value: float):
         self.note = Note.frequency_to_index(value)
 
     @property
@@ -148,7 +144,7 @@ class Note:
         return self.end - self.start
 
     @duration.setter
-    def duration(self, value: Seconds):
+    def duration(self, value: float):
         self.end = self.start + value
 
 # -------------------------------------------------------------------------------------------------|
@@ -286,15 +282,15 @@ Tempo: TypeAlias = float
 class Midi:
     format: int = 0
     tracks: int = 0
-    _tempos: Deque[Tuple[Seconds, Tempo]] = Factory(deque)
+    _tempos: Deque[Tuple[float, Tempo]] = Factory(deque)
 
     @property
-    def tempos(self) -> Deque[Tuple[Seconds, Tempo]]:
+    def tempos(self) -> Deque[Tuple[float, Tempo]]:
         if len(self._tempos) == 0:
             return deque(((0, 120),))
         return self._tempos
 
-    def _tempo(self, time: Seconds) -> Tuple[Seconds, Tempo]:
+    def _tempo(self, time: float) -> Tuple[float, Tempo]:
         """Returns the last tempo change not greater than this time and the next tempo change"""
 
         for i, (when, _) in enumerate(self._tempos):

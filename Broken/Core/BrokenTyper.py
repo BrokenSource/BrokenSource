@@ -7,11 +7,10 @@ from typing import (
 )
 
 from attr import Factory, define
-from loguru import logger as log
 from typer import Typer
 
 import Broken
-from Broken import flatten
+from Broken import flatten, log
 
 
 @define

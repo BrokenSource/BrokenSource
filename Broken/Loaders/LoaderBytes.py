@@ -2,9 +2,8 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from attr import define
-from loguru import logger as log
 
-from Broken import BrokenPath
+from Broken import BrokenPath, log
 
 from . import BrokenLoader
 

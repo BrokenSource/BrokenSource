@@ -2,9 +2,7 @@ import math
 from numbers import Number
 from typing import Tuple
 
-from loguru import logger as log
-
-from Broken import nearest
+from Broken import log, nearest
 
 
 class BrokenResolution:

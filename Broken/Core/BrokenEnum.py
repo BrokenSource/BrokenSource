@@ -1,83 +1,3 @@
-"""
-<div align="justify">
-
-<div align="center">
-  <h1>♻️ BrokenEnum ♻️</h1>
-
-  **Smarter** Python **Enum classes** with builtin **Automation** and **Safety**
-</div>
-
-<br>
-
-# 🔥 Description
-
-This package adds lots of utilities to the standard `Enum` class in Python
-
-- **Convenient**: Find members by name or value (or both)
-- **Cycling**: You can cycle through the options of an enum
-- **Fast**: Functions are cached with `functools.lru_cache`
-
-<br>
-
-# 🚀 Examples
-```python
-# Import package
-from Broken import BrokenEnum
-
-# Define a render quality enum
-class Quality(BrokenEnum):
-    Low    = 0
-    Medium = 1
-    High   = 2
-
-# Get values from key or name
-assert Quality.get(0)     == Quality.Low
-assert Quality.get("Low") == Quality.Low
-assert Quality.get("low") == Quality.Low
-assert Quality(2)         == Quality.High
-
-# It is safe to .get(member) themselves
-assert Quality.get(Quality.Low) == Quality.Low
-
-# If you want to search only by value or name
-assert Quality.from_value(0)       == Quality.Low
-assert Quality.from_value("low")   == None
-assert Quality.from_name("medium") == Quality.Medium
-Quality.from_name(2) # Raises ValueError
-
-# Cycling through the options
-assert Quality.Low.next()         == Quality.Medium
-assert Quality.High.next()        == Quality.Low
-assert Quality.Low.next(offset=2) == Quality.High
-
-# Can cycle through the options in reverse and from member
-value = Quality.Low
-assert value.previous() == Quality.High
-assert (value := value.previous(2)) == Quality.Medium
-
-# Getting list of members or names, keys
-assert Quality.values  == (0, 1, 2)
-assert Quality.names   == ("Low", "Medium", "High")
-assert Quality.keys    == ("Low", "Medium", "High")
-assert Quality.options == (
-    Quality.Low,
-    Quality.Medium,
-    Quality.High,
-)
-
-# Get tuples or key, value
-assert Quality.items == (
-    ("Low",    0),
-    ("Medium", 1),
-    ("High",   2),
-)
-
-# Get options as a dictionary
-assert Quality.dict == dict(Low=0, Medium=1, High=2)
-```
-
-</div>
-"""
 import enum
 import functools
 from typing import Any, Dict, Optional, Self, Tuple, Union
@@ -91,7 +11,7 @@ class BrokenEnum(enum.Enum):
 
     @classmethod
     @functools.lru_cache()
-    def from_name(cls, name: str, *, lowercase: bool=True, must: bool=False) -> Optional[enum.Enum]:
+    def from_name(cls, name: str, *, lowercase: bool=True) -> Optional[enum.Enum]:
         """
         Get enum members from their name
 
@@ -102,19 +22,17 @@ class BrokenEnum(enum.Enum):
                 Banana = "Banana"
                 Orange = "Laranja"
 
-            Fruits.from_name("Apple")  -> Fruits.Apple
-            Fruits.from_name("apple")  -> Fruits.Apple
+            Fruits.from_name("Apple") # Fruits.Apple
+            Fruits.from_name("apple") # Fruits.Apple
             ```
 
         Args:
             name: Name of the member to get
             lowercase: Whether to lowercase the name and key before matching
-            must: Whether to raise an error if the member is not found
 
         Returns:
             The enum member with the given name if found, None otherwise
         """
-        # Key value must be a string
         if not isinstance(name, str):
             raise TypeError(f"Expected str, got {type(name).__name__} on BrokenEnum.from_name()")
 
@@ -126,12 +44,9 @@ class BrokenEnum(enum.Enum):
             if (key.lower() if lowercase else key) == name:
                 return value
 
-        # Raise an error if the member was not found
-        if must: raise ValueError(f"Member with name '{name}' not found on BrokenEnum.from_name()")
-
     @classmethod
     @functools.lru_cache()
-    def from_value(cls, value: Any, *, must: bool=False) -> Optional[enum.Enum]:
+    def from_value(cls, value: Any) -> Optional[enum.Enum]:
         """
         Get enum members from their value (name=value)
 
@@ -142,13 +57,12 @@ class BrokenEnum(enum.Enum):
                 Banana = "Banana"
                 Orange = "Laranja"
 
-            Fruits.from_value("Maçã")   -> Fruits.Apple
-            Fruits.from_value("Banana") -> Fruits.Banana
+            Fruits.from_value("Maçã")   # Fruits.Apple
+            Fruits.from_value("Banana") # Fruits.Banana
             ```
 
         Args:
             value: Value of the member to get
-            must: Whether to raise an error if the member is not found
 
         Returns:
             The enum member with the given value if found, None otherwise
@@ -158,70 +72,121 @@ class BrokenEnum(enum.Enum):
             if value == option.value:
                 return option
 
-        # Raise an error if the member was not found
-        if must: raise ValueError(f"Member with value '{value}' not found on BrokenEnum.from_value()")
-
     # # Utilities properties
 
     # Values
 
     @classmethod
-    @functools.lru_cache()
     def members(cls) -> Tuple[enum.Enum]:
-        """Get all members of the enum"""
+        """
+        Get all members of the enum
+
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # (Fruits.Apple, Fruits.Banana, Fruits.Orange)
+            Fruits.members()
+            ```
+        """
         return tuple(cls)
 
     @classmethod
-    @functools.lru_cache()
     def options(cls) -> Tuple[enum.Enum]:
-        """Get all members of the enum"""
+        """
+        Get all members of the enum
+
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # (Fruits.Apple, Fruits.Banana, Fruits.Orange)
+            Fruits.options()
+            ```
+        """
         return cls.members()
 
     @classmethod
-    @functools.lru_cache()
     def values(cls) -> Tuple[Any]:
-        """Get all values of the enum (name=value)"""
+        """
+        Get all values of the enum (name=value)
+
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # ("Maçã", "Banana", "Laranja")
+            Fruits.values()
+            ```
+        """
         return tuple(member.value for member in cls)
 
     # Key/names properties
 
     @classmethod
-    @functools.lru_cache()
     def keys(cls) -> Tuple[str]:
-        """Get all 'keys' of the enum (key=value)"""
+        """
+        Get all 'keys' of the enum (key=value)
+
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # ("Apple", "Banana", "Orange")
+            Fruits.keys()
+            ```
+        """
         return tuple(member.name for member in cls)
-
-    @classmethod
-    @functools.lru_cache()
-    def names(cls) -> Tuple[str]:
-        """Get all names of the enum (name=value)"""
-        return cls.keys
-
-    @classmethod
-    @functools.lru_cache()
-    def names_lower(cls) -> Tuple[str]:
-        """Get all names of the enum (name=value) in lowercase"""
-        return tuple(name.lower() for name in cls.keys)
 
     # Items and dict-like
 
     @classmethod
-    @functools.lru_cache()
     def items(cls) -> Tuple[Tuple[str, Any]]:
-        """Get the tuple of (name, value) of all members of the enum"""
+        """
+        Get the tuple of (name, value) of all members of the enum
+
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # (("Apple", "Maçã"), ("Banana", "Banana"), ("Orange", "Laranja"))
+            Fruits.items()
+            ```
+        """
         return tuple((member.name, member.value) for member in cls)
 
     @classmethod
-    @functools.lru_cache()
     def as_dict(cls) -> Dict[str, Any]:
-        """Get the dictionary of key: value of all members of the enum"""
-        return dict(cls.items)
+        """
+        Get the dictionary of key: value of all members of the enum
 
-    @classmethod
-    @functools.lru_cache()
-    def to_dict(cls) -> Dict[str, Any]:
-        """Alias for .as_dict, but as a method"""
-        return cls.as_dict
+        Example:
+            ```python
+            class Fruits(BrokenEnum):
+                Apple  = "Maçã"
+                Banana = "Banana"
+                Orange = "Laranja"
+
+            # {"Apple": "Maçã", "Banana": "Banana", "Orange": "Laranja"}
+            Fruits.as_dict()
+            ```
+        """
+        return dict(cls.items())
 
     def __getitem__(self, index: int) -> enum.Enum:
         return self.members[index]
@@ -249,13 +214,13 @@ class BrokenEnum(enum.Enum):
                 Emoji  = "🔱"
 
             # Use the .get method
-            Multivalue.get("blue")   -> Multivalue.Color
-            Multivalue.get(False)    -> Multivalue.Hat
-            Multivalue.get("Height") -> Multivalue.Height
-            Multivalue.get("height") -> Multivalue.Height
+            Multivalue.get("blue")   # Multivalue.Color
+            Multivalue.get(False)    # Multivalue.Hat
+            Multivalue.get("Height") # Multivalue.Height
+            Multivalue.get("height") # Multivalue.Height
 
             # Use from a member itself
-            Multivalue.get(Multivalue.Color) -> Multivalue.Color
+            Multivalue.get(Multivalue.Color) # Multivalue.Color
             ```
 
         Args:
@@ -290,9 +255,9 @@ class BrokenEnum(enum.Enum):
                 MacOS   = "macos"
 
             # Cycle through options
-            Platform.next("linux")   -> Platform.Windows
-            Platform.next("windows") -> Platform.MacOS
-            Platform.next("macos")   -> Platform.Linux
+            Platform.next("linux")   # Platform.Windows
+            Platform.next("windows") # Platform.MacOS
+            Platform.next("macos")   # Platform.Linux
             (...)
             ```
 
@@ -307,7 +272,6 @@ class BrokenEnum(enum.Enum):
         return cls.options()[(cls.options().index(value) + offset) % len(cls)]
 
     def __next__(self) -> Self:
-        """Alias for .next, but as a method"""
         return self.next()
 
     @functools.lru_cache()
@@ -324,9 +288,9 @@ class BrokenEnum(enum.Enum):
                 MacOS   = "macos"
 
             # Cycle through options
-            Platform.previous("linux")   -> Platform.MacOS
-            Platform.previous("windows") -> Platform.Linux
-            Platform.previous("macos")   -> Platform.Windows
+            Platform.previous("linux")   # Platform.MacOS
+            Platform.previous("windows") # Platform.Linux
+            Platform.previous("macos")   # Platform.Windows
             (...)
             ```
 
@@ -338,7 +302,7 @@ class BrokenEnum(enum.Enum):
         """
         cls   = type(self)
         value = cls.get(value or self)
-        return cls.options[(cls.options.index(value) - offset) % len(cls)]
+        return cls.options()[(cls.options().index(value) - offset) % len(cls)]
 
     # # Advanced functions
 
@@ -445,12 +409,7 @@ class _PyTest:
     # Test .names property
     def test_names(self):
         Fruits = self.get_fruits()
-        assert Fruits.names() == ("Apple", "Banana", "Orange")
-
-    # Test .names_lower property
-    def test_names_lower(self):
-        Fruits = self.get_fruits()
-        assert Fruits.names_lower() == ("apple", "banana", "orange")
+        assert Fruits.keys() == ("Apple", "Banana", "Orange")
 
     # Test .items
     def test_items(self):

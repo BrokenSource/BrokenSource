@@ -2,8 +2,7 @@ import contextlib
 from pathlib import Path
 from typing import Any, Dict, Generator, Self, Union
 
-from loguru import logger as log
-
+from Broken import log
 from Broken.Core.Path import BrokenPath
 
 

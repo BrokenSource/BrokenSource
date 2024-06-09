@@ -4,9 +4,8 @@ from pathlib import Path
 from typing import Any, Self
 
 from attrs import define
-from loguru import logger as log
 
-from Broken import BrokenEnum, shell
+from Broken import BrokenEnum, log, shell
 
 
 class BrokenProfilerEnum(BrokenEnum):

@@ -7,9 +7,8 @@ import re
 import shutil
 import subprocess
 import sys
-import time
-import types
 import uuid
+from collections import deque
 from numbers import Number
 from pathlib import Path
 from typing import (
@@ -28,64 +27,15 @@ import click
 from loguru import logger as log
 
 
-def precise_sleep(seconds: float, *, error: float=1e-3) -> None:
-    """
-    Sleep for a precise amount of time. This function is very interesting for some reasons:
-    - time.sleep() obviously uses syscalls, and it's up to the OS to implement it
-    - This is usually done by scheduling the thread to wake up after the time has passed
-    - On Windows, this precision was 15ms (terrible), and on Python 3.11+ was optimized to 100ns
-    - On Unix, the precision is great with nanosleep() or usleep() (1ms or less)
-
-    So, in practice, the best ever precision time sleep function would be:
-    ```python
-    while (now - start) < wait:
-        now = time.perf_counter()
-    ```
-
-    As evident, this spins the thread full time due the .perf_counter() and conditional, which
-    is not wanted on a sleep function (to use 100% of a thread)
-
-    Taking advantage of the fact that time.sleep() is usually precise enough, and always will
-    overshoot the time, we can sleep close to the time and apply the previous spinning method
-    to achieve a very precise sleep, with a low enough overhead, relatively speaking.
-
-    Args:
-        seconds: Precise time to sleep
-
-    Returns:
-        None
-    """
-    if seconds < 0:
-        return
-
-    # Sleep close to the due time
-    start = time.perf_counter()
-    ahead = max(0, seconds - error)
-    time.sleep(ahead)
-
-    # Spin the thread until the time is up (precise Sleep)
-    while (time.perf_counter() - start) < seconds:
-        pass
-
-# Count time since.. the big bang with the bang counter. Shebang #!
-# Serious note, a Decoupled client starts at the Python's time origin, others on OS perf counter
-BIG_BANG: float = time.perf_counter()
-time.bang_counter = (lambda: time.perf_counter() - BIG_BANG)
-time.precise_sleep = precise_sleep
-
 def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
-    """Flatten nested iterables (list, tuple, Generator) to a 1D list
-    - [[a, b], c, [d, e, (None, 3)], [g, h]] -> [a, b, c, d, e, None, 3, g, h]
-    - [(x for x in "abc"), "def"] -> ["a", "b", "c", "def"]
-    - range(3) -> [0, 1, 2]
-    """
-    # Fixme: Add allow_none argument
-    iterables = (list, tuple, Generator)
+    """Flatten nested iterables (list, deque, tuple, Generator) to a 1D list"""
+    iterables = (list, deque, tuple, Generator)
     def flatten(stuff):
+        if truthy:
+            stuff = [item for item in stuff if (item is not None) and (item != "")]
         return [
             item for subitem in stuff for item in
             (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
-            if (not truthy) or (truthy and item)
         ]
     return flatten(stuff)
 
@@ -170,6 +120,10 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: Returns the item's value if Enum else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
+def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
+    """Finds the nearest multiple of a base number"""
+    return type(multiple * operator(number/multiple))
+
 def dunder(name: str) -> bool:
     return name.startswith("__") and name.endswith("__")
 
@@ -198,10 +152,6 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
 def image_hash(image) -> str:
     """A Fast-ish method to get an object's hash that implements .tobytes()"""
     return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
-
-def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
-    """Finds the nearest multiple of a base number"""
-    return type(multiple * operator(number/multiple))
 
 def limited_integer_ratio(number: Optional[float], *, limit: float=None) -> Optional[Tuple[int, int]]:
     """Same as Number.as_integer_ratio but with an optional upper limit and optional return"""
@@ -281,48 +231,3 @@ def last_locals(level: int=1, self: bool=True) -> dict:
         locals.pop("self", None)
 
     return locals
-
-def extend(base: type, name: str=None, as_property: bool=False) -> type:
-    """
-    Extend a class with another class's methods or a method directly.
-
-    # Usage:
-    Decorator of the class or method, class to extend as argument
-
-    @BrokenUtils.extend(BaseClass)
-    class ExtendedClass:
-        def method(self):
-            ...
-
-    @BrokenUtils.extend(BaseClass)
-    def method(self):
-        ...
-
-    @BrokenUtils.extend(BaseClass, as_property=True)
-    def method(self):
-        ...
-    """
-    def extender(add: type):
-
-        # Extend as property
-        if as_property:
-            return extend(base, name=name, as_property=False)(property(add))
-
-        # If add is a method
-        if isinstance(add, types.FunctionType):
-            setattr(base, name or add.__name__, add)
-            return base
-
-        # If it's a property
-        if isinstance(add, property):
-            setattr(base, name or add.fget.__name__, add)
-            return base
-
-        # If add is a class, add its methods to base
-        for key, value in add.__dict__.items():
-            if key.startswith("__"):
-                continue
-            setattr(base, key, value)
-            return base
-
-    return extender

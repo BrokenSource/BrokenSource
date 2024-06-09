@@ -12,10 +12,9 @@ from typing import Generator, List, Optional, Union
 import click
 import tqdm
 import validators
-from loguru import logger as log
 
 import Broken
-from Broken import apply, denum, flatten, shell
+from Broken import apply, denum, flatten, log, shell
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenSpinner import BrokenSpinner

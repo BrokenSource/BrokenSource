@@ -7,10 +7,9 @@ from typing import Generator, Union
 
 import PIL
 from attr import define, field
-from loguru import logger as log
 from PIL.Image import Image
 
-from Broken import BrokenPath
+from Broken import BrokenPath, log
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
