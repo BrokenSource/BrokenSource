@@ -49,7 +49,6 @@ dependencies = [
     "datetime>=5.5",
     "distro>=1.9.0",
     "appdirs>=1.4.4",
-    "pretty-errors>=1.2.25",
     "typer>=0.12.3",
     "tqdm>=4.66.4",
     "thefuzz>=0.22.1",

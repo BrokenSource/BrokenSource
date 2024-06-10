@@ -1,24 +1,12 @@
 # -------------------------------------------------------------------------------------------------|
 # Tracebacks
 
-import site
+import os
 from pathlib import Path
 
-import pretty_errors
-
-pretty_errors.configure(
-    filename_display  = pretty_errors.FILENAME_EXTENDED,
-    line_color        = pretty_errors.RED + "> \033[1;37m",
-    code_color        = '  \033[1;37m',
-    line_number_first = True,
-    lines_before      = 10,
-    lines_after       = 10,
-)
-
-# Remove long call stack tracebacks from some libraries
-for sitepackages in site.getsitepackages():
-    for library in ("typer", "click"):
-        pretty_errors.blacklist(Path(sitepackages)/library)
+if (os.environ.get("RICH_TRACEBACK", "1") == "1"):
+    import rich.traceback
+    rich.traceback.install(width=None)
 
 # -------------------------------------------------------------------------------------------------|
 # General fixes and safety

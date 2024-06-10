@@ -25,7 +25,7 @@ import numpy
 import PIL
 import PIL.Image
 from attrs import define
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from Broken import (
     BrokenEnum,
@@ -43,6 +43,7 @@ from Broken.Types import Bytes, Hertz, Seconds
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegModuleBase(BaseModel, ABC):
+    model_config = ConfigDict(validate_assignment=True)
 
     @abstractmethod
     def command(self) -> Iterable[str]:

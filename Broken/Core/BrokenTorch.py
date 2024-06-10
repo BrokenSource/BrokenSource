@@ -32,7 +32,7 @@ class BrokenTorch:
         current_flavor = None
 
         # Try getting current installed flavor, if any, without importing torch
-        # Note: Reversed as Windows lists system first, and we might have multiple on Linux
+        # Note: Reversed as Windows lists system first, and we might have multiple on Docker
         for site_packages in map(Path, reversed(site.getsitepackages())):
             if (torch_version := (site_packages/"torch"/"version.py")).exists():
                 exec(torch_version.read_text(), namespace := {})
@@ -93,7 +93,7 @@ class BrokenTorch:
             PIP = (sys.executable, "-m", "pip")
             source_url = f"https://download.pytorch.org/whl/{flavor}"
             shell(PIP, "uninstall", "torch", "-y")
-            shell(PIP, "install", f"torch=={version}", "--index-url", source_url)
+            shell(PIP, "install", f"torch=={version}", "torchvision", "--index-url", source_url)
             shell(PIP, "install", "transformers")
         else:
             log.info(f"PyTorch Flavor ({version_flavor}) already installed")
