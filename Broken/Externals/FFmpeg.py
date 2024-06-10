@@ -74,9 +74,8 @@ class FFmpegInputPipe(FFmpegModuleBase):
 
     pixel_format: Literal[
         "rgb24",
-        "rgba"
+        "rgba",
     ] = Field(default="rgb24")
-
 
     width: int = Field(default=1920, gt=0)
     height: int = Field(default=1080, gt=0)
@@ -111,7 +110,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     pixel_format: Literal[
         "rgb24",
-        "rgba"
+        "rgba",
     ] = Field(default="rgb24")
 
     def command(self) -> Iterable[str]:
@@ -124,8 +123,14 @@ class FFmpegOutputPath(FFmpegModuleBase):
     overwrite: bool = True
     path: Path
 
+    pixel_format: Literal[
+        "yuv420p",
+        "yuv444p",
+    ] = Field(default="yuv420p")
+
     def command(self) -> Iterable[str]:
-        return (self.path, self.overwrite*"-y")
+        yield self.all("-pix_fmt", self.pixel_format)
+        yield (self.path, self.overwrite*"-y")
 
 FFmpegOutputType = Union[
     FFmpegOutputPipe,
@@ -185,7 +190,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     • https://trac.ffmpeg.org/wiki/Encode/H.264#Profile
     """
 
-    faststart: bool = Field(default=False)
+    faststart: bool = Field(default=True)
 
     rgb: bool = Field(default=False)
 
@@ -784,6 +789,8 @@ class BrokenFFmpeg(SerdeBaseModel):
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#toc-Advanced-options)
     """
 
+    time: float = Field(default=0.0)
+
     vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field(default="cfr")
     """
     The video's framerate mode, applied to all subsequent output targets
@@ -1047,13 +1054,14 @@ class BrokenFFmpeg(SerdeBaseModel):
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", self.loglevel)
         extend(("-hwaccel", self.hwaccel)*bool(self.hwaccel))
+        extend(("-t", self.time)*bool(self.time))
         extend(self.inputs)
 
         # Note: https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs
         for output in self.outputs:
+            extend(self.audio_codec)
             extend(self.video_codec)
             extend(("-vf", ",".join(map(str, self.filters)))*bool(self.filters))
-            extend(self.audio_codec)
             extend(output)
 
         extend("-shortest"*self.shortest)
