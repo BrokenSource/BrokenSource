@@ -9,7 +9,7 @@ from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 from attrs import Factory, define, field
 
 
-def precise_sleep(seconds: float, *, error: float=0.005) -> None:
+def precise_sleep(seconds: float, *, error: float=0.0005) -> None:
     """A precise alternative of time.sleep(), low cpu near-end thread spin"""
     if (seconds < 0):
         return
