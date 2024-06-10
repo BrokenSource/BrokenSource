@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import copy
 from abc import ABC, abstractmethod
-from typing import Any, Self
+from collections import deque
+from typing import Any, Callable, Deque, Iterable, Self
 
 from attr import Factory, define
 
@@ -43,7 +44,7 @@ class Ignore:
 
 class BrokenAttrs:
     """
-    Walk over an @attrs.defined class and call __post__ on all classes in the MRO.
+    Walk over an @attrs.defined class and call __post__ on all classes in the MRO
     # Warn: Must NOT define __attrs_post_init__ in an inheriting class
     # Fixme: Can improve by starting on BrokenAttrs itself
     """
@@ -100,55 +101,38 @@ class BrokenFluentBuilder:
 @define
 class BrokenRelay:
     """
-    A class to bind some callback to many callables.
+    A utility class for sharing one-to-many callbacks in a 'observer' pattern style. Multiple
+    callabacks can be subscribed to receive the same args and kwargs when an instance of this class
+    is called. Useful cases are to avoid inheritance when sharing callbacks.
 
-    Useful for ModernGL window function, eg pseudocode:
+    Example:
+        ```python
+        relay = BrokenRelay()
 
-    ```python
-    window = moderngl_window(...)
+        # Basic usage
+        relay.subscribe(callback1, callback2)
+        relay(*args, **kwargs) # Calls callback1 and callback2
 
-    # Create BrokenRelay instance
-    scroll_callbacks = BrokenRelay()
-
-    # Map window scroll func callback to this class
-    window.mouse_scroll_event_func = scroll_callbacks
-
-    # Define many callbacks that should be called on window resize
-    def log_scroll(x, y):
-        ...
-
-    camera2d = Camera2D(...)
-
-    # Add callbacks
-    scroll_callbacks.bind(log_scroll, camera2d.resize)
-
-    # Or with @ syntax
-    scroll_callbacks @ (log_scroll, camera2d.resize)
-
-    # It also returns self when binding
-    self.window_mouse_scroll_event_func = scroll_callbacks @ (log_scroll, camera2d.resize)
-    ```
+        # Can also 'inject' us to bound callables
+        window = moderngl_window(...)
+        window.key_event_func = relay
+        window.key_event_func = relay @ (camera.walk, camera.rotate)
+        ```
     """
-    callbacks: list[callable] = Factory(list)
+    callbacks: Deque[Callable] = Factory(deque)
 
-    def __bind__(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
+    def __bind__(self, *callbacks: Iterable[Callable]) -> Self:
         self.callbacks += flatten(callbacks)
         return self
 
-    def bind(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
+    def subscribe(self, *callbacks: Iterable[Callable]) -> Self:
+        """Adds callbacks to be called with same arguments as self.__call__"""
         return self.__bind__(callbacks)
 
-    def subscribe(self, *callbacks: callable) -> Self:
-        """Adds callbacks to the list of callables, runs on self.__call__"""
-        return self.__bind__(callbacks)
-
-    def __matmul__(self, *callbacks: callable) -> Self:
-        """Convenience syntax for binding"""
+    def __matmul__(self, *callbacks: Iterable[Callable]) -> Self:
+        """Convenience syntax for subscribing with `relay @ (A, B)`"""
         return self.__bind__(callbacks)
 
     def __call__(self, *args, **kwargs):
-        """Pass through all callbacks to who called "us" (self)"""
         for callback in self.callbacks:
             callback(*args, **kwargs)

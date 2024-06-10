@@ -6,10 +6,9 @@ title: Home
   <a href="https://brokensrc.dev"><img src="./resources/images/broken.png" width="200"></a>
   <h1>Broken Source Software</h1>
   I'm an <b>Open-Source Developer</b> dedicated on making <b>Useful Niched Software</b>
+  <h6>My mission is simple: Give as much power to all my users as possible</h6>
 </div>
-
 !!! success "🚀 **Convenience:** You're probably looking for the [**Installation Guide**](get/index.md)"
-
 
 ## ✅ Suggestions
 

@@ -294,7 +294,7 @@ class _BrokenProjectResources:
             # Fixme (#spec): Python 3.9 workaround; Spec-less packages
             if (sys.version_info < (3, 10)):
                 spec = self.BROKEN_PROJECT.RESOURCES.__spec__
-                spec.origin = spec.submodule_search_locations[0] + "/WorkaroundIgnore"
+                spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
 
             self.__RESOURCES__ = importlib.resources.files(self.BROKEN_PROJECT.RESOURCES)
 

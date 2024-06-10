@@ -111,7 +111,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
     pixel_format: Literal[
         "rgb24",
         "rgba"
-    ] = Field(default=None)
+    ] = Field(default="rgb24")
 
     def command(self) -> Iterable[str]:
         yield self.all("-f", self.format)
@@ -1106,8 +1106,8 @@ class BrokenFFmpeg(SerdeBaseModel):
         if not (path := Path(path).resolve()).exists():
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Streaming Video Frames from file ({path})", echo=echo)
         (width, height) = BrokenFFmpeg.get_resolution(path)
+        log.minor(f"Streaming Video Frames from file ({path}) @ ({width}x{height})", echo=echo)
         ffmpeg = (BrokenFFmpeg(vsync="cfr")
             .quiet()
             .input(path=path)
