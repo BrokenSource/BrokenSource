@@ -32,52 +32,13 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenSpinner,
+    denum,
     flatten,
     log,
     nearest,
     shell,
 )
 from Broken.Types import Bytes, Hertz, Seconds
-
-# -------------------------------------------------------------------------------------------------|
-# Enum's land
-
-class FFmpegPCM(BrokenEnum):
-    # Raw pcm formats `ffmpeg -formats | grep PCM`
-    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "pcm_f32be"
-    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "pcm_f32le"
-    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "pcm_f64be"
-    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "pcm_f64le"
-    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "pcm_s16be"
-    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "pcm_s16le"
-    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "pcm_s24be"
-    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "pcm_s24le"
-    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "pcm_s32be"
-    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "pcm_s32le"
-    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "pcm_u16be"
-    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "pcm_u16le"
-    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "pcm_u24be"
-    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "pcm_u24le"
-    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "pcm_u32be"
-    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "pcm_u32le"
-    PCM_UNSIGNED_8_BITS                = "pcm_u8"
-    PCM_SIGNED_8_BITS                  = "pcm_s8"
-
-    @property
-    @functools.lru_cache
-    def size(self) -> int:
-        return int(''.join(filter(str.isdigit, self.value)))//8
-
-    @property
-    @functools.lru_cache
-    def endian(self) -> str:
-        return "<" if ("le" in self.value) else ">"
-
-    @property
-    @functools.lru_cache
-    def dtype(self) -> numpy.dtype:
-        type = self.value.split("_")[1][0]
-        return numpy.dtype(f"{self.endian}{type}{self.size}")
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -95,7 +56,7 @@ class FFmpegModuleBase(BaseModel, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegInputPath(FFmpegModuleBase):
-    # type: Literal["path"] = "path"
+    type: Literal["path"] = "path"
     path: Path
 
     def command(self) -> Iterable[str]:
@@ -596,6 +557,12 @@ class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
     def command(self) -> Iterable[str]:
         yield ("-c:v", "rawvideo")
 
+class FFmpegVideoCodecNoVideo(FFmpegModuleBase):
+    codec: Literal["null"] = "null"
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "null")
+
 
 class FFmpegVideoCodecCopy(FFmpegModuleBase):
     codec: Literal["copy"] = "copy"
@@ -615,6 +582,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecAV1_NVENC,
     FFmpegVideoCodecAV1_RAV1E,
     FFmpegVideoCodecRawvideo,
+    FFmpegVideoCodecNoVideo,
     FFmpegVideoCodecCopy,
 ]
 
@@ -678,6 +646,53 @@ class FFmpegAudioCodecEmpty(FFmpegModuleBase):
     def command(self) -> Iterable[str]:
         yield ("-f", "lavfi", "-i", f"anullsrc=channel_layout=stereo:sample_rate={self.samplerate}")
 
+
+class FFmpegPCM(BrokenEnum):
+    """Raw pcm formats `ffmpeg -formats | grep PCM`"""
+    PCM_FLOAT_32_BITS_BIG_ENDIAN       = "pcm_f32be"
+    PCM_FLOAT_32_BITS_LITTLE_ENDIAN    = "pcm_f32le"
+    PCM_FLOAT_64_BITS_BIG_ENDIAN       = "pcm_f64be"
+    PCM_FLOAT_64_BITS_LITTLE_ENDIAN    = "pcm_f64le"
+    PCM_SIGNED_16_BITS_BIG_ENDIAN      = "pcm_s16be"
+    PCM_SIGNED_16_BITS_LITTLE_ENDIAN   = "pcm_s16le"
+    PCM_SIGNED_24_BITS_BIG_ENDIAN      = "pcm_s24be"
+    PCM_SIGNED_24_BITS_LITTLE_ENDIAN   = "pcm_s24le"
+    PCM_SIGNED_32_BITS_BIG_ENDIAN      = "pcm_s32be"
+    PCM_SIGNED_32_BITS_LITTLE_ENDIAN   = "pcm_s32le"
+    PCM_UNSIGNED_16_BITS_BIG_ENDIAN    = "pcm_u16be"
+    PCM_UNSIGNED_16_BITS_LITTLE_ENDIAN = "pcm_u16le"
+    PCM_UNSIGNED_24_BITS_BIG_ENDIAN    = "pcm_u24be"
+    PCM_UNSIGNED_24_BITS_LITTLE_ENDIAN = "pcm_u24le"
+    PCM_UNSIGNED_32_BITS_BIG_ENDIAN    = "pcm_u32be"
+    PCM_UNSIGNED_32_BITS_LITTLE_ENDIAN = "pcm_u32le"
+    PCM_UNSIGNED_8_BITS                = "pcm_u8"
+    PCM_SIGNED_8_BITS                  = "pcm_s8"
+
+    @property
+    @functools.lru_cache
+    def size(self) -> int:
+        return int(''.join(filter(str.isdigit, self.value)))//8
+
+    @property
+    @functools.lru_cache
+    def endian(self) -> str:
+        return "<" if ("le" in self.value) else ">"
+
+    @property
+    @functools.lru_cache
+    def dtype(self) -> numpy.dtype:
+        type = self.value.split("_")[1][0]
+        return numpy.dtype(f"{self.endian}{type}{self.size}")
+
+
+class FFmpegAudioCodecPCM(FFmpegModuleBase):
+    """Raw pcm formats `ffmpeg -formats | grep PCM`"""
+    format: FFmpegPCM = Field(default=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN)
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:a", self.format.value, "-f", self.format.value.removeprefix("pcm_"))
+
+
 FFmpegAudioCodecType: TypeAlias = Union[
     FFmpegAudioCodecAAC,
     FFmpegAudioCodecMP3,
@@ -686,6 +701,7 @@ FFmpegAudioCodecType: TypeAlias = Union[
     FFmpegAudioCodecCopy,
     FFmpegAudioCodecNone,
     FFmpegAudioCodecEmpty,
+    FFmpegAudioCodecPCM,
 ]
 
 # -------------------------------------------------------------------------------------------------|
@@ -748,8 +764,36 @@ class SerdeBaseModel(BaseModel):
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenFFmpeg(SerdeBaseModel):
+    """
+    Your Premium (^Fluent) FFmpeg class in Python, safety checks and sane defaults
+
+    Todo: Write quick usage examples
+
+    Note: FFmpeg always outputs text to the stderr, as stdout is reserved for pipe outputs `a | b`
+    """
+
     hide_banner: bool = True
+    """Hides the compilation information of FFmpeg from the output"""
+
     shortest: bool = False
+    """
+    Ends the output at the shortest stream duration. For example, if the input is an 30s audio and
+    a 20s video, and we're joining the two, the final video will be 20s. Or piping frames, 30s
+
+    [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#toc-Advanced-options)
+    """
+
+    vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field(default="cfr")
+    """
+    The video's framerate mode, applied to all subsequent output targets
+
+    - `auto`: FFmpeg default, choses between constant and variable framerate based on muxer support
+    - `cfr`: Constant Frame Rate, where frames are droped or duped to precisely match frametimes
+    - `vfr`: Variable Frame Rate, static frames are kept, no two frames have the same timestemp
+    - `passthrough`: The frames are passed through without modification on their timestamp
+
+    [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#Advanced-options)
+    """
 
     loglevel: Literal[
         "error",
@@ -765,20 +809,27 @@ class BrokenFFmpeg(SerdeBaseModel):
         "auto",
         "cuda",
         "nvdec",
+        "vulkan",
     ]] = Field(default=None)
-    """https://trac.ffmpeg.org/wiki/HWAccelIntro"""
+    """
+    What device to bootstrap, for decoding with hardware acceleration. In practice, it's only useful
+    when decoding from a source video file, might cause overhead on pipe input mode
+
+    - `auto`: Finds up the best device to use, more often than not nvdec or cuvid
+
+    TODO: Add the required initializers on the final command per option
+
+    [**FFmpeg docs**](https://trac.ffmpeg.org/wiki/HWAccelIntro)
+    """
 
     threads: int = Field(default=0, gt=-1)
-    """The number of threads FFmpeg should use. Generally speaking, more threads yields worse quality
-    and compression ratios, but drastically improves performance. Behavior changes depending on codecs,
-    some might not use more than a few depending on settings. '0' finds the optimal automatically"""
+    """
+    The number of threads the codec should use. Generally speaking, more threads yields worse quality
+    and compression ratios, but drastically improves performance. Some codecs might not use all
+    available CPU threads. '0' finds the optimal amount automatically
 
-    vsync: Literal[
-        "auto",
-        "passthrough",
-        "cfr",
-        "vfr",
-    ] = Field(default="cfr")
+    [**FFmpeg docs**](https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options)
+    """
 
     inputs: List[FFmpegInputType] = Field(default_factory=list)
 
@@ -804,8 +855,8 @@ class BrokenFFmpeg(SerdeBaseModel):
     # Inputs and Outputs
 
     @functools.wraps(FFmpegInputPath)
-    def input(self, **kwargs) -> Self:
-        self.inputs.append(FFmpegInputPath(**kwargs))
+    def input(self, path: Path, **kwargs) -> Self:
+        self.inputs.append(FFmpegInputPath(path=path, **kwargs))
         return self
 
     @functools.wraps(FFmpegInputPipe)
@@ -814,8 +865,8 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     @functools.wraps(FFmpegOutputPath)
-    def output(self, **kwargs) -> Self:
-        self.outputs.append(FFmpegOutputPath(**kwargs))
+    def output(self, path: Path, **kwargs) -> Self:
+        self.outputs.append(FFmpegOutputPath(path=path, **kwargs))
         return self
 
     @functools.wraps(FFmpegOutputPipe)
@@ -880,6 +931,11 @@ class BrokenFFmpeg(SerdeBaseModel):
         self.video_codec = FFmpegVideoCodecCopy(**kwargs)
         return self
 
+    @functools.wraps(FFmpegVideoCodecNoVideo)
+    def no_video(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecNoVideo(**kwargs)
+        return self
+
     def apply_vcodec_str(self, codec: str) -> Self:
         codec = codec.replace("_", "-").lower()
         if   (codec == "h264"      ): self.h264()
@@ -915,6 +971,11 @@ class BrokenFFmpeg(SerdeBaseModel):
     @functools.wraps(FFmpegAudioCodecFLAC)
     def flac(self, **kwargs) -> Self:
         self.audio_codec = FFmpegAudioCodecFLAC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegAudioCodecPCM)
+    def pcm(self, format: FFmpegAudioCodecPCM="pcm_f32le") -> Self:
+        self.audio_codec = FFmpegAudioCodecPCM(format=format)
         return self
 
     @functools.wraps(FFmpegAudioCodecCopy)
@@ -995,7 +1056,7 @@ class BrokenFFmpeg(SerdeBaseModel):
             extend(output)
 
         extend("-shortest"*self.shortest)
-        return list(map(str, flatten(command)))
+        return list(map(str, denum(flatten(command))))
 
     def run(self, **kwargs) -> subprocess.CompletedProcess:
         return shell(self.command, **kwargs)
@@ -1209,18 +1270,16 @@ class BrokenAudioReader:
         self._size = self.format.size
         self._read = 0
 
+
         # Note: Stderr to null as we might not read all the audio, won't log errors
         self._ffmpeg = (
             BrokenFFmpeg()
             .quiet()
-            .input(self.path)
-            .audio_codec(self.format.value)
-            .format(self.format.value.removeprefix("pcm_"))
+            .input(path=self.path)
+            .pcm(self.format.value)
             .no_video()
-            .custom("-ar", self.samplerate)
-            .custom("-ac", self.channels)
             .output("-")
-        ).popen(stdout=PIPE, stderr=DEVNULL, echo=self.echo)
+        ).popen(stdout=PIPE)
 
         """
         One could think the following code is the way, but it is not
