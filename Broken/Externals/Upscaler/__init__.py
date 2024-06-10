@@ -130,7 +130,7 @@ class BrokenUpscaler(ABC):
     @contextlib.contextmanager
     def temp_image(self,
         image: LoadableImage,
-        format="jpg"
+        format="png"
     ) -> Generator[Path, None, None]:
         """
         Get a temporary Path to a Image
