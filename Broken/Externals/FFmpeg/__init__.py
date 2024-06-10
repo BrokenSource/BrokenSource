@@ -177,7 +177,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     """https://trac.ffmpeg.org/wiki/Encode/H.264"""
     codec: Literal["h264"] = "h264"
 
-    crf: int = Field(default=23, ge=0, le=51)
+    crf: int = Field(default=20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
     • https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue
     """
@@ -274,7 +274,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
         "main", # Relatively modern devices
         "high", # Modern devices
         "high444p" # Modern devices
-    ]] = Field(default=None)
+    ]] = Field(default="high")
 
     rc: Optional[Literal[
         "constqp", # Constant Quality 'Factor'
@@ -283,11 +283,8 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     ]] = Field(default="vbr")
     """'Rate Control' mode"""
 
-    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    rc_lookahead: Optional[int] = Field(default=32, gt=-1)
     """Number of frames to look ahead for the rate control"""
-
-    surfaces: Optional[int] = Field(default=32, gt=-1, lt=65)
-    """Number of concurrent surfaces (0-64)"""
 
     cbr: bool = Field(default=False)
     """Use Constant Bitrate mode"""
@@ -300,12 +297,12 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     def command(self) -> Iterable[str]:
         yield self.all("-c:v", "h264_nvenc")
+        yield self.all("-b:v", 0)
         yield self.all("-preset", self.preset)
         yield self.all("-tune", self.tune)
         yield self.all("-profile", self.profile)
         yield self.all("-rc", self.rc)
         yield self.all("-rc-lookahead", self.rc_lookahead)
-        yield self.all("-surfaces", self.surfaces)
         yield self.all("-cbr", int(self.cbr))
         yield self.all("-cq", self.cq)
         yield self.all("-gpu", self.gpu)
@@ -315,7 +312,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
     """https://trac.ffmpeg.org/wiki/Encode/H.265"""
     codec: Literal["h265"] = "h265"
 
-    crf: int = Field(default=23, ge=0, le=51)
+    crf: int = Field(default=25, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality"""
 
     bitrate: Optional[int] = Field(default=None, gt=-1)
@@ -337,6 +334,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
         yield self.all("-preset", self.preset)
         yield self.all("-crf", str(self.crf))
         yield self.all("-b:v", self.bitrate)
+
 
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """`ffmpeg -h encoder=hevc_nvenc`"""
@@ -392,9 +390,6 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     rc_lookahead: Optional[int] = Field(default=10, gt=-1)
     """Number of frames to look ahead for the rate control"""
 
-    surfaces: Optional[int] = Field(default=32, gt=-1, lt=65)
-    """Number of concurrent surfaces (0-64)"""
-
     cbr: bool = Field(default=False)
     """Use Constant Bitrate mode"""
 
@@ -412,21 +407,21 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         yield self.all("-tier", self.tier)
         yield self.all("-rc", self.rc)
         yield self.all("-rc-lookahead", self.rc_lookahead)
-        yield self.all("-surfaces", self.surfaces)
         yield self.all("-cbr", int(self.cbr))
         yield self.all("-cq", self.cq)
         yield self.all("-gpu", self.gpu)
+
 
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
     """https://trac.ffmpeg.org/wiki/Encode/VP9"""
     codec: Literal["libvpx-vp9"] = "libvpx-vp9"
 
-    crf: int = Field(default=26, gt=-1, lt=64)
+    crf: int = Field(default=30, gt=-1, lt=64)
     """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
     • https://trac.ffmpeg.org/wiki/Encode/VP9#constantq
     """
 
-    speed: int = Field(default=0, gt=-1, lt=6)
+    speed: int = Field(default=4, gt=-1, lt=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
     • https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed
     """
@@ -435,7 +430,7 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
         "good", # General cases
         "best", # Offline renders
         "realtime",
-    ]] = Field(default="best")
+    ]] = Field(default="good")
     """Tweak the encoding time philosophy. 'good' for general cases, 'best' for offline renders when
     there's plenty time available and best quality, 'realtime' for streams and low latency
     • https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality
@@ -454,6 +449,7 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
         yield ("-deadline", self.deadline)
         yield ("-cpu-used", self.speed)
         yield ("-row-mt", "1") * self.row_multithreading
+
 
 class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
     """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
@@ -478,6 +474,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
         yield ("-row-mt", 1)
         yield ("-tiles", "2x2")
 
+
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
     """The official codec for future development of AV1. Faster than libaom reference
     • https://trac.ffmpeg.org/wiki/Encode/AV1#SVT-AV1
@@ -500,17 +497,112 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
         yield ("-preset", self.preset)
         yield ("-svtav1-params", "tune=0")
 
+
+class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
+    """`ffmpeg -h encoder=librav1e`
+    https://github.com/xiph/rav1e
+    """
+    codec: Literal["librav1e"] = "librav1e"
+
+    qp: int = Field(default=80, gt=-2)
+    """Constant quantizer mode (from -1 to 255). Smaller values are higher quality"""
+
+    speed: int = Field(default=4, gt=-1, lt=11)
+    """What speed preset to use (from -1 to 10) (default -1)"""
+
+    tile_rows: int = Field(default=2, gt=-1)
+    """Number of tile rows to encode with (from -1 to I64_MAX) (default 0)"""
+
+    tile_columns: int = Field(default=2, gt=-1)
+    """Number of tile columns to encode with (from -1 to I64_MAX) (default 0)"""
+
+    def command(self) -> Iterable[str]:
+        yield ("-c:v", "librav1e")
+        yield ("-qp", self.qp)
+        yield ("-speed", self.speed)
+        yield ("-tile-rows", self.tile_rows)
+        yield ("-tile-columns", self.tile_columns)
+
+
+class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
+    """`ffmpeg -h encoder=av1_nvenc`
+    NVIDIA's NVENC encoder for AV1
+    # Warning: REQUIRES A RTX 4000+ GPU (ADA Love Lace Architecture or newer
+    """
+    codec: Literal["av1_nvenc"] = "av1_nvenc"
+
+    preset: Optional[Literal[
+        "default", # Defaults to p4
+        "slow", # High quality 2 passes
+        "medium", # High quality 1 pass
+        "fast", # High quality 1 pass
+        "p1", # fastest
+        "p2", # faster
+        "p3", # fast
+        "p4", # medium
+        "p5", # slow
+        "p6", # slower
+        "p7", # slowest
+    ]] = Field(default="p5")
+
+    tune: Optional[Literal[
+        "hq", # High quality
+        "ll", # Low latency
+        "ull", # Ultra low latency
+        "lossless" # Lossless
+    ]] = Field(default="hq")
+
+    rc: Optional[Literal[
+        "constqp", # Constant Quality 'Factor'
+        "vbr", # Variable bitrate
+        "cbr", # Constant bitrate
+    ]] = Field(default="vbr")
+    """'Rate Control' mode"""
+
+    multipass: Optional[Literal[
+        "disabled",
+        "qres", # First pass is quarter resolution
+        "fullres", # First pass is full resolution
+    ]] = Field(default="fullres")
+
+    tile_rows: Optional[int] = Field(default=2, gt=-1, lt=65)
+    """Number of encoding tile rows, similar to -row-mt"""
+
+    tile_columns: Optional[int] = Field(default=2, gt=-1, lt=65)
+    """Number of encoding tile columns, similar to -col-mt"""
+
+    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    """Number of frames to look ahead for the rate control"""
+
+    gpu: int = Field(default=0, gt=-1)
+    """Use the Nth NVENC capable GPU for encoding"""
+
+    cq: int = Field(default=25, gt=-1)
+    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+
+    def command(self) -> Iterable[str]:
+        yield self.all("-c:v", "av1_nvenc")
+        yield self.all("-preset", self.preset)
+        yield self.all("-tune", self.tune)
+        yield self.all("-rc", self.rc)
+        yield self.all("-rc-lookahead", self.rc_lookahead)
+        yield self.all("-cq", self.cq)
+        yield self.all("-gpu", self.gpu)
+
+
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
     codec: Literal["rawvideo"] = "rawvideo"
 
     def command(self) -> Iterable[str]:
         yield ("-c:v", "rawvideo")
 
+
 class FFmpegVideoCodecCopy(FFmpegModuleBase):
     codec: Literal["copy"] = "copy"
 
     def command(self) -> Iterable[str]:
         yield ("-c:v", "copy")
+
 
 FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecH264,
@@ -520,6 +612,8 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecVP9,
     FFmpegVideoCodecAV1_LIBAOM,
     FFmpegVideoCodecAV1_SVT,
+    FFmpegVideoCodecAV1_NVENC,
+    FFmpegVideoCodecAV1_RAV1E,
     FFmpegVideoCodecRawvideo,
     FFmpegVideoCodecCopy,
 ]
@@ -757,13 +851,23 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
-    def libaom(self, **kwargs) -> Self:
+    def av1_aom(self, **kwargs) -> Self:
         self.video_codec = FFmpegVideoCodecAV1_LIBAOM(**kwargs)
         return self
 
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
-    def svt(self, **kwargs) -> Self:
+    def av1_svt(self, **kwargs) -> Self:
         self.video_codec = FFmpegVideoCodecAV1_SVT(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecAV1_NVENC)
+    def av1_nvenc(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecAV1_NVENC(**kwargs)
+        return self
+
+    @functools.wraps(FFmpegVideoCodecAV1_RAV1E)
+    def av1_rav1e(self, **kwargs) -> Self:
+        self.video_codec = FFmpegVideoCodecAV1_RAV1E(**kwargs)
         return self
 
     @functools.wraps(FFmpegVideoCodecRawvideo)
@@ -777,14 +881,17 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     def apply_vcodec_str(self, codec: str) -> Self:
+        codec = codec.replace("_", "-").lower()
         if   (codec == "h264"      ): self.h264()
-        elif (codec == "h264_nvenc"): self.h264_nvenc()
+        elif (codec == "h264-nvenc"): self.h264_nvenc()
         elif (codec == "h265"      ): self.h265()
-        elif (codec == "h265_nvenc"): self.h265_nvenc()
-        elif (codec == "hevc_nvenc"): self.h265_nvenc()
+        elif (codec == "h265-nvenc"): self.h265_nvenc()
+        elif (codec == "hevc-nvenc"): self.h265_nvenc()
         elif (codec == "vp9"       ): self.vp9()
-        elif (codec == "libaom"    ): self.libaom()
-        elif (codec == "svt"       ): self.svt()
+        elif (codec == "av1-aom"   ): self.av1_aom()
+        elif (codec == "av1-svt"   ): self.av1_svt()
+        elif (codec == "av1-nvenc" ): self.av1_nvenc()
+        elif (codec == "av1-rav1e" ): self.av1_rav1e()
         else: raise ValueError(f"Unknown Video Codec: {codec}")
         return self
 
@@ -826,6 +933,7 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     def apply_acodec_str(self, codec: str) -> Self:
+        codec = codec.lower()
         if   (codec == "aac"   ): self.aac()
         elif (codec == "mp3"   ): self.mp3()
         elif (codec == "opus"  ): self.opus()
@@ -873,6 +981,7 @@ class BrokenFFmpeg(SerdeBaseModel):
                     command.append(item)
 
         extend(shutil.which("ffmpeg"))
+        extend("-threads", self.threads)
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", self.loglevel)
         extend(("-hwaccel", self.hwaccel)*bool(self.hwaccel))
