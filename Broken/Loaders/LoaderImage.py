@@ -33,7 +33,6 @@ class LoaderImage(BrokenLoader):
 
     @staticmethod
     def load(value: Any=None, **kwargs) -> Optional[Image]:
-
         if value is None:
             return None
 
@@ -49,18 +48,15 @@ class LoaderImage(BrokenLoader):
             log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
 
-        elif (path := Path(value)).exists():
+        elif (path := Path(value).expanduser().resolve()).exists():
             log.debug(f"Loading Image from Path ({path})")
             return PIL.Image.open(path, **kwargs)
 
         elif validators.url(value):
             log.debug(f"Loading Image from URL ({value})")
-
-            if LoaderImage.cache():
-                return PIL.Image.open(io.BytesIO(LoaderImage.cache().get(value).content), **kwargs)
-
             import requests
-            return PIL.Image.open(io.BytesIO(requests.get(value).content), **kwargs)
+            get = getattr(LoaderImage.cache(), "get", requests.get)
+            return PIL.Image.open(io.BytesIO(get(value).content), **kwargs)
 
         elif isinstance(value, bytes):
             log.debug("Loading Image from Bytes")

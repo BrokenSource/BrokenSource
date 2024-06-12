@@ -101,6 +101,7 @@ from Broken.Core.BrokenUtils import (
     BrokenSingleton,
     BrokenWatchdog,
     Ignore,
+    LazyImport,
     OnceTracker,
     SameTracker,
 )
@@ -126,9 +127,10 @@ def set_project(project: BrokenProject):
 # -------------------------------------------------------------------------------------------------|
 # Temporal
 
-
 time.zero = time.perf_counter()
 """Precise time at which the program started (since OS boot)"""
 
 time.since_zero = (lambda: time.perf_counter() - time.zero)
 """Precise time since the program started, 'normalized time.perf_counter()'"""
+
+# -------------------------------------------------------------------------------------------------|

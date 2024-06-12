@@ -207,6 +207,7 @@ class BrokenProjectCLI:
     def release(self,
         target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
         torch:  Annotated[bool, Option("--torch", help="Build for all PyTorch flavors")]=False,
+        gui:    Annotated[bool, Option("--gui",   help="Set the entry point to main_gui()")]=False,
     ) -> List[Path]:
         """Release the Project as a distributable binary"""
 
@@ -246,7 +247,7 @@ class BrokenProjectCLI:
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(wheel),
-                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
+                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main" + ("_gui"*gui),
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
@@ -278,8 +279,8 @@ class BrokenProjectCLI:
             # Rename project binary according to the Broken naming convention
             for version in ("latest", wheel.name.split("-")[1]):
                 release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
-                    f"{self.name.lower()}-",
-                    (f"{torch.name.lower()}-" if torch else ""),
+                    f"{self.name.lower()}-", "gui-"*gui,
+                    f"{torch.name.lower()}-"*bool(torch),
                     f"{target.name}-",
                     f"{target.architecture}-",
                     f"{version}",

@@ -395,15 +395,21 @@ class BrokenProject:
         self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 
-        if (self.APP_NAME != "Broken"):
+        # Replace Broken.PROJECT once with the first project
+        # initialized that is not the main project itself
+        if (project := getattr(Broken, "PROJECT", None)):
+            if (project is Broken.BROKEN):
+                self.pyapp_new_binary_restore_hook()
+                Broken.PROJECT = self
 
-            # Print version information and exit when only "--version/-V" is the only argument
+                if (os.environ.get("WELCOME", "0") == "1"):
+                    self.welcome()
+
+        # Print version information and exit when only "--version/-V" is the only argument
+        if (self.APP_NAME != "Broken"):
             if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
                 print(f"{self.APP_NAME} {self.VERSION}")
                 exit(0)
-
-            if (os.environ.get("WELCOME", "0") == "1"):
-                self.welcome()
 
         # Convenience: Symlink Workspace to projects data directory
         if Broken.DEVELOPMENT:

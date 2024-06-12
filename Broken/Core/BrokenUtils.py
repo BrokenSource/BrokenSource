@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import copy
+import functools
+import importlib
+import inspect
+import sys
 from abc import ABC, abstractmethod
 from collections import deque
 from typing import Any, Callable, Deque, Iterable, Self
 
 from attr import Factory, define
 
-from Broken import flatten, log
+from Broken import flatten
 
 
 @define
@@ -136,3 +140,39 @@ class BrokenRelay:
     def __call__(self, *args, **kwargs):
         for callback in self.callbacks:
             callback(*args, **kwargs)
+
+
+class LazyImport:
+    __import__ = copy.deepcopy(__import__)
+
+    def __init__(self, _name: str=None):
+        self._lzname_ = _name
+
+    def __load__(self) -> Any:
+        del sys.modules[self._lzname_]
+        module = LazyImport.__import__(self._lzname_)
+        sys.modules[self._lzname_] = module
+
+        # Update the caller's globals with the reloaded
+        sys._getframe(2).f_globals[self._lzname_] = module
+
+        return module
+
+    def __getattr__(self, name) -> Any:
+        return getattr(self.__load__(), name)
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(name='{self._lzname_}')"
+
+    def __enter__(self):
+
+        @functools.wraps(LazyImport.__import__)
+        def laziest(*args):
+            module = self.__class__(_name=args[0])
+            return sys.modules.setdefault(module._lzname_, module)
+
+        # Patch the import function with ours
+        __builtins__["__import__"] = laziest
+
+    def __exit__(self, *args):
+        __builtins__["__import__"] = LazyImport.__import__
