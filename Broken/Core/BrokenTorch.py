@@ -1,12 +1,9 @@
-from __future__ import annotations
-
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 import Broken
-from Broken import BrokenEnum, BrokenPath, BrokenPlatform, log, shell
+from Broken import BrokenEnum, BrokenPlatform, log, shell
 
 
 # Note: @* suffix to avoid name collisions between Mac and CPU
@@ -21,11 +18,8 @@ class BrokenTorch:
     The Bane of my Existence and the SSD Killer - Packaging PyTorch
     """
 
-    flavor_file: str = "PyTorch.txt"
-    """A relative path to a Project's Resources defining the PyTorch Flavor"""
-
     @staticmethod
-    def manage(resources: Path):
+    def install():
         if os.environ.get("SKIP_TORCH", "0") == "1":
             return
 
@@ -99,17 +93,3 @@ class BrokenTorch:
             shell(PIP, "install", "transformers")
         else:
             log.info(f"PyTorch Flavor ({version_flavor}) already installed")
-
-    @staticmethod
-    def season(resources: Path, flavor: Optional[TorchFlavor]) -> Optional[Path]:
-        if not bool(flavor):
-            return None
-        flavor = (f"+{flavor.value}" * bool(flavor.value))
-        file = (resources/BrokenTorch.flavor_file)
-        file.write_text(BrokenTorch.version + flavor)
-        return file
-
-    @staticmethod
-    def unseason(resources: Path) -> None:
-        for file in resources.rglob(BrokenTorch.flavor_file):
-            BrokenPath.remove(file)

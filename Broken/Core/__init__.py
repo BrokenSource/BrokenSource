@@ -7,10 +7,13 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import uuid
 from collections import deque
 from numbers import Number
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import (
     Any,
     Callable,
@@ -24,6 +27,7 @@ from typing import (
 )
 
 import click
+from attrs import Factory, define
 from loguru import logger as log
 
 
@@ -47,6 +51,7 @@ def shell(
     env:     dict[str, str]=None,
     echo:    bool=True,
     confirm: bool=False,
+    wrapper: bool=True,
     do:      bool=True,
     **kwargs
 ) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
@@ -60,18 +65,19 @@ def shell(
         ```
 
     Args:
-        `args`:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
-        `output`:  Return the process's stdout as a decoded string
-        `Popen`:   Run the process with subprocess.Popen
-        `shell`:   (discouraged) Run the command with shell=True, occasionally useful
-        `echo`:    Log the command being run or not
-        `confirm`: Ask for confirmation before running the command or not
-        `do`:      Inverse of `skip`, do not run the command, but log it as minor
+        args:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
+        output:  Return the process's stdout as a decoded string
+        Popen:   Run the process with subprocess.Popen
+        shell:   (discouraged) Run the command with shell=True, occasionally useful
+        echo:    Log the command being run or not
+        confirm: Ask for confirmation before running the command or not
+        wrapper: Enables threaded stdin writing speed workaround (Unix only)
+        do:      Inverse of `skip`, do not run the command, but log it as minor
 
     Kwargs (subprocess.* arguments):
-        `cwd`: Current working directory for the command
-        `env`: Environment variables for the command
-        `*`:   Any other keyword arguments are passed to subprocess.*
+        cwd: Current working directory for the command
+        env: Environment variables for the command
+        *:   Any other keyword arguments are passed to subprocess.*
     """
     if output and Popen:
         raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
@@ -105,9 +111,41 @@ def shell(
         log.minor("preexec_fn is not supported on Windows, ignoring..")
 
     # Run the command and return specified object
-    if output: return subprocess.check_output(command, **kwargs).decode("utf-8")
-    if Popen:  return subprocess.Popen(command, **kwargs)
-    else:      return subprocess.run(command, **kwargs)
+    if output:
+        return subprocess.check_output(command, **kwargs).decode("utf-8")
+
+    elif Popen:
+        process = subprocess.Popen(command, **kwargs)
+
+        # Linux non-threaded pipes were slower than Windows plain subprocess
+        if (os.name != "nt") and ("stdin" in kwargs) and bool(wrapper):
+
+            @define
+            class StdinWrapper:
+                _process: subprocess.Popen
+                _queue: Queue = Factory(factory=lambda: Queue(maxsize=50))
+                _loop: bool = True
+                _stdin: Any = None
+
+                def __attrs_post_init__(self):
+                    Thread(target=self.worker, daemon=True).start()
+                def write(self, data):
+                    self._queue.put(data)
+                def worker(self):
+                    while self._loop:
+                        self._stdin.write(self._queue.get())
+                        self._queue.task_done()
+                def close(self):
+                    self._queue.join()
+                    self._stdin.close()
+                    self._loop = False
+                    while self._process.poll() is None:
+                        time.sleep(0.01)
+
+            process.stdin = StdinWrapper(process=process, stdin=process.stdin)
+        return process
+    else:
+        return subprocess.run(command, **kwargs)
 
 def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))

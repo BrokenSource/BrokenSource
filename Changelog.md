@@ -8,6 +8,9 @@
 - Add `valid: bool` on `BrokenPath` initialization istself, as `BrokenPath(None).valid()` is invalid
 - Fix: `BrokenTyper` replace '_' with '-' on given command names and `tuple(map(str, args))` them
 - Fixed BrokenAudioReader not yielding data if `chunk=0` when entering the context
+- Rewrite FFmpeg file, options for easily exporting to H264, HEVC, AV1, VP9, (+NVENC alts)
+- Rewrite Upscalers file, much more stable and better code
+- Reimplement threaded stdin writing directly on `shell` command
 
 **ShaderFlow**:
 - Prompt the user to install audio server packages if `soundcard` import fails
@@ -16,8 +19,23 @@
     - Don't worry, a scene itself defaults `self.scene = self` so it is a scene !
     - This enables type hinting on the Module class, that depends on Scene, which depends on Module
 - Always swap buffers even if on headless, NVIDIA driver was softlocking/hanging on benchmark mode
+- Added `ShaderScene.cycle` variable. `tau` is normalized time, and `cycle` is norm angle `2pi*tau`
+- Renamed `Message` to `ShaderMessage` for consistency (psa. Shader is short for ShaderFlow)
 - Rename `ShaderScene.main(end)` to `ShaderScene.main(time)`
 - The default quality level is now `50%`, for equal options on increasing or decreasing
+- Rewrite Monocular Depth Estimators class, options for DepthAnything(1,2), ZoeDepth, Marigold
+- Depth estimators now use and saves uint16 pngs file for better precision on large offsets
+- The equirectangular 360° videos projection mode can now be 'zoomed' with regular zoom factor
+- Added .on_frame BrokenRelay to ShaderVideo, for user option to process raw video frames
+- Improved music visualizer demo scene
+
+**DepthFlow**:
+- Huge performance gains on the shader by walking on bigger steps first, then precise backwards
+- Big performance gain on not calculating `tan(theta)` on every loop (that was uneventful lol)
+- Per uint16 depth maps, removed the option to upscale them, as ncnn doesn't implement it
+- Added a `vec2 iDepthCenter` shader variable for true camera offsets
+- Renamed `focus->static` and `plane->focus` for better clarity
+- Renamed all shader variables prefixes from `iParallax` to `iDepth`
 
 <br>
 
