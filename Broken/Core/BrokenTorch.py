@@ -9,11 +9,12 @@ import Broken
 from Broken import BrokenEnum, BrokenPath, BrokenPlatform, log, shell
 
 
+# Note: @* suffix to avoid name collisions between Mac and CPU
 class TorchFlavor(BrokenEnum):
-    CPU   = "2.3.0+cpu"
-    CUDA  = "2.3.0+cu121"
-    ROCM  = "2.3.0+rocm6.0"
-    MACOS = ""
+    CPU   = "2.3.1+cpu@cpu"
+    CUDA  = "2.3.1+cu118@cuda"
+    ROCM  = "2.3.1+rocm6.0@rocm"
+    MACOS = "2.3.1+cpu@mac"
 
 class BrokenTorch:
     """
@@ -73,7 +74,7 @@ class BrokenTorch:
                 try:
                     version_flavor = Prompt.ask(
                         "\n:: What PyTorch flavor do you want to install?\n\n",
-                        choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor],
+                        choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor if flavor != TorchFlavor.MACOS],
                         default="cpu"
                     )
                 except KeyboardInterrupt:
@@ -85,7 +86,8 @@ class BrokenTorch:
         if not (version_flavor := TorchFlavor.get(version_flavor)):
             raise ValueError(f"Invalid PyTorch Flavor ({version_flavor})")
 
-        version, flavor = version_flavor.value.split("+")
+        # Remove the @ prefix for unique enums, get version and /whl/${flavor}
+        version, flavor = version_flavor.value.split("@")[0].split("+")
 
         # If flavors mismatch, install the correct one
         if (current_flavor != flavor):
