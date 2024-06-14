@@ -22,10 +22,10 @@ class BrokenTyper:
     commands:    List[str] = Factory(list)
     default:     str       = None
     help_option: bool      = False
-    __first__:   bool      = True
+    _first:      bool      = True
     epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://www.patreon.com/Tremeschin]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
     )
 
     def __attrs_post_init__(self):
@@ -40,15 +40,15 @@ class BrokenTyper:
             epilog=self.epilog,
         )
 
-    __panel__: str = None
+    _panel: str = None
 
     @contextlib.contextmanager
     def panel(self, name: str) -> Generator[None, None, None]:
         try:
-            self.__panel__ = name
+            self._panel = name
             yield
         finally:
-            self.__panel__ = None
+            self._panel = None
 
     def command(self,
         target: Callable,
@@ -72,7 +72,7 @@ class BrokenTyper:
             help=help or target.__doc__ or None,
             add_help_option=add_help_option,
             name=name,
-            rich_help_panel=panel or self.__panel__ ,
+            rich_help_panel=panel or self._panel,
             context_settings=dict(
                 allow_extra_args=True,
                 ignore_unknown_options=True,
@@ -96,9 +96,9 @@ class BrokenTyper:
                 args.insert(0, self.default)
 
             # Update args to BrokenTyper
-            if not self.__first__:
+            if not self._first:
                 args = shlex.split(input("\n:: BrokenShell (enter for help) $ "))
-            self.__first__ = False
+            self._first = False
 
             try:
                 self.app(args)
