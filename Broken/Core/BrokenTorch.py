@@ -71,6 +71,7 @@ class BrokenTorch:
                         choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor if flavor != TorchFlavor.MACOS],
                         default="cpu"
                     )
+                    print()
                 except KeyboardInterrupt:
                     exit(0)
         else:

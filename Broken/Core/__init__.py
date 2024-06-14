@@ -123,7 +123,7 @@ def shell(
             @define
             class StdinWrapper:
                 _process: subprocess.Popen
-                _queue: Queue = Factory(factory=lambda: Queue(maxsize=50))
+                _queue: Queue = Factory(factory=lambda: Queue(maxsize=10))
                 _loop: bool = True
                 _stdin: Any = None
 
