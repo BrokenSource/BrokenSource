@@ -51,7 +51,7 @@ def shell(
     env:     dict[str, str]=None,
     echo:    bool=True,
     confirm: bool=False,
-    wrapper: bool=True,
+    wrapper: bool=False,
     do:      bool=True,
     **kwargs
 ) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:

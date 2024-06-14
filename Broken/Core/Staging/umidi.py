@@ -3,8 +3,6 @@ Absolutely clutch information for parsing MIDI files:
 • https://web.archive.org/web/20141227205754/http://www.sonicspot.com:80/guide/midifiles.html
 """
 
-from __future__ import annotations
-
 import functools
 import io
 import math

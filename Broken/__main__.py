@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import shutil
 import sys
@@ -364,6 +362,7 @@ class BrokenCLI:
             ("Tremeschin", "GitHub", "Tremeschin"),
             ("Tremeschin", "Archium", "Archium"),
             ("Tremeschin", "Clipyst", "Clipyst"),
+            ("Tremeschin", "tremeschin.github.io", "tremeschin.github.io"),
         ):
             url  = f"https://github.com/{username}/{repository}"
             path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE/name

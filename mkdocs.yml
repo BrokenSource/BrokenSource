@@ -26,6 +26,10 @@ nav:
       - 💬 Contact: about/contact.md
       - ⚖️ License: about/license.md
 
+  - News:
+    - news/index.md
+    - news/authors.md
+
   - Broken:
     - Code Reference: broken/reference/
 
@@ -99,6 +103,8 @@ theme:
 
 plugins:
   # - meta
+  - blog:
+      blog_dir: "news"
   - social
   - search
   - autorefs

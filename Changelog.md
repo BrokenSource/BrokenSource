@@ -1,11 +1,11 @@
 
 <!------------------------------------------------------------------------------------------------>
 
-# • [0.3.3] - (Staging changes awaiting a release)
+# • [0.4.0] - (Staging changes awaiting a release)
 
 **Broken**:
 - Fix: Always `.upper()` values from `LOGLEVEL`
-- Add `valid: bool` on `BrokenPath` initialization istself, as `BrokenPath(None).valid()` is invalid
+- Add `valid: bool` on `BrokenPath` initialization itself, as `BrokenPath(None).valid()` is invalid
 - Fix: `BrokenTyper` replace '_' with '-' on given command names and `tuple(map(str, args))` them
 - Fixed BrokenAudioReader not yielding data if `chunk=0` when entering the context
 - Rewrite FFmpeg file, options for easily exporting to H264, HEVC, AV1, VP9, (+NVENC alts)

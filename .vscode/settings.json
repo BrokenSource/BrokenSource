@@ -39,6 +39,10 @@
         "Profile":    "admin",
         "Fork":       "less",
         "Vectron":    "core",
+        "get":        "download",
+        "blog":       "log",
+        "news":       "log",
+        "about":      "other",
 
         // Shaders
         "Fragment": "shader",

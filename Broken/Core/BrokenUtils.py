@@ -1,9 +1,5 @@
-from __future__ import annotations
-
 import copy
 import functools
-import importlib
-import inspect
 import sys
 from abc import ABC, abstractmethod
 from collections import deque
@@ -26,6 +22,7 @@ class SameTracker:
             return False
         return True
 
+
 @define
 class OnceTracker:
     """Returns False the first time it's called, never nest style: `if once/already(): return`"""
@@ -37,6 +34,18 @@ class OnceTracker:
             return False
         return True
 
+
+@define
+class PlainTracker:
+    value: Any = None
+
+    def __call__(self, set: bool=None) -> bool:
+        """Returns value if None else sets it"""
+        if set is not None:
+            self.value = set
+        return self.value
+
+
 class Ignore:
     """A class that does nothing. No-operation faster Mock"""
     def __nop__(self, *args, **kwargs) -> Self:
@@ -45,6 +54,7 @@ class Ignore:
         return self
     def __getattr__(self, _):
         return self.__nop__
+
 
 class BrokenAttrs:
     """
@@ -61,6 +71,7 @@ class BrokenAttrs:
     def __post__(self) -> None:
         ...
 
+
 class BrokenWatchdog(ABC):
 
     @abstractmethod
@@ -73,6 +84,7 @@ class BrokenWatchdog(ABC):
         super().__setattr__(key, value)
         self.__changed__(key, value)
 
+
 class BrokenSingleton(ABC):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
@@ -84,6 +96,7 @@ class BrokenSingleton(ABC):
     def __singleton__(self, *args, **kwargs):
         """__init__ but for the singleton"""
         ...
+
 
 class BrokenFluentBuilder:
     """
@@ -101,6 +114,7 @@ class BrokenFluentBuilder:
         for key, value in kwargs.items():
             setattr(new, key, value)
         return new
+
 
 @define
 class BrokenRelay:
