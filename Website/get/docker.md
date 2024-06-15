@@ -1,5 +1,5 @@
 ---
-title: Docker
+title: Get/Docker
 ---
 
 [^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !

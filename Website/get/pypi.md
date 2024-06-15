@@ -1,5 +1,5 @@
 ---
-title: PyPI
+title: Get/PyPI
 ---
 
 !!! quote "**The most reliable** way to use the Projects • As a dependency or direct module CLI"

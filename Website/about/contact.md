@@ -1,5 +1,5 @@
 ---
-title: Contact
+title: About/Contact
 ---
 
 !!! success "You can reach me through the following platforms:"

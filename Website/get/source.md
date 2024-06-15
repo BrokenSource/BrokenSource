@@ -1,5 +1,5 @@
 ---
-title: Source
+title: Get/Source
 ---
 
 !!! quote "**The most flexible** way to use the Projects • Latest features, bugs, fixes, git clone"
@@ -18,7 +18,7 @@ title: Source
         - Press ++ctrl+l++ , run `powershell` and execute:
 
         ```powershell
-        # Simply run the line below: 'irm' downloads, 'iex' executes, '|' links the two
+        # Run the line below: 'irm' downloads, 'iex' executes, '|' links the two
         irm https://brokensrc.dev/get.ps1 | iex
         ```
 

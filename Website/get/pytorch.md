@@ -1,5 +1,5 @@
 ---
-title: PyTorch
+title: Get/PyTorch
 ---
 
 !!! note "Some projects have **Optional** or **Total Dependency** on <a href="https://pytorch.org" target="_blank"><b>PyTorch</b></a>"

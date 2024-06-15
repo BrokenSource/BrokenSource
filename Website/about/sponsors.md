@@ -1,5 +1,5 @@
 ---
-title: Sponsors
+title: About/Sponsors
 ---
 
 My _**deepest grattitude**_ for all the amazing people who have made this possible

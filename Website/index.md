@@ -1,5 +1,5 @@
 ---
-title: Home
+title: Landing Page
 ---
 
 <div align="center">

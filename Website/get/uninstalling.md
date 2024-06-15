@@ -1,5 +1,5 @@
 ---
-title: Uninstalling
+title: Get/Uninstalling
 ---
 
 Thanks for using **Broken Source Software**, I hope you found it useful ❤️

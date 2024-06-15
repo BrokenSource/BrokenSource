@@ -1,5 +1,5 @@
 ---
-title: Releases
+title: Get/Releases
 ---
 
 !!! quote "**The most convenient** way to use the Projects • Double-click and run, hopefully"

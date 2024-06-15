@@ -116,6 +116,7 @@ plugins:
   - social:
       cards_layout_options:
         font_family: Roboto Slab
+        background_color: "#4854b4"
   - search
   - autorefs
   - site-urls
