@@ -16,7 +16,6 @@ import PIL.Image
 from PIL.Image import Image
 from pydantic import BaseModel, ConfigDict, Field
 
-from Broken import log
 from Broken.Loaders import LoadableImage, LoaderImage
 
 

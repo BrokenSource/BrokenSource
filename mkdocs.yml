@@ -1,5 +1,6 @@
 site_name: Broken Source Software
 site_description: Unified Documentation and Resources
+site_url: https://brokensrc.dev/
 repo_url: https://github.com/BrokenSource/BrokenSource
 edit_uri: edit/Master/Website/
 repo_name: GitHub
@@ -63,10 +64,12 @@ extra_css:
 
 theme:
   name: material
+  custom_dir: Website/overrides
   logo: resources/images/broken.png
   favicon: resources/images/broken.png
   font:
     text: Roboto Slab
+    code: Roboto Mono
   icon:
     annotation: material/plus-circle-outline
     repo: fontawesome/brands/github
@@ -77,15 +80,18 @@ theme:
     - navigation.prune
     - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - navigation.instant
+    - navigation.instant.progress
     - search.suggest
     - search.highlight
     - search.share
     - toc.follow
-    - navigation.footer
     - content.code.copy
     - content.code.select
     - content.code.annotate
     - content.tabs.link
+    - announce.dismiss
   palette:
     - media: "(prefers-color-scheme: dark)"
       primary: black
@@ -105,7 +111,11 @@ plugins:
   # - meta
   - blog:
       blog_dir: "news"
-  - social
+      post_url_date_format: yyyy
+      draft: true
+  - social:
+      cards_layout_options:
+        font_family: Roboto Slab
   - search
   - autorefs
   - site-urls

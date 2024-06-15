@@ -158,4 +158,5 @@ The Python Tooling I chose to Orchestrate the [**Monorepo**](https://github.com/
 !!! note "Command: [`rye sync`](https://rye-up.com/guide/sync)"
     This will **update** the **Virtual Environment** and **Install** any new **Dependencies**
 
-<hr>
+## ♻️ Uninstalling
+See the <a href="site:uninstalling"><b>Uninstalling</b></a> page
