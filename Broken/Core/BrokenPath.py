@@ -63,11 +63,7 @@ class BrokenPath(pathlib.Path):
 
     def valid(path: Optional[BrokenPath]) -> Optional[BrokenPath]:
         """Returns the BrokenPath if it exists, else None"""
-        if (path is None):
-            return None
-        if (path := Path(path)).exists():
-            return BrokenPath(path)
-        return None
+        return BrokenPath(path, valid=True)
 
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath(src), BrokenPath(dst)
