@@ -1,3 +1,4 @@
+import os
 import platform
 
 import distro
@@ -98,6 +99,10 @@ class BrokenPlatform:
     @staticmethod
     def log_system_info():
         log.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
+
+    @staticmethod
+    def clear_terminal():
+        os.system("cls" if BrokenPlatform.OnWindows else "clear")
 
     # Simply, why Windows/Python have different directory names for scripts? ...
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1

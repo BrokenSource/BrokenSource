@@ -36,17 +36,17 @@ class ProjectLanguage(BrokenEnum):
 class BrokenProjectCLI:
     path: Path
     name: str = "Unknown"
-    broken_typer: Typer = None
+    typer: Typer = None
 
     # # Main entry point
 
     def cli(self, ctx: Context) -> None:
-        self.broken_typer = BrokenTyper(help_option=False)
-        self.broken_typer.command(self.update,  add_help_option=True)
-        self.broken_typer.command(self.release, add_help_option=True)
-        self.broken_typer.command(self.run,     add_help_option=False, default=True)
+        self.typer = BrokenTyper(help_option=False)
+        self.typer.command(self.update,  add_help_option=True)
+        self.typer.command(self.release, add_help_option=True)
+        self.typer.command(self.run,     add_help_option=False, default=True)
         with BrokenPath.pushd(self.path, echo=False):
-            self.broken_typer(ctx.args)
+            self.typer(ctx.args)
 
     # # Initialization
 
@@ -168,18 +168,20 @@ class BrokenProjectCLI:
             up_date(self.path/"pyproject.toml")
 
     def run(self,
-        ctx:       Context,
-        infinite:  Annotated[bool, Option("--infinite",  help="Press Enter after each run to run again")]=False,
-        clear:     Annotated[bool, Option("--clear",     help="Clear terminal before running")]=False,
-        debug:     Annotated[bool, Option("--debug",     help="Debug mode for Rust projects")]=False,
+        ctx:      Context,
+        infinite: Annotated[bool, Option("--infinite", help="Press Enter after each run to run again")]=False,
+        clear:    Annotated[bool, Option("--clear",    help="Clear terminal before running")]=False,
+        debug:    Annotated[bool, Option("--debug",    help="Debug mode for Rust projects")]=False,
     ) -> None:
 
-        while BrokenPlatform.clear_terminal(do=clear, echo=False) or True:
+        while True:
+            BrokenPlatform.clear_terminal() if clear else None
+
             if self.is_python:
                 log.info(f"Hey! Just type '{self.name.lower()}' to run the project with Rye, it's faster 😉")
                 return
 
-            if self.is_rust:
+            elif self.is_rust:
                 raise RuntimeError(log.error("Rust projects are not supported yet"))
                 _status = shell(
                     "cargo", "run",
@@ -189,8 +191,13 @@ class BrokenProjectCLI:
                     "--", ctx.args
                 )
 
-            if self.is_cpp:
-                raise RuntimeError(log.error("C++ projects are not supported yet"))
+            elif self.is_cpp:
+                if shell("meson", "Build", "--reconfigure", "--buildtype", "release").returncode != 0:
+                    exit(log.error(f"Could not build project ({self.name})") or 1)
+                if shell("ninja", "-C", "Build").returncode != 0:
+                    exit(log.error(f"Could not build project ({self.name})") or 1)
+                binary = next(Path("Build").glob(f"{self.name.lower()}"))
+                shell(binary, ctx.args)
 
             if not infinite:
                 break
@@ -358,15 +365,9 @@ class BrokenCLI:
     # Private
 
     def tremeschin(self):
-        for username, repository, name in (
-            ("Tremeschin", "GitHub", "Tremeschin"),
-            ("Tremeschin", "Archium", "Archium"),
-            ("Tremeschin", "Clipyst", "Clipyst"),
-            ("Tremeschin", "tremeschin.github.io", "tremeschin.github.io"),
-        ):
-            url  = f"https://github.com/{username}/{repository}"
-            path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE/name
-            shell("git", "clone", url, path, "--recurse-submodules")
+        url  = "https://github.com/Tremeschin/GitHub"
+        path = Broken.BROKEN.DIRECTORIES.BROKEN_META/"Tremeschin"
+        shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|
     # Core section

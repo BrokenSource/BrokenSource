@@ -16,8 +16,8 @@ import sys
 import typing
 
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
-# Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+# Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
 os.environ["OMP_NUM_THREADS"] = "1"
 
 # High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
@@ -25,11 +25,11 @@ os.environ["OMP_NUM_THREADS"] = "1"
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
 os.environ["__GL_YIELD"] = "USLEEP"
 
-# Keep repository clean of __pycache__ and .pyc files by writing to .venv
+# Keep repository clean of __pycache__ and .pyc files by writing them to .venv
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
-# Expand "../paths" and existing ("-o", "file.ext") to abolute paths: Unanbiguously naming paths
+# Expand "../paths" and existing ("-o", "file.ext") to abolute paths
 for _index, _item in enumerate(sys.argv):
     if any((
         any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
@@ -53,17 +53,16 @@ if sys.version_info < (3, 11):
 
 import importlib.metadata
 import importlib.resources
-import time
 
 # Information about the release and version
 VERSION:     str  = importlib.metadata.version("broken-source")
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
-PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 NUITKA:      bool = ("__compiled__" in globals())
+PYAPP:       bool = bool(os.environ.get("PYAPP", False))
 PYPI:        bool = ("site-packages" in __file__.lower())
 DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
 WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
-RELEASE:     bool = (NUITKA or PYINSTALLER or PYAPP or PYPI)
+RELEASE:     bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
 
 import Broken.Resources as BrokenResources
@@ -73,7 +72,6 @@ from Broken.Core import (
     denum,
     dunder,
     flatten,
-    have_import,
     hyphen_range,
     image_hash,
     last_locals,
@@ -108,30 +106,19 @@ from Broken.Core.BrokenUtils import (
 )
 
 BROKEN = BrokenProject(PACKAGE=__file__, RESOURCES=BrokenResources)
-"""The main library's BrokenProject instance. Useful for common downloads"""
+"""The main library's BrokenProject instance. Useful for common downloads and resources"""
 
 PROJECT = BROKEN
-"""
-The Broken.PROJECT variable points to the first project set on Broken.set_project, else BROKEN.
-It is useful to use current project pathing and resources on common parts of the code
-"""
-
-def set_project(project: BrokenProject):
-    global PROJECT
-    if not isinstance(project, BrokenProject):
-        raise TypeError(f"Project must be an instance of BrokenProject, not {type(project)}")
-    if PROJECT is not BROKEN:
-        return
-    PROJECT = project
-    PROJECT.pyapp_new_binary_restore_hook()
+"""This variable points to the first BrokenProject initialized other than BROKEN itself"""
 
 # -------------------------------------------------------------------------------------------------|
-# Temporal
+
+import time
 
 time.zero = time.perf_counter()
-"""Precise time at which the program started (since OS boot)"""
+"""Precise time at which the program started since booting the computer"""
 
 time.since_zero = (lambda: time.perf_counter() - time.zero)
-"""Precise time since the program started, 'normalized time.perf_counter()'"""
+"""Precise time this Python process has been running, started at time.zero"""
 
 # -------------------------------------------------------------------------------------------------|

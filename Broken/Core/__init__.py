@@ -204,15 +204,6 @@ def limited_integer_ratio(number: Optional[float], *, limit: float=None) -> Opti
 
     return num, den
 
-def have_import(module: str, *, load: bool=False) -> bool:
-    if load:
-        try:
-            __import__(module)
-            return True
-        except ImportError:
-            return False
-    return sys.modules.get(module, False)
-
 @contextlib.contextmanager
 def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
     """Temporarily sets environment variables"""

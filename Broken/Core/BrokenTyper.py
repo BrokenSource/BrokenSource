@@ -88,7 +88,7 @@ class BrokenTyper:
 
     def __call__(self, *args, shell: bool=False):
         while True:
-            args = tuple(map(str, flatten(args)))
+            args = list(map(str, flatten(args)))
 
             # Insert default implied command
             first = (args[0] if (len(args) > 0) else None)
