@@ -238,7 +238,7 @@ class BrokenProjectCLI:
 
         if self.is_python:
             BrokenCLI.rust()
-            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Rust"
+            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
 
             # Build the monorepo wheel, which includes all projects
             with BrokenPath.pushd(Broken.BROKEN.DIRECTORIES.REPOSITORY):
