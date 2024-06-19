@@ -1,14 +1,14 @@
-[submodule "Projects/ShaderFlow"]
-	path = Projects/ShaderFlow
-	url  = https://github.com/BrokenSource/ShaderFlow
 [submodule ".github/.github"]
 	path = .github/special
 	url  = https://github.com/BrokenSource/.github
+[submodule "Projects/ShaderFlow"]
+	path = Projects/ShaderFlow
+	url  = https://github.com/BrokenSource/ShaderFlow
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow
 	url  = https://github.com/BrokenSource/DepthFlow
 [submodule "Projects/Upscalin"]
-	path = Projects/Others/Upscalin
+	path = Projects/Upscalin
 	url  = https://github.com/BrokenSource/Upscalin
 [submodule "Projects/Pianola"]
 	path = Projects/Pianola

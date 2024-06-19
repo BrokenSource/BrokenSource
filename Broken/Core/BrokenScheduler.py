@@ -159,6 +159,10 @@ class BrokenTask:
         if self._time: self.kwargs["time"] = (now - self.started)
         self.last_call = now
 
+        # We only "skip" frames when \sum{dt_i} > period
+        if self.frameskip:
+            self._dt = min(self._dt, self.period)
+
         # Enter or not the given context, call task with args and kwargs
         with (self.lock or contextlib.nullcontext()):
             with (self.context or contextlib.nullcontext()):

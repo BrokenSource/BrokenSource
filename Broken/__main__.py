@@ -192,11 +192,12 @@ class BrokenProjectCLI:
                 )
 
             elif self.is_cpp:
-                if shell("meson", "Build", "--reconfigure", "--buildtype", "release").returncode != 0:
+                BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/self.name
+                if shell("meson", BUILD_DIR, "--reconfigure", "--buildtype", "release").returncode != 0:
                     exit(log.error(f"Could not build project ({self.name})") or 1)
-                if shell("ninja", "-C", "Build").returncode != 0:
+                if shell("ninja", "-C", BUILD_DIR).returncode != 0:
                     exit(log.error(f"Could not build project ({self.name})") or 1)
-                binary = next(Path("Build").glob(f"{self.name.lower()}"))
+                binary = next(BUILD_DIR.glob(f"{self.name.lower()}"))
                 shell(binary, ctx.args)
 
             if not infinite:
@@ -365,8 +366,8 @@ class BrokenCLI:
     # Private
 
     def tremeschin(self):
-        url  = "https://github.com/Tremeschin/GitHub"
-        path = Broken.BROKEN.DIRECTORIES.BROKEN_META/"Tremeschin"
+        url  = f"https://github.com/{os.environ["PRIVATE_REPOSITORY"]}"
+        path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE
         shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|

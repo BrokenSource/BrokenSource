@@ -149,7 +149,7 @@ class _BrokenProjectDirectories:
     @property
     def BROKEN_PRIVATE(self) -> Path:
         """Broken Source's Monorepo Private directory"""
-        return self.mkdir(self.BROKEN_META/"Private")
+        return self.mkdir(self.REPOSITORY/"Private")
 
     # # Meta directories - Broken monorepo specific
 
