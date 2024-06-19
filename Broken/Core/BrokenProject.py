@@ -472,7 +472,7 @@ class BrokenProject:
                 previous = venv_path.with_name("0.0.0")
                 BrokenPath.remove(previous)
                 venv_path.rename(previous)
-                input("\nPlease, reopen this Executable due internal reasons of Windows NTFS. Press Enter to exit.\n")
+                input("\nPlease, reopen this Executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
                 exit(0)
             else:
                 shell(pyapp_binary, os.environ["PYAPP_COMMAND_NAME"], "restore", stdout=subprocess.DEVNULL)

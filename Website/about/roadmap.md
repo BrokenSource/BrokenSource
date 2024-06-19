@@ -13,10 +13,10 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 
 ## **Stage 1:** Low Hanging Fruits
 !!! success "**Quality of Life** features for what works today"
-- [x] Fastest Piano Roll code in Python in the world
-- [ ] Code logistics for FFmpeg advanced and easy configuration
+- [x] ~~Fastest Piano Roll code in Python in the world~~
+- [x] Code logistics for FFmpeg advanced and easy configuration
 - [ ] Preset System for DepthFlow, CLI and API friendly
-- [ ] Improve the Website and Documentation
+- [x] Improve the Website and Documentation
 - [ ] Better ShaderFlow Shader Library include file
 - [ ] Improve User Experience on Pianola
 - [ ] Make DepthFlow's logic extensible and usable on ShaderFlow

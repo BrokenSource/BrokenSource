@@ -3,21 +3,18 @@ import time
 from typing import Self
 
 import rich
-from attr import define
 from loguru import logger as log
 
 # Don't log contiguous long paths
 console = rich.get_console()
 console.soft_wrap = True
 
-@define
 class BrokenLogging:
     LOG_START = time.perf_counter()
 
     def __new__(cls) -> Self:
         if not hasattr(cls, "_singleton"):
             cls._singleton = super().__new__(cls)
-            cls._singleton._init()
         return cls._singleton
 
     @staticmethod
@@ -30,15 +27,16 @@ class BrokenLogging:
             os.environ["BROKEN_APP_NAME"] = name
 
     def broken_format(self, data) -> str:
-        data["ms"] = int((time.perf_counter() - BrokenLogging.LOG_START)*1000)
+        when = (time.perf_counter() - BrokenLogging.LOG_START)
+        data["when"] = f"{int(when//60)}'{when%60:06.3f}"
         return (
             f"\r│[dodger_blue3]{self.project().ljust(10)}[/dodger_blue3]├"
-            "┤[green]{ms:>4}ms[/green]├"
+            "┤[green]{when}[/green]├"
             "┤[{level.icon}]{level:7}[/{level.icon}]"
             "│ ▸ {message}"
         ).format(**data)
 
-    def _init(self) -> None:
+    def __init__(self) -> None:
         log.remove()
         log.add(
             rich.print,
@@ -49,9 +47,6 @@ class BrokenLogging:
             diagnose=True,
             catch=True,
         )
-
-        # Override default levels with capitalized version for rich color
-        # and add optional (echo: bool) argument
         self.level("TRACE", None, "dark_turquoise")
         self.level("DEBUG", None, "turquoise4")
         self.level("INFO", None, "bright_white")
@@ -64,8 +59,8 @@ class BrokenLogging:
         self.level("ERROR", None, "red")
         self.level("CRITICAL", None, "red")
 
-    def level(self, level: str, loglevel: int=0, color: str=None) -> Self:
-        """Create a new loglevel `.{name.lower()}` on the logger"""
+    def level(self, level: str, loglevel: int=0, color: str=None) -> None:
+        """Create or update a loglevel `.{name.lower()}` on the logger, optional 'echo' argument"""
         def wraps_log(*args, echo=True, **kwargs) -> str:
             message = " ".join(map(str, args))
             if not echo:
@@ -77,6 +72,5 @@ class BrokenLogging:
         # Assign log function to logger. Workaround to set icon=color
         log.level(level, loglevel, icon=color)
         setattr(log, level.lower(), wraps_log)
-        return self
 
 BrokenLogging()

@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import inspect
 import time
 from collections import deque
@@ -9,15 +8,15 @@ from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 from attrs import Factory, define, field
 
 
-def precise_sleep(seconds: float, *, error: float=0.0005) -> None:
+def precise_sleep(seconds: float, *, error: float=0.001) -> None:
     """A precise alternative of time.sleep(), low cpu near-end thread spin"""
-    if (seconds < 0):
-        return
+    start = time.perf_counter()
 
     # Sleep close to the due time
-    start = time.perf_counter()
-    ahead = max(0, seconds - error)
-    time.sleep(ahead)
+    if (ahead := max(0, seconds - error)):
+        time.sleep(ahead)
+    else:
+        return
 
     # Spin the thread until the time is up (precise Sleep)
     while (time.perf_counter() - start) < seconds:
@@ -93,7 +92,7 @@ class BrokenTask:
 
         # Assign idealistic values for decoupled
         if self.freewheel: self.started = time.zero
-        self.last_call = (self.last_call or self.started)
+        self.last_call = (self.last_call or self.started) - self.period
         self.next_call = (self.next_call or self.started)
 
         # Note: We could use numpy.float128 for the most frametime precision on the above..
@@ -118,12 +117,12 @@ class BrokenTask:
         self.frequency = (1 / value)
 
     @property
-    def _tag_delete(self) -> bool:
+    def should_delete(self) -> bool:
         return self.once and (not self.enabled)
 
     @property
-    def _tag_alive(self) -> bool:
-        return not self._tag_delete
+    def should_live(self) -> bool:
+        return not self.should_delete
 
     # # Sorting
 
@@ -177,20 +176,18 @@ class BrokenTask:
 class BrokenScheduler:
     clients: Deque[BrokenTask] = Factory(deque)
 
-    def add_task(self, client: BrokenTask) -> BrokenTask:
+    def append(self, client: BrokenTask) -> BrokenTask:
         """Adds a client to the manager with immediate next call"""
         self.clients.append(client)
         return client
 
     def new(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_task(BrokenTask(task=task, *a, **k))
+        return self.append(BrokenTask(task=task, *a, **k))
 
     def once(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.add_task(BrokenTask(task=task, *a, **k, once=True))
-
-    # # Filtering
+        return self.append(BrokenTask(task=task, *a, **k, once=True))
 
     @property
     def enabled_tasks(self) -> Iterable[BrokenTask]:
@@ -204,17 +201,24 @@ class BrokenScheduler:
         return min(self.enabled_tasks, default=None)
 
     def _sanitize(self) -> None:
-        """Removes not enabled 'once' clients"""
-        self.clients = deque(filter(lambda client: client._tag_alive, self.clients))
-
-    # # Actions
+        """Removes disabled 'once' clients"""
+        move = 0
+        # Optimization: Replace first N clients with valid ones, then pop remaining pointers
+        for client in self.clients:
+            if client.should_live:
+                self.clients[move] = client
+                move += 1
+        for _ in range(len(self.clients) - move):
+            self.clients.pop()
 
     def next(self, block=True) -> Optional[BrokenTask]:
+        if (client := self.next_task) is None:
+            return
         try:
-            if (client := self.next_task):
-                return client.next(block=block)
+            return client.next(block=block)
         finally:
-            self._sanitize()
+            if client.should_delete:
+                self._sanitize()
 
     def all_once(self) -> None:
         """Calls all 'once' clients. Useful for @partial calls on the main thread"""

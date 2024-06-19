@@ -35,10 +35,10 @@ dependencies = [
     "imgui>=2.0.0",
     "pygame>=2.5.2",
     # Image Processing
-    "opencv-contrib-python>=4.10.0.82",
+    "opencv-contrib-python>=4.10.0.84",
     "pillow>=10.3.0",
     # Internet
-    "requests-cache>=1.2.0",
+    "requests-cache>=1.2.1",
     "requests>=2.32.3",
     "pip>=24.0",
     "setuptools>=70.0.0",
@@ -97,7 +97,7 @@ dev-dependencies = [
     "mkdocs-autorefs>=1.0.1",
     "mkdocs-literate-nav>=0.6.1",
     "mkdocs-section-index>=0.3.9",
-    "mkdocs-material[imaging]>=9.5.26",
+    "mkdocs-material[imaging]>=9.5.27",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocs-git-revision-date-localized-plugin>=1.2.6",
     "mkdocs-include-markdown-plugin>=6.2.0",

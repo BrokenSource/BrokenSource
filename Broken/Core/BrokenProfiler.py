@@ -23,8 +23,6 @@ class BrokenProfiler:
         profiler = os.environ.get(f"{self.name}_PROFILER", self.profiler)
         self.profiler = BrokenProfilerEnum.get(profiler)
 
-    # Base properties
-
     @property
     def enabled(self) -> bool:
         return os.environ.get(f"{self.name}_PROFILE", "0") == "1"
@@ -33,7 +31,6 @@ class BrokenProfiler:
     def output(self) -> Path:
         return Path(tempfile.gettempdir())/f"{self.name}.prof"
 
-    # The actual profiler object
     __profiler__: Any = None
 
     def __enter__(self) -> Self:

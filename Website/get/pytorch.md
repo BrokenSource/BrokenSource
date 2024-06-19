@@ -12,7 +12,7 @@ When a project requires **PyTorch**, {==a Prompt will pop up to install a flavor
 
 !!! abstract "1. Select your Platform"
     === ":simple-windows: Windows"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
         === ":simple-nvidia: NVIDIA (CUDA)"
             ```shell title="Command"
             poe cuda
@@ -31,7 +31,7 @@ When a project requires **PyTorch**, {==a Prompt will pop up to install a flavor
             ```
             !!! note "Slow option, but works on any System"
     === ":simple-linux: Linux"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
         === ":simple-nvidia: NVIDIA (CUDA)"
             ```shell title="Command"
             poe cuda
@@ -52,7 +52,7 @@ When a project requires **PyTorch**, {==a Prompt will pop up to install a flavor
             ```
             !!! note "Slow option, but works on any System"
     === ":simple-apple: MacOS"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%" width="120"></div>
+        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
         ```shell title="Command"
         poe base
         ```

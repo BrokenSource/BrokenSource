@@ -53,7 +53,7 @@ class BrokenPlatform:
     # Others
     OnGentoo:     bool = (LinuxDistro == "gentoo")
 
-    # BSD - I have never used it
+    # BSD-like
     OnOpenBSD:    bool = (LinuxDistro == "openbsd")
     OnNetBSD:     bool = (LinuxDistro == "netbsd")
     OnBSDLike:    bool = (OnOpenBSD or OnNetBSD)
@@ -104,7 +104,7 @@ class BrokenPlatform:
     def clear_terminal():
         os.system("cls" if BrokenPlatform.OnWindows else "clear")
 
-    # Simply, why Windows/Python have different directory names for scripts? ...
+    # Literally, why Windows/Python have different directory names for scripts? ...
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1
     PyScripts         = ("Scripts" if OnWindows else "bin")
     PyScriptExtension = (".cmd" if OnWindows else "")
