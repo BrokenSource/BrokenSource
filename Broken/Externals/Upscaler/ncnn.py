@@ -16,35 +16,35 @@ from Broken.Externals.Upscaler import BrokenUpscaler
 
 class UpscalerNCNN_Base(BrokenUpscaler):
     denoise: Annotated[int, typer.Option("--denoise", "-n", min=0, max=3,
-        help="(🟡 Specific) Denoiser intensity. Great for digital art, 'fake, uncanny' else")] = \
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Denoiser intensity. Great for digital art, 'fake, uncanny' else")] = \
         Field(default=3, gt=-1)
 
     tile_size: Annotated[int, typer.Option("--tile-size", "-t", min=0,
-        help="(🟡 Specific) Processing square chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
-        Field(default=0, gt=-1)
-
-    gpu: Annotated[int, typer.Option("--gpu", "-g", min=0,
-        help="(🟡 Specific) Use the Nth GPU for processing")] = \
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
         Field(default=0, gt=-1)
 
     tta: Annotated[bool, typer.Option("--tta", "-x",
-        help="(🟡 Specific) Enable test-time augmentation (Similar to SSAA), 8x SLOWER")] = \
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/red]")] = \
         Field(default=False)
 
     cpu: Annotated[bool, typer.Option("--cpu", "-c",
-        help="(🟡 Specific) Use CPU for processing instead of the GPU")] = \
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Use CPU for processing instead of the GPU [yellow](SLOW)[/yellow]")] = \
         Field(default=False)
 
+    gpu: Annotated[int, typer.Option("--gpu", "-g", min=0,
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Use the Nth GPU for processing")] = \
+        Field(default=0, gt=-1)
+
     load_threads: Annotated[int, typer.Option("--load-threads", "-lt", min=1,
-        help="(🟢 Advanced) Number of Load Threads")] \
+        help="[bold][green](🟢 Advanced)[/green][/bold] Number of Load Threads")] \
         = Field(default=1, gt=0)
 
     proc_threads: Annotated[int, typer.Option("--proc-threads", "-pt", min=1,
-        help="(🟢 Advanced) Number of Process Threads")] \
+        help="[bold][green](🟢 Advanced)[/green][/bold] Number of Process Threads")] \
         = Field(default=2, gt=0)
 
     save_threads: Annotated[int, typer.Option("--save-threads", "-st", min=1,
-        help="(🟢 Advanced) Number of Saving Threads")] \
+        help="[bold][green](🟢 Advanced)[/green][/bold] Number of Saving Threads")] \
         = Field(default=2, gt=0)
 
     @property

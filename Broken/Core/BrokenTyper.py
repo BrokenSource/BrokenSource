@@ -7,12 +7,17 @@ from typing import (
 )
 
 import pydantic
+import typer.rich_utils
 from attr import Factory, define
 from typer import Typer
 
 import Broken
 from Broken import flatten, log, pydantic_cli
 
+typer.rich_utils.STYLE_METAVAR = "italic grey42"
+typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
+typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
+typer.rich_utils.DEFAULT_STRING = "({})"
 
 @define
 class BrokenTyper:
@@ -31,7 +36,7 @@ class BrokenTyper:
 
     def __attrs_post_init__(self):
         self.app = Typer(
-            help=self.description or "No help provided",
+            help="No help provided on this typer app" or self.description,
             add_help_option=self.help_option,
             pretty_exceptions_enable=False,
             no_args_is_help=True,
@@ -76,7 +81,7 @@ class BrokenTyper:
 
         # Create Typer command
         self.app.command(
-            help=help or target.__doc__ or None,
+            help=target.__doc__ or help,
             add_help_option=add_help_option,
             name=name,
             rich_help_panel=panel or self._panel,

@@ -171,6 +171,7 @@ def pydantic_cli(instance: object):
             setattr(instance, name, value)
         return instance
     wrapper.__signature__ = inspect.signature(instance.__class__)
+    wrapper.__doc__ = instance.__doc__
     return wrapper
 
 def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
