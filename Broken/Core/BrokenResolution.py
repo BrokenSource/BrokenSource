@@ -21,6 +21,7 @@ class BrokenResolution:
         old: Tuple[int, int]=None,
         new: Tuple[int, int]=None,
         max: Tuple[int, int]=None,
+        scale: float=1.0,
         ar: float=None,
     ) -> Tuple[int, int]:
         """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
@@ -51,6 +52,8 @@ class BrokenResolution:
             New resolution
         max
             Maximum resolution
+        scale
+            Scale factor
         ar
             Force aspect ratio, if any
 
@@ -109,7 +112,7 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return BrokenResolution.round_resolution(width, height)
+        return BrokenResolution.round_resolution(width=width, height=height, scale=scale)
 
 # -------------------------------------------------------------------------------------------------|
 # Test

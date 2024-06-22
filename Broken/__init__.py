@@ -71,6 +71,7 @@ from Broken.Core import (
     clamp,
     denum,
     dunder,
+    every,
     flatten,
     hyphen_range,
     image_hash,

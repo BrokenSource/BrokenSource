@@ -116,17 +116,21 @@ members = [
     "Projects/Pianola",
     "Projects/ShaderFlow",
     "Projects/SpectroNote",
+    "Private/Phasorflow"
 ]
 
 [project.scripts]
-broken      = "Broken.__main__:main"
-depthflow   = "DepthFlow.__main__:main"
-pianola     = "Pianola.__main__:main"
-spectronote = "SpectroNote.__main__:main"
-shaderflow  = "ShaderFlow.__main__:main"
-
-# [project.gui-scripts]
-# depthflow-gradio = "DepthFlow.__main__:main_gui"
+broken          = "Broken.__main__:main"
+depthflow       = "DepthFlow.__main__:main"
+# depthflow-gui   = "DepthFlow.__main__:main_gui"
+pianola         = "Pianola.__main__:main"
+# pianola-gui     = "Pianola.__main__:main_gui"
+spectronote     = "SpectroNote.__main__:main"
+# spectronote-gui = "SpectroNote.__main__:main_gui"
+shaderflow      = "ShaderFlow.__main__:main"
+# shaderflow-gui  = "ShaderFlow.__main__:main_gui"
+phasorflow      = "PhasorFlow.__main__:main"
+# phasorflow-gui  = "PhasorFlow.__main__:main_gui"
 
 # # Hatchling
 
@@ -172,7 +176,12 @@ cpu           = ["_utorch", "_torch_cpu" , "_transformers"]
 exclude = ["*"]
 
 [tool.ruff.lint]
-ignore = ["F401", "E402", "E701"]
+ignore = [
+    "F401",
+    "E402",
+    "E701",
+    "E741", # Don't tell the Electrical Engineers
+]
 
 # # Sources
 

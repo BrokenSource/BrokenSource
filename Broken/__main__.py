@@ -152,21 +152,6 @@ class BrokenProjectCLI:
             if self.is_cpp:
                 log.error("C++ projects are not supported yet")
 
-        # # Date
-        if version:
-            def up_date(file: Path) -> None:
-                """Find "version=" line and set it to "version = {date}"", write back to file"""
-                if not file.exists(): return
-                log.info(f"Updating version of file ({file})")
-                file.write_text('\n'.join(
-                    [line if not line.startswith("version") else f'version = "{self.version}"'
-                    for line in file.read_text().split("\n")]
-                ))
-
-            # Update version in all files
-            up_date(self.path/"Cargo.toml")
-            up_date(self.path/"pyproject.toml")
-
     def run(self,
         ctx:      Context,
         infinite: Annotated[bool, Option("--infinite", help="Press Enter after each run to run again")]=False,
@@ -366,7 +351,7 @@ class BrokenCLI:
     # Private
 
     def tremeschin(self):
-        url  = f"https://github.com/{os.environ["PRIVATE_REPOSITORY"]}"
+        url  = ("https://github.com/" + os.environ["PRIVATE_REPOSITORY"])
         path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE
         shell("git", "clone", url, path, "--recurse-submodules")
 

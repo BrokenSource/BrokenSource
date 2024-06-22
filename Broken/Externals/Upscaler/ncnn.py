@@ -2,28 +2,50 @@ import shutil
 from abc import abstractmethod
 from pathlib import Path
 from subprocess import DEVNULL
-from typing import Literal
+from typing import Annotated, Literal
 
 import PIL
 import PIL.Image
+import typer
 from PIL.Image import Image
 from pydantic import Field, field_validator
 
-from Broken import BrokenPath, BrokenPlatform, shell
+from Broken import BrokenPath, BrokenPlatform, every, shell
 from Broken.Externals.Upscaler import BrokenUpscaler
 
 
 class UpscalerNCNN_Base(BrokenUpscaler):
-    denoise:   int  = Field(default=0, gt= 0, alias="n")
-    tile_size: int  = Field(default=0, gt=-1, alias="t")
-    gpu:       int  = Field(default=0, gt=-1, alias="g")
-    tta:       bool = Field(default=False, alias="x")
-    cpu:       bool = Field(default=False, alias="c")
+    denoise: Annotated[int, typer.Option("--denoise", "-n",
+        help="(🟡 Specific) Denoiser intensity. Great for digital art, 'fake, uncanny' else")] = \
+        Field(default=None, gt=-1, alias="n")
 
-    # Special
-    load_threads: int = Field(default=1, gt=0, alias="l")
-    proc_threads: int = Field(default=2, gt=0, alias="p")
-    save_threads: int = Field(default=2, gt=0, alias="s")
+    tile_size: Annotated[int, typer.Option("--tile-size", "-t",
+        help="(🟡 Specific) Processing square chunk size, increases VRAM and Speed, 0 is auto")] = \
+        Field(default=None, gt=-1, alias="t")
+
+    gpu: Annotated[int, typer.Option("--gpu", "-g",
+        help="(🟡 Specific) Use the Nth GPU for processing")] = \
+        Field(default=None, gt=-1, alias="g")
+
+    tta: Annotated[bool, typer.Option("--tta", "-x",
+        help="(🟡 Specific) Enable test-time augmentation (Similar to SSAA), 8x SLOWER")] = \
+        Field(default=False, alias="x")
+
+    cpu: Annotated[bool, typer.Option("--cpu", "-c",
+        help="(🟡 Specific) Use CPU for processing instead of the GPU")] = \
+        Field(default=False, alias="c")
+
+    load_threads: Annotated[int, typer.Option("--load-threads", "-lt",
+        help="(🟢 Advanced) Number of Load Threads")] \
+        = Field(default=1, gt=0, alias="lt")
+
+    proc_threads: Annotated[int, typer.Option("--proc-threads", "-pt",
+        help="(🟢 Advanced) Number of Process Threads")] \
+        = Field(default=2, gt=0, alias="pt")
+
+    save_threads: Annotated[int, typer.Option("--save-threads", "-st",
+        help="(🟢 Advanced) Number of Save Threads")] \
+        = Field(default=2, gt=0, alias="st")
 
     @property
     def _lpc(self) -> str:
@@ -67,11 +89,14 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 # -------------------------------------------------------------------------------------------------|
 
 class Waifu2x(UpscalerNCNN_Base):
-    model: Literal[
+    """Configure a Waifu2x Upscaler by (https://github.com/nihui/waifu2x-ncnn-vulkan)"""
+    model: Annotated[Literal[
         "models-cunet",
         "models-upconv_7_anime_style_art_rgb",
         "models-upconv_7_photo",
-    ] = Field(default="models-cunet", alias="m")
+    ], typer.Option("--model", "-m",
+        help="(🔵 Special ) Model to use for Waifu2x")] = \
+        Field(default="models-cunet", alias="m")
 
     @staticmethod
     def _base_download() -> str:
@@ -100,9 +125,9 @@ class Waifu2x(UpscalerNCNN_Base):
                     self.download(),
                     "-i", input,
                     "-o", output,
-                    "-n", self.denoise,
-                    "-s", self.scale,
-                    "-t", self.tile_size,
+                    every("-n", self.denoise),
+                    every("-s", self.scale),
+                    every("-t", self.tile_size),
                     "-g", self.gpu if not self.cpu else -1,
                     "-j", self._lpc,
                     "-x"*self.tta,
@@ -117,12 +142,15 @@ class Waifu2x(UpscalerNCNN_Base):
 # -------------------------------------------------------------------------------------------------|
 
 class RealEsrgan(UpscalerNCNN_Base):
-    model: Literal[
+    """Configure a RealEsrgan Upscaler by (https://github.com/xinntao/Real-ESRGAN)"""
+    model: Annotated[Literal[
         "realesr-animevideov3",
         "realesrgan-x4plus",
         "realesrgan-x4plus-anime",
         "realesrnet-x4plus",
-    ] = Field(default="realesr-animevideov3")
+    ], typer.Option("--model", "-m",
+        help="(🔵 Special ) Model to use for RealESRGAN")] = \
+        Field(default="realesr-animevideov3", alias="m")
 
     @staticmethod
     def _base_download() -> str:
@@ -135,7 +163,7 @@ class RealEsrgan(UpscalerNCNN_Base):
     @field_validator("scale", mode="plain")
     def _validate_scale(cls, value):
         if value not in {1, 2, 3, 4}:
-            raise ValueError("Scale must be 2, 3, or 4 for RealESRGAN")
+            raise ValueError("Scale must be 1, 2, 3, or 4 for RealESRGAN")
         return value
 
     def _upscale(self, input: Image, *, echo: bool=True) -> Image:
@@ -145,9 +173,10 @@ class RealEsrgan(UpscalerNCNN_Base):
                     self.download(),
                     "-i", input,
                     "-o", output,
-                    "-s", self.scale,
-                    "-t", self.tile_size,
-                    "-g", self.gpu if not self.cpu else -1,
+                    every("-s", self.scale),
+                    every("-t", self.tile_size),
+                    every("-g", self.gpu if not self.cpu else -1),
+                    every("-n", self.model),
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,

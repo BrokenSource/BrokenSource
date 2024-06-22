@@ -30,7 +30,7 @@ from attrs import Factory, define
 from loguru import logger as log
 
 
-def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
+def flatten(*stuff: Union[Any, Iterable[Any]], truthy: bool=True) -> List[Any]:
     """Flatten nested iterables (list, deque, tuple, Generator) to a 1D list"""
     iterables = (list, deque, tuple, Generator)
     def flatten(stuff):
@@ -41,6 +41,13 @@ def flatten(*stuff: Union[Any, List[Any]], truthy: bool=True) -> List[Any]:
             (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
         ]
     return flatten(stuff)
+
+def every(*stuff: Union[Any, Iterable[Any]]) -> Optional[List[Any]]:
+    """Returns the flattened args if all elements are truthy (not None or '')"""
+    stuff = flatten(stuff, truthy=False)
+    if (None in stuff) or ('' in stuff):
+        return None
+    return stuff
 
 def shell(
     *args:   list[Any],

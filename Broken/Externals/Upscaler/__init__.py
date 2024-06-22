@@ -3,48 +3,59 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import (
-    Generator,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Annotated, Any, Generator, Optional, Tuple, Type, Union
 
 import PIL
 import PIL.Image
+import typer
 from PIL.Image import Image
 from pydantic import BaseModel, ConfigDict, Field
 
+from Broken import BrokenResolution
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
 class BrokenUpscaler(BaseModel, ABC):
     model_config = ConfigDict(validate_assignment=True)
-    width:  int = Field(default=0, gt=-1)
-    height: int = Field(default=0, gt=-1)
-    scale:  int = Field(default=2, gt=0)
-    passes: int = Field(default=1, gt=0)
 
-    # Temporary images processing
-    format: str = Field(default="jpg")
-    quality: int = Field(default=95)
+    width: Annotated[int, typer.Option("--width", "-w",
+        help="(🔴 Basic   ) Upscaled image width, automatic on height aspect ratio if 0, forced if both are set")] = \
+        Field(default=0, gt=-1, alias="w")
+
+    height: Annotated[int, typer.Option("--height", "-h",
+        help="(🔴 Basic   ) Upscaled image height, automatic on width aspect ratio if 0, forced if both are set")] = \
+        Field(default=0, gt=-1, alias="h")
+
+    scale: Annotated[int, typer.Option("--scale", "-s",
+        help="(🔴 Basic   ) Single pass upscale factor. For precision, over-scale and force width and/or height")] = \
+        Field(default=2, gt=0, alias="s")
+
+    passes: Annotated[int, typer.Option("--passes", "-p",
+        help="(🔴 Basic   ) Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
+        Field(default=1, gt=0, alias="p")
+
+    format: Annotated[str, typer.Option("--format", "-f",
+        help="(🔴 Basic   ) Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
+        Field(default="jpg", alias="f")
+
+    quality: Annotated[int, typer.Option("--quality", "-q",
+        help="(🔴 Basic   ) Temporary image processing 'PIL.Image.save' quality used on --format")] = \
+        Field(default=95, gt=0, alias="q")
 
     def output_size(self, width: int, height: int) -> Tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""
-
-        # Forces final resolution
-        if (self.width and self.height):
-            return (self.width, self.height)
-
-        # Upscales input
-        ratio = self.scale**self.passes
-        return (int(width*ratio), int(height*ratio))
+        return BrokenResolution.fit(
+            old=(width, height),
+            new=(self.width or None, self.height or None),
+            scale=self.scale**self.passes,
+            ar=(width/height)
+        )
 
     @contextlib.contextmanager
     def path_image(self, image: Optional[LoadableImage]=None) -> Generator[Path, None, None]:
         image = LoaderImage(image)
         try:
+            # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
                 delete=image is None,
                 suffix=f".{self.format}").name

@@ -30,7 +30,7 @@ class BrokenLogging:
         when = (time.perf_counter() - BrokenLogging.LOG_START)
         data["when"] = f"{int(when//60)}'{when%60:06.3f}"
         return (
-            f"\r│[dodger_blue3]{self.project().ljust(10)}[/dodger_blue3]├"
+            f"\r│[dodger_blue3]{self.project()}[/dodger_blue3]├"
             "┤[green]{when}[/green]├"
             "┤[{level.icon}]{level:7}[/{level.icon}]"
             "│ ▸ {message}"
@@ -61,12 +61,12 @@ class BrokenLogging:
 
     def level(self, level: str, loglevel: int=0, color: str=None) -> None:
         """Create or update a loglevel `.{name.lower()}` on the logger, optional 'echo' argument"""
-        def wraps_log(*args, echo=True, **kwargs) -> str:
+        def wraps_log(*args, echo=True) -> str:
             message = " ".join(map(str, args))
             if not echo:
                 return message
             for line in message.splitlines():
-                log.log(level, line, **kwargs)
+                log.log(level, line)
             return message
 
         # Assign log function to logger. Workaround to set icon=color
