@@ -1033,6 +1033,8 @@ class BrokenFFmpeg(SerdeBaseModel):
 
     @property
     def command(self) -> List[str]:
+        BrokenFFmpeg.install()
+
         if (not self.inputs):
             raise ValueError("At least one input is required for FFmpeg")
         if (not self.outputs):
@@ -1076,7 +1078,7 @@ class BrokenFFmpeg(SerdeBaseModel):
 
     @staticmethod
     def install() -> None:
-        if all(map(shutil.which, ("ffmpeg", "ffprobe"))):
+        if all(map(BrokenPath.which, ("ffmpeg", "ffprobe"))):
             return
 
         if not BrokenPlatform.OnMacOS:
