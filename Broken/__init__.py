@@ -78,6 +78,7 @@ from Broken.Core import (
     last_locals,
     limited_integer_ratio,
     nearest,
+    pydantic_cli,
     shell,
     temp_env,
 )
@@ -123,3 +124,5 @@ time.since_zero = (lambda: time.perf_counter() - time.zero)
 """Precise time this Python process has been running, started at time.zero"""
 
 # -------------------------------------------------------------------------------------------------|
+
+import Broken.Externals.Upscaler

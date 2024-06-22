@@ -6,11 +6,12 @@ from typing import (
     List,
 )
 
+import pydantic
 from attr import Factory, define
 from typer import Typer
 
 import Broken
-from Broken import flatten, log
+from Broken import flatten, log, pydantic_cli
 
 
 @define
@@ -64,8 +65,14 @@ class BrokenTyper:
         if getattr(target, "__isabstractmethod__", False):
             return
 
+        # Convert pydantic to a signature wrapper
+        if issubclass(type(target), pydantic.BaseModel):
+            name = name or str(target.__class__.__name__).lower()
+            target = pydantic_cli(target)
+
         # Maybe get callable name
-        name = (name or target.__name__).replace("_", "-")
+        else:
+            name = (name or target.__name__).replace("_", "-")
 
         # Create Typer command
         self.app.command(

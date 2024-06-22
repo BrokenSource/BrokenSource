@@ -42,10 +42,10 @@ def flatten(*stuff: Union[Any, Iterable[Any]], truthy: bool=True) -> List[Any]:
         ]
     return flatten(stuff)
 
-def every(*stuff: Union[Any, Iterable[Any]]) -> Optional[List[Any]]:
+def every(*stuff: Union[Any, Iterable[Any]], ban: List[Any]=[None, ""]) -> Optional[List[Any]]:
     """Returns the flattened args if all elements are truthy (not None or '')"""
     stuff = flatten(stuff, truthy=False)
-    if (None in stuff) or ('' in stuff):
+    if any(item in ban for item in stuff):
         return None
     return stuff
 
@@ -163,6 +163,15 @@ def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
 def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: Returns the item's value if Enum else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
+
+def pydantic_cli(instance: object):
+    """This is too complicated to explain, please CTRL+F and see it in action"""
+    def wrapper(**kwargs):
+        for name, value in kwargs.items():
+            setattr(instance, name, value)
+        return instance
+    wrapper.__signature__ = inspect.signature(instance.__class__)
+    return wrapper
 
 def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
     """Finds the nearest multiple of a base number"""

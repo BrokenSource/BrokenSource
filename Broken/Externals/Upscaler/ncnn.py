@@ -2,7 +2,7 @@ import shutil
 from abc import abstractmethod
 from pathlib import Path
 from subprocess import DEVNULL
-from typing import Annotated, Literal
+from typing import Annotated
 
 import PIL
 import PIL.Image
@@ -10,42 +10,42 @@ import typer
 from PIL.Image import Image
 from pydantic import Field, field_validator
 
-from Broken import BrokenPath, BrokenPlatform, every, shell
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, every, shell
 from Broken.Externals.Upscaler import BrokenUpscaler
 
 
 class UpscalerNCNN_Base(BrokenUpscaler):
-    denoise: Annotated[int, typer.Option("--denoise", "-n",
+    denoise: Annotated[int, typer.Option("--denoise", "-n", min=0, max=3,
         help="(🟡 Specific) Denoiser intensity. Great for digital art, 'fake, uncanny' else")] = \
-        Field(default=None, gt=-1, alias="n")
+        Field(default=3, gt=-1)
 
-    tile_size: Annotated[int, typer.Option("--tile-size", "-t",
-        help="(🟡 Specific) Processing square chunk size, increases VRAM and Speed, 0 is auto")] = \
-        Field(default=None, gt=-1, alias="t")
+    tile_size: Annotated[int, typer.Option("--tile-size", "-t", min=0,
+        help="(🟡 Specific) Processing square chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
+        Field(default=0, gt=-1)
 
-    gpu: Annotated[int, typer.Option("--gpu", "-g",
+    gpu: Annotated[int, typer.Option("--gpu", "-g", min=0,
         help="(🟡 Specific) Use the Nth GPU for processing")] = \
-        Field(default=None, gt=-1, alias="g")
+        Field(default=0, gt=-1)
 
     tta: Annotated[bool, typer.Option("--tta", "-x",
         help="(🟡 Specific) Enable test-time augmentation (Similar to SSAA), 8x SLOWER")] = \
-        Field(default=False, alias="x")
+        Field(default=False)
 
     cpu: Annotated[bool, typer.Option("--cpu", "-c",
         help="(🟡 Specific) Use CPU for processing instead of the GPU")] = \
-        Field(default=False, alias="c")
+        Field(default=False)
 
-    load_threads: Annotated[int, typer.Option("--load-threads", "-lt",
+    load_threads: Annotated[int, typer.Option("--load-threads", "-lt", min=1,
         help="(🟢 Advanced) Number of Load Threads")] \
-        = Field(default=1, gt=0, alias="lt")
+        = Field(default=1, gt=0)
 
-    proc_threads: Annotated[int, typer.Option("--proc-threads", "-pt",
+    proc_threads: Annotated[int, typer.Option("--proc-threads", "-pt", min=1,
         help="(🟢 Advanced) Number of Process Threads")] \
-        = Field(default=2, gt=0, alias="pt")
+        = Field(default=2, gt=0)
 
-    save_threads: Annotated[int, typer.Option("--save-threads", "-st",
-        help="(🟢 Advanced) Number of Save Threads")] \
-        = Field(default=2, gt=0, alias="st")
+    save_threads: Annotated[int, typer.Option("--save-threads", "-st", min=1,
+        help="(🟢 Advanced) Number of Saving Threads")] \
+        = Field(default=2, gt=0)
 
     @property
     def _lpc(self) -> str:
@@ -90,13 +90,15 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 
 class Waifu2x(UpscalerNCNN_Base):
     """Configure a Waifu2x Upscaler by (https://github.com/nihui/waifu2x-ncnn-vulkan)"""
-    model: Annotated[Literal[
-        "models-cunet",
-        "models-upconv_7_anime_style_art_rgb",
-        "models-upconv_7_photo",
-    ], typer.Option("--model", "-m",
+
+    class Model(BrokenEnum):
+        models_cunet = "cunet"
+        models_upconv_7_anime_style_art_rgb = "anime"
+        models_upconv_7_photo = "photo"
+
+    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Waifu2x")] = \
-        Field(default="models-cunet", alias="m")
+        Field(default=Model.models_cunet)
 
     @staticmethod
     def _base_download() -> str:
@@ -133,7 +135,7 @@ class Waifu2x(UpscalerNCNN_Base):
                     "-x"*self.tta,
                     # "-m", self.model.value, # Fixme: Doko?
                     stderr=DEVNULL,
-                    preexec_fn=self.preexec_fn,
+                    # preexec_fn=self.preexec_fn,
                     cwd=self.download().parent,
                     echo=echo,
                 )
@@ -141,16 +143,18 @@ class Waifu2x(UpscalerNCNN_Base):
 
 # -------------------------------------------------------------------------------------------------|
 
-class RealEsrgan(UpscalerNCNN_Base):
+class Realesr(UpscalerNCNN_Base):
     """Configure a RealEsrgan Upscaler by (https://github.com/xinntao/Real-ESRGAN)"""
-    model: Annotated[Literal[
-        "realesr-animevideov3",
-        "realesrgan-x4plus",
-        "realesrgan-x4plus-anime",
-        "realesrnet-x4plus",
-    ], typer.Option("--model", "-m",
+
+    class Model(BrokenEnum):
+        realesr_animevideov3 = "anime"
+        realesrgan_x4plus = "x4-gan"
+        realesrgan_x4plus_anime = "x4-gan-anime"
+        realesrnet_x4plus = "x4-net"
+
+    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for RealESRGAN")] = \
-        Field(default="realesr-animevideov3", alias="m")
+        Field(default="anime")
 
     @staticmethod
     def _base_download() -> str:
@@ -176,10 +180,11 @@ class RealEsrgan(UpscalerNCNN_Base):
                     every("-s", self.scale),
                     every("-t", self.tile_size),
                     every("-g", self.gpu if not self.cpu else -1),
-                    every("-n", self.model),
+                    every("-n", self.model.name.replace("_", "-")),
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,
+                    # preexec_fn=self.preexec_fn,
                     cwd=self.download().parent,
                     echo=echo,
                 )

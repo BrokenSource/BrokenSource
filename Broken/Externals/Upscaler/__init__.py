@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Annotated, Any, Generator, Optional, Tuple, Type, Union
+from typing import Annotated, Any, Generator, Iterable, Optional, Tuple, Type, Union
 
 import PIL
 import PIL.Image
@@ -11,36 +11,40 @@ import typer
 from PIL.Image import Image
 from pydantic import BaseModel, ConfigDict, Field
 
-from Broken import BrokenResolution
+from Broken import BrokenEnum, BrokenResolution
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
 class BrokenUpscaler(BaseModel, ABC):
     model_config = ConfigDict(validate_assignment=True)
 
-    width: Annotated[int, typer.Option("--width", "-w",
+    width: Annotated[int, typer.Option("--width", "-w", min=0,
         help="(🔴 Basic   ) Upscaled image width, automatic on height aspect ratio if 0, forced if both are set")] = \
-        Field(default=0, gt=-1, alias="w")
+        Field(default=0, gt=-1)
 
-    height: Annotated[int, typer.Option("--height", "-h",
+    height: Annotated[int, typer.Option("--height", "-h", min=0,
         help="(🔴 Basic   ) Upscaled image height, automatic on width aspect ratio if 0, forced if both are set")] = \
-        Field(default=0, gt=-1, alias="h")
+        Field(default=0, gt=-1)
 
-    scale: Annotated[int, typer.Option("--scale", "-s",
+    scale: Annotated[int, typer.Option("--scale", "-s", min=1,
         help="(🔴 Basic   ) Single pass upscale factor. For precision, over-scale and force width and/or height")] = \
-        Field(default=2, gt=0, alias="s")
+        Field(default=2, gt=0)
 
-    passes: Annotated[int, typer.Option("--passes", "-p",
+    passes: Annotated[int, typer.Option("--passes", "-p", min=1,
         help="(🔴 Basic   ) Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
-        Field(default=1, gt=0, alias="p")
+        Field(default=1, gt=0)
 
-    format: Annotated[str, typer.Option("--format", "-f",
+    class Format(BrokenEnum):
+        PNG = "png"
+        JPG = "jpg"
+
+    format: Annotated[Format, typer.Option("--format", "-f",
         help="(🔴 Basic   ) Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
-        Field(default="jpg", alias="f")
+        Field(default="jpg")
 
-    quality: Annotated[int, typer.Option("--quality", "-q",
+    quality: Annotated[int, typer.Option("--quality", "-q", min=0, max=100,
         help="(🔴 Basic   ) Temporary image processing 'PIL.Image.save' quality used on --format")] = \
-        Field(default=95, gt=0, alias="q")
+        Field(default=95, gt=0)
 
     def output_size(self, width: int, height: int) -> Tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""
@@ -58,7 +62,7 @@ class BrokenUpscaler(BaseModel, ABC):
             # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
                 delete=image is None,
-                suffix=f".{self.format}").name
+                suffix=f".{self.format.value}").name
             )
             if isinstance(image, Image):
                 image.save(file, quality=self.quality)
@@ -155,6 +159,6 @@ class PillowUpscaler(BrokenUpscaler):
 
 # -------------------------------------------------------------------------------------------------|
 
-from Broken.Externals.Upscaler.ncnn import RealEsrgan, Waifu2x
+from Broken.Externals.Upscaler.ncnn import Realesr, Waifu2x
 
 # -------------------------------------------------------------------------------------------------|
