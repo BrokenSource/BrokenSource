@@ -66,30 +66,8 @@ dependencies = [
 ]
 requires-python = ">=3.9"
 
-# [project.optional-dependencies]
-# samplerate = [
-#     "samplerate>=0.2.1",
-# ]
-# staging = [
-#     "pyturbojpeg>=1.7.3",
-#     "streamlit>=1.35.0",
-#     "yt-dlp>=2024.5.27",
-#     "schedule>=1.2.2",
-#     "toml>=0.10.2",
-#     "pyyaml>=6.0.1",
-# ]
-# cpp = [
-#     "meson>=1.4.1",
-#     "ninja>=1.11.1.1",
-# ]
-
-[tool.rye]
-managed = true
-dev-dependencies = [
-    # Development and Utilities
-    "pytest-sugar>=1.0.0",
-    "poethepoet>=0.26.1",
-    # Documentation
+[project.optional-dependencies]
+website = [
     "mkdocs>=1.6.0",
     "mkdocstrings==0.24.1",
     "mkdocstrings-python==1.9.0",
@@ -102,6 +80,29 @@ dev-dependencies = [
     "mkdocs-git-revision-date-localized-plugin>=1.2.6",
     "mkdocs-include-markdown-plugin>=6.2.0",
     "mkdocs-site-urls>=0.2.0",
+]
+resample = [
+    "samplerate>=0.2.1",
+]
+# cpp = [
+#     "meson>=1.4.1",
+#     "ninja>=1.11.1.1",
+# ]
+# staging = [
+#     "pyturbojpeg>=1.7.3",
+#     "streamlit>=1.35.0",
+#     "yt-dlp>=2024.5.27",
+#     "schedule>=1.2.2",
+#     "toml>=0.10.2",
+#     "pyyaml>=6.0.1",
+# ]
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    # Development and Utilities
+    "pytest-sugar>=1.0.0",
+    "poethepoet>=0.26.1",
     # Profiling
     "snakeviz>=2.2.0",
     "tuna>=0.5.11",
@@ -159,16 +160,16 @@ exclude = ["*"]
 # # PyTorch
 
 [tool.poe.tasks]
-_transformers = "python -m pip install transformers==4.39.1"
+_transformers = "python -m pip install transformers"
 _torch_base   = "python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cpu"
 _torch_cuda   = "python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cu118"
 _torch_rocm   = "python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/rocm6.0"
 _torch_cpu    = "python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cpu"
-_utorch       = "python -m pip uninstall -y torch"
-base          = ["_utorch", "_torch_base", "_transformers"]
-cuda          = ["_utorch", "_torch_cuda", "_transformers"]
-rocm          = ["_utorch", "_torch_rocm", "_transformers"]
-cpu           = ["_utorch", "_torch_cpu" , "_transformers"]
+_del_torch    = "python -m pip uninstall -y torch"
+base          = ["_del_torch", "_torch_base", "_transformers"]
+cuda          = ["_del_torch", "_torch_cuda", "_transformers"]
+rocm          = ["_del_torch", "_torch_rocm", "_transformers"]
+cpu           = ["_del_torch", "_torch_cpu" , "_transformers"]
 
 # # Ruff
 

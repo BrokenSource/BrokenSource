@@ -11,5 +11,5 @@ dist
 *.pyc
 *.whl
 ___*
-*.lock
+requirements*.lock
 *.env

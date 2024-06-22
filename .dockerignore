@@ -4,6 +4,7 @@ ___*
 .vscode
 Build
 Meta
+Private
 *.env
 *.dockerfile
 

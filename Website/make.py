@@ -1,3 +1,4 @@
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -7,7 +8,7 @@ import mkdocs_gen_files
 print("\n", "-"*(shutil.get_terminal_size().columns-2), "\n")
 
 # Constants
-BUILD_CODE_REFERENCE = True
+CODE_REFERENCE = bool(eval(os.environ.get("CODE_REFERENCE", 0)))
 
 UNWANTED_PYTHON = (
     "Resources",
@@ -31,7 +32,7 @@ sys.path += map(str, PROJECTS)
 for ROOT in PROJECTS:
     PROJECT_NAME = ROOT.name
 
-    for python in reversed(list(ROOT.rglob("*.py"))*BUILD_CODE_REFERENCE):
+    for python in reversed(list(ROOT.rglob("*.py"))*CODE_REFERENCE):
 
         # Skip unwanted files
         if any(ban in str(python) for ban in UNWANTED_PYTHON):

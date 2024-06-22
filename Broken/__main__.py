@@ -379,6 +379,7 @@ class BrokenCLI:
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy the Unified Broken Source Software Website"""
+        os.environ["CODE_REFERENCE"] = str(deploy)
         GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
             shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)
