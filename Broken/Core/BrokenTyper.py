@@ -59,6 +59,7 @@ class BrokenTyper:
         target: Callable,
         help: str=None,
         add_help_option: bool=True,
+        requires: bool=False,
         name: str=None,
         context: bool=True,
         default: bool=False,
@@ -82,6 +83,7 @@ class BrokenTyper:
         self.app.command(
             help=help or target.__doc__,
             add_help_option=add_help_option,
+            no_args_is_help=requires,
             name=name,
             rich_help_panel=panel or self._panel,
             context_settings=dict(
