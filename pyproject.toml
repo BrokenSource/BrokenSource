@@ -6,7 +6,7 @@ issues        = "https://brokensrc.dev/contact"
 
 [project]
 name         = "broken-source"
-version      = "0.4.0.dev0"
+version      = "0.4.0.dev1"
 description  = "🚀 Broken Source Software Framework and All Projects in One Place"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"
@@ -84,10 +84,10 @@ website = [
 # resample = [
 #     "samplerate>=0.2.1",
 # ]
-# cpp = [
-#     "meson>=1.4.1",
-#     "ninja>=1.11.1.1",
-# ]
+cpp = [
+    "meson>=1.4.1",
+    "ninja>=1.11.1.1",
+]
 # staging = [
 #     "pyturbojpeg>=1.7.3",
 #     "streamlit>=1.35.0",

@@ -1,10 +1,5 @@
 import contextlib
-import shlex
-from typing import (
-    Callable,
-    Generator,
-    List,
-)
+from typing import Callable, Generator, List
 
 import pydantic
 import typer.rich_utils
@@ -18,6 +13,7 @@ typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
 typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
 typer.rich_utils.DEFAULT_STRING = "({})"
+typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
 
 @define
 class BrokenTyper:
