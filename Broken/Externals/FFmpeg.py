@@ -121,10 +121,10 @@ class FFmpegOutputPath(FFmpegModuleBase):
     overwrite: bool = True
     path: Path
 
-    pixel_format: Literal[
+    pixel_format: Optional[Literal[
         "yuv420p",
         "yuv444p",
-    ] = Field(default="yuv420p")
+    ]] = Field(default="yuv420p")
 
     def command(self) -> Iterable[str]:
         yield self.all("-pix_fmt", self.pixel_format)

@@ -89,7 +89,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 # -------------------------------------------------------------------------------------------------|
 
 class Waifu2x(UpscalerNCNN_Base):
-    """Configure a Waifu2x Upscaler by (https://github.com/nihui/waifu2x-ncnn-vulkan)"""
+    """Configure and use Waifu2x    [green](See 'waifu2x --help' for options)[/green] [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/dim]"""
 
     class Model(str, BrokenEnum):
         models_cunet = "models_cunet"
@@ -144,7 +144,7 @@ class Waifu2x(UpscalerNCNN_Base):
 # -------------------------------------------------------------------------------------------------|
 
 class Realesr(UpscalerNCNN_Base):
-    """Configure a RealEsrgan Upscaler by (https://github.com/xinntao/Real-ESRGAN)"""
+    """Configure and use RealESRGAN [green](See 'realesr --help' for options)[/green] [dim](by https://github.com/xinntao/Real-ESRGAN)[/dim]"""
 
     class Model(str, BrokenEnum):
         realesr_animevideov3    = "realesr_animevideov3"

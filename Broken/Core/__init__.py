@@ -63,7 +63,7 @@ def shell(
 ) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
     Better subprocess.* commands, all in one, yeet whatever you think it works
-    • This is arguably the most important function in Broken 🙈
+    - This is arguably the most important function in the library 🙈
 
     Example:
         ```python
@@ -164,12 +164,15 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: Returns the item's value if Enum else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
-def pydantic_cli(instance: object):
-    """This is too complicated to explain, please CTRL+F and see it in action"""
+def pydantic_cli(instance: object, post: Callable=None):
+    """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
+    to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
+    will send all default ones overriden by the user commands. The 'post' method is called afterwards,
+    for example `post = self.set_object` for back-communication between the caller and the instance"""
     def wrapper(**kwargs):
         for name, value in kwargs.items():
             setattr(instance, name, value)
-        return instance
+        if post: post(instance)
     wrapper.__signature__ = inspect.signature(instance.__class__)
     wrapper.__doc__ = instance.__doc__
     return wrapper

@@ -28,7 +28,6 @@ class BrokenTyper:
     commands:    List[str] = Factory(list)
     default:     str       = None
     help_option: bool      = False
-    _first:      bool      = True
     epilog:      str       = (
         f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
@@ -99,31 +98,21 @@ class BrokenTyper:
         # Set as default command
         self.default = name if default else self.default
 
-    def __call__(self, *args, shell: bool=False):
+    def __call__(self, *args,):
         self.app.info.help = (self.description or "No help provided")
 
-        while True:
-            args = list(map(str, flatten(args)))
+        args = list(map(str, flatten(args)))
 
-            # Insert default implied command
-            first = (args[0] if (len(args) > 0) else None)
-            if self.default and ((not args) or (first not in self.commands)):
-                args.insert(0, self.default)
+        # Insert default implied command
+        first = (args[0] if (len(args) > 0) else None)
 
-            # Update args to BrokenTyper
-            if not self._first:
-                args = shlex.split(input("\n:: BrokenShell (enter for help) $ "))
-            self._first = False
+        if self.default and ((not args) or (first not in self.commands)):
+            args.insert(0, self.default)
 
-            try:
-                self.app(args)
-            except SystemExit:
-                log.trace("Skipping SystemExit on BrokenTyper")
-            except KeyboardInterrupt:
-                log.success("BrokenTyper exit KeyboardInterrupt")
-            except Exception as error:
-                raise error
+        try:
+            self.app(args)
+        except SystemExit:
+            log.trace("Skipping SystemExit on BrokenTyper")
+        except KeyboardInterrupt:
+            log.success("BrokenTyper exit KeyboardInterrupt")
 
-            # Don't continue on non BrokenShell mode
-            if not shell:
-                break
