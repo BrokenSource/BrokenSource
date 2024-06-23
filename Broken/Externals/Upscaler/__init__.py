@@ -92,7 +92,8 @@ class BrokenUpscaler(BaseModel, ABC):
 
         # Convenience: Direct configs
         for key, val in config.items():
-            setattr(self, key, val)
+            if hasattr(self, key):
+                setattr(self, key, val)
 
         # Only valid output for str is Path
         if isinstance(output, str):
@@ -130,7 +131,7 @@ class BrokenUpscaler(BaseModel, ABC):
         with self.path_image(image) as temp_input:
             for _ in range(self.passes):
                 image.save(temp_input, quality=self.quality)
-                image = self._upscale(image)
+                image = self._upscale(image, **config)
 
             # Resize to match the expected final size
             image = image.resize(target, PIL.Image.LANCZOS)
@@ -147,7 +148,7 @@ class BrokenUpscaler(BaseModel, ABC):
             return image
 
     @abstractmethod
-    def _upscale(self, image: Image) -> Image:
+    def _upscale(self, image: Image, **config) -> Image:
         """The upscaler's proper implementation"""
         ...
 

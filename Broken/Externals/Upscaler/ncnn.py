@@ -120,7 +120,7 @@ class Waifu2x(UpscalerNCNN_Base):
             raise ValueError("Denoise must be -1, 0, 1, 2, or 3 for Waifu2x")
         return value
 
-    def _upscale(self, input: Image, *, echo: bool=True) -> Image:
+    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
         with self.path_image() as output:
             with self.path_image(input) as input:
                 shell(
@@ -135,7 +135,7 @@ class Waifu2x(UpscalerNCNN_Base):
                     "-x"*self.tta,
                     # "-m", self.model.value, # Fixme: Doko?
                     stderr=DEVNULL,
-                    # preexec_fn=self.preexec_fn,
+                    preexec_fn=(self.preexec_fn if single_core else None),
                     cwd=self.download().parent,
                     echo=echo,
                 )
@@ -170,7 +170,7 @@ class Realesr(UpscalerNCNN_Base):
             raise ValueError("Scale must be 1, 2, 3, or 4 for RealESRGAN")
         return value
 
-    def _upscale(self, input: Image, *, echo: bool=True) -> Image:
+    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
         with self.path_image() as output:
             with self.path_image(input) as input:
                 shell(
@@ -184,7 +184,7 @@ class Realesr(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,
-                    # preexec_fn=self.preexec_fn,
+                    preexec_fn=(self.preexec_fn if single_core else None),
                     cwd=self.download().parent,
                     echo=echo,
                 )

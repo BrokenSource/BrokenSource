@@ -12,7 +12,7 @@ from pathlib import Path
 
 import dotenv
 from appdirs import AppDirs
-from attr import define, field
+from attr import Factory, define, field
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
@@ -20,6 +20,7 @@ from typer import Typer
 
 import Broken
 from Broken import BrokenLogging, BrokenPath, BrokenPlatform, log, shell
+from Broken.Core.BrokenTyper import BrokenTyper
 
 
 @define(slots=False)
@@ -483,7 +484,7 @@ class BrokenProject:
 
 @define
 class BrokenApp(ABC):
-    broken_typer: Typer = None
+    typer: BrokenTyper = Factory(BrokenTyper)
 
     @abstractmethod
     def cli(self) -> None:
