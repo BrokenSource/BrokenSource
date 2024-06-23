@@ -2,19 +2,18 @@ import math
 from numbers import Number
 from typing import Tuple
 
-from Broken import log, nearest
+from Broken import log
 
 
 class BrokenResolution:
 
     @staticmethod
-    def round_component(component: Number, *, scale: Number=1) -> int:
-        return max(1, nearest(scale*component, multiple=2, type=int, operator=round))
+    def round_component(value: Number, *, scale: Number=1) -> int:
+        return max(1, 2*round(scale*value/2))
 
     @staticmethod
     def round_resolution(width: Number, height: Number, *, scale: Number=1) -> Tuple[int, int]:
-        """FFmpeg likes multiples of 2, so let's make it happy"""
-        return tuple(map(BrokenResolution.round_component, (scale*width, scale*height)))
+        return (BrokenResolution.round_component(width*scale), BrokenResolution.round_component(height*scale))
 
     @staticmethod
     def fit(
