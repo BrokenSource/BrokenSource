@@ -787,6 +787,9 @@ class BrokenFFmpeg(SerdeBaseModel):
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#toc-Advanced-options)
     """
 
+    stream_loop: int = Field(default=0)
+    """Loops the input stream N times to the right. Zero '0' is no loop, one '1' doubles the length"""
+
     time: float = Field(default=0.0)
 
     vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field(default="cfr")
@@ -1050,6 +1053,7 @@ class BrokenFFmpeg(SerdeBaseModel):
                     command.append(item)
 
         extend(shutil.which("ffmpeg"))
+        extend(("-stream_loop", self.stream_loop)*bool(self.stream_loop))
         extend("-threads", self.threads)
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", self.loglevel)
