@@ -87,10 +87,10 @@ class BrokenTorch:
         # If flavors mismatch, install the correct one
         if (current_flavor != flavor):
             log.info(f"Installing PyTorch Flavor ({version_flavor}), current is ({current_flavor})")
-            PIP = (sys.executable, "-m", "pip")
+            PIP = (sys.executable, "-m", "uv", "pip")
             source_url = f"https://download.pytorch.org/whl/{flavor}"
-            shell(PIP, "uninstall", "torch", "-y")
-            shell(PIP, "install", f"torch=={version}", "torchvision", "--index-url", source_url)
+            shell(PIP, "uninstall", "torch", "--quiet")
+            shell(PIP, "install", f"torch=={version}+{flavor}", "torchvision", "--index-url", source_url)
             shell(PIP, "install", "transformers")
         else:
             log.info(f"PyTorch Flavor ({version_flavor}) already installed")

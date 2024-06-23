@@ -220,7 +220,7 @@ class ZoeDepth(DepthEstimator):
         try:
             import timm
         except ImportError:
-            shell(sys.executable, "-m", "pip", "install", "timm==0.6.7", "--no-deps")
+            shell(sys.executable, "-m", "uv", "pip", "install", "timm==0.6.7", "--no-deps")
 
         self._model = torch.hub.load(
             "isl-org/ZoeDepth", f"ZoeD_{self.model.upper()}",
@@ -249,7 +249,7 @@ class Marigold(DepthEstimator):
             import diffusers
             import matplotlib
         except ImportError:
-            shell(sys.executable, "-m", "pip", "install",
+            shell(sys.executable, "-m", "uv", "pip", "install",
                 "diffusers", "accelerate", "matplotlib")
 
         from diffusers import DiffusionPipeline

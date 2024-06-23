@@ -40,8 +40,7 @@ dependencies = [
     # Internet
     "requests-cache>=1.2.1",
     "requests>=2.32.3",
-    "pip>=24.0",
-    "setuptools>=70.0.0",
+    "setuptools>=70.1.0",
     # Utils
     "arrow>=1.3.0",
     "rich>=13.7.1",
@@ -62,6 +61,7 @@ dependencies = [
     "mido>=1.3.2",
     "python-rtmidi>=1.5.8",
     "toml>=0.10.2",
+    "uv>=0.2.13",
     # Unsorted
 ]
 requires-python = ">=3.9"
@@ -78,7 +78,7 @@ website = [
     "mkdocs-material[imaging]>=9.5.27",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocs-git-revision-date-localized-plugin>=1.2.6",
-    "mkdocs-include-markdown-plugin>=6.2.0",
+    "mkdocs-include-markdown-plugin>=6.2.1",
     "mkdocs-site-urls>=0.2.0",
 ]
 # resample = [
@@ -109,6 +109,7 @@ dev-dependencies = [
     # Manager
     "userpath>=1.9.2",
     "pyshortcuts>=1.9.0",
+    "uv>=0.2.13",
 ]
 
 [tool.rye.workspace]
