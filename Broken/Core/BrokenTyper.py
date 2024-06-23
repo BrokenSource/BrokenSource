@@ -36,7 +36,6 @@ class BrokenTyper:
 
     def __attrs_post_init__(self):
         self.app = Typer(
-            help="No help provided on this typer app" or self.description,
             add_help_option=self.help_option,
             pretty_exceptions_enable=False,
             no_args_is_help=True,
@@ -81,7 +80,7 @@ class BrokenTyper:
 
         # Create Typer command
         self.app.command(
-            help=target.__doc__ or help,
+            help=help or target.__doc__,
             add_help_option=add_help_option,
             name=name,
             rich_help_panel=panel or self._panel,
@@ -99,6 +98,8 @@ class BrokenTyper:
         self.default = name if default else self.default
 
     def __call__(self, *args, shell: bool=False):
+        self.app.info.help = (self.description or "No help provided")
+
         while True:
             args = list(map(str, flatten(args)))
 

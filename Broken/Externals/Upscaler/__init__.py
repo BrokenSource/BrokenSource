@@ -11,7 +11,7 @@ import typer
 from PIL.Image import Image
 from pydantic import BaseModel, ConfigDict, Field
 
-from Broken import BrokenEnum, BrokenResolution
+from Broken import BrokenEnum, BrokenResolution, denum
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
@@ -62,7 +62,7 @@ class BrokenUpscaler(BaseModel, ABC):
             # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
                 delete=image is None,
-                suffix=f".{self.format.value}").name
+                suffix=f".{denum(self.format)}").name
             )
             if isinstance(image, Image):
                 image.save(file, quality=self.quality)
@@ -156,6 +156,10 @@ class BrokenUpscaler(BaseModel, ABC):
 class PillowUpscaler(BrokenUpscaler):
     def _upscale(self, image: Image) -> Image:
         return image.resize(self.output_size(*image.size), PIL.Image.LANCZOS)
+
+class NoUpscaler(BrokenUpscaler):
+    def _upscale(self, image: Image) -> Image:
+        return image
 
 # -------------------------------------------------------------------------------------------------|
 

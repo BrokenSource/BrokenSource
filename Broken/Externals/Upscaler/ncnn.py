@@ -91,10 +91,10 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 class Waifu2x(UpscalerNCNN_Base):
     """Configure a Waifu2x Upscaler by (https://github.com/nihui/waifu2x-ncnn-vulkan)"""
 
-    class Model(BrokenEnum):
-        models_cunet = "cunet"
-        models_upconv_7_anime_style_art_rgb = "anime"
-        models_upconv_7_photo = "photo"
+    class Model(str, BrokenEnum):
+        models_cunet = "models_cunet"
+        models_upconv_7_anime_style_art_rgb = "models_upconv_7_anime_style_art_rgb"
+        models_upconv_7_photo = "models_upconv_7_photo"
 
     model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Waifu2x")] = \
@@ -146,15 +146,15 @@ class Waifu2x(UpscalerNCNN_Base):
 class Realesr(UpscalerNCNN_Base):
     """Configure a RealEsrgan Upscaler by (https://github.com/xinntao/Real-ESRGAN)"""
 
-    class Model(BrokenEnum):
-        realesr_animevideov3 = "anime"
-        realesrgan_x4plus = "x4-gan"
-        realesrgan_x4plus_anime = "x4-gan-anime"
-        realesrnet_x4plus = "x4-net"
+    class Model(str, BrokenEnum):
+        realesr_animevideov3    = "realesr_animevideov3"
+        realesrgan_x4plus       = "realesrgan_x4plus"
+        realesrgan_x4plus_anime = "realesrgan_x4plus_anime"
+        realesrnet_x4plus       = "realesrnet_x4plus"
 
     model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for RealESRGAN")] = \
-        Field(default="anime")
+        Field(default=Model.realesr_animevideov3)
 
     @staticmethod
     def _base_download() -> str:
