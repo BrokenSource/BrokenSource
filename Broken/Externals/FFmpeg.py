@@ -869,7 +869,7 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     @functools.wraps(FFmpegInputPipe)
-    def pipe(self, **kwargs) -> Self:
+    def pipe_input(self, **kwargs) -> Self:
         self.inputs.append(FFmpegInputPipe(**kwargs))
         return self
 
