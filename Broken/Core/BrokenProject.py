@@ -9,6 +9,7 @@ import sys
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Self
 
 import dotenv
 from appdirs import AppDirs
@@ -426,6 +427,11 @@ class BrokenProject:
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             dotenv.load_dotenv(env)
+
+    def chdir(self) -> Self:
+        """Change directory to the project's root"""
+        os.chdir(self.PACKAGE.parent.parent)
+        return self
 
     def welcome(self):
         """Pretty Welcome Message!"""
