@@ -69,7 +69,7 @@ class BrokenTorch:
                     version_flavor = Prompt.ask(
                         "\n:: What PyTorch flavor do you want to install?\n\n",
                         choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor if flavor != TorchFlavor.MACOS],
-                        default="cpu"
+                        default="cuda"
                     )
                     print()
                 except KeyboardInterrupt:

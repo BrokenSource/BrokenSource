@@ -1,0 +1,7 @@
+# Nested use: `#include BrokenSource/.stignore`
+# [Syncthing](https://syncthing.net/)
+**/Workspace
+**/Build
+**/.venv
+**/.cache
+**/.pio

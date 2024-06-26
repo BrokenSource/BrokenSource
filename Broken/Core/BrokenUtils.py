@@ -63,7 +63,7 @@ class BrokenAttrs:
     # Fixme: Can improve by starting on BrokenAttrs itself
     """
     def __attrs_post_init__(self):
-        for cls in type(self).mro():
+        for cls in reversed(type(self).mro()):
             if method := cls.__dict__.get("__post__"):
                 method(self)
 

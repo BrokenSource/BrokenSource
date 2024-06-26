@@ -8,7 +8,6 @@
         "*/**/.github":        true,
 
         // Always hidden
-        "**/.stignore":   true,
         "**/__pycache__": true,
     },
 
