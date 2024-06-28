@@ -1,5 +1,5 @@
+# [Syncthing](https://syncthing.net/) Ignore file
 # Nested use: `#include BrokenSource/.stignore`
-# [Syncthing](https://syncthing.net/)
 **/Workspace
 **/Build
 **/.venv

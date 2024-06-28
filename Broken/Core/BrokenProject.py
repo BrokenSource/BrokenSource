@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 from abc import ABC, abstractmethod
+from collections import deque
 from pathlib import Path
 from typing import Self
 
@@ -21,7 +22,15 @@ from rich.panel import Panel
 from typer import Context
 
 import Broken
-from Broken import BrokenLogging, BrokenPath, BrokenPlatform, BrokenProfiler, log, shell
+from Broken import (
+    BrokenLogging,
+    BrokenPath,
+    BrokenPlatform,
+    BrokenProfiler,
+    apply,
+    log,
+    shell,
+)
 from Broken.Core.BrokenTyper import BrokenTyper
 
 
@@ -505,36 +514,37 @@ class BrokenApp(ABC):
     def find_projects(self, tag: str="Project") -> None:
         """Find Python files in common directories (direct call, cwd) that any class inherits from
         something that contains the substring of `tag` and add as a command to this Typer app"""
-        direct = sys.argv[1] if (len(sys.argv) > 1) else ""
-        self.set_tag(tag)
-        files = set()
+        files = deque()
 
-        # Note: Consumes the 'direct' argv path
-        if (direct.endswith(".py")):
-            files.add(Path(sys.argv.pop(1)))
-        elif (len(sys.argv) > 1) and Path(sys.argv[1]).exists():
-            files.update(Path(sys.argv.pop(1)).rglob("*.py"))
+        # Note: Safe get argv[1], pop if valid, else a dne path
+        if (direct := Path(dict(enumerate(sys.argv)).get(1, "\0"))).exists():
+            direct = Path(sys.argv.pop(1))
+
+        # Scan files
+        if (direct.suffix == ".py"):
+            files.append(direct)
+        elif direct.is_dir():
+            files.extend(direct.glob("*.py"))
         else:
-            files.update(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
-            files.update(self.PROJECT.RESOURCES.SCENES.rglob("*.py"))
-            files.update(Path.cwd().glob("*.py"))
+            files.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
+            files.extend(self.PROJECT.RESOURCES.SCENES.rglob("*.py"))
+            files.extend(Path.cwd().glob("*.py"))
 
-        # Add the found projects, warn if none was found
-        if sum(map(self.add_project, files)) == 0:
-            log.warning(f"No {self.PROJECT.APP_NAME} Projects found")
+        # Add commands of all files, exit if none was sucessfully added
+        if (sum(map(lambda file: self.add_project(file, tag), files)) == 0):
+            log.warning(f"No {self.PROJECT.APP_NAME} Projects found, searched in:")
+            log.warning('\n'.join(map(lambda file: f"• {file}", files)))
+            exit(1)
 
-    _regex: re.Pattern = None
-
-    def set_tag(self, tag: str) -> None:
+    def regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
         inheritance, and its optional docstring on the next line"""
-        self._regex = re.compile(
+        return re.compile(
             r"^class\s+(\w+)\s*\(.*?(?:" + tag + r").*\):\s*(?:\"\"\"((?:\n|.)*?)\"\"\")?",
             re.MULTILINE
         )
 
-    def add_project(self, python: Path) -> bool:
-        """Parse a Python script for Projects. Returns True on any success"""
+    def add_project(self, python: Path, tag: str="Project") -> bool:
         if not python.exists():
             return False
 
@@ -546,14 +556,15 @@ class BrokenApp(ABC):
             return run
 
         # Match all scenes and their optional docstrings
-        for match in self._regex.finditer(code := python.read_text(encoding="utf-8")):
-            name, docstring = match.groups()
+        for match in self.regex(tag).finditer(code := python.read_text(encoding="utf-8")):
+            class_name, docstring = match.groups()
             self.typer.command(
-                target=run(python, name, code),
-                name=name.lower(),
+                target=run(python, class_name, code),
+                name=class_name.lower(),
                 help=(docstring or "No description provided"),
                 panel=f"🔥 Projects at [bold]({python})[/bold]",
                 add_help_option=False,
                 context=True,
             )
-        return True
+
+        return bool(self.typer.commands)
