@@ -1,4 +1,5 @@
 import contextlib
+import sys
 from typing import Callable, Generator, List
 
 import pydantic
@@ -60,7 +61,7 @@ class BrokenTyper:
         default: bool=False,
         panel: str=None,
         **kwargs,
-    ):
+    ) -> None:
         # Command must be implemented
         if getattr(target, "__isabstractmethod__", False):
             return
@@ -88,21 +89,18 @@ class BrokenTyper:
             **kwargs,
         )(target)
 
-        # Add to known commands
+        # Add to known or default commands
+        self.default = (name if default else self.default)
         self.commands.append(name)
 
-        # Set as default command
-        self.default = name if default else self.default
-
-    def __call__(self, *args,):
+    def __call__(self, *args):
         self.app.info.help = (self.description or "No help provided")
 
-        args = list(map(str, flatten(args)))
+        # Default to argv[1:], flat cast everything to str
+        args = list(map(str, flatten(args) or sys.argv[1:]))
 
-        # Insert default implied command
-        first = (args[0] if (len(args) > 0) else None)
-
-        if self.default and ((not args) or (first not in self.commands)):
+        # Insert default command if none
+        if self.default and not bool(args):
             args.insert(0, self.default)
 
         try:
@@ -111,4 +109,3 @@ class BrokenTyper:
             log.trace("Skipping SystemExit on BrokenTyper")
         except KeyboardInterrupt:
             log.success("BrokenTyper exit KeyboardInterrupt")
-

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.metadata
 import importlib.resources
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -17,10 +18,10 @@ from attr import Factory, define, field
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
-from typer import Typer
+from typer import Context
 
 import Broken
-from Broken import BrokenLogging, BrokenPath, BrokenPlatform, log, shell
+from Broken import BrokenLogging, BrokenPath, BrokenPlatform, BrokenProfiler, log, shell
 from Broken.Core.BrokenTyper import BrokenTyper
 
 
@@ -490,8 +491,69 @@ class BrokenProject:
 
 @define
 class BrokenApp(ABC):
+    PROJECT: BrokenProject
     typer: BrokenTyper = Factory(BrokenTyper)
 
+    def __attrs_post_init__(self):
+        with BrokenProfiler(self.PROJECT.APP_NAME):
+            self.main()
+
     @abstractmethod
-    def cli(self) -> None:
+    def main(self) -> None:
         pass
+
+    def find_projects(self, tag: str="Project") -> None:
+        """Find Python files in common directories (direct call, cwd) that any class inherits from
+        something that contains the substring of `tag` and add as a command to this Typer app"""
+        direct = sys.argv[1] if (len(sys.argv) > 1) else ""
+        self.set_tag(tag)
+        files = set()
+
+        # Note: Consumes the 'direct' argv path
+        if (direct.endswith(".py")):
+            files.add(Path(sys.argv.pop(1)))
+        elif (len(sys.argv) > 1) and Path(sys.argv[1]).exists():
+            files.update(Path(sys.argv.pop(1)).rglob("*.py"))
+        else:
+            files.update(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
+            files.update(self.PROJECT.RESOURCES.SCENES.rglob("*.py"))
+            files.update(Path.cwd().glob("*.py"))
+
+        # Add the found projects, warn if none was found
+        if sum(map(self.add_project, files)) == 0:
+            log.warning(f"No {self.PROJECT.APP_NAME} Projects found")
+
+    _regex: re.Pattern = None
+
+    def set_tag(self, tag: str) -> None:
+        """Generates the self.regex for matching any valid Python class that contains "tag" on the
+        inheritance, and its optional docstring on the next line"""
+        self._regex = re.compile(
+            r"^class\s+(\w+)\s*\(.*?(?:" + tag + r").*\):\s*(?:\"\"\"((?:\n|.)*?)\"\"\")?",
+            re.MULTILINE
+        )
+
+    def add_project(self, python: Path) -> bool:
+        """Parse a Python script for Projects. Returns True on any success"""
+        if not python.exists():
+            return False
+
+        def run(file, name, code):
+            def run(ctx: Context):
+                # Note: Point of trust transfer to the file the user is running
+                exec(compile(code, file, "exec"), (namespace := {}))
+                namespace[name]().cli(*ctx.args)
+            return run
+
+        # Match all scenes and their optional docstrings
+        for match in self._regex.finditer(code := python.read_text(encoding="utf-8")):
+            name, docstring = match.groups()
+            self.typer.command(
+                target=run(python, name, code),
+                name=name.lower(),
+                help=(docstring or "No description provided"),
+                panel=f"🔥 Projects at [bold]({python})[/bold]",
+                add_help_option=False,
+                context=True,
+            )
+        return True
