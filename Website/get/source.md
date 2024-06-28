@@ -29,8 +29,8 @@ title: Get/Source
             {% include-markdown "get.ps1" %}
             ```
 
-        ??? quote "Enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
-            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory (Data, Downloads, Config, etc) where the Source Code is, please enable <a href="https://rye-up.com/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**.
+        ??? quote "Enable <a href="https://rye.astral.sh/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
+            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory (Data, Downloads, Config, etc) where the Source Code is, please enable <a href="https://rye.astral.sh/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**.
 
             - This will also drastically speed up Virtual Environment creation
 

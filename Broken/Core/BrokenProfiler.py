@@ -35,14 +35,13 @@ class BrokenProfiler:
 
     def __enter__(self) -> Self:
         if not self.enabled:
-            return self
-
-        if (self.profiler == BrokenProfilerEnum.cprofile):
+            pass
+        elif (self.profiler == BrokenProfilerEnum.cprofile):
             log.trace("Profiling with cProfile")
             import cProfile
             self.__profiler__ = cProfile.Profile()
             self.__profiler__.enable()
-            return self
+        return self
 
     def __exit__(self, *args) -> None:
         if not self.enabled:

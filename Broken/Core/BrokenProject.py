@@ -396,15 +396,10 @@ class BrokenProject:
     VERSION:     str                       = None
 
     def __attrs_post_init__(self):
-
-        # Create Directories class
         self.DIRECTORIES = _BrokenProjectDirectories(BROKEN_PROJECT=self)
         self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
         self.PACKAGE     = Path(self.PACKAGE)
-
-        # Fixme (#spec): Projects don't have their own spec as they are included
-        # self.VERSION = importlib.metadata.version(self.PACKAGE.parent.name)
-        self.VERSION = Broken.VERSION
+        self.VERSION     = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 
         # Replace Broken.PROJECT once with the first project
@@ -414,25 +409,19 @@ class BrokenProject:
                 self.pyapp_new_binary_restore_hook()
                 Broken.PROJECT = self
 
-                if (os.environ.get("WELCOME", "0") == "1"):
-                    self.welcome()
-
-        # Print version information and exit when only "--version/-V" is the only argument
+        # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
             if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
-                print(f"{self.APP_NAME} {self.VERSION}")
+                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.CurrentTarget}")
                 exit(0)
 
         # Convenience: Symlink Workspace to projects data directory
         if Broken.DEVELOPMENT:
-            try:
-                BrokenPath.symlink(
-                    virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
-                    real=self.DIRECTORIES.WORKSPACE,
-                    echo=False
-                )
-            except Exception as e:
-                log.minor(f"Failed to symlink Workspace: {e}")
+            BrokenPath.symlink(
+                virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
+                real=self.DIRECTORIES.WORKSPACE,
+                echo=False
+            )
 
         # Load .env files from the project
         for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
@@ -440,32 +429,28 @@ class BrokenProject:
 
     def chdir(self) -> Self:
         """Change directory to the project's root"""
-        os.chdir(self.PACKAGE.parent.parent)
-        return self
+        return os.chdir(self.PACKAGE.parent.parent) or self
 
     def welcome(self):
         """Pretty Welcome Message!"""
         import pyfiglet
 
         # Build message
-        ascii = pyfiglet.figlet_format(self.APP_NAME, font="dos_rebel", width=1000)
+        ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
 
         # Print panel center-justified lines
         rprint(Panel(
-            Align.center(ascii),
+            Align.center(ascii + "\n"),
             subtitle=' '.join((
                 f"Made with ❤️ by {self.APP_AUTHOR},",
                 f"Python {sys.version.split()[0]}"
             )),
-            padding=1,
-            title_align="center",
-            subtitle_align="center",
         ))
-        print()
 
-    # Note: Call once on the top-most project, otherwise DepthFlow might be considered as ShaderFlow
-    def pyapp_new_binary_restore_hook(self):
+    def pyapp_new_binary_restore_hook(self) -> None:
+        """One might send rolling releases or development betas of the same major version; whenever
+        the current PyApp binary changes hash, we reinstall the virtual environment"""
         if not (pyapp_binary := os.environ.get("PYAPP", False)):
             return
 
@@ -473,7 +458,7 @@ class BrokenProject:
         venv_path = Path(os.environ["VIRTUAL_ENV"])
         hash_file = venv_path.parent/f"{self.APP_NAME.lower()}-{self.VERSION}.sha256"
         this_hash = hashlib.sha256(open(pyapp_binary, "rb").read()).hexdigest()
-        old_hash  = hash_file.read_text() if hash_file.exists() else None
+        old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
 
         # "If either hash differs and not on the first run"

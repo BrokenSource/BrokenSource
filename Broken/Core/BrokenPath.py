@@ -175,13 +175,22 @@ class BrokenPath(pathlib.Path):
             BrokenPath.remove(virtual, echo=False)
 
         else:
-            if click.confirm(f"• Path ({virtual}) exists, but Broken wants to create a symlink to ({real})\nConfirm removing the 'virtual' path and continuing? (It might contain data or be a important symlink)"):
+            if click.confirm('\n'.join((
+                f"Path ({virtual}) exists, but Broken wants to create a symlink to ({real})",
+                "• Confirm removing the 'virtual' path and continuing? (It might contain data or be a important symlink)"
+            ))):
                 BrokenPath.remove(virtual, echo=False)
             else:
                 return
 
-        # Actually symlink
-        virtual.symlink_to(real)
+        try:
+            virtual.symlink_to(real)
+        except Exception as error:
+            if BrokenPlatform.OnWindows:
+                log.minor("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
+            else:
+                raise error
+
         return virtual
 
     def make_executable(path: Path, *, echo=False) -> Path:
