@@ -108,8 +108,8 @@ class DepthEstimator(BaseModel, ABC):
 
 # -------------------------------------------------------------------------------------------------|
 
-class DepthAnything(DepthEstimator):
-    """Configure and use DepthAnything   [green](See 'anything  --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+class DepthAnythingV1(DepthEstimator):
+    """Configure and use DepthAnythingV1 [green](See 'anything  --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
     class Models(str, BrokenEnum):
         Small = "small"
         Base  = "base"
