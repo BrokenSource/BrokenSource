@@ -95,6 +95,13 @@ class DepthEstimator(BaseModel, ABC):
             Image.fromarray(depth).save(cached_image)
         return self.normalize(self._post_processing(depth))
 
+    def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:
+        """Estimates a normal map from a depth map using heuristics"""
+        dx = numpy.arctan2(200*numpy.gradient(depth, axis=1), 1)
+        dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
+        normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
+        return self.normalize(normal).astype(numpy.float32)
+
     @functools.wraps(estimate)
     @abstractmethod
     def _estimate(self):
@@ -109,7 +116,7 @@ class DepthEstimator(BaseModel, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class DepthAnythingV1(DepthEstimator):
-    """Configure and use DepthAnythingV1 [green](See 'anything  --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+    """Configure and use DepthAnythingV1 [green](See 'anything1  --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
     class Models(str, BrokenEnum):
         Small = "small"
         Base  = "base"

@@ -6,7 +6,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from collections import deque
 from pathlib import Path
-from subprocess import DEVNULL, PIPE, Popen
+from subprocess import PIPE, Popen
 from typing import (
     Generator,
     Iterable,

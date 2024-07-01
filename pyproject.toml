@@ -41,7 +41,7 @@ dependencies = [
     "requests-cache>=1.2.1",
     "requests>=2.32.3",
     "setuptools>=70.1.1",
-    "uv>=0.2.15",
+    "uv>=0.2.17",
     # Utils
     "arrow>=1.3.0",
     "rich>=13.7.1",
@@ -98,7 +98,7 @@ managed = true
 dev-dependencies = [
     # Development and Utilities
     "pytest-sugar>=1.0.0",
-    "poethepoet>=0.26.1",
+    "poethepoet>=0.27.0",
     # Profiling
     "snakeviz>=2.2.0",
     "tuna>=0.5.11",

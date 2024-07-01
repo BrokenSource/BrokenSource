@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Annotated, Any, Generator, Iterable, Optional, Tuple, Type, Union
 
+import numpy
 import PIL
 import PIL.Image
 import typer
@@ -119,8 +120,8 @@ class BrokenUpscaler(BaseModel, ABC):
         # resize A to target resolution, merge it back later
         if (transparent := any((
             image.mode == "RGBA",
-            image.info.get("transparency", None)
-        ))):
+            image.info.get("transparency", None),
+        )) and (not isinstance(self, NoUpscaler))):
             _, _, _, alpha = image.split()
             alpha = alpha.resize(target)
 
@@ -159,6 +160,9 @@ class PillowUpscaler(BrokenUpscaler):
         return image.resize(self.output_size(*image.size), PIL.Image.LANCZOS)
 
 class NoUpscaler(BrokenUpscaler):
+    def upscale(self, *args, **kwargs) -> Image:
+        return args[0]
+
     def _upscale(self, image: Image) -> Image:
         return image
 

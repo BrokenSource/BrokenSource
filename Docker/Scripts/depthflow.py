@@ -1,4 +1,4 @@
-from DepthFlow import DepthFlowScene
+from DepthFlow import DepthScene
 
-scene = DepthFlowScene()
+scene = DepthScene()
 scene.main(output="/tmp/video.mp4", end=30)
