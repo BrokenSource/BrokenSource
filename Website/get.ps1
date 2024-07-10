@@ -125,8 +125,8 @@ if (-not (Test-Path -Path "Broken")) {
     git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
     cd BrokenSource
 
-    Print-Step "Checking out Master branch for all submodules"
-    git submodule foreach --recursive 'git checkout Master || true'
+    Print-Step "Checking out main branch for all submodules"
+    git submodule foreach --recursive 'git checkout main || true'
 } else {
     Print-Step "Already in a Cloned Directory, Skipping Cloning"
 }

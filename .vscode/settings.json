@@ -1,43 +1,41 @@
 {
-    // Configure files and folders visibility
     "files.exclude": {
-
-        // Synced with other projects or shown on monorepo
-        // "*/**/.gitattributes": true,
-        // "*/**/.gitignore":     true,
-        "*/**/.github":        true,
-
-        // Always hidden
         "**/__pycache__": true,
+        "*/**/.github": true,
+        ".stfolder": true,
     },
 
     "material-icon-theme.folders.associations": {
-        // Broken Stuff
-        "Broken": "src",
-        "Papers": "log",
 
         // Rust
-        "Rust":   "src",
+        "Rust": "src",
         ".cargo": "config",
 
-        // Other
+        // PlatformIO
+        ".pio": "other",
+
+        // Python
+        ".venvs": "python",
+
+        // Project's Workspace
+        "Workspace":  "container",
         "Externals":  "core",
         "Scenes":     "core",
         "User":       "home",
         "Premium":    "admin",
         "Default":    "examples",
         "Community":  "shared",
-        "Workspace":  "container",
         "Prompts":    "log",
-        ".venvs":     "python",
+        "Papers":     "log",
         "Staging":    "temp",
         "Midis":      "audio",
         "Midi":       "audio",
         "SoundFonts": "audio",
-        "Brakeit":    "download",
         "Profile":    "admin",
         "Fork":       "less",
         "Vectron":    "core",
+
+        // Website
         "get":        "download",
         "blog":       "log",
         "news":       "log",
@@ -48,35 +46,25 @@
         "Vertex":   "shader",
 
         // Projects
+        "Broken":       "src",
         "Ardmin":       "tools",
-        "AudioSight":   "tools",
         "DepthFlow":    "tools",
-        "Harper":       "tools",
-        "HypeWord":     "tools",
-        "Oscillospoor": "tools",
         "PhasorFlow":   "tools",
-        "PocketSolar":  "tools",
         "QuadSnap":     "tools",
         "ShaderFlow":   "tools",
-        "Sortia":       "tools",
         "Archium":      "tools",
-        "Clipyst":      "tools",
         "Upscalin":     "tools",
         "Pianola":      "tools",
         "SpectroNote":  "tools",
         "FastCutter":   "tools",
-
-        // Meta
-        "FluentMidi":   "include",
+        "Modpanel":     "tools",
 
         // Sub-packages of Broken
         "Dotmap":    "core",
-        "Enum":      "core",
         "FFmpeg":    "core",
         "Loaders":   "core",
         "Upscaler":  "core",
         "Optional":  "include",
-        "Pyaket":    "tools",
 
         // Personal
         "Tremeschin": "home",
@@ -98,21 +86,10 @@
         {"tag": "optimization", "color": "#3498DB"}
     ],
 
-    // Auto remove unused imports
-    // "[python]": {
-    //     "editor.codeActionsOnSave": {
-    //       "source.organizeImports": "explicit",
-    //       "source.unusedImports": "explicit",
-    //     }
-    // },
-
     // Ignore some stuff on Pylance
     "python.analysis.exclude": [
-        "Meta/**",
-        "___**",
-        "Private**",
-        "**/Staging/**",
-        "**/Others**",
+        ".venv",
+        "**/___*",
     ],
 
     // Better minimap

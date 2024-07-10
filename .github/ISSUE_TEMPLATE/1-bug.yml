@@ -1,8 +1,6 @@
 name: 🐞 New Bug Report
 description: Facing some unexpected behavior or error? Let me help you!
-title: Try describing all the main important points. Don't worry, I can edit later
-assignees:
-  - Tremeschin
+title: (Bug) Describe what went wrong to your best guess. Don't worry, I can edit later
 
 body:
 - type: markdown
@@ -43,12 +41,12 @@ body:
       • **If running directly from Source Code**, Rye will use the `.python-version` file (Currently 3.11)
       • **If running from PyPI Wheels**, check yours Python verstion with `python -V`
     options:
+      - N/A
       - Python 3.10
       - Python 3.11
       - Python 3.12
       - Python 3.13
-      - N/A
-    default: 1
+    default: 0
   validations:
     required: true
 
@@ -57,11 +55,11 @@ body:
     label: Runtime Enviroment
     description: Where are you running the project from
     options:
+      - N/A
       - Source Code (Install Scripts or Manual)
       - PyPI Wheels (pip, poetry, pdm, etc)
       - PyAPP Executables (experimental)
-      - N/A
-    default: 3
+    default: 0
   validations:
     required: true
 
@@ -70,15 +68,15 @@ body:
     label: GPU Vendor (if applicable)
     description: "**Not all projects use GPUs**. Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc."
     options:
+      - N/A
       - NVIDIA (Proprietary)
       - NVIDIA (Nouveau)
       - AMDGPU (Proprietary)
       - AMDGPU (Mesa)
       - Intel Graphics
       - Intel Arc
-      - N/A
     multiple: true
-    default: 6
+    default: 0
   validations:
     required: false
 
@@ -100,7 +98,7 @@ body:
   attributes:
     label: "Reproducing the Issue (if applicable)"
     description: |
-      • If it's a non-internal bug or unexpected behavior, please provide a script I can `python
+      • If it's a non-internal bug or unexpected behavior, please provide a script I can run
     render: python
   validations:
     required: false
@@ -119,6 +117,6 @@ body:
     placeholder: |
       • If you're feeling like it, you can provide a solution, workaround or the idea of one
 
-      • Any non-trivial doubts on what went wrong? Feel free to add them
+      • Any ideas on what went wrong? Feel free to add them
   validations:
     required: false

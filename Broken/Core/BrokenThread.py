@@ -60,7 +60,7 @@ class BrokenThread:
         loop: bool=False,
         period: float=0.0,
         pool: str=None,
-        max: int=1,
+        max: int=10,
         daemon: bool=False,
         locals: bool=False,
         self: bool=False,

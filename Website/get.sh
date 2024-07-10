@@ -43,8 +43,8 @@ if [ ! -d "Broken" ]; then
   $git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
   cd BrokenSource
 
-  printf "\n:: Checking out all submodules to Master\n"
-  $git submodule foreach --recursive 'git checkout Master || true'
+  printf "\n:: Checking out main branch for all submodules\n"
+  $git submodule foreach --recursive 'git checkout main || true'
 else
   printf "\n:: Already on a BrokenSource Repository\n"
 fi

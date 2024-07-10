@@ -177,7 +177,7 @@ class BrokenProjectCLI:
                 )
 
             elif self.is_cpp:
-                BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/self.name
+                BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/self.name
                 if shell("meson", BUILD_DIR, "--reconfigure", "--buildtype", "release").returncode != 0:
                     exit(log.error(f"Could not build project ({self.name})") or 1)
                 if shell("ninja", "-C", BUILD_DIR).returncode != 0:
@@ -209,7 +209,7 @@ class BrokenProjectCLI:
             return
 
         # Recurse on each target item
-        if isinstance(target, list) and True:
+        if isinstance(target, list) and 1:
             for item in target:
                 self.release(target=item, torch=torch)
             return
@@ -224,10 +224,10 @@ class BrokenProjectCLI:
 
         if self.is_python:
             BrokenCLI.rust()
-            BUILD_DIR = Broken.BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
+            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
 
             # Build the monorepo wheel, which includes all projects
-            with BrokenPath.pushd(Broken.BROKEN.DIRECTORIES.REPOSITORY):
+            with BrokenPath.pushd(BROKEN.DIRECTORIES.REPOSITORY):
                 wheel = BrokenCLI.pypi()
 
             # Remove previous build cache for pyapp but no other crate
@@ -269,7 +269,7 @@ class BrokenProjectCLI:
 
             # Rename project binary according to the Broken naming convention
             for version in ("latest", wheel.name.split("-")[1]):
-                release_path = Broken.BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+                release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}-", "gui-"*gui,
                     f"{torch.name.lower()}-"*bool(torch),
                     f"{target.name}-",
@@ -290,8 +290,9 @@ class BrokenCLI:
     broken_typer: BrokenTyper            = None
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-        self.find_projects(Broken.BROKEN.DIRECTORIES.BROKEN_META)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
@@ -308,7 +309,7 @@ class BrokenCLI:
                 continue
             if directory.is_file():
                 continue
-            if BrokenPath(directory) == Broken.BROKEN.DIRECTORIES.REPOSITORY:
+            if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
 
             # Resolve symlinks recursively
@@ -352,7 +353,7 @@ class BrokenCLI:
 
     def tremeschin(self):
         url  = ("https://github.com/" + os.environ["PRIVATE_REPOSITORY"])
-        path = Broken.BROKEN.DIRECTORIES.BROKEN_PRIVATE
+        path = BROKEN.DIRECTORIES.BROKEN_PRIVATE
         shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|
@@ -362,19 +363,25 @@ class BrokenCLI:
         """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
         import re
 
-        pyproject = DotMap(toml.loads((BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml").read_text()))
-
-        def update_dependencies(data: List[str], *, dev: bool=False, optional: str=None) -> None:
+        def update(data: List[str], *, dev: bool=False, optional: str=None) -> None:
             for dependency in data:
-                name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
+                try:
+                    name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
+                except ValueError:
+                    continue
                 if (compare == "=="):
                     continue
-                shell("rye", "add", name, "--dev"*dev, ["--optional", optional] if optional else None, "--no-sync")
+                shell("rye", "add", "--no-sync", name, "--dev"*dev,
+                    ["--optional", optional] if optional else None)
 
-        update_dependencies(pyproject.project.dependencies)
-        update_dependencies(pyproject.tool.rye["dev-dependencies"], dev=True)
-        for (optional, items) in pyproject.project["optional-dependencies"].items():
-            update_dependencies(items, optional=optional)
+        for project in filter(lambda project: project.is_python, self.projects):
+            with BrokenPath.pushd(project.path):
+                pyproject = DotMap(toml.loads((project.path/"pyproject.toml").read_text()))
+                update(pyproject.project["dependencies"])
+                update(pyproject.tool.rye["dev-dependencies"], dev=True)
+                for (optional, items) in pyproject.project["optional-dependencies"].items():
+                    update(items, optional=optional)
+
         shell("rye", "sync")
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
@@ -467,7 +474,7 @@ class BrokenCLI:
 
     def sync(self) -> None:
         """♻️  Synchronize common Resources Files across all Projects"""
-        root = Broken.BROKEN.DIRECTORIES.REPOSITORY
+        root = BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:
             for file in flatten(

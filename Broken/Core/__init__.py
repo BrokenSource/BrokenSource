@@ -32,7 +32,7 @@ from loguru import logger as log
 
 def flatten(*stuff: Union[Any, Iterable[Any]], truthy: bool=True) -> List[Any]:
     """Flatten nested iterables (list, deque, tuple, Generator) to a 1D list"""
-    iterables = (list, deque, tuple, Generator)
+    iterables = (list, deque, tuple, map, Generator)
     def flatten(stuff):
         if truthy:
             stuff = [item for item in stuff if (item is not None) and (item != "")]

@@ -14,12 +14,12 @@
         {
             "label": "release-shaderflow",
             "type": "shell",
-            "command": "broken shaderflow release",
+            "command": "broken shaderflow release --target linux-amd64 --target windows-amd64",
         },
         {
             "label": "release-upscalin",
             "type": "shell",
-            "command": "broken upscalin release",
+            "command": "broken upscalin release  --target linux-amd64 --target windows-amd64 ",
         },
     ]
 }

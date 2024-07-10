@@ -1,15 +1,24 @@
+# Monorepo
 Meta
 Build
 Private
 Release
+Temp
 Workspace
-Site
-Projects/Hook/*
-**__pycache__*
 .cache
+
+# Python
+**__pycache__*
 dist
 *.pyc
 *.whl
-___*
-requirements*.lock
 *.env
+
+# Rye
+requirements*.lock
+
+# Syncthing
+.stfolder
+
+# Custom
+___*

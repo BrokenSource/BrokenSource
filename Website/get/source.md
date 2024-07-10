@@ -77,8 +77,8 @@ title: Get/Source
         ```bash title="Enter the Monorepo directory"
         cd BrokenSource
         ```
-        ```bash title="Checkout all Submodules to the Master branch"
-        git submodule foreach --recursive 'git checkout Master || true'
+        ```bash title="Checkout all Submodules to the main branch"
+        git submodule foreach --recursive 'git checkout main || true'
         ```
         ```bash title="Create the main Virtual Environment and Install Dependencies"
         rye sync
@@ -127,10 +127,10 @@ title: Get/Source
 
 ### 🌱 Submodules
 
-The installation script should've **initialized** and set all Submodules to the **Master branch**
+The installation script should've **initialized** and set all Submodules to the **main branch**
 
 ```bash title="Command"
-git submodule foreach --recursive 'git checkout Master || true'
+git submodule foreach --recursive 'git checkout main || true'
 ```
 
 After that, you can **pull** the latest changes of all Repositories with
