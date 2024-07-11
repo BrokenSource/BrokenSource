@@ -32,6 +32,7 @@ for attempt in $(seq 1 2); do
   echo "• Rye wasn't found, will attempt to install it"
   export RYE_TOOLCHAIN_VERSION="cpython@3.11"
   export RYE_INSTALL_OPTION="--yes"
+  export RYE_NO_AUTO_INSTALL=1
   /bin/bash -c "$(curl -sSf https://rye.astral.sh/get)"
 done
 
@@ -55,8 +56,9 @@ chmod +x ./activate.sh
 
 printf "\n:: Creating Virtual Environment and Installing Dependencies\n"
 $rye self update
-$rye config --set-bool behavior.use-uv=true
 $rye config --set-bool behavior.autosync=true
+$rye config --set-bool behavior.use-uv=true
+$rye config --set-bool global-python=false
 $rye sync
 
 printf "\n:: Spawning a new Shell in the Virtual Environment\n"

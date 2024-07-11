@@ -133,8 +133,9 @@ if (-not (Test-Path -Path "Broken")) {
 
 Print-Step "Creating Virtual Environment and Installing Dependencies"
 rye self update
-rye config --set-bool behavior.use-uv=true
 rye config --set-bool behavior.autosync=true
+rye config --set-bool behavior.use-uv=true
+rye config --set-bool global-python=false
 rye sync
 
 Print-Step "Spawning a new Shell in the Virtual Environment"

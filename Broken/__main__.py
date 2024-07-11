@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self
+from typing import Annotated, Callable, List, Self
 
 import click
 import toml
@@ -19,6 +19,7 @@ from Broken import (
     BrokenProfiler,
     BrokenTyper,
     TorchFlavor,
+    apply,
     denum,
     flatten,
     log,
@@ -33,7 +34,7 @@ class ProjectLanguage(BrokenEnum):
     Unknown = "unknown"
 
 @define
-class BrokenProjectCLI:
+class ProjectCLI:
     path: Path
     name: str = "Unknown"
     typer: Typer = None
@@ -214,21 +215,14 @@ class BrokenProjectCLI:
                 self.release(target=item, torch=torch)
             return
 
-        # ROCm Windows doesn't exist yet
-        if ("windows" in target.name) and (torch == TorchFlavor.ROCM):
-            return
-
-        # We should only target MACOS flavor for MacOS
-        if (torch == TorchFlavor.MACOS) and ("macos" not in target.name):
-            return
+        # Avoid bad combinations
+        if (torch == TorchFlavor.ROCM)  and ("windows"   in target.name): return
+        if (torch == TorchFlavor.MACOS) and ("macos" not in target.name): return
 
         if self.is_python:
-            BrokenCLI.rust()
+            BrokenManager.rust()
             BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
-
-            # Build the monorepo wheel, which includes all projects
-            with BrokenPath.pushd(BROKEN.DIRECTORIES.REPOSITORY):
-                wheel = BrokenCLI.pypi()
+            wheel = next(BrokenManager().pypi().glob("broken_source*.whl"))
 
             # Remove previous build cache for pyapp but no other crate
             for path in BUILD_DIR.rglob("*"):
@@ -268,10 +262,10 @@ class BrokenProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Rename project binary according to the Broken naming convention
-            for version in ("latest", wheel.name.split("-")[1]):
+            for version in ("latest", BROKEN.VERSION):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}-", "gui-"*gui,
-                    f"{torch.name.lower()}-"*bool(torch),
+                    f"{torch.name.lower()}-" if torch else "",
                     f"{target.name}-",
                     f"{target.architecture}-",
                     f"{version}",
@@ -285,9 +279,13 @@ class BrokenProjectCLI:
 # -------------------------------------------------------------------------------------------------|
 
 @define
-class BrokenCLI:
-    projects:     list[BrokenProjectCLI] = Factory(list)
-    broken_typer: BrokenTyper            = None
+class BrokenManager:
+    projects: list[ProjectCLI] = Factory(list)
+    broken_typer: BrokenTyper = None
+
+    @property
+    def python_projects(self) -> list[ProjectCLI]:
+        return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
@@ -316,7 +314,7 @@ class BrokenCLI:
             if directory.is_symlink() or directory.is_dir():
                 self.find_projects(path=BrokenPath(directory), _depth=_depth+1)
 
-            if (project := BrokenProjectCLI(directory)).is_known:
+            if (project := ProjectCLI(directory)).is_known:
                 self.projects.append(project)
 
     # Builds CLI commands and starts Typer
@@ -393,33 +391,45 @@ class BrokenCLI:
         else:
             shell("mkdocs", "serve")
 
-    @staticmethod
-    def pypi(
+    def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
-        test:    Annotated[bool, Option("--test",    "-t", help="Upload to TestPyPI")]=False,
+        test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
+        output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
-        DIR = BrokenPath.resetdir(Broken.BROKEN.DIRECTORIES.BROKEN_WHEELS)
-        shell("rye", "build", "--wheel", "--out", DIR)
-        wheel = next(DIR.glob("*.whl"))
+        pyprojects = tuple(project.path/"pyproject.toml" for project in self.python_projects)
+        pyproject = BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml"
+        version = shell("rye", "version", output=True).strip()
 
-        if publish:
-            if (not click.confirm(f"• Confirm publishing wheel ({wheel})")):
-                return
-            shell(
-                "rye", "publish",
+        def replace(file: Path, change: Callable) -> None:
+            file.write_text(change(file.read_text("utf-8")), "utf-8")
+
+        # Pin "# dynamic" dependencies version
+        def pin(file: Path): replace(file, lambda text: text
+            .replace('", # dynamic', f'=={version}", # dynamic')
+            .replace('"0.0.0"', f'"{version}"'))
+        def nip(file: Path): replace(file, lambda text: text
+            .replace(f'=={version}", # dynamic', '", # dynamic')
+            .replace(f'"{version}"', '"0.0.0"'))
+
+        try:
+            apply(pin, pyprojects)
+            replace(pyproject, lambda text: text.replace('"Private/', '# "Private/'))
+            shell("rye", "build", "--wheel", "--all", "--out", output)
+            shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
                 "--username", os.environ.get("PYPI_USERNAME"),
                 "--token", os.environ.get("PYPI_TOKEN"),
-                wheel,
-                echo=False
-            )
-
-        return wheel
+                f"{output}/*", echo=False
+            ) if publish else None
+            return Path(output)
+        finally:
+            replace(pyproject, lambda text: text.replace('# "Private/', '"Private/'))
+            apply(nip, pyprojects)
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=Broken.BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     @staticmethod
     def rust(
@@ -488,7 +498,7 @@ class BrokenCLI:
 
 def main():
     with BrokenProfiler("BROKEN"):
-        broken = BrokenCLI()
+        broken = BrokenManager()
         broken.cli()
 
 if __name__ == "__main__":

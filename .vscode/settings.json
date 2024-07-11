@@ -16,6 +16,7 @@
 
         // Python
         ".venvs": "python",
+        "Wheels": "python",
 
         // Project's Workspace
         "Workspace":  "container",

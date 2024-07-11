@@ -210,6 +210,16 @@ class BrokenPath(pathlib.Path):
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
+    def merge_zips(*zips: List[Path], output: Path, echo: bool=True) -> Path:
+        """Merge multiple ZIP files into a single one"""
+        import zipfile
+        with zipfile.ZipFile(output, "w") as archive:
+            for path in flatten(zips):
+                with zipfile.ZipFile(path, "r") as other:
+                    for file in other.filelist:
+                        archive.writestr(file, other.read(file))
+        return output
+
     def stem(path: Path) -> str:
         """
         Get the "true stem" of a path, as pathlib's only gets the last dot one
