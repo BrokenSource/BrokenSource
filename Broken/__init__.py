@@ -29,7 +29,7 @@ os.environ["__GL_YIELD"] = "USLEEP"
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
-# Expand "../paths" and existing ("-o", "file.ext") to abolute paths
+# Resolve relative paths and existing files on argv
 for _index, _item in enumerate(sys.argv):
     if any((
         any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
@@ -37,7 +37,7 @@ for _index, _item in enumerate(sys.argv):
     )):
         sys.argv[_index] = str(Path(_item).expanduser().resolve())
 
-# Replace argv[0] of "-c" with PyApp's managed python
+# Replace argv[0]=="-c" with PyApp's managed python
 if bool(os.environ.get("PYAPP", None)):
     sys.argv[0] = sys.executable
 
@@ -71,6 +71,7 @@ from Broken.Core import (
     clamp,
     denum,
     dunder,
+    easy_stack,
     every,
     flatten,
     hyphen_range,
@@ -103,6 +104,7 @@ from Broken.Core.BrokenUtils import (
     Ignore,
     LazyImport,
     OnceTracker,
+    Patch,
     PlainTracker,
     SameTracker,
 )

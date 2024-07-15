@@ -18,9 +18,11 @@ from Broken import (
     BrokenPlatform,
     BrokenProfiler,
     BrokenTyper,
+    Patch,
     TorchFlavor,
     apply,
     denum,
+    easy_stack,
     flatten,
     log,
     shell,
@@ -397,24 +399,22 @@ class BrokenManager:
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
-        pyprojects = tuple(project.path/"pyproject.toml" for project in self.python_projects)
-        pyproject = BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml"
         version = shell("rye", "version", output=True).strip()
 
-        def replace(file: Path, change: Callable) -> None:
-            file.write_text(change(file.read_text("utf-8")), "utf-8")
+        # Files that will be patched
+        pyprojects = flatten(
+            BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml",
+            (project.path/"pyproject.toml" for project in self.projects),
+        )
 
-        # Pin "# dynamic" dependencies version
-        def pin(file: Path): replace(file, lambda text: text
-            .replace('", # dynamic', f'=={version}", # dynamic')
-            .replace('"0.0.0"', f'"{version}"'))
-        def nip(file: Path): replace(file, lambda text: text
-            .replace(f'=={version}", # dynamic', '", # dynamic')
-            .replace(f'"{version}"', '"0.0.0"'))
+        # What to temporarily replace
+        replaces = {
+            '"Private/': '# "Private/', # Ignore private projects
+            '"0.0.0"': f'"{version}"', # Pin current version
+            '>0.0.0': f"=={version}", # Pin dependencies version
+        }
 
-        try:
-            apply(pin, pyprojects)
-            replace(pyproject, lambda text: text.replace('"Private/', '# "Private/'))
+        with easy_stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("rye", "build", "--wheel", "--all", "--out", output)
             shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
@@ -422,10 +422,8 @@ class BrokenManager:
                 "--token", os.environ.get("PYPI_TOKEN"),
                 f"{output}/*", echo=False
             ) if publish else None
-            return Path(output)
-        finally:
-            replace(pyproject, lambda text: text.replace('# "Private/', '"Private/'))
-            apply(nip, pyprojects)
+
+        return Path(output)
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""

@@ -3,9 +3,10 @@ import functools
 import sys
 from abc import ABC, abstractmethod
 from collections import deque
+from pathlib import Path
 from typing import Any, Callable, Deque, Iterable, Self
 
-from attr import Factory, define
+from attr import Factory, define, field
 
 from Broken import flatten
 
@@ -190,3 +191,27 @@ class LazyImport:
 
     def __exit__(self, *args):
         __builtins__["__import__"] = LazyImport.__import__
+
+
+@define
+class Patch:
+    file: Path = field(converter=Path)
+    replaces: dict[str, str] = field(factory=dict)
+    __original__: str = None
+
+    def __attrs_post_init__(self):
+        self.__original__ = self.file.read_text("utf-8")
+
+    def apply(self):
+        content = self.__original__
+        for key, value in self.replaces.items():
+            content = content.replace(key, value)
+        self.file.write_text(content, "utf-8")
+
+    def revert(self):
+        self.file.write_text(self.__original__, "utf-8")
+
+    def __enter__(self):
+        self.apply()
+    def __exit__(self, *args):
+        self.revert()
