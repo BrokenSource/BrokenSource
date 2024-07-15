@@ -5,6 +5,9 @@ title: Get/Releases
 !!! quote "**The most convenient** way to use the Projects • Double-click and run, hopefully"
     **Recommended for**: Basic users
 
+!!! failure "Releases fell behind the latest features"
+    Until I fix builds, prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi) installation
+
 ## ⚡️ Installing
 
 !!! success "I make self-installing executables using [**PyApp**](https://github.com/ofek/pyapp) for your convenience!"
@@ -12,7 +15,7 @@ title: Get/Releases
 !!! warning "Customization options are limited at the moment. Prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi)"
 
 !!! abstract "Select your Platform"
-    === ":simple-windows: Windows"
+    === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
         <table>
             <thead>

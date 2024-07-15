@@ -10,7 +10,7 @@ title: Get/Source
 !!! success "Running any of my Projects takes only two commands"
 
 !!! abstract "1. Select your Platform"
-    === ":simple-windows: Windows"
+    === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
         **Open** some folder to download the code on **Windows Explorer**

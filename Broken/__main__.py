@@ -412,7 +412,7 @@ class BrokenManager:
         replaces = {
             '"Private/': '# "Private/', # Ignore private projects
             '"0.0.0"': f'"{version}"', # Pin current version
-            '>0.0.0': f"=={version}", # Pin dependencies version
+            '>=0.0.0': f"=={version}", # Pin dependencies version
         }
 
         with easy_stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):

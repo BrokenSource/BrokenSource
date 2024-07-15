@@ -11,7 +11,7 @@ When a project requires **PyTorch**, {==a Prompt will pop up to install a flavor
 - Alternatively, when inside the **Virtual Environment**, choose one below and run:
 
 !!! abstract "1. Select your Platform"
-    === ":simple-windows: Windows"
+    === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
         === ":simple-nvidia: NVIDIA (CUDA)"
             ```shell title="Command"

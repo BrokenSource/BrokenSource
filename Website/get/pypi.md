@@ -7,41 +7,40 @@ title: Get/PyPI
 
 ## ⚡️ Installing
 
-!!! success "All Projects are contained on this single dependency"
+!!! success "All Projects have their own independent package"
 
 !!! abstract "Install the Package"
     === ":simple-python: Pip"
         ```shell title="Command"
-        python -m pip install broken-source
+        python -m pip install {package}
         ```
 
     === ":simple-poetry: Poetry"
         ```shell title="Command"
-        python -m poetry add broken-source
+        python -m poetry add {package}
         ```
 
     === ":simple-rye: Rye"
         ```shell title="Command"
-        rye add broken-source
+        rye add {package}
         ```
 
     === ":simple-pdm: PDM"
         ```shell title="Command"
-        pdm add broken-source
+        pdm add {package}
         ```
 
-!!! info annotate "Some Projects or Optionals require specifying a <a href="https://pytorch.org/get-started/locally/" target="_blank"><b>PyTorch</b></a> flavor (1)"
+    ...where **`{package}`** is the **name of the project** you want to install:
 
-1.  - No sense to me to force any of CUDA, CPU or ROCm
-    - It's a large dependency and not always needed
+    - [`depthflow`](https://pypi.org/project/depthflow/), [`shaderflow`](https://pypi.org/project/shaderflow/), [`broken-source`](https://pypi.org/project/broken-source/), [`pianola`](https://pypi.org/project/pianola/), [`spectronote`](https://pypi.org/project/spectronote/)
 
 ## ⭐️ Usage
 After **Installing** the Package, you can simply import it in your Code
 
-```python
-from DepthFlow import DepthFlowScene
+```python title="Example with <a href='https://pypi.org/project/depthflow/' target='_blank'><b>DepthFlow</b></a>"
+from DepthFlow import DepthScene
 
-depthflow = DepthFlowScene()
+depthflow = DepthScene()
 depthflow.input(image="./background.png")
 depthflow.main(output="./video.mp4", ...)
 ```
@@ -60,28 +59,28 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 !!! abstract "Simply **upgrade the dependency** on your Python project"
     === ":simple-python: Pip"
         ```shell title="Command"
-        python -m pip install --upgrade broken-source
+        python -m pip install --upgrade {package}
         ```
 
     === ":simple-poetry: Poetry"
         ```shell title="Command"
-        python -m poetry update broken-source
+        python -m poetry update {package}
         ```
 
     === ":simple-rye: Rye"
         ```shell title="Command"
-        rye add broken-source
+        rye add {package}
         ```
 
     === ":simple-pdm: PDM"
         ```shell title="Command"
-        pdm update broken-source
+        pdm update {package}
         ```
 
 !!! tip "**Consider** staying on a fixed version if you need stability"
     Small or breaking parts of the code can be changed on any new release
 
-    - Define `broken-source==X.Y.Z` in `pyproject.toml` to pin it
+    - Define `{package}==X.Y.Z` in `pyproject.toml` to pin it
 
 
 ## ♻️ Uninstalling
