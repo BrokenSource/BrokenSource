@@ -115,8 +115,12 @@ class DepthEstimator(BaseModel, ABC):
 
 # -------------------------------------------------------------------------------------------------|
 
-class DepthAnythingV1(DepthEstimator):
-    """Configure and use DepthAnythingV1 [green](See 'anything1  --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+class DepthAnythingBase(DepthEstimator):
+
+    @abstractmethod
+    def prefix(self) -> str:
+        ...
+
     class Models(str, BrokenEnum):
         Small = "small"
         Base  = "base"
@@ -131,7 +135,7 @@ class DepthAnythingV1(DepthEstimator):
 
     def _load_model(self) -> None:
         import transformers
-        HUGGINGFACE_MODEL = (f"LiheYoung/depth-anything-{self.model}-hf")
+        HUGGINGFACE_MODEL = (f"{self.prefix()}{self.model}-hf")
         self._processor = transformers.AutoImageProcessor.from_pretrained(HUGGINGFACE_MODEL)
         self._model = transformers.AutoModelForDepthEstimation.from_pretrained(HUGGINGFACE_MODEL)
         self._model.to(self.device)
@@ -143,6 +147,11 @@ class DepthAnythingV1(DepthEstimator):
             depth = self._model(**inputs).predicted_depth
         return depth.squeeze(1).cpu().numpy()[0]
 
+class DepthAnythingV1(DepthAnythingBase):
+    """Configure and use DepthAnythingV1 [green](See 'anything1 --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+    def prefix(self) -> str:
+        return  "LiheYoung/depth-anything-"
+
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
         depth = maximum_filter(input=depth, size=5)
@@ -151,56 +160,10 @@ class DepthAnythingV1(DepthEstimator):
 
 # -------------------------------------------------------------------------------------------------|
 
-class DepthAnythingV2(DepthEstimator):
+class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [green](See 'anything2 --help' for options)[/green] [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
-    class Models(str, BrokenEnum):
-        Small = "small"
-        Base  = "base"
-        Large = "large"
-        Giga  = "giga"
-
-    model: Annotated[Models, typer.Option("--model", "-m",
-        help="[bold][red](🔴 Basic)[/red][/bold] What model of DepthAnythingV2 to use")] = \
-        Field(default="base")
-
-    _model: Any = PrivateAttr(default=None)
-
-    def _load_model(self) -> None:
-
-        # Download Depth-Anything-v2 from source
-        import site
-        source = Path(site.getsitepackages()[-1])/"DepthAnything"
-        os.environ["PATH"] = f"{source}:{os.environ['PATH']}"
-        try:
-            import depth_anything_v2
-        except ImportError:
-            shell("git", "clone", "https://huggingface.co/spaces/depth-anything/Depth-Anything-V2.git", source)
-            (source/"depth_anything_v2").rename(source.parent/"depth_anything_v2")
-
-        from depth_anything_v2.dpt import DepthAnythingV2
-        from huggingface_hub import hf_hub_download
-
-        # Load layers configuration dictionary
-        self._model = DepthAnythingV2(**dict(
-            small=dict(encoder='vits', features=64,  out_channels=[48, 96, 192, 384]),
-            base =dict(encoder='vitb', features=128, out_channels=[96, 192, 384, 768]),
-            large=dict(encoder='vitl', features=256, out_channels=[256, 512, 1024, 1024]),
-            giga =dict(encoder='vitg', features=384, out_channels=[1536, 1536, 1536, 1536])
-        ).get(self.model))
-
-        # Download models based on flavor
-        self._model.load_state_dict(torch.load(hf_hub_download(
-            repo_id=f"depth-anything/Depth-Anything-V2-{self.model.upper()}",
-            filename=f"depth_anything_v2_vit{self.model[0]}.pth",
-            repo_type="model"
-        ), map_location="cpu"))
-
-        self._model = self._model.to(self.device).eval()
-
-    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
-        with torch.no_grad():
-            image, _ = self._model.image2tensor(image, 512)
-            return self._model.forward(image)[:, None][0, 0].cpu().numpy()
+    def prefix(self) -> str:
+        return "depth-anything/Depth-Anything-V2-"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter

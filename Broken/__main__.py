@@ -302,20 +302,16 @@ class BrokenManager:
 
         IGNORED_DIRECTORIES = (".", "_", "modernglw", "workspace", "pyapp")
 
+        # Note: Avoid hidden, workspace, recursion
         for directory in path.iterdir():
-
-            # Avoid hidden, workspace, recursion
             if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
                 continue
             if directory.is_file():
                 continue
             if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
-
-            # Resolve symlinks recursively
             if directory.is_symlink() or directory.is_dir():
                 self.find_projects(path=BrokenPath(directory), _depth=_depth+1)
-
             if (project := ProjectCLI(directory)).is_known:
                 self.projects.append(project)
 
@@ -367,21 +363,23 @@ class BrokenManager:
             for dependency in data:
                 try:
                     name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
+                    if any((compare == "==", version == "0.0.0")): continue
+                    shell("rye", "add", "--no-sync", name, "--dev"*dev, ["--optional", optional]*bool(optional))
                 except ValueError:
                     continue
-                if (compare == "=="):
-                    continue
-                shell("rye", "add", "--no-sync", name, "--dev"*dev,
-                    ["--optional", optional] if optional else None)
 
-        for project in filter(lambda project: project.is_python, self.projects):
-            with BrokenPath.pushd(project.path):
-                pyproject = DotMap(toml.loads((project.path/"pyproject.toml").read_text()))
+        def manage(path: Path):
+            with BrokenPath.pushd(path):
+                pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
                 update(pyproject.project["dependencies"])
                 update(pyproject.tool.rye["dev-dependencies"], dev=True)
                 for (optional, items) in pyproject.project["optional-dependencies"].items():
                     update(items, optional=optional)
 
+        for project in filter(lambda project: project.is_python, self.projects):
+            manage(project.path)
+
+        manage(BROKEN.DIRECTORIES.REPOSITORY)
         shell("rye", "sync")
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
