@@ -400,6 +400,7 @@ class BrokenManager:
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         version = shell("rye", "version", output=True).strip()
+        BrokenPath.resetdir(output)
 
         # Files that will be patched
         pyprojects = flatten(
@@ -418,9 +419,9 @@ class BrokenManager:
             shell("rye", "build", "--wheel", "--all", "--out", output)
             shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
-                "--username", os.environ.get("PYPI_USERNAME"),
                 "--token", os.environ.get("PYPI_TOKEN"),
-                f"{output}/*", echo=False
+                "--username", "__token__",
+                f"{output}/*.whl", echo=False
             ) if publish else None
 
         return Path(output)
