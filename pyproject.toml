@@ -90,6 +90,9 @@ website = [
     "mkdocs-include-markdown-plugin>=6.2.1",
     "mkdocs-site-urls>=0.2.0",
 ]
+samplerate = [
+    "samplerate>=0.2.1",
+]
 
 [tool.rye]
 managed = true
@@ -121,7 +124,7 @@ broken = "Broken.__main__:main"
 # # Hatchling
 
 [build-system]
-requires      = ["hatchling"]
+requires      = ["hatchling", "cmake"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]

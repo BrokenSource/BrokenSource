@@ -23,8 +23,13 @@ RUN adduser root pulse-access
 # -------------------------------------------------------------------------------------------------|
 # Broken Source stuff
 
-# Install a release version of `broken-source` wheel
-RUN python3 -m pip install broken-source==0.3.3.dev0
+# Install latest release
+RUN python3 -m pip install \
+    depthflow \
+    pianola \
+    shaderflow \
+    spectronote \
+    upscalin
 
 # Signal Python we're Docker
 ENV DOCKER_RUNTIME="1"
