@@ -2,15 +2,13 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, Callable, List, Self
+from typing import Annotated, List, Self
 
-import click
 import toml
 from attr import Factory, define
 from dotmap import DotMap
 from typer import Argument, Context, Option, Typer
 
-import Broken
 from Broken import (
     BROKEN,
     BrokenEnum,
@@ -20,7 +18,6 @@ from Broken import (
     BrokenTyper,
     Patch,
     TorchFlavor,
-    apply,
     denum,
     easy_stack,
     flatten,
@@ -30,10 +27,11 @@ from Broken import (
 
 
 class ProjectLanguage(BrokenEnum):
+    Unknown = "unknown"
     Python  = "python"
+    NodeJS  = "nodejs"
     Rust    = "rust"
     CPP     = "cpp"
-    Unknown = "unknown"
 
 @define
 class ProjectCLI:
@@ -120,6 +118,7 @@ class ProjectCLI:
     @property
     def description_pretty_language(self) -> str:
         if self.is_python: return f"🐍 (Python) {self.description}"
+        if self.is_nodejs: return f"🟢 (NodeJS) {self.description}"
         if self.is_rust:   return f"🦀 (Rust  ) {self.description}"
         if self.is_cpp:    return f"🌀 (C/C++ ) {self.description}"
         return self.description
@@ -129,15 +128,15 @@ class ProjectCLI:
     @property
     def is_known(self) -> bool:
         return ProjectLanguage.Unknown not in self.languages
-
     @property
     def is_python(self) -> bool:
         return ProjectLanguage.Python in self.languages
-
+    @property
+    def is_nodejs(self) -> bool:
+        return ProjectLanguage.NodeJS in self.languages
     @property
     def is_rust(self) -> bool:
         return ProjectLanguage.Rust in self.languages
-
     @property
     def is_cpp(self) -> bool:
         return ProjectLanguage.CPP in self.languages
@@ -150,16 +149,17 @@ class ProjectCLI:
         if dependencies:
             if self.is_python:
                 shell("rye", "lock", "--update-all")
+            if self.is_nodejs:
+                shell("pnpm", "")
             if self.is_rust:
                 shell("cargo", "update")
             if self.is_cpp:
                 log.error("C++ projects are not supported yet")
 
-    def run(self,
-        ctx:      Context,
-        infinite: Annotated[bool, Option("--infinite", help="Press Enter after each run to run again")]=False,
-        clear:    Annotated[bool, Option("--clear",    help="Clear terminal before running")]=False,
-        debug:    Annotated[bool, Option("--debug",    help="Debug mode for Rust projects")]=False,
+    def run(self, ctx: Context,
+        loop:  Annotated[bool, Option("--loop",  help="Press Enter after each run to run again")]=False,
+        clear: Annotated[bool, Option("--clear", help="Clear terminal before running")]=False,
+        debug: Annotated[bool, Option("--debug", help="Debug mode for Rust projects")]=False,
     ) -> None:
 
         while True:
@@ -188,7 +188,7 @@ class ProjectCLI:
                 binary = next(BUILD_DIR.glob(f"{self.name.lower()}"))
                 shell(binary, ctx.args)
 
-            if not infinite:
+            if not loop:
                 break
 
             import rich.prompt

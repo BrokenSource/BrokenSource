@@ -10,8 +10,7 @@ RUN pip install transformers
 # Fixme: Why BtbN FFmpeg binaries "are faster" than 'apt install ffmpeg'?
 ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
 ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
-RUN curl -L ${FFMPEG_URL} | tar -xJ -C /usr/local/bin && \
-    cp /usr/local/bin/${FFMPEG_FLAVOR}/bin/* /usr/local/bin
+RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
 
 # -------------------------------------------------------------------------------------------------|
 # Audio
@@ -54,4 +53,9 @@ ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
 # Install development version of broken-source
 COPY . /App
-RUN python3 -m pip install --upgrade --no-deps .
+RUN python3 -m pip install --upgrade --no-deps . \
+    ./Projects/DepthFlow \
+    ./Projects/Pianola \
+    ./Projects/ShaderFlow \
+    ./Projects/SpectroNote \
+    ./Projects/Upscalin

@@ -6,6 +6,7 @@
     },
 
     "material-icon-theme.folders.associations": {
+        "Cloud": "aws",
 
         // Rust
         "Rust": "src",
@@ -37,35 +38,35 @@
         "Vectron":    "core",
 
         // Website
-        "get":        "download",
-        "blog":       "log",
-        "news":       "log",
-        "about":      "other",
+        "get":   "download",
+        "blog":  "log",
+        "news":  "log",
+        "about": "other",
 
         // Shaders
         "Fragment": "shader",
         "Vertex":   "shader",
 
         // Projects
-        "Broken":       "src",
-        "Ardmin":       "tools",
-        "DepthFlow":    "tools",
-        "PhasorFlow":   "tools",
-        "QuadSnap":     "tools",
-        "ShaderFlow":   "tools",
-        "Archium":      "tools",
-        "Upscalin":     "tools",
-        "Pianola":      "tools",
-        "SpectroNote":  "tools",
-        "FastCutter":   "tools",
-        "Modpanel":     "tools",
+        "Broken":      "src",
+        "Ardmin":      "tools",
+        "DepthFlow":   "tools",
+        "PhasorFlow":  "tools",
+        "QuadSnap":    "tools",
+        "ShaderFlow":  "tools",
+        "Archium":     "tools",
+        "Upscalin":    "tools",
+        "Pianola":     "tools",
+        "SpectroNote": "tools",
+        "FastCutter":  "tools",
+        "Modpanel":    "tools",
 
         // Sub-packages of Broken
-        "Dotmap":    "core",
-        "FFmpeg":    "core",
-        "Loaders":   "core",
-        "Upscaler":  "core",
-        "Optional":  "include",
+        "Dotmap":   "core",
+        "FFmpeg":   "core",
+        "Loaders":  "core",
+        "Upscaler": "core",
+        "Optional": "include",
 
         // Personal
         "Tremeschin": "home",

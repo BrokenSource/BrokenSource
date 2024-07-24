@@ -525,7 +525,7 @@ class BrokenApp(ABC):
                 target=run(python, class_name, code),
                 name=class_name.lower(),
                 help=(docstring or "No description provided"),
-                panel=f"🔥 Projects at [bold]({python})[/bold]",
+                panel=f"📦 Projects at [bold]({python})[/bold]",
                 add_help_option=False,
                 context=True,
             )

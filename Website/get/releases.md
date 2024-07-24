@@ -34,7 +34,7 @@ title: Get/Releases
                     <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: ROCm</a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🌵 ShaderFlow</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
                     <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
                 </tr>
                 <tr>
@@ -67,7 +67,7 @@ title: Get/Releases
                     <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">:octicons-download-16: ROCm</a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🌵 ShaderFlow</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
                     <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
                 </tr>
                 <tr>
@@ -95,7 +95,7 @@ title: Get/Releases
                     <td colspan="3"><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🌵 ShaderFlow</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
                     <td colspan="3"><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: Download</a></td>
                 </tr>
                 <tr>

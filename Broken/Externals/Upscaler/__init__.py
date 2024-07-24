@@ -3,9 +3,8 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Annotated, Any, Generator, Iterable, Optional, Tuple, Type, Union
+from typing import Annotated, Any, Generator, Optional, Tuple, Type, Union
 
-import numpy
 import PIL
 import PIL.Image
 import typer
