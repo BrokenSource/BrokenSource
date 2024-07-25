@@ -69,6 +69,11 @@
           mask-image: var(--md-admonition-icon--heart);
 }
 
+/* Hide "Important" admonition, GitHub alerts workaround */
+.md-typeset .admonition.important,
+.md-typeset details.important {
+  display: none;
+}
 
 /* [data-md-color-scheme="slate"] {
 --md-default-bg-color: hsla(0, 0%, 10%, 1);

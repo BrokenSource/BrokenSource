@@ -26,8 +26,8 @@ class BrokenTyper:
     default:     str       = None
     help_option: bool      = False
     epilog:      str       = (
-        f"• Made with [red]:heart:[/red] by [green]Broken Source Software[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my Open Source Work[/italic grey53]"
+        f"• Made with [red]:heart:[/red] by [green]Tremeschin[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my Work[/italic grey53]"
     )
 
     def __attrs_post_init__(self):

@@ -45,6 +45,5 @@ title: About/Contact
 !!! note "I live on **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
-    - 🇧🇷 **Brazilian Portuguese**, my Native Language
-
-    - 🇺🇸 **English**: I should practice speaking more 😅
+    - 🇧🇷 **Brazilian Portuguese**, my native language
+    - 🇺🇸 **English**: I should practice speaking 😅

@@ -170,8 +170,8 @@ plugins:
             line_length: 60
 
   - minify:
-      minify_html: true
-      minify_js: true
+      minify_html: false
+      minify_js: false
       minify_css: false
       htmlmin_opts:
           remove_comments: true
@@ -213,6 +213,7 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
+  - github-callouts
   - md_in_html
   - attr_list
   - tables

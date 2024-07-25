@@ -25,7 +25,7 @@ There are a few **end goals** on which the Projects can be used:
 <hr>
 
 ### 🔴 Personal use
-There are **no restrictions** on **private** use of any Software {>>(Family, friends, you)<<}
+There are **no restrictions** on **private** use of any Software {>>(family, friends, you)<<}
 
 - Be creative and have fun. Study and modify as you like
 - No strings attached! It's [**Free and Open Source Software**](https://en.wikipedia.org/wiki/Free_and_open-source_software){:target="_blank"}
