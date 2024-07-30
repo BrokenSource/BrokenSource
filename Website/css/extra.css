@@ -113,3 +113,9 @@ table > thead > tr > th {
 .md-button--elegant {
     border: 1px solid !important;
 }
+
+/* Spread content tabs to full width */
+.tabbed-labels--linked label {
+  text-align: center;
+  flex: 1;
+}

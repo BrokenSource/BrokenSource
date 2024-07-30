@@ -18,7 +18,7 @@ title: Get/Source
         - Press ++ctrl+l++ , run `powershell` and execute:
 
         ```powershell
-        # Run the line below: 'irm' downloads, 'iex' executes, '|' links the two
+        # What it does: 'irm' downloads, 'iex' executes, '|' links the two
         irm https://brokensrc.dev/get.ps1 | iex
         ```
 
@@ -69,7 +69,7 @@ title: Get/Source
     === ":simple-git: Manual"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
-        - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye-up.com) on your Platform
+        - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye.astral.sh/) on your Platform
 
         ```bash title="Clone the Monorepo and all Submodules"
         git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
@@ -101,23 +101,25 @@ title: Get/Source
 <hr>
 
 ??? bug "Something Failed?"
-    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me, or create an **Issue** on GitHub
+    Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me, preferably Discord
 
     - Please, show some effort or try solving the problem first, often you'll get it :)
 
 <hr>
 
 !!! abstract "2. Run any Project"
-    **Now** simply run `broken` for a full Command List 🚀
+    **Now**, simply run `broken` for a full command list, and to check if the setup is ok 🚀
 
-    - Return the Project you want to run for extras
+    - Start using projects directly, like `depthflow main`, `shaderflow`, etc
+    - Return the **project** you're interested for **further instructions**
 
 <hr>
 
-!!! abstract "3. Next time, to use the Projects.."
+!!! tip "Next time, to use the projects"
     You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> directory and [**Source the Virtual Environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
-    - Alternatively, run the `activate.sh` if on **Linux/MacOS** or `activate.ps1` if on **Windows**
+    - For that, run `Scripts/activate.sh` if on **Linux/MacOS** or `Scripts/activate.ps1` if on **Windows**
+    - Or manually with `source .venv/bin/activate` or `.venv\Scripts\Activate.ps1`
 
 <br>
 
@@ -125,38 +127,34 @@ title: Get/Source
 
 <hr>
 
-### 🌱 Submodules
+### 🌱 Repositories
 
-The installation script should've **initialized** and set all Submodules to the **main branch**
+The installation script should've **initialized** and set all [**submodules**](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to the **main branch**:
 
 ```bash title="Command"
 git submodule foreach --recursive 'git checkout main || true'
 ```
 
-After that, you can **pull** the latest changes of all Repositories with
+After that, you can [**pull**](https://git-scm.com/docs/git-pull) the latest changes of all [**repositories**](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) with:
 
 ```bash title="Command"
-git pull --recurse-submodules
+git pull --recurse-submodules --jobs=4
 ```
 
-If you have any local modifications and want to keep them,
-
-```bash title="Command"
-git pull --recurse-submodules --rebase
-```
-
-!!! note "You can add `--force` to override Local Changes. Be careful with data loss!"
+!!! tip "If you have any local changes"
+    - **Keep them**: Add [**`--rebase`**](https://git-scm.com/docs/git-rebase) to the command above
+    - **Delete them**: Add `--force` to the command above
 
 <hr>
 
-### 🌱 Virtual Environment
+### 🌱 Packages
 
-The Python Tooling I chose to Orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**Rye**](https://rye-up.com)
+The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**Rye**](https://rye.astral.sh/)
 
 - You'll probably **only** need to know of a **single command**:
 
-!!! note "Command: [`rye sync`](https://rye-up.com/guide/sync)"
-    This will **update** the **Virtual Environment** and **Install** any new **Dependencies**
+!!! note "Command: [`rye sync`](https://rye.astral.sh/guide/sync)"
+    This will **update** the **Virtual Environment** and **install** any new **dependencies**
 
 ## ♻️ Uninstalling
 See the <a href="site:uninstalling"><b>Uninstalling</b></a> page

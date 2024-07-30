@@ -22,3 +22,13 @@ title: Landing Page
 <hr>
 
 💬 Join the [**Community**](about/contact.md) servers on **Discord** and **Telegram**
+
+<hr>
+
+❤️ [**Join my Sponsors**](site:about/sponsors), so I can continue **Open Source** work
+
+<hr>
+
+⚖️ Learn about my [**Copyleft Licensing**](site:about/license) and intentions
+
+<hr>

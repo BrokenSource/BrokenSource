@@ -12,8 +12,6 @@ title: Get/Releases
 
 !!! success "I make self-installing executables using [**PyApp**](https://github.com/ofek/pyapp) for your convenience!"
 
-!!! warning "Customization options are limited at the moment. Prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi)"
-
 !!! abstract "Select your Platform"
     === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
@@ -109,6 +107,8 @@ title: Get/Releases
             </tbody>
         </table>
         !!! bug "Help needed, I don't have the Hardware to compile or test"
+
+!!! warning "Customization options are limited at the moment. Prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi)"
 
 ## ⭐️ Usage
 Simply **double click** and run the executable on your platform

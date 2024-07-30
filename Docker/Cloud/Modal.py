@@ -14,6 +14,9 @@ WARN: You must ask the support team to enable a Workspace runtime configuration 
     to work - that is, enable `graphics,video` capabilities on NVIDIA CONTAINER TOOLKIT, as they are
     selective to enable it. Failing to do so WILL NOT USE THE GPU and render at abyssmal speeds
 
+WARN: NVENC is disabled by default for security reasons, you must also ask the support team for it.
+    Otherwise, throw a couple more cores and use CPU video encoding (non-nvenc codecs)
+
 WARN: Avoid A100, H100 GPUs as they are tensor core only, without graphics API support (OpenGL)
 
 ShaderFlow will tell which GPU is being used (v0.4.1+), "llvmpipe" is CPU (bad), any other is good

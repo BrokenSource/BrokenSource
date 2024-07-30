@@ -52,7 +52,7 @@ fi
 
 # Make scripts executable for later use
 chmod +x Website/get.sh
-chmod +x ./activate.sh
+chmod +x ./Scripts/activate.sh
 
 printf "\n:: Creating Virtual Environment and Installing Dependencies\n"
 $rye self update

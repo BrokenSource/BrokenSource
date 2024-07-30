@@ -172,7 +172,7 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
     If you're making a _Software as a Service (SaaS)_ backend of any Project, consider [**getting in touch**](site:about/contact){:target="_blank"} with me, so we can make both sides **grow together** and **help each other** 👍
 
 !!! heart "**This page helped you?**"
-    Consider [**Joining our Sponsors**](site:about/sponsors) and helping me continue everything !
+    Consider [**Joining my Sponsors**](site:about/sponsors) and helping me continue everything !
 
 <h3>All of that..</h3>
 
