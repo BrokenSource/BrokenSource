@@ -16,7 +16,7 @@ from Broken.Externals.Upscaler import BrokenUpscaler
 
 class UpscalerNCNN_Base(BrokenUpscaler):
     denoise: Annotated[int, typer.Option("--denoise", "-n", min=0, max=3,
-        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Denoiser intensity. Great for digital art, 'fake, uncanny' else")] = \
+        help="[bold][yellow](🟡 Specific)[/yellow][/bold] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
         Field(default=3, gt=-1)
 
     tile_size: Annotated[int, typer.Option("--tile-size", "-t", min=0,

@@ -1,11 +1,15 @@
 {
     "recommendations": [
-        "tamasfe.even-better-toml",
-        "usernamehw.errorlens",
-        "PKief.material-icon-theme",
-        "ms-python.python",
-        "silesky.toggle-boolean",
-        "shardulm94.trailing-spaces",
         "aaron-bond.better-comments",
+        "usernamehw.errorlens",
+        "tamasfe.even-better-toml",
+        "geforcelegend.vscode-glsl",
+        "pkief.material-icon-theme",
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "slevesque.shader",
+        "shardulm94.trailing-spaces",
+        // "ms-vscode.cpptools-extension-pack"
     ]
 }

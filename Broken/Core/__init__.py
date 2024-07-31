@@ -234,7 +234,7 @@ def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
     os.environ.update(old)
 
 @contextlib.contextmanager
-def easy_stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
+def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
     """Enter multiple contexts at once"""
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):

@@ -1,8 +1,13 @@
 [project.urls]
-issues        = "https://github.com/BrokenSource/BrokenSource/issues"
-repository    = "https://github.com/BrokenSource/BrokenSource"
-documentation = "https://brokensrc.dev/broken"
-homepage      = "https://brokensrc.dev"
+GitHub    = "https://github.com/BrokenSource/BrokenSource"
+Changelog = "https://brokensrc.dev/news/category/releases"
+Funding   = "https://brokensrc.dev/about/sponsors"
+Contact   = "https://brokensrc.dev/about/contact"
+Credits   = "https://brokensrc.dev/about/credits"
+License   = "https://brokensrc.dev/about/license"
+Download  = "https://brokensrc.dev/get/releases"
+Docs      = "https://brokensrc.dev/broken"
+Homepage  = "https://brokensrc.dev"
 
 [tool.hatch.version]
 path = "Broken/Version.py"

@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Annotated, Any, Generator, Optional, Tuple, Type, Union
+from typing import Annotated, Generator, Optional, Tuple, Type, Union
 
 import PIL
 import PIL.Image
@@ -61,13 +61,13 @@ class BrokenUpscaler(BaseModel, ABC):
         try:
             # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
-                delete=image is None,
-                suffix=f".{denum(self.format)}").name
+                suffix=f".{denum(self.format)}").name,
+                delete=(image is None),
             )
-            if isinstance(image, Image):
-                image.save(file, quality=self.quality)
-            elif image is Image:
+            if image is Image:
                 pass
+            elif isinstance(image, Image):
+                image.save(file, quality=self.quality)
             elif isinstance(image, Path) and Path(image).exists():
                 shutil.copy(image, file)
             yield file

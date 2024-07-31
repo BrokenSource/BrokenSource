@@ -1,10 +1,10 @@
 import contextlib
 import sys
-from typing import Callable, Generator, List
+from typing import Callable, Generator, Set, Union
 
-import pydantic
 import typer.rich_utils
 from attr import Factory, define
+from pydantic import BaseModel
 from typer import Typer
 
 import Broken
@@ -18,17 +18,26 @@ typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
 
 @define
 class BrokenTyper:
-    """A wrap around Typer with goodies. # Todo: Maybe try Cyclopts"""
-    description: str       = ""
-    app:         Typer     = None
-    chain:       bool      = False
-    commands:    List[str] = Factory(list)
-    default:     str       = None
-    help_option: bool      = False
-    epilog:      str       = (
-        f"• Made with [red]:heart:[/red] by [green]Tremeschin[/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my Work[/italic grey53]"
-    )
+    """Yet another Typer wrapper, with goodies"""
+    description: str = ""
+
+    app: Typer = None
+    """The main managed typer.Typer instance"""
+
+    chain: bool = False
+    """Same as Typer.chain"""
+
+    commands: Set[str] = Factory(set)
+    """List of known commands"""
+
+    default: str = None
+    """Default command to run if none is provided"""
+
+    help_option: bool = False
+
+    epilog: str = (
+        f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]")
 
     def __attrs_post_init__(self):
         self.app = Typer(
@@ -52,7 +61,7 @@ class BrokenTyper:
             self._panel = None
 
     def command(self,
-        target: Callable,
+        target: Union[Callable, BaseModel],
         help: str=None,
         add_help_option: bool=True,
         naih: bool=False,
@@ -60,27 +69,33 @@ class BrokenTyper:
         context: bool=True,
         default: bool=False,
         panel: str=None,
+        post: Callable=None,
         **kwargs,
     ) -> None:
+
         # Command must be implemented
         if getattr(target, "__isabstractmethod__", False):
             return
 
-        # Convert pydantic to a signature wrapper
-        if issubclass(type(target), pydantic.BaseModel):
-            name = name or str(target.__class__.__name__).lower()
-            target = pydantic_cli(target)
+        # Convert pydantic to a wrapper with same signature
+        _class = (target if isinstance(target, type) else target.__class__)
+        _instance = (target() if isinstance(target, type) else target)
 
-        # Maybe get callable name
+        if issubclass(_class, BaseModel):
+            target = pydantic_cli(instance=_instance, post=post)
+            name = (name or _class.__name__)
+            naih = True # (Complex command)
         else:
-            name = (name or target.__name__).replace("_", "-")
+            name = (name or target.__name__)
 
-        # Create Typer command
-        self.app.command(
-            help=help or target.__doc__,
+        # Add to known or default commands, create it
+        name = name.replace("_", "-").lower()
+        self.default = (name if default else self.default)
+        self.commands.add(name)
+        self.app.command(name=name,
+            help=(help or target.__doc__),
             add_help_option=add_help_option,
             no_args_is_help=naih,
-            name=name,
             rich_help_panel=(panel or self._panel),
             context_settings=dict(
                 allow_extra_args=True,
@@ -88,10 +103,6 @@ class BrokenTyper:
             ) if context else None,
             **kwargs,
         )(target)
-
-        # Add to known or default commands
-        self.default = (name if default else self.default)
-        self.commands.append(name)
 
     def __call__(self, *args):
         self.app.info.help = (self.description or "No help provided")

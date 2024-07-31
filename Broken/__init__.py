@@ -67,11 +67,11 @@ DEVELOPMENT: bool = (not RELEASE)
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
+    Stack,
     apply,
     clamp,
     denum,
     dunder,
-    easy_stack,
     every,
     flatten,
     hyphen_range,

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import functools
 import sys
@@ -34,6 +36,15 @@ class OnceTracker:
             self._first = True
             return False
         return True
+
+    def decorator(method: Callable) -> Callable:
+        tracker = OnceTracker()
+        @functools.wraps(method)
+        def wrapper(*args, **kwargs):
+            if tracker():
+                return
+            return method(*args, **kwargs)
+        return wrapper
 
 
 @define

@@ -17,9 +17,9 @@ from Broken import (
     BrokenProfiler,
     BrokenTyper,
     Patch,
+    Stack,
     TorchFlavor,
     denum,
-    easy_stack,
     flatten,
     log,
     shell,
@@ -292,7 +292,6 @@ class BrokenManager:
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 4:
@@ -409,11 +408,11 @@ class BrokenManager:
         # What to temporarily replace
         replaces = {
             '"Private/': '# "Private/', # Ignore private projects
-            '"0.0.0"': f'"{version}"', # Pin current version
-            '>=0.0.0': f"=={version}", # Pin dependencies version
+            '"0.0.0"': f'"{version}"',  # Pin current version
+            '>=0.0.0': f"=={version}",  # Pin dependencies version
         }
 
-        with easy_stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
+        with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("rye", "build", "--wheel", "--all", "--out", output)
             shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
