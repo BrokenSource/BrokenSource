@@ -59,6 +59,6 @@ When a project requires **PyTorch**, {==a Prompt will pop up to install a flavor
         !!! question "Should work, but I don't have the Hardware to test"
 
 ## 🧀 From PyPI
-Specify a [**PyTorch version**](https://pytorch.org/get-started/locally) in `pyproject.toml` on the Python package manager that you use. Or do what I do: use [**poethepoet**](https://github.com/nat-n/poethepoet) for the user's choice (or [automate it](https://github.com/BrokenSource/BrokenSource/blob/Master/Broken/Core/BrokenTorch.py))
+Specify a [**PyTorch version**](https://pytorch.org/get-started/locally) in `pyproject.toml` on the Python package manager that you use. Or do what I do: use [**poethepoet**](https://github.com/nat-n/poethepoet) for the user's choice (or [automate it](https://github.com/BrokenSource/BrokenSource/blob/main/Broken/Core/BrokenTorch.py))
 
 - PyTorch is hard to deal with, I can't write exhaustively

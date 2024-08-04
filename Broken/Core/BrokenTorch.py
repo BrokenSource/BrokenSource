@@ -54,7 +54,7 @@ class BrokenTorch:
                     "",
                     "Check Hardware/Platform availability at:",
                     "• https://pytorch.org/get-started/locally",
-                    "• https://brokensrc.dev/get/pytorch",
+                    "• https://brokensrc.dev/special/pytorch",
                     "",
                     "As a rule of thumb:",
                     "• [royal_blue1](Windows + Linux)[/royal_blue1] NVIDIA GPU (>= GTX 700): 'cuda'",

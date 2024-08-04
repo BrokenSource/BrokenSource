@@ -124,7 +124,7 @@ def shell(
         process = subprocess.Popen(command, **kwargs)
 
         # Linux non-threaded pipes were slower than Windows plain subprocess
-        if (os.name != "nt") and ("stdin" in kwargs) and bool(wrapper):
+        if (os.name != "nt") and bool(wrapper):
 
             @define
             class StdinWrapper:

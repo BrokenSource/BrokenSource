@@ -52,7 +52,6 @@ dependencies = [
     "loguru>=0.7.2",
     "diskcache>=5.6.3",
     "python-magic>=0.4.27",
-    "schedule>=1.2.2",
 ]
 requires-python = ">=3.9"
 
@@ -75,11 +74,15 @@ shaderflow = [
     "moderngl-window>=2.4.6",
     "imgui>=2.0.0",
     "pygame>=2.6.0",
+    "turbopipe==1.0.4",
     # MIDI
     "midi2audio>=0.1.1",
     "pretty-midi>=0.2.10",
     "mido>=1.3.2",
     "python-rtmidi>=1.5.8",
+]
+staging = [
+    "schedule>=1.2.2",
 ]
 website = [
     "mkdocs>=1.6.0",
@@ -95,9 +98,6 @@ website = [
     "mkdocs-include-markdown-plugin>=6.2.1",
     "mkdocs-site-urls>=0.2.0",
     "markdown-callouts>=0.4.0",
-]
-samplerate = [
-    "samplerate>=0.2.1",
 ]
 
 [tool.rye]
@@ -130,14 +130,24 @@ broken = "Broken.__main__:main"
 # # Hatchling
 
 [build-system]
-requires      = ["hatchling", "cmake"]
+requires = ["hatchling", "cmake"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["Broken"]
+packages = [
+    "Broken",
+    #<PyApp>"Projects/DepthFlow",
+    #<PyApp>"Projects/Pianola",
+    #<PyApp>"Projects/ShaderFlow",
+    #<PyApp>"Projects/SpectroNote",
+    #<PyApp>"Projects/Upscalin",
+]
 
 [tool.hatch.build.targets.sdist]
 exclude = ["*"]
+
+[tool.hatch.build]
+directory = "Build/Wheels"
 
 # # PyTorch
 

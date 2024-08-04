@@ -225,7 +225,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
         "p5", # slow
         "p6", # slower
         "p7", # slowest
-    ]] = Field(default="p5")
+    ]] = Field(default="p4")
 
     tune: Optional[Literal[
         "hq", # High quality

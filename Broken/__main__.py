@@ -362,7 +362,7 @@ class BrokenManager:
             for dependency in data:
                 try:
                     name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
-                    if any((compare == "==", version == "0.0.0")): continue
+                    if any((compare==">=", version=="0.0.0")): continue
                     shell("rye", "add", "--no-sync", name, "--dev"*dev, ["--optional", optional]*bool(optional))
                 except ValueError:
                     continue
@@ -396,7 +396,7 @@ class BrokenManager:
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
-        version = shell("rye", "version", output=True).strip()
+        from Broken.Version import __version__ as version
         BrokenPath.resetdir(output)
 
         # Files that will be patched
@@ -432,7 +432,7 @@ class BrokenManager:
         toolchain:   Annotated[str,  Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
         build_tools: Annotated[bool, Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
-        """🦀 Installs Build Dependencies and a Rust Toolchain"""
+        """🦀 Installs Rustup and a Rust Toolchain"""
         import requests
 
         # Install rustup based on platform

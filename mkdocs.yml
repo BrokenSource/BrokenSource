@@ -2,7 +2,7 @@ site_name: Broken Source Software
 site_description: Unified Documentation and Resources
 site_url: https://brokensrc.dev/
 repo_url: https://github.com/BrokenSource/BrokenSource
-edit_uri: edit/Master/Website/
+edit_uri: edit/main/Website/
 repo_name: GitHub
 site_author: Tremeschin
 copyright: © 2023-2024, <a href="https://github.com/Tremeschin" target="_blank">Tremeschin</a> 🇧🇷
@@ -18,8 +18,8 @@ nav:
       - 📦 From Releases: get/releases.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
-      - 🐳 Docker: get/docker.md
-      - 🔦 PyTorch: get/pytorch.md
+      - 🐳 Docker: special/docker.md
+      - 🔦 PyTorch: special/pytorch.md
       - ❤️ Sponsors: about/sponsors.md
     - About:
       - 👤 Developers: about/developers.md

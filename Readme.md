@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://brokensrc.dev"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/Master/Broken/Resources/Images/Broken.png" width="200"></a>
+  <a href="https://brokensrc.dev"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/main/Broken/Resources/Images/Broken.png" width="200"></a>
   <h2>Broken Source Software</h2>
   <br>
   Here lies <b>Broken</b>: The <b>Shared Library</b> and <b>Submodules</b> of all my <b>Projects</b>

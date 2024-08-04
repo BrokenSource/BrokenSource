@@ -65,7 +65,7 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 
 ## 🚀 Context
 
-Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/Master/docker-compose.yml){:target="_blank"} file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/Master/Docker/base.dockerfile){:target="_blank"} with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
+Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
 
 ??? tip "Have enough RAM and don't want to hurt your SSD's TBW?"
     Edit or create the file `sudo nano /etc/docker/daemon.json` and add:
@@ -164,7 +164,7 @@ docker-compose run --build glinfo
 
 If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 
-!!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/Master/Docker/base.dockerfile){:target="_blank"} and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/Master/docker-compose.yml){:target="_blank"} files"
+!!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} files"
 
 ## ⭐️ Usage
 

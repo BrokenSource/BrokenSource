@@ -60,6 +60,7 @@
         "SpectroNote": "tools",
         "FastCutter":  "tools",
         "Modpanel":    "tools",
+        "TurboPipe":   "tools",
 
         // Sub-packages of Broken
         "Dotmap":   "core",
