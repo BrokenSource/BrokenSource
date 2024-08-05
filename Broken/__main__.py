@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self
+from typing import Annotated, Generator, Iterable, List, Self
 
 import toml
 from attr import Factory, define
@@ -202,20 +202,25 @@ class ProjectCLI:
         target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
         torch:  Annotated[bool, Option("--torch", help="Build for all PyTorch flavors")]=False,
         gui:    Annotated[bool, Option("--gui",   help="Set the entry point to main_gui()")]=False,
-    ) -> List[Path]:
-        """Release the Project as a distributable binary"""
+    ) -> None:
+        """
+        Release the Project as a distributable binary
+
+        Note:
+            - Requires mingw packages for Windows cross compilation from Linux
+        """
 
         # Recurse on all Torch flavors
         if isinstance(torch, bool) and torch:
-            for torch_flavor in TorchFlavor:
-                self.release(target=target, torch=torch_flavor)
-            return
+            for flavor in TorchFlavor:
+                self.release(target=target, torch=flavor)
+            return None
 
         # Recurse on each target item
         if isinstance(target, list) and 1:
             for item in target:
                 self.release(target=item, torch=torch)
-            return
+            return None
 
         # Avoid bad combinations
         if (torch == TorchFlavor.ROCM)  and ("windows"   in target.name): return
@@ -267,15 +272,13 @@ class ProjectCLI:
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}-", "gui-"*gui,
                     f"{torch.name.lower()}-" if torch else "",
-                    f"{target.name}-",
+                    f"{target.name}-".replace("macos-", ""),
                     f"{target.architecture}-",
                     f"{version}",
                     f"{target.extension}",
                 ))
                 BrokenPath.copy(src=binary, dst=release_path)
                 log.success(f"Built Project Release at ({release_path})")
-
-            return release_path
 
 # -------------------------------------------------------------------------------------------------|
 
