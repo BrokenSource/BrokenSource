@@ -1,5 +1,5 @@
-name: Base Setup
-description: Sets up the environment for Broken projects
+name: Broken Setup
+description: Checkout repositories, install common dependencies
 
 runs:
   using: composite

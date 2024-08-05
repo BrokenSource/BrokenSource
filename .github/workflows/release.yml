@@ -8,9 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: BrokenSource/BrokenSource@main
-        name: Setup monorepo
-        with:
-          path: .github/actions/setup
+        name: Broken Setup
 
       - run: echo Version is "$BROKEN_VERSION"
         shell: bash
@@ -41,9 +39,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-14]
     steps:
       - uses: BrokenSource/BrokenSource@main
-        name: Setup monorepo
-        with:
-          path: .github/actions/setup
+        name: Broken Setup
 
       - name: Build DepthFlow release
         run: rye run broken depthflow release --torch
