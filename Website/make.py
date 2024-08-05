@@ -8,8 +8,7 @@ import mkdocs_gen_files
 print("\n", "-"*(shutil.get_terminal_size().columns-2), "\n")
 
 # Constants
-CODE_REFERENCE = bool(eval(os.environ.get("CODE_REFERENCE", 0)))
-
+CODE_REFERENCE = bool(os.environ.get("CODE_REFERENCE", 0))
 UNWANTED_PYTHON = (
     "Resources",
     "Community",

@@ -224,7 +224,6 @@ class ProjectCLI:
         if self.is_python:
             BrokenManager.rust()
             BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
-            wheel = next(BrokenManager().pypi().glob("broken_source*.whl"))
 
             # Remove previous build cache for pyapp but no other crate
             for path in BUILD_DIR.rglob("*"):
@@ -233,7 +232,7 @@ class ProjectCLI:
 
             # Pyapp configuration
             os.environ.update(dict(
-                PYAPP_PROJECT_PATH=str(wheel),
+                PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(pyapp=True).glob("*.whl"))),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main" + ("_gui"*gui),
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
@@ -246,7 +245,7 @@ class ProjectCLI:
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
             shell("rustup", "target", "add", target.rust)
 
-            # We're not 'installing' a utility, remove warning
+            # We're not 'installing' a utility, remove cargo warning
             BrokenPath.add_to_path(BUILD_DIR/"bin")
 
             # Build the final binary
@@ -383,7 +382,7 @@ class BrokenManager:
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy the Unified Broken Source Software Website"""
-        os.environ["CODE_REFERENCE"] = str(deploy)
+        os.environ["CODE_REFERENCE"] = "1"
         GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
             shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)
@@ -394,6 +393,7 @@ class BrokenManager:
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
+        pyapp: bool=False,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         from Broken.Version import __version__ as version
@@ -410,10 +410,14 @@ class BrokenManager:
             '"Private/': '# "Private/', # Ignore private projects
             '"0.0.0"': f'"{version}"',  # Pin current version
             '>=0.0.0': f"=={version}",  # Pin dependencies version
+            "#<pyapp>": ("" if pyapp else "#"),
         }
 
+        # We patch to include all projects on binary releases
+        packages = (("--package", "broken-source") if pyapp else "--all")
+
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
-            shell("rye", "build", "--wheel", "--all", "--out", output)
+            shell("rye", "build", "--wheel", "--out", output, packages)
             shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
                 "--token", os.environ.get("PYPI_TOKEN"),
