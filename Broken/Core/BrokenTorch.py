@@ -20,7 +20,7 @@ class BrokenTorch:
 
     @staticmethod
     def install():
-        if os.environ.get("SKIP_TORCH", "0") == "1":
+        if os.getenv("SKIP_TORCH", "0") == "1":
             return
 
         import site
@@ -36,12 +36,12 @@ class BrokenTorch:
 
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
         if Broken.PYAPP:
-            version_flavor = os.environ.get("PYAPP_COMMAND_NAME", "")
+            version_flavor = os.getenv("PYAPP_COMMAND_NAME", "")
             if ("+" not in version_flavor):
                 return None
 
         # Development mode: No PyTorch was found
-        elif (current_flavor is None) or (os.environ.get("MANAGE_TORCH", "0") == "1"):
+        elif (current_flavor is None) or (os.getenv("MANAGE_TORCH", "0") == "1"):
             from rich.prompt import Prompt
             log.warning("")
 

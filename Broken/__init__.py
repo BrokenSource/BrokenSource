@@ -4,7 +4,7 @@
 import os
 from pathlib import Path
 
-if (os.environ.get("RICH_TRACEBACK", "1") == "1"):
+if (os.getenv("RICH_TRACEBACK", "1") == "1"):
     import rich.traceback
     rich.traceback.install(width=None)
 
@@ -20,7 +20,7 @@ import typing
 # Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
 os.environ["OMP_NUM_THREADS"] = "1"
 
-# High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind own vblank
+# NVIDIA: High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind vblank
 # https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
 os.environ["__GL_YIELD"] = "USLEEP"
@@ -38,7 +38,7 @@ for _index, _item in enumerate(sys.argv):
         sys.argv[_index] = str(Path(_item).expanduser().resolve())
 
 # Replace argv[0]=="-c" with PyApp's managed python
-if bool(os.environ.get("PYAPP", None)):
+if bool(os.getenv("PYAPP", None)):
     sys.argv[0] = sys.executable
 
 # Python < 3.11 typing fixes
@@ -58,13 +58,13 @@ import importlib.resources
 VERSION:     str  = importlib.metadata.version("broken-source")
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 NUITKA:      bool = ("__compiled__" in globals())
-PYAPP:       bool = bool(os.environ.get("PYAPP", False))
+PYAPP:       bool = bool(os.getenv("PYAPP", False))
 PYPI:        bool = ("site-packages" in __file__.lower())
-DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
+DOCKER:      bool = bool(os.getenv("DOCKER_RUNTIME", False))
 WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
 RELEASE:     bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
-GITHUB_CI:   bool = bool(os.environ.get("GITHUB_ACTIONS", False))
+GITHUB_CI:   bool = bool(os.getenv("GITHUB_ACTIONS", False))
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
@@ -123,7 +123,7 @@ import time
 time.zero = time.perf_counter()
 """Precise time at which the program started since booting the computer"""
 
-time.since_zero = (lambda: time.perf_counter() - time.zero)
+time.absolute = (lambda: time.perf_counter() - time.zero)
 """Precise time this Python process has been running, started at time.zero"""
 
 # -------------------------------------------------------------------------------------------------|

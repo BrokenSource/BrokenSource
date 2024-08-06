@@ -20,12 +20,12 @@ class BrokenProfiler:
     profiler: BrokenProfilerEnum = BrokenProfilerEnum.cprofile
 
     def __attrs_post_init__(self):
-        profiler = os.environ.get(f"{self.name}_PROFILER", self.profiler)
+        profiler = os.getenv(f"{self.name}_PROFILER", self.profiler)
         self.profiler = BrokenProfilerEnum.get(profiler)
 
     @property
     def enabled(self) -> bool:
-        return os.environ.get(f"{self.name}_PROFILE", "0") == "1"
+        return os.getenv(f"{self.name}_PROFILE", "0") == "1"
 
     @property
     def output(self) -> Path:

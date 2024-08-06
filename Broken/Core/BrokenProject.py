@@ -174,7 +174,7 @@ class _BrokenProjectDirectories:
     @property
     def WORKSPACE(self) -> Path:
         """Root for the current Project's Workspace"""
-        if (path := os.environ.get("WORKSPACE", None)):
+        if (path := os.getenv("WORKSPACE", None)):
             return mkdir(Path(path)/self.APP_AUTHOR/self.APP_NAME)
         if (os.name == "nt"):
             return mkdir(Path(self.APP_DIRS.user_data_dir))
@@ -430,7 +430,7 @@ class BrokenProject:
     def pyapp_new_binary_restore_hook(self) -> None:
         """One might send rolling releases or development betas of the same major version; whenever
         the current PyApp binary changes hash, we reinstall the virtual environment"""
-        if not (pyapp_binary := os.environ.get("PYAPP", False)):
+        if not (pyapp_binary := os.getenv("PYAPP", False)):
             return
 
         import hashlib

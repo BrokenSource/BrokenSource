@@ -430,7 +430,7 @@ class BrokenManager:
             shell("rye", "build", "--wheel", "--out", output, packages)
             shell("rye", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
-                "--token", os.environ.get("PYPI_TOKEN"),
+                "--token", os.getenv("PYPI_TOKEN"),
                 "--username", "__token__",
                 f"{output}/*.whl", echo=False
             ) if publish else None

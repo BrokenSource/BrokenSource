@@ -19,7 +19,7 @@ class BrokenLogging:
 
     @staticmethod
     def project() -> str:
-        return os.environ.get("BROKEN_APP_NAME", "Broken")
+        return os.getenv("BROKEN_APP_NAME", "Broken")
 
     @staticmethod
     def set_project(name: str, *, force: bool=False) -> None:
@@ -41,7 +41,7 @@ class BrokenLogging:
         log.add(
             rich.print,
             format=self.broken_format,
-            level=os.environ.get("LOGLEVEL", "INFO").upper(),
+            level=os.getenv("LOGLEVEL", "INFO").upper(),
             colorize=False,
             backtrace=True,
             diagnose=True,

@@ -72,7 +72,7 @@ class BrokenTask:
 
     # # Timing
 
-    started: float = Factory(lambda: time.since_zero())
+    started: float = Factory(lambda: time.absolute())
     """Time when client was started (initializes $now+started, value in now() seconds)"""
 
     next_call: float = None
@@ -141,7 +141,7 @@ class BrokenTask:
     def next(self, block: bool=True) -> Self:
 
         # Time to wait for next call if block
-        wait = max(0, (self.next_call - time.since_zero()))
+        wait = max(0, (self.next_call - time.absolute()))
 
         if self.freewheel:
             pass
@@ -154,7 +154,7 @@ class BrokenTask:
             return None
 
         # The assumed instant the code below will run instantly
-        now = self.next_call if self.freewheel else time.since_zero()
+        now = self.next_call if self.freewheel else time.absolute()
         if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
         if self._time: self.kwargs["time"] = (now - self.started)
         self.last_call = now

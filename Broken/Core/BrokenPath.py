@@ -419,7 +419,7 @@ class BrokenPath(pathlib.Path):
 
     def on_path(path: Path) -> bool:
         """Check if a path is on PATH, works with symlinks"""
-        return (Path(path) in map(Path, os.environ.get("PATH", "").split(os.pathsep)))
+        return (Path(path) in map(Path, os.getenv("PATH", "").split(os.pathsep)))
 
     def add_to_path(
         path: Path,

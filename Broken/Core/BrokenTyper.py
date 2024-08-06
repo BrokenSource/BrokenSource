@@ -119,7 +119,7 @@ class BrokenTyper:
 
     @property
     def _repl(self) -> bool:
-        BYPASS = (os.environ.get("REPL", "1") == "0")
+        BYPASS = (os.getenv("REPL", "1") == "0")
         return (self.repl and not BYPASS)
 
     def __call__(self, *args: Iterable[Any]) -> None:
