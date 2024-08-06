@@ -14,22 +14,13 @@ jobs:
         name: Broken Setup
 
       - name: Build wheels
-        run: rye run broken pypi
+        run: rye run broken pypi --publish
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
           name: Wheels
           path: Build/Wheels/*.whl
-
-      - name: Install dependencies
-        run: python -m pip install -U twine
-
-      - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{secrets.PYPI_TOKEN}}
-        run: twine upload Build/Wheels/*
 
   releases:
     name: Release (${{matrix.os}})
