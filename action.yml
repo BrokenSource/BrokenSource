@@ -15,6 +15,8 @@ runs:
 
     - name: Sync dependencies
       run: rye sync
+      shell: bash
 
     - name: Get version
       run: echo BROKEN_VERSION=$(rye version) >> $GITHUB_ENV
+      shell: bash
