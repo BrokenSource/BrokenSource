@@ -23,7 +23,3 @@ My _**deepest grattitude**_ for all the amazing people who have made this possib
     [:octicons-arrow-right-24:{.lg.middle} **Support me 💎**](https://www.patreon.com/Tremeschin)
 
 </div>
-
-<hr>
-
-<!-- !!! heart "Hello" -->

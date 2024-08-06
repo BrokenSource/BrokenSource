@@ -18,7 +18,7 @@ title: Get/Source
         - Press ++ctrl+l++ , run `powershell` and execute:
 
         ```powershell
-        # What it does: 'irm' downloads, 'iex' executes, '|' links the two
+        # How it works: 'irm' downloads, 'iex' executes, '|' links the two
         irm https://brokensrc.dev/get.ps1 | iex
         ```
 
@@ -156,5 +156,7 @@ The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.co
 !!! note "Command: [`rye sync`](https://rye.astral.sh/guide/sync)"
     This will **update** the **Virtual Environment** and **install** any new **dependencies**
 
+After that, just activate the venv and you're good to go!
+
 ## ♻️ Uninstalling
-See the <a href="site:uninstalling"><b>Uninstalling</b></a> page
+See the <a href="site:get/uninstalling"><b>Uninstalling</b></a> page

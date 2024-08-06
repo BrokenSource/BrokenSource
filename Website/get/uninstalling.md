@@ -11,7 +11,7 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
 !!! tip "**Project Workspaces**: Where Cache, Data, etc are stored"
     The main Library uses [**AppDirs**](https://pypi.org/project/appdirs) {>>to decide per-platform directories<<}
 
-    For unification, all project's Workspaces are located at your Platform's **User Data** directory, followed by a **AppAuthor** and **AppName** subdirectories, which will be <kbd>BrokenSource</kbd> and <kbd>ProjectName</kbd> in most cases
+    For unification, all project's Workspaces are located at your Platform's **User Data** directory, followed by a {++**AppAuthor**++} and {++**AppName**++} subdirectories, which will be <kbd>BrokenSource</kbd> and <kbd>ProjectName</kbd> in most cases
 
     - **Linux**: `~/.local/share/BrokenSource/AppName/*`
     - **Windows**: `%localappdata%\BrokenSource\AppName\*`
@@ -30,7 +30,7 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
     Depending on what **Package Manager** you use {==(⚠️ Rye is used on the **From Source** installation)==}, you'll find the Python **Virtual Environment** in a couple different places:
 
     === ":simple-python: Pip"
-        Manual method, you either **created it yourself** with `python -m venv (path)` or it's located at the **System Site Packages** for your Platform. It's a **BAD IDEA** to remove the later, so `pip uninstall broken-source`
+        Manual method, you either **created it yourself** with `python -m venv (path)` or it's located at the **System Site Packages** for your Platform. It's a **BAD IDEA** to remove the later, so `pip uninstall {packages}`
 
     === ":simple-poetry: Poetry"
         Poetry, by default, installs venvs at your Platform's Cache directory:

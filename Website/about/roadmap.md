@@ -15,8 +15,9 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 !!! success "**Quality of Life** features for what works today"
 - [x] ~~Fastest Piano Roll code in Python in the world~~
 - [x] Code logistics for FFmpeg advanced and easy configuration
+- [x] Write CI workflows for releases, PyPI and GitHub Pages
+- [ ] Improve the Website and Documentation
 - [ ] Preset System for DepthFlow, CLI and API friendly
-- [x] Improve the Website and Documentation
 - [ ] Better ShaderFlow Shader Library include file
 - [ ] Improve User Experience on Pianola
 - [ ] Make DepthFlow's logic extensible and usable on ShaderFlow
@@ -30,10 +31,10 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 - [ ] Internal rewrite and implementation of Imgui helpers for ShaderFlow
 - [ ] (Re)writing all function docstrings for the Code Reference
 - [ ] Rework ShaderFlow Shaders metaprogramming system
-- [ ] Configurable Camera hotkeys for ShaderFlow
 - [ ] Real Time playing on Pianola with MIDI Keyboards
 - [ ] More "fully featured" Scenes than tech demos
 - [ ] More Scientific Audio DSP of value magnitudes
+- [ ] Configurable Hotkeys for ShaderFlow
 
 **Eta**: Q4 2024
 
@@ -43,7 +44,7 @@ I have a pretty decent vision for any **two next weeks** of development, and wor
 ??? quote "**Code Logistics** Improvement and Stability"
     <img src="https://github.com/BrokenSource/BrokenSource/assets/29046864/4f9c91c6-c080-462f-9387-64e315d84751"/>
 - [ ] General code stability improvements
-- [ ] Split projects into their own packages[^1]
+- [x] Split projects into their own packages[^1]
 - [ ] Write Test units for the code
 - [ ] Simplify stuff, automate code
 
