@@ -64,6 +64,7 @@ DOCKER:      bool = bool(os.environ.get("DOCKER_RUNTIME", False))
 WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
 RELEASE:     bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
 DEVELOPMENT: bool = (not RELEASE)
+GITHUB_CI:   bool = bool(os.environ.get("GITHUB_ACTIONS", False))
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (

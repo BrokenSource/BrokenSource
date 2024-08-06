@@ -65,7 +65,6 @@ extra_css:
 
 theme:
   name: material
-  custom_dir: Website/overrides
   logo: resources/images/broken.png
   favicon: resources/images/broken.png
   font:

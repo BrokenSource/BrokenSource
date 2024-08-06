@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, Generator, Iterable, List, Self
+from typing import Annotated, List, Self
 
 import toml
 from attr import Factory, define
