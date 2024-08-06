@@ -271,13 +271,14 @@ class ProjectCLI:
             for version in ("latest", BROKEN.VERSION):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}-", "gui-"*gui,
-                    f"{torch.name.lower()}-" if torch else "",
-                    f"{target.name}-".replace("macos-", ""),
+                    f"{torch.name.lower()}-".replace("macos-", "") if torch else "",
+                    f"{target.name}-",
                     f"{target.architecture}-",
                     f"{version}",
                     f"{target.extension}",
                 ))
                 BrokenPath.copy(src=binary, dst=release_path)
+                BrokenPath.make_executable(release_path)
                 log.success(f"Built Project Release at ({release_path})")
 
 # -------------------------------------------------------------------------------------------------|

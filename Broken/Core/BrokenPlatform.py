@@ -82,7 +82,11 @@ class BrokenPlatform:
         @property
         def extension(self) -> str:
             """Same as BrokenPlatform.Extension"""
-            return ".exe" if ("windows" in self.value) else ".bin"
+            if ("windows" in self.value):
+                return ".exe"
+            if ("macos" in self.value):
+                return ".app"
+            return ".bin"
 
         @property
         def name(self) -> str:

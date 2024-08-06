@@ -22,8 +22,11 @@ RUN adduser root pulse-access
 # -------------------------------------------------------------------------------------------------|
 # Broken Source stuff
 
+# Use uv for faster package installation
+RUN python -m pip install uv
+
 # Install latest release
-RUN python3 -m pip install \
+RUN python -m uv pip install \
     depthflow \
     pianola \
     shaderflow \
@@ -53,7 +56,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
 # Install development version of broken-source
 COPY . /App
-RUN python3 -m pip install --upgrade --no-deps . \
+RUN python -m uv pip install --upgrade .[shaderflow] \
     ./Projects/DepthFlow \
     ./Projects/Pianola \
     ./Projects/ShaderFlow \

@@ -50,7 +50,7 @@ jobs:
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
         with:
-          name: depthflow
+          name: DepthFlow
           path: Release/depthflow*
 
       # Pianola
@@ -61,7 +61,7 @@ jobs:
       - name: Upload Pianola releases
         uses: actions/upload-artifact@v3
         with:
-          name: pianola
+          name: Pianola
           path: Release/pianola*
 
       # ShaderFlow
@@ -72,7 +72,7 @@ jobs:
       - name: Upload ShaderFlow releases
         uses: actions/upload-artifact@v3
         with:
-          name: shaderflow
+          name: ShaderFlow
           path: Release/shaderflow*
 
       # SpectroNote
@@ -83,5 +83,5 @@ jobs:
       - name: Upload SpectroNote releases
         uses: actions/upload-artifact@v3
         with:
-          name: spectronote
+          name: SpectroNote
           path: Release/spectronote*
