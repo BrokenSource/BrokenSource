@@ -237,7 +237,7 @@ class ProjectCLI:
 
             # Pyapp configuration
             os.environ.update(dict(
-                PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(pyapp=True).glob("*.whl"))),
+                PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main" + ("_gui"*gui),
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
@@ -403,7 +403,7 @@ class BrokenManager:
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
-        pyapp: bool=False,
+        _pyapp: bool=False,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         from Broken.Version import __version__ as version
@@ -420,11 +420,11 @@ class BrokenManager:
             '"Private/': '# "Private/', # Ignore private projects
             '"0.0.0"': f'"{version}"',  # Pin current version
             '>=0.0.0': f"=={version}",  # Pin dependencies version
-            "#<pyapp>": ("" if pyapp else "#"),
+            "#<pyapp>": ("" if _pyapp else "#"),
         }
 
         # We patch to include all projects on binary releases
-        packages = (("--package", "broken-source") if pyapp else "--all")
+        packages = (("--package", "broken-source") if _pyapp else "--all")
 
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("rye", "build", "--wheel", "--out", output, packages)
