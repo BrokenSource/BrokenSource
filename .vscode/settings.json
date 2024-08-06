@@ -5,6 +5,10 @@
         ".stfolder": true,
     },
 
+    "material-icon-theme.files.associations": {
+        ".stignore": "credits",
+    },
+
     "material-icon-theme.folders.associations": {
         "Cloud": "aws",
 
