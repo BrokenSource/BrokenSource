@@ -50,6 +50,8 @@ class BrokenLogging:
         self.level("TRACE", None, "dark_turquoise")
         self.level("DEBUG", None, "turquoise4")
         self.level("INFO", None, "bright_white")
+        self.level("NOTE", 25, "bright_blue")
+        self.level("TIP", 25, "dark_cyan")
         self.level("SUCCESS", None, "green")
         self.level("MINOR", 25, "grey42")
         self.level("SKIP", 25, "grey42")

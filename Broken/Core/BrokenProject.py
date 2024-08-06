@@ -32,6 +32,7 @@ from Broken import (
     shell,
 )
 from Broken.Core.BrokenTyper import BrokenTyper
+from Broken.Core.BrokenUtils import BrokenAttrs
 
 
 def mkdir(path: Path, resolve: bool=True) -> Path:
@@ -462,11 +463,15 @@ class BrokenProject:
 # -------------------------------------------------------------------------------------------------|
 
 @define
-class BrokenApp(ABC):
+class BrokenApp(ABC, BrokenAttrs):
     PROJECT: BrokenProject
     typer: BrokenTyper = Factory(BrokenTyper)
 
-    def __attrs_post_init__(self):
+    def __post__(self):
+
+        # Windows users have a tendency to not run stuff on a terminal...
+        self.typer.repl = (Broken.RELEASE and BrokenPlatform.OnWindows)
+
         with BrokenProfiler(self.PROJECT.APP_NAME):
             self.main()
 

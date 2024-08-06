@@ -1,11 +1,19 @@
 import contextlib
+import itertools
+import os
+import shlex
 import sys
-from typing import Callable, Generator, Set, Union
+from typing import Any, Callable, Generator, Iterable, Set, Union
 
+import click
+import typer
 import typer.rich_utils
 from attr import Factory, define
 from pydantic import BaseModel
-from typer import Typer
+from rich import get_console
+from rich.console import Group
+from rich.panel import Panel
+from rich.text import Text
 
 import Broken
 from Broken import flatten, log, pydantic_cli
@@ -16,12 +24,14 @@ typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
 typer.rich_utils.DEFAULT_STRING = "({})"
 typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
 
+console = get_console()
+
 @define
 class BrokenTyper:
     """Yet another Typer wrapper, with goodies"""
     description: str = ""
 
-    app: Typer = None
+    app: typer.Typer = None
     """The main managed typer.Typer instance"""
 
     chain: bool = False
@@ -33,6 +43,9 @@ class BrokenTyper:
     default: str = None
     """Default command to run if none is provided"""
 
+    repl: bool = False
+    """If True, will run a REPL instead of a command"""
+
     help_option: bool = False
 
     epilog: str = (
@@ -40,7 +53,7 @@ class BrokenTyper:
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]")
 
     def __attrs_post_init__(self):
-        self.app = Typer(
+        self.app = typer.Typer(
             add_help_option=self.help_option,
             pretty_exceptions_enable=False,
             no_args_is_help=True,
@@ -104,19 +117,71 @@ class BrokenTyper:
             **kwargs,
         )(target)
 
-    def __call__(self, *args):
+    @property
+    def _repl(self) -> bool:
+        BYPASS = (os.environ.get("REPL", "1") == "0")
+        return (self.repl and not BYPASS)
+
+    def __call__(self, *args: Iterable[Any]) -> None:
         self.app.info.help = (self.description or "No help provided")
+        args = (flatten(args) or sys.argv[1:])
 
-        # Default to argv[1:], flat cast everything to str
-        args = list(map(str, flatten(args) or sys.argv[1:]))
+        for i in itertools.count():
 
-        # Insert default command if none
-        if self.default and not bool(args):
-            args.insert(0, self.default)
+            # On subsequent runs, prompt for command
+            if (self._repl) and (i > 0):
+                try:
+                    args = shlex.split(typer.prompt(
+                        text="",
+                        prompt_suffix="❯",
+                        show_default=False,
+                        default=""
+                    ))
+                except click.exceptions.Abort:
+                    log.trace("BrokenTyper exit KeyboardInterrupt")
+                    break
 
-        try:
-            self.app(args)
-        except SystemExit:
-            log.trace("Skipping SystemExit on BrokenTyper")
-        except KeyboardInterrupt:
-            log.success("BrokenTyper exit KeyboardInterrupt")
+            # Insert default command if none
+            if self.default and not bool(args):
+                args.insert(0, self.default)
+
+            try:
+                # Safety: Flat cast everything to str
+                self.app(list(map(str, flatten(args))))
+            except SystemExit:
+                log.trace("Skipping SystemExit on BrokenTyper")
+            except KeyboardInterrupt:
+                log.success("BrokenTyper exit KeyboardInterrupt")
+
+            # Exit out non-repl mode
+            if (not self._repl):
+                break
+
+            # Some action was taken, like 'depthflow main -o ./video.mp4'
+            if (i == 0) and bool(args):
+                break
+
+            # Pretty welcome message on the first 'empty' run
+            if (i == 0):
+                console.print(Panel(
+                    title="( 🔴🟡🟢 ) Welcome to the Interactive Shell mode for Releases 🚀",
+                    title_align="left",
+                    border_style="bold grey42",
+                    expand=False,
+                    renderable=Group(
+                        Text.from_markup(
+                            "\nHere's your chance to [royal_blue1]run commands on a basic shell[/royal_blue1], interactively\n\n"
+                            "> This mode is [royal_blue1]Experimental[/royal_blue1] and projects might not work as expected\n\n"
+                            "• Preferably run the projects on a [royal_blue1]Terminal[/royal_blue1] as [spring_green1]./program.exe (args)[/spring_green1]\n"
+                            "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment var\n"
+                        ), Panel(
+                                "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
+                            "• Press [spring_green1]'CTRL+C'[/spring_green1] to exit this shell [bold bright_black](or close the Terminal)[/bold bright_black]",
+                            title="Tips",
+                            border_style="green"
+                        )
+                    ),
+                ))
+
+            # The args were "consumed"
+            args = []
