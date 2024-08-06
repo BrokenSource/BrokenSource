@@ -364,8 +364,15 @@ class BrokenManager:
             for dependency in data:
                 try:
                     name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
-                    if any((compare==">=", version=="0.0.0")): continue
-                    shell("rye", "add", "--no-sync", name, "--dev"*dev, ["--optional", optional]*bool(optional))
+
+                    # Skip Dynamic versions and Equals
+                    if (compare == ">=" and version=="0.0.0"):
+                        continue
+                    if (compare == "=="):
+                        continue
+
+                    shell("rye", "add", "--no-sync", name, "--pin", "~=",
+                        "--dev"*dev, ("--optional", optional)*bool(optional))
                 except ValueError:
                     continue
 

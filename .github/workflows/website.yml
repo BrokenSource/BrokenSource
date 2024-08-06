@@ -1,0 +1,14 @@
+name: website
+on:
+  workflow_dispatch:
+
+jobs:
+  wheels:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Build and Deploy
+        run: rye run broken website --deploy
