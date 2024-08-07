@@ -120,7 +120,7 @@ plugins:
   - search
   - autorefs
   - site-urls
-  - privacy
+  # - privacy # Fixme: Ignore shields.io
   - literate-nav
   - gen-files:
       scripts:
