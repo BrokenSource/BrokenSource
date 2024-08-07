@@ -332,7 +332,7 @@ class BrokenManager:
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.tremeschin, hidden=True)
-            self.broken_typer.command(self.ryedeps, hidden=True)
+            self.broken_typer.command(self.ryeup, hidden=True)
 
         for project in self.projects:
             self.broken_typer.command(
@@ -344,7 +344,7 @@ class BrokenManager:
                 hidden=("Projects/Others" in str(project.path)),
             )
 
-        self.broken_typer(sys.argv[1:])
+        self.broken_typer()
 
     # ---------------------------------------------------------------------------------------------|
     # Private
@@ -356,7 +356,7 @@ class BrokenManager:
     # ---------------------------------------------------------------------------------------------|
     # Core section
 
-    def ryedeps(self) -> None:
+    def ryeup(self) -> None:
         """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
         import re
 
