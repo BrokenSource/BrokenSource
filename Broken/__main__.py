@@ -350,8 +350,7 @@ class BrokenManager:
     # Private
 
     def tremeschin(self):
-        url  = ("https://github.com/" + os.environ["PRIVATE_REPOSITORY"])
-        path = BROKEN.DIRECTORIES.BROKEN_PRIVATE
+        url, path = ("https://github.com/Tremeschin/Private", BROKEN.DIRECTORIES.BROKEN_PRIVATE)
         shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|
