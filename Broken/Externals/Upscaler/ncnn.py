@@ -110,14 +110,14 @@ class Waifu2x(UpscalerNCNN_Base):
 
     @field_validator("scale", mode="plain")
     def _validate_scale(cls, value):
-        if value not in {1, 2, 4, 8, 16, 32}:
-            raise ValueError("Scale must be 1, 2, 4, 8, 16, or 32 for Waifu2x")
+        if value not in (allowed := {1, 2, 4, 8, 16, 32}):
+            raise ValueError(f"Scale must be one of {allowed} for Waifu2x")
         return value
 
     @field_validator("denoise", mode="plain")
     def _validate_denoise(cls, value):
-        if value not in {-1, 0, 1, 2, 3}:
-            raise ValueError("Denoise must be -1, 0, 1, 2, or 3 for Waifu2x")
+        if value not in (allowed := {-1, 0, 1, 2, 3}):
+            raise ValueError(f"Denoise must be one of {allowed} for Waifu2x")
         return value
 
     def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
@@ -166,8 +166,8 @@ class Realesr(UpscalerNCNN_Base):
 
     @field_validator("scale", mode="plain")
     def _validate_scale(cls, value):
-        if value not in {1, 2, 3, 4}:
-            raise ValueError("Scale must be 1, 2, 3, or 4 for RealESRGAN")
+        if value not in (allowed := {1, 2, 3, 4}):
+            raise ValueError(f"Scale must be one of {allowed} for RealESRGAN")
         return value
 
     def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:

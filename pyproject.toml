@@ -17,6 +17,7 @@ description  = "🚀 Broken Source Software Main Library"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"
 license      = "AGPL-3.0"
+requires-python = ">=3.9"
 dependencies = [
     # Data Structures
     "attrs~=24.1.0",
@@ -53,7 +54,6 @@ dependencies = [
     # Enable all extra on pyapp binaries
     #<pyapp>"broken-source[shaderflow]"
 ]
-requires-python = "~=3.9"
 
 [project.optional-dependencies]
 shaderflow = [
@@ -191,9 +191,6 @@ ignore = [
 # name = "torch-rocm"
 # url  = "https://download.pytorch.org/whl/rocm6.0"
 
-[tool.pyright]
-exclude = [".venv/**"]
-
 # Tests
 
 [tool.pytest.ini_options]
@@ -210,3 +207,8 @@ python_classes = "_PyTest"
 python_files = [
     "Core/Broken*.py",
 ]
+
+# Others
+
+[tool.pyright]
+exclude = [".venv/**"]
