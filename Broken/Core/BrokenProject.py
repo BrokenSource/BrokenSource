@@ -47,13 +47,12 @@ def mkdir(path: Path, resolve: bool=True) -> Path:
 class _Directories:
     """You shouldn't really use this class directly"""
     PROJECT: BrokenProject
-
-    # App basic information
     APP_DIRS: AppDirs = field(default=None)
 
     def __attrs_post_init__(self):
         args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
-        self.APP_DIRS = AppDirs(*reversed(args) if (os.name == "nt") else args)
+        args = (reversed(args) if (os.name == "nt") else args)
+        self.APP_DIRS = AppDirs(*args)
 
     @property
     def PACKAGE(self) -> Path:
@@ -68,16 +67,6 @@ class _Directories:
             return Path(sys.executable).parent.resolve()
 
         return Path(self.PROJECT.PACKAGE).parent.resolve()
-
-    # # Convenience properties
-
-    @property
-    def APP_NAME(self) -> str:
-        return self.PROJECT.APP_NAME
-
-    @property
-    def APP_AUTHOR(self) -> str:
-        return self.PROJECT.APP_AUTHOR
 
     # # Unknown / new project directories
 
@@ -112,7 +101,7 @@ class _Directories:
 
     @property
     def SYSTEM_TEMP(self) -> Path:
-        """(Unix: /tmp), (Windows: C://Windows//Temp)"""
+        """(Unix: /tmp), (Windows: %TEMP%)"""
         return mkdir(tempfile.gettempdir())
 
     # # Broken monorepo specific, potentially useful
@@ -124,11 +113,9 @@ class _Directories:
     @property
     def BROKEN_BUILD(self) -> Path:
         return mkdir(self.REPOSITORY/"Build")
-
     @property
     def BROKEN_WINEPREFIX(self) -> Path:
         return mkdir(self.BROKEN_BUILD/"Wineprefix")
-
     @property
     def BROKEN_WHEELS(self) -> Path:
         return mkdir(self.BROKEN_BUILD/"Wheels")
@@ -169,40 +156,29 @@ class _Directories:
     def WORKSPACE(self) -> Path:
         """Root for the current Project's Workspace"""
         if (path := os.getenv("WORKSPACE", None)):
-            return mkdir(Path(path)/self.APP_AUTHOR/self.APP_NAME)
-        if (os.name == "nt"):
-            return mkdir(Path(self.APP_DIRS.user_data_dir))
-        else:
-            return mkdir(Path(self.APP_DIRS.user_data_dir)/self.APP_NAME)
+            return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
+        if (os.name != "nt"):
+            return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
+        return mkdir(Path(self.PROJECT.APP_DIRS.user_data_dir))
 
     @property
     def CONFIG(self) -> Path:
-        """General config directory"""
         return mkdir(self.WORKSPACE/"Config")
 
     @property
     def LOGS(self) -> Path:
-        """General logs directory"""
         return mkdir(self.WORKSPACE/"Logs")
 
     @property
     def CACHE(self) -> Path:
-        """General cache directory"""
         return mkdir(self.WORKSPACE/"Cache")
 
     @property
     def DATA(self) -> Path:
-        """General Data directory"""
         return mkdir(self.WORKSPACE/"Data")
 
     @property
-    def MOCK(self) -> Path:
-        """Mock directory for testing"""
-        return mkdir(self.WORKSPACE/"Mock")
-
-    @property
     def PROJECTS(self) -> Path:
-        """Projects directory (e.g. Video Editor or IDEs)"""
         return mkdir(self.WORKSPACE/"Projects")
 
     @property
@@ -212,7 +188,6 @@ class _Directories:
 
     @property
     def DOWNLOADS(self) -> Path:
-        """Downloads directory"""
         return mkdir(self.WORKSPACE/"Downloads")
 
     @property
@@ -222,47 +197,38 @@ class _Directories:
 
     @property
     def EXTERNAL_ARCHIVES(self) -> Path:
-        """Third party archives"""
         return mkdir(self.EXTERNALS/"Archives")
 
     @property
     def EXTERNAL_IMAGES(self) -> Path:
-        """Third party images"""
         return mkdir(self.EXTERNALS/"Images")
 
     @property
     def EXTERNAL_AUDIO(self) -> Path:
-        """Third party audio"""
         return mkdir(self.EXTERNALS/"Audio")
 
     @property
     def EXTERNAL_FONTS(self) -> Path:
-        """Third party fonts"""
         return mkdir(self.EXTERNALS/"Fonts")
 
     @property
     def EXTERNAL_SOUNDFONTS(self) -> Path:
-        """Third party soundfonts"""
         return mkdir(self.EXTERNALS/"Soundfonts")
 
     @property
     def EXTERNAL_MIDIS(self) -> Path:
-        """Third party midis"""
         return mkdir(self.EXTERNALS/"Midis")
 
     @property
     def TEMP(self) -> Path:
-        """Temporary directory for working files"""
         return mkdir(self.WORKSPACE/"Temp")
 
     @property
     def DUMP(self) -> Path:
-        """Dump directory for debugging (e.g. Shaders)"""
         return mkdir(self.WORKSPACE/"Dump")
 
     @property
     def SCREENSHOTS(self) -> Path:
-        """Screenshots directory"""
         return mkdir(self.WORKSPACE/"Screenshots")
 
 # -------------------------------------------------------------------------------------------------|
@@ -284,6 +250,7 @@ class _Resources:
                 spec = self.PROJECT.RESOURCES.__spec__
                 spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
 
+            # Note: Importlib bundles the resources with the package wheel :) !
             self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
 
     def __div__(self, name: str) -> Path:

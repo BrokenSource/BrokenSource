@@ -46,21 +46,22 @@ class BrokenTyper:
     repl: bool = False
     """If True, will run a REPL instead of a command"""
 
-    help_option: bool = False
+    help: bool = False
 
-    epilog: str = (
+    credits: str = (
         f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]")
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]"
+    )
 
     def __attrs_post_init__(self):
         self.app = typer.Typer(
-            add_help_option=self.help_option,
+            add_help_option=self.help,
             pretty_exceptions_enable=False,
             no_args_is_help=True,
             add_completion=False,
             rich_markup_mode="rich",
             chain=self.chain,
-            epilog=self.epilog,
+            epilog=self.credits,
         )
 
     _panel: str = None

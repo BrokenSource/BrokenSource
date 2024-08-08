@@ -29,36 +29,68 @@ import click
 from attrs import Factory, define
 from loguru import logger as log
 
+# Fixme: Part of me wants to patch __builtins__, but it's bad for autocompletion and clarity
 
-def flatten(*stuff: Union[Any, Iterable[Any]], truthy: bool=True) -> List[Any]:
-    """Flatten nested iterables (list, deque, tuple, Generator) to a 1D list"""
-    iterables = (list, deque, tuple, map, Generator)
+def flatten(
+    *items: Union[Any, Iterable[Any]],
+    cast: Optional[type]=list,
+    block: Optional[List[Any]]=[None, ""],
+    unpack: Tuple[type]=(list, deque, tuple, map, Generator),
+) -> List[Any]:
+    """
+    Flatten/unpack nested iterables (list, deque, tuple, map, Generator) to a plain 1D list
+    • Removes common falsy values by default, disable with `block={None, False, "", [], ...}`
+
+    Usage:
+        ```python
+        flatten([1, [2, 3], 4, [5, [6, 7]]]) # [1, 2, 3, 4, 5, 6, 7]
+        flatten(range(3), (True, False), None, "Hello") # [0, 1, 2, True, False, "Hello"]
+        ```
+    """
     def flatten(stuff):
-        if truthy:
-            stuff = [item for item in stuff if (item is not None) and (item != "")]
-        return [
-            item for subitem in stuff for item in
-            (flatten(subitem) if isinstance(subitem, iterables) else [subitem])
-        ]
-    return flatten(stuff)
+        if bool(block):
+            stuff = filter(lambda item: (item not in block), stuff)
 
-def every(*stuff: Union[Any, Iterable[Any]], ban: List[Any]=[None, ""]) -> Optional[List[Any]]:
-    """Returns the flattened args if all elements are truthy (not None or '')"""
-    stuff = flatten(stuff, truthy=False)
-    if any(item in ban for item in stuff):
+        for item in stuff:
+            if isinstance(item, unpack):
+                yield from flatten(item)
+                continue
+            yield item
+
+    # Note: Recursive implementation
+    return cast(flatten(items))
+
+def valid(
+    *items: Union[Any, Iterable[Any]],
+    cast: Optional[type]=list,
+    block: List[Any]=[None, ""],
+) -> Optional[List[Any]]:
+    """
+    Returns the flattened items if not any element is in the block list, else None. Useful when
+    a Model class has a list of optional arguments that doesn't add falsy values to a command
+
+    Usage:
+        ```python
+        valid(1, 2, 3) # [1, 2, 3]
+        valid(1, 2, 3, None) # None
+        valid("value", value, block=[0, 2]) # None if value is 0 or 2, else ["value", value]
+        ```
+    """
+    items = flatten(*items, block=None, cast=cast)
+    if any(item in block for item in items):
         return None
-    return stuff
+    return items
 
 def shell(
-    *args:   list[Any],
-    output:  bool=False,
-    Popen:   bool=False,
-    shell:   bool=False,
-    env:     dict[str, str]=None,
-    echo:    bool=True,
+    *args: Iterable[Any],
+    output: bool=False,
+    Popen: bool=False,
+    shell: bool=False,
+    env: dict[str, str]=None,
+    echo: bool=True,
     confirm: bool=False,
     wrapper: bool=False,
-    do:      bool=True,
+    skip: bool=False,
     **kwargs
 ) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
@@ -78,7 +110,7 @@ def shell(
         echo:    Log the command being run or not
         confirm: Ask for confirmation before running the command or not
         wrapper: Enables threaded stdin writing speed workaround (Unix only)
-        do:      Inverse of `skip`, do not run the command, but log it as minor
+        skip:    Do not run the command, but log it was skipped
 
     Kwargs (subprocess.* arguments):
         cwd: Current working directory for the command
@@ -89,20 +121,25 @@ def shell(
         raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
     # Flatten a list, remove falsy values, convert to strings
-    command = tuple(map(str, flatten(args)))
-
-    if shell:
-        log.warning("Running command with (shell=True), be careful.." + " Consider using (confirm=True)"*(not confirm))
-        command = '"' + '" "'.join(command) + '"'
+    args = tuple(map(str, flatten(args)))
 
     # Assert command won't fail due unknown binary
-    if (not shell) and (not shutil.which(command[0])):
-        raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({command[0]})"))
+    if (not shutil.which(args[0])):
+        raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({args[0]})"))
 
-    # Get the current working directory
-    cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-    (log.info if do else log.skip)(("Running" if do else "Skipping") + f" Command {command}{cwd}", echo=echo)
-    if (not do): return
+    # Log the command being run, temp variables
+    _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
+    _log = (log.skip if skip else log.info)
+    _the = ("Skipping" if skip else "Running")
+    _log(_the + f" Command {args}{_cwd}", echo=echo)
+    if skip: return
+
+    if shell: # Shell-ify the command
+        args = '"' + '" "'.join(args) + '"'
+        log.warning((
+            "Running command with (shell=True), be careful.. "
+            "Consider using (confirm=True)"*(not confirm)
+        ))
 
     # Confirm running command or not
     if confirm and not click.confirm("• Confirm running the command above"):
@@ -114,14 +151,14 @@ def shell(
 
     # preexec_fn is not supported on windows, pop from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
-        log.minor("preexec_fn is not supported on Windows, ignoring..")
+        log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
     # Run the command and return specified object
     if output:
-        return subprocess.check_output(command, **kwargs).decode("utf-8")
+        return subprocess.check_output(args, **kwargs).decode("utf-8")
 
     elif Popen:
-        process = subprocess.Popen(command, **kwargs)
+        process = subprocess.Popen(args, **kwargs)
 
         # Linux non-threaded pipes were slower than Windows plain subprocess
         if (os.name != "nt") and bool(wrapper):
@@ -151,7 +188,7 @@ def shell(
             process.stdin = StdinWrapper(process=process, stdin=process.stdin)
         return process
     else:
-        return subprocess.run(command, **kwargs)
+        return subprocess.run(args, **kwargs)
 
 def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))
@@ -178,7 +215,7 @@ def pydantic_cli(instance: object, post: Callable=None):
     return wrapper
 
 def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
-    """Finds the nearest multiple of a base number"""
+    """Finds the nearest multiple of a base number, by default ints but works for floats too"""
     return type(multiple * operator(number/multiple))
 
 def dunder(name: str) -> bool:
@@ -235,7 +272,7 @@ def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
 
 @contextlib.contextmanager
 def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
-    """Enter multiple contexts at once"""
+    """Enter multiple contexts at once as `with Stack(open() as f1, open() as f2): ...`"""
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):
             stack.enter_context(context)

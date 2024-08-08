@@ -42,7 +42,7 @@ class ProjectCLI:
     # # Main entry point
 
     def cli(self, ctx: Context) -> None:
-        self.typer = BrokenTyper(help_option=False)
+        self.typer = BrokenTyper(help=False)
         self.typer.command(self.update,  add_help_option=True)
         self.typer.command(self.release, add_help_option=True)
         self.typer.command(self.run,     add_help_option=False, default=True)
