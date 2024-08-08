@@ -39,7 +39,7 @@ class BrokenLogging:
     def __init__(self) -> None:
         log.remove()
         log.add(
-            rich.print,
+            sink=rich.print,
             format=self.broken_format,
             level=os.getenv("LOGLEVEL", "INFO").upper(),
             colorize=False,

@@ -44,17 +44,15 @@ def mkdir(path: Path, resolve: bool=True) -> Path:
     return path
 
 @define(slots=False)
-class _BrokenProjectDirectories:
-    """# Info: You shouldn't really use this class directly"""
-
-    # Note: A reference to the main BrokenProject
-    BROKEN_PROJECT: BrokenProject
+class _Directories:
+    """You shouldn't really use this class directly"""
+    PROJECT: BrokenProject
 
     # App basic information
     APP_DIRS: AppDirs = field(default=None)
 
     def __attrs_post_init__(self):
-        args = (self.BROKEN_PROJECT.APP_AUTHOR, self.BROKEN_PROJECT.APP_NAME)
+        args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
         self.APP_DIRS = AppDirs(*reversed(args) if (os.name == "nt") else args)
 
     @property
@@ -69,17 +67,17 @@ class _BrokenProjectDirectories:
         if Broken.RELEASE:
             return Path(sys.executable).parent.resolve()
 
-        return Path(self.BROKEN_PROJECT.PACKAGE).parent.resolve()
+        return Path(self.PROJECT.PACKAGE).parent.resolve()
 
     # # Convenience properties
 
     @property
     def APP_NAME(self) -> str:
-        return self.BROKEN_PROJECT.APP_NAME
+        return self.PROJECT.APP_NAME
 
     @property
     def APP_AUTHOR(self) -> str:
-        return self.BROKEN_PROJECT.APP_AUTHOR
+        return self.PROJECT.APP_AUTHOR
 
     # # Unknown / new project directories
 
@@ -155,19 +153,15 @@ class _BrokenProjectDirectories:
     def BROKEN_PRIVATE(self) -> Path:
         return mkdir(self.REPOSITORY/"Private")
 
-    # # Meta directories - Broken monorepo specific
+    # # Meta directories
 
     @property
     def WEBSITE(self) -> Path:
         return mkdir(self.REPOSITORY/"Website")
 
     @property
-    def PAPERS(self) -> Path:
-        return mkdir(self.META/"Papers")
-
-    @property
-    def TEMPLATES(self) -> Path:
-        return mkdir(self.META/"Templates")
+    def EXAMPLES(self) -> Path:
+        return mkdir(self.REPOSITORY/"Examples")
 
     # # Workspace directories
 
@@ -274,25 +268,23 @@ class _BrokenProjectDirectories:
 # -------------------------------------------------------------------------------------------------|
 
 @define(slots=False)
-class _BrokenProjectResources:
-    """# Info: You shouldn't really use this class directly"""
-
-    # Note: A reference to the main BrokenProject
-    BROKEN_PROJECT: BrokenProject
+class _Resources:
+    """You shouldn't really use this class directly"""
+    PROJECT: BrokenProject
 
     # # Internal states
 
     __RESOURCES__: Path = field(default=None)
 
     def __attrs_post_init__(self):
-        if self.BROKEN_PROJECT.RESOURCES:
+        if self.PROJECT.RESOURCES:
 
             # Fixme (#spec): Python 3.9 workaround; Spec-less packages
             if (sys.version_info < (3, 10)):
-                spec = self.BROKEN_PROJECT.RESOURCES.__spec__
+                spec = self.PROJECT.RESOURCES.__spec__
                 spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
 
-            self.__RESOURCES__ = importlib.resources.files(self.BROKEN_PROJECT.RESOURCES)
+            self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
 
     def __div__(self, name: str) -> Path:
         return self.__RESOURCES__/name
@@ -319,12 +311,12 @@ class _BrokenProjectResources:
     @property
     def ICON(self) -> Path:
         """Application icon in PNG format"""
-        return mkdir(self.IMAGES)/f"{self.BROKEN_PROJECT.APP_NAME}.png"
+        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
 
     @property
     def ICON_ICO(self) -> Path:
         """Application icon in ICO format"""
-        return mkdir(self.IMAGES)/f"{self.BROKEN_PROJECT.APP_NAME}.ico"
+        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
 
     # # Shaders section
 
@@ -362,23 +354,23 @@ class _BrokenProjectResources:
 
 @define(slots=False)
 class BrokenProject:
-    # Note: Send the importer's __init__.py's __file__ variable
     PACKAGE: str
+    """Send the importer's __init__.py's __file__ variable"""
 
     # App information
-    APP_NAME:   str = field(default="Broken")
-    APP_AUTHOR: str = field(default="BrokenSource")
+    APP_NAME:   str
+    APP_AUTHOR: str
 
     # Standard Broken objects for a project
-    DIRECTORIES: _BrokenProjectDirectories = None
-    RESOURCES:   _BrokenProjectResources   = None
-    VERSION:     str                       = None
+    DIRECTORIES: _Directories = None
+    RESOURCES: _Resources = None
+    VERSION: str = None
 
     def __attrs_post_init__(self):
-        self.DIRECTORIES = _BrokenProjectDirectories(BROKEN_PROJECT=self)
-        self.RESOURCES   = _BrokenProjectResources  (BROKEN_PROJECT=self)
-        self.PACKAGE     = Path(self.PACKAGE)
-        self.VERSION     = Broken.VERSION
+        self.DIRECTORIES = _Directories(PROJECT=self)
+        self.RESOURCES = _Resources(PROJECT=self)
+        self.PACKAGE = Path(self.PACKAGE)
+        self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 
         # Replace Broken.PROJECT once with the first project
@@ -430,20 +422,20 @@ class BrokenProject:
     def pyapp_new_binary_restore_hook(self) -> None:
         """One might send rolling releases or development betas of the same major version; whenever
         the current PyApp binary changes hash, we reinstall the virtual environment"""
-        if not (pyapp_binary := os.getenv("PYAPP", False)):
+        if not (executable := os.getenv("PYAPP", False)):
             return
 
         import hashlib
-        venv_path = Path(os.environ["VIRTUAL_ENV"])
-        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}-{self.VERSION}.sha256"
-        this_hash = hashlib.sha256(open(pyapp_binary, "rb").read()).hexdigest()
+        venv_path = Path(os.getenv("VIRTUAL_ENV"))
+        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}.sha256"
+        this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
         old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
 
-        # "If either hash differs and not on the first run"
+        # "If either (not on the first run) and (hash differs)"
         if (old_hash is not None) and (old_hash != this_hash):
             print("-"*shutil.get_terminal_size().columns)
-            log.info(f"Detected different binary hash for this release version {self.VERSION} of the Project {self.APP_NAME}")
+            log.info(f"Detected different binary hash for this release version v{self.VERSION} of the Project {self.APP_NAME}")
             log.info(f"• Path: ({venv_path})")
             log.info("• Reinstalling the Virtual Environment alongside dependencies")
 
@@ -456,9 +448,10 @@ class BrokenProject:
                 input("\nPlease, reopen this Executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
                 exit(0)
             else:
-                shell(pyapp_binary, os.environ["PYAPP_COMMAND_NAME"], "restore", stdout=subprocess.DEVNULL)
+                # Run `pyapp self restore` and re-run self with same argv
+                shell(executable, os.getenv("PYAPP_COMMAND_NAME"), "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
-                sys.exit(shell(pyapp_binary, sys.argv[1:]).returncode)
+                sys.exit(shell(executable, sys.argv[1:]).returncode)
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -495,11 +488,11 @@ class BrokenApp(ABC, BrokenAttrs):
             files.extend(direct.glob("*.py"))
         else:
             files.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
-            files.extend(self.PROJECT.RESOURCES.SCENES.rglob("*.py"))
+            files.extend(self.PROJECT.DIRECTORIES.EXAMPLES.rglob("*.py"))
             files.extend(Path.cwd().glob("*.py"))
 
         # Add commands of all files, exit if none was sucessfully added
-        if (sum(map(lambda file: self.add_project(file, tag), files)) == 0):
+        if (sum(map(lambda file: self.add_project(python=file, tag=tag), files)) == 0):
             log.warning(f"No {self.PROJECT.APP_NAME} Projects found, searched in:")
             log.warning('\n'.join(map(lambda file: f"• {file}", files)))
             exit(1)
@@ -516,7 +509,7 @@ class BrokenApp(ABC, BrokenAttrs):
         if not python.exists():
             return False
 
-        def run(file, name, code):
+        def run(file: Path, name: str, code: str):
             def run(ctx: Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))

@@ -110,11 +110,16 @@ from Broken.Core.BrokenUtils import (
     SameTracker,
 )
 
-BROKEN = BrokenProject(PACKAGE=__file__, RESOURCES=BrokenResources)
+BROKEN = BrokenProject(
+    PACKAGE=__file__,
+    APP_NAME="Broken",
+    APP_AUTHOR="BrokenSource",
+    RESOURCES=BrokenResources
+)
 """The main library's BrokenProject instance. Useful for common downloads and resources"""
 
 PROJECT = BROKEN
-"""This variable points to the first BrokenProject initialized other than BROKEN itself"""
+"""The first BrokenProject initialized after, but including, BROKEN itself"""
 
 # -------------------------------------------------------------------------------------------------|
 

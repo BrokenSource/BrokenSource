@@ -150,7 +150,7 @@ class ProjectCLI:
             if self.is_python:
                 shell("rye", "lock", "--update-all")
             if self.is_nodejs:
-                shell("pnpm", "")
+                shell("pnpm", "update")
             if self.is_rust:
                 shell("cargo", "update")
             if self.is_cpp:

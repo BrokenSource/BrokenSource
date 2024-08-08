@@ -468,11 +468,11 @@ class BrokenPath(pathlib.Path):
             else:
                 if preferential:
                     log.debug(f"• Prepending: ({other})", echo=echo)
-                    os.environ["PATH"] = (str(other) + os.pathsep + os.environ["PATH"])
+                    os.environ["PATH"] = (str(other) + os.pathsep + os.getenv("PATH"))
                     sys.path.insert(0, str(other))
                 else:
                     log.debug(f"• Appending: ({other})", echo=echo)
-                    os.environ["PATH"] = (os.environ["PATH"] + os.pathsep + str(other))
+                    os.environ["PATH"] = (os.getenv("PATH") + os.pathsep + str(other))
                     sys.path.append(str(other))
 
         return original
@@ -520,10 +520,10 @@ class BrokenPath(pathlib.Path):
         directories = apply(Path, flatten(directories))
 
         # Get current PATH
-        old = os.environ["PATH"]
+        old = os.getenv("PATH")
 
         # List of all directories in PATH
-        PATH = [] if clean else os.environ["PATH"].split(os.pathsep)
+        PATH = [] if clean else os.getenv("PATH").split(os.pathsep)
 
         # Add directories to PATH
         for directory in directories:
@@ -545,7 +545,7 @@ class BrokenPath(pathlib.Path):
         # Set new PATH
         os.environ["PATH"] = os.pathsep.join(map(str, PATH))
 
-        yield os.environ["PATH"]
+        yield os.getenv("PATH")
 
         # Restore PATH
         os.environ["PATH"] = old
