@@ -270,13 +270,11 @@ class _Resources:
     # # Branding section
 
     @property
-    def ICON(self) -> Path:
-        """Application icon in PNG format"""
+    def ICON_PNG(self) -> Path:
         return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
 
     @property
     def ICON_ICO(self) -> Path:
-        """Application icon in ICO format"""
         return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
 
     # # Shaders section
@@ -362,7 +360,6 @@ class BrokenProject:
         return os.chdir(self.PACKAGE.parent.parent) or self
 
     def welcome(self):
-        """Pretty Welcome Message!"""
         import pyfiglet
 
         # Build message
@@ -435,7 +432,7 @@ class BrokenApp(ABC, BrokenAttrs):
         something that contains the substring of `tag` and add as a command to this Typer app"""
         files = deque()
 
-        # Note: Safe get argv[1], pop if valid, else a dne path
+        # Note: Safe get argv[1], pop if valid, else a null path
         if (direct := Path(dict(enumerate(sys.argv)).get(1, "\0"))).exists():
             direct = Path(sys.argv.pop(1))
 

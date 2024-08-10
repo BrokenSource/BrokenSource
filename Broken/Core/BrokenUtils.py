@@ -100,14 +100,9 @@ class BrokenWatchdog(ABC):
 class BrokenSingleton(ABC):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
-            cls.__instance__ = super().__new__(cls)
-            cls.__singleton__(*args, **kwargs)
+            self = super().__new__(cls)
+            cls.__instance__ = self
         return cls.__instance__
-
-    @abstractmethod
-    def __singleton__(self, *args, **kwargs):
-        """__init__ but for the singleton"""
-        ...
 
 
 class BrokenFluentBuilder:

@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 from pathlib import Path
 from typing import Annotated, List, Self
 
@@ -15,6 +14,7 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenProfiler,
+    BrokenSingleton,
     BrokenTyper,
     Patch,
     Stack,
@@ -283,7 +283,7 @@ class ProjectCLI:
 # -------------------------------------------------------------------------------------------------|
 
 @define
-class BrokenManager:
+class BrokenManager(BrokenSingleton):
     projects: list[ProjectCLI] = Factory(list)
     broken_typer: BrokenTyper = None
 
@@ -305,21 +305,21 @@ class BrokenManager:
 
         # Note: Avoid hidden, workspace, recursion
         for directory in path.iterdir():
-            if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
-                continue
-            if directory.is_file():
-                continue
             if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
             if directory.is_symlink() or directory.is_dir():
                 self.find_projects(path=BrokenPath(directory), _depth=_depth+1)
+            if directory.is_file():
+                continue
+            if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
+                continue
             if (project := ProjectCLI(directory)).is_known:
                 self.projects.append(project)
 
     # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.broken_typer = BrokenTyper(description=(
-            "🚀 Broken Source Software Monorepo manager script\n\n"
+            "🚀 Broken Source Software Monorepo development manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
             "©️ Broken Source Software, AGPL-3.0 License"
         ))
@@ -354,40 +354,6 @@ class BrokenManager:
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
-
-    def ryeup(self) -> None:
-        """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
-        import re
-
-        def update(data: List[str], *, dev: bool=False, optional: str=None) -> None:
-            for dependency in data:
-                try:
-                    name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
-
-                    # Skip Dynamic versions and Equals
-                    if (compare == ">=" and version=="0.0.0"):
-                        continue
-                    if (compare == "=="):
-                        continue
-
-                    shell("rye", "add", "--no-sync", name, "--pin", "~=",
-                        "--dev"*dev, ("--optional", optional)*bool(optional))
-                except ValueError:
-                    continue
-
-        def manage(path: Path):
-            with BrokenPath.pushd(path):
-                pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
-                update(pyproject.project["dependencies"])
-                update(pyproject.tool.rye["dev-dependencies"], dev=True)
-                for (optional, items) in pyproject.project["optional-dependencies"].items():
-                    update(items, optional=optional)
-
-        for project in filter(lambda project: project.is_python, self.projects):
-            manage(project.path)
-
-        manage(BROKEN.DIRECTORIES.REPOSITORY)
-        shell("rye", "sync")
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy the Unified Broken Source Software Website"""
@@ -436,9 +402,39 @@ class BrokenManager:
 
         return Path(output)
 
-    def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
-        """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
+    def ryeup(self) -> None:
+        """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
+        import re
+
+        def update(data: List[str], *, dev: bool=False, optional: str=None) -> None:
+            for dependency in data:
+                try:
+                    name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
+
+                    # Skip Dynamic versions and Equals
+                    if (compare == ">=" and version=="0.0.0"):
+                        continue
+                    if (compare == "=="):
+                        continue
+
+                    shell("rye", "add", "--no-sync", name, "--pin", "~=",
+                        "--dev"*dev, ("--optional", optional)*bool(optional))
+                except ValueError:
+                    continue
+
+        def manage(path: Path):
+            with BrokenPath.pushd(path):
+                pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
+                update(pyproject.project["dependencies"])
+                update(pyproject.tool.rye["dev-dependencies"], dev=True)
+                for (optional, items) in pyproject.project["optional-dependencies"].items():
+                    update(items, optional=optional)
+
+        for project in filter(lambda project: project.is_python, self.projects):
+            manage(project.path)
+
+        manage(BROKEN.DIRECTORIES.REPOSITORY)
+        shell("rye", "sync")
 
     @staticmethod
     def rust(
@@ -490,6 +486,11 @@ class BrokenManager:
                 shell("rustup", "default", toolchain)
         else:
             log.info(f"Rust toolchain is already the default ({toolchain})")
+
+
+    def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
+        """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
 
     def sync(self) -> None:
         """♻️  Synchronize common Resources Files across all Projects"""

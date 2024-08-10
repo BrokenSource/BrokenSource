@@ -16,6 +16,3 @@
 [submodule "Projects/SpectroNote"]
 	path = Projects/SpectroNote
 	url  = https://github.com/BrokenSource/SpectroNote
-[submodule "Packages/TurboPipe"]
-	path = Packages/TurboPipe
-	url = https://github.com/BrokenSource/TurboPipe
