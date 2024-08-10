@@ -133,16 +133,13 @@ def shell(
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
-    # # Running the command
-
     if output:
         return subprocess.check_output(args, **kwargs).decode("utf-8")
 
     elif Popen:
         process = subprocess.Popen(args, **kwargs)
 
-        # Linux non-threaded pipes were slower than Windows plain subprocess
-        if (os.name != "nt") and bool(threaded_stdin):
+        if bool(threaded_stdin):
 
             @define
             class StdinWrapper:

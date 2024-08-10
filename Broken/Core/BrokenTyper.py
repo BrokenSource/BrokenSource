@@ -79,10 +79,11 @@ class BrokenTyper:
     @contextlib.contextmanager
     def panel(self, name: str) -> Generator[None, None, None]:
         try:
+            previous = self._panel
             self._panel = name
             yield
         finally:
-            self._panel = None
+            self._panel = previous
 
     def command(self,
         target: Union[Callable, BaseModel],
