@@ -45,15 +45,15 @@ class BrokenResolution:
 
         Parameters
         ----------
-        old
+        old : Tuple[int, int] or None
             Old resolution
-        new
+        new : Tuple[int, int] or None
             New resolution
-        max
+        max : Tuple[int, int] or None
             Maximum resolution
-        scale
+        scale : float or None
             Scale factor
-        ar
+        ar : float or None
             Force aspect ratio, if any
 
         Returns
@@ -75,10 +75,7 @@ class BrokenResolution:
         if not all((width, height)):
             raise ValueError("Can't build a resolution with missing component(s): ({width}, {height})")
 
-        if (ar is None):
-            pass
-
-        else:
+        if (ar is not None):
             # Build from width (W) or from height (H)
             from_width  = (width, width/ar)
             from_height = (height*ar, height)
@@ -95,10 +92,9 @@ class BrokenResolution:
             elif (new_height != old_height):
                 (width, height) = from_height
 
-        # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
-        # - The idea is to find the maximum reduce factor for either component so it normalizes
-        #   to the respective (mw, mh), and apply it to both components to scale down
-        if (ar is not None):
+            # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
+            # - The idea is to find the maximum reduce factor for either component so it normalizes
+            #   to the respective (mw, mh), and apply it to both components to scale down
             reduce = __builtins__["max"](
                 width/(min(width, max_width or math.inf) or 1),
                 height/(min(height, max_height or math.inf) or 1)

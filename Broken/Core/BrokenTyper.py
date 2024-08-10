@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import contextlib
 import itertools
 import os
 import shlex
 import sys
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Generator, Iterable, Set, Union
 
 import click
@@ -16,7 +19,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 import Broken
-from Broken import flatten, log, pydantic_cli
+from Broken import apply, flatten, log, pydantic_cli
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -52,6 +55,13 @@ class BrokenTyper:
         f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]"
     )
+
+    class BaseModel(ABC, BaseModel):
+        """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
+
+        @abstractmethod
+        def commands(self, typer: BrokenTyper) -> None:
+            pass
 
     def __attrs_post_init__(self):
         self.app = typer.Typer(
@@ -99,6 +109,10 @@ class BrokenTyper:
             target = pydantic_cli(instance=_instance, post=post)
             name = (name or _class.__name__)
             naih = True # (Complex command)
+
+            # Add nested commands from meta class
+            if issubclass(_class, BrokenTyper.BaseModel):
+                _instance.commands(self)
         else:
             name = (name or target.__name__)
 
@@ -148,7 +162,7 @@ class BrokenTyper:
 
             try:
                 # Safety: Flat cast everything to str
-                self.app(list(map(str, flatten(args))))
+                self.app(apply(str, flatten(args)))
             except SystemExit:
                 log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:

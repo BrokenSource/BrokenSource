@@ -39,7 +39,7 @@ def flatten(
 ) -> List[Any]:
     """
     Flatten/unpack nested iterables (list, deque, tuple, map, Generator) to a plain 1D list
-    • Removes common falsy values by default, disable with `block={None, False, "", [], ...}`
+    - Removes common falsy values by default, disable with `block={None, False, "", [], ...}`
 
     Usage:
         ```python
@@ -85,42 +85,24 @@ def shell(
     *args: Iterable[Any],
     output: bool=False,
     Popen: bool=False,
-    shell: bool=False,
-    env: dict[str, str]=None,
-    echo: bool=True,
+    env: Dict[str, str]=None,
     confirm: bool=False,
-    wrapper: bool=False,
+    threaded_stdin: bool=False,
     skip: bool=False,
+    echo: bool=True,
     **kwargs
 ) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
     """
-    Better subprocess.* commands, all in one, yeet whatever you think it works
-    - This is arguably the most important function in the library 🙈
+    Enhanced subprocess runners with many additional features. Flattens the args, converts to str
 
     Example:
         ```python
-        shell(["binary", "-m"], "arg1", None, "arg2", 3, output=True, echo=False, confirm=True)
+        shell(["binary", "-m"], "arg1", None, "arg2", 3, confirm=True)
         ```
-
-    Args:
-        args:    The command to run, can be a list of arguments or a list of lists of arguments, don't care
-        output:  Return the process's stdout as a decoded string
-        Popen:   Run the process with subprocess.Popen
-        shell:   (discouraged) Run the command with shell=True, occasionally useful
-        echo:    Log the command being run or not
-        confirm: Ask for confirmation before running the command or not
-        wrapper: Enables threaded stdin writing speed workaround (Unix only)
-        skip:    Do not run the command, but log it was skipped
-
-    Kwargs (subprocess.* arguments):
-        cwd: Current working directory for the command
-        env: Environment variables for the command
-        *:   Any other keyword arguments are passed to subprocess.*
     """
-    if output and Popen:
+    if (output and Popen):
         raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
-    # Flatten a list, remove falsy values, convert to strings
     args = tuple(map(str, flatten(args)))
 
     # Assert command won't fail due unknown binary
@@ -134,26 +116,25 @@ def shell(
     _log(_the + f" Command {args}{_cwd}", echo=echo)
     if skip: return
 
-    if shell: # Shell-ify the command
+    if kwargs.get("shell", False):
         args = '"' + '" "'.join(args) + '"'
         log.warning((
             "Running command with (shell=True), be careful.. "
             "Consider using (confirm=True)"*(not confirm)
         ))
 
-    # Confirm running command or not
     if confirm and not click.confirm("• Confirm running the command above"):
         return
 
-    # Update kwargs on the fly
+    # Update current environ for the command only
     kwargs["env"] = os.environ | (env or {})
-    kwargs["shell"] = shell
 
-    # preexec_fn is not supported on windows, pop from kwargs
+    # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
-    # Run the command and return specified object
+    # # Running the command
+
     if output:
         return subprocess.check_output(args, **kwargs).decode("utf-8")
 
@@ -161,7 +142,7 @@ def shell(
         process = subprocess.Popen(args, **kwargs)
 
         # Linux non-threaded pipes were slower than Windows plain subprocess
-        if (os.name != "nt") and bool(wrapper):
+        if (os.name != "nt") and bool(threaded_stdin):
 
             @define
             class StdinWrapper:
@@ -193,19 +174,24 @@ def shell(
 def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))
 
-def apply(callback: Callable, iterable: Iterable[Any]) -> List[Any]:
-    """map(f, x) is lazy, this consumes the generator, returning a list"""
-    return list(map(callback, iterable))
+def apply(callback: Callable, iterable: Iterable[Any], *, cast: Callable=list) -> List[Any]:
+    """Applies a callback to all items of an iterable, returning a $cast of the results"""
+    return cast(map(callback, iterable))
 
 def denum(item: Union[enum.Enum, Any]) -> Any:
-    """De-enumerates an item: Returns the item's value if Enum else the item itself"""
+    """De-enumerates an item, if it's an Enum returns the value, else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
-def pydantic_cli(instance: object, post: Callable=None):
+def pydantic_cli(instance: object, post: Callable=None) -> Callable:
     """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
     to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
     will send all default ones overriden by the user commands. The 'post' method is called afterwards,
     for example `post = self.set_object` for back-communication between the caller and the instance"""
+    from pydantic import BaseModel
+
+    if not issubclass(this := type(instance), BaseModel):
+        raise TypeError(f"Object {this} is not a Pydantic BaseModel")
+
     def wrapper(**kwargs):
         for name, value in kwargs.items():
             setattr(instance, name, value)
@@ -224,7 +210,7 @@ def dunder(name: str) -> bool:
 def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
     """
     Yields the numbers in a hyphenated CSV range, just like when selecting what pages to print
-    - Accepts "-", "..", "...", or a hyphenated range
+    - Accepts any of ("-", "..", "...", "_", "->") as a hyphenated range
 
     Example:
         ```python
@@ -238,10 +224,10 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
 
     for part in string.split(","):
         if ("-" in part):
-            start, end = map(int, re.split(r"-|\.\.|\.\.\.", part))
+            start, end = map(int, re.split(r"_|-|\.\.|\.\.\.|\-\>", part))
             yield from range(start, end + int(inclusive))
-        else:
-            yield int(part)
+            continue
+        yield int(part)
 
 def image_hash(image) -> str:
     """A Fast-ish method to get an object's hash that implements .tobytes()"""
@@ -262,7 +248,7 @@ def limited_integer_ratio(number: Optional[float], *, limit: float=None) -> Opti
 
 @contextlib.contextmanager
 def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
-    """Temporarily sets environment variables"""
+    """Temporarily sets environment variables inside a context"""
     old = os.environ.copy()
     os.environ.clear()
     os.environ.update({k: str(v) for k, v in (old | env).items() if v})
