@@ -47,13 +47,13 @@ class BrokenTyper:
     """Default command to run if none is provided"""
 
     repl: bool = False
-    """If True, will run a REPL instead of a command"""
+    """If True, will run a REPL when no arguments are provided"""
 
     help: bool = False
 
     credits: str = (
         f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Sponsoring[/link][/blue] my work[/italic grey53]"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[/italic grey53]"
     )
 
     class BaseModel(ABC, BaseModel):

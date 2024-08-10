@@ -238,10 +238,6 @@ class _Resources:
     """You shouldn't really use this class directly"""
     PROJECT: BrokenProject
 
-    # # Internal states
-
-    __RESOURCES__: Path = field(default=None)
-
     def __attrs_post_init__(self):
         if self.PROJECT.RESOURCES:
 
@@ -253,15 +249,13 @@ class _Resources:
             # Note: Importlib bundles the resources with the package wheel :) !
             self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
 
+    __RESOURCES__: Path = None
+
     def __div__(self, name: str) -> Path:
         return self.__RESOURCES__/name
 
     def __truediv__(self, name: str) -> Path:
         return self.__div__(name)
-
-    @property
-    def WHEELS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Wheels")
 
     # # Common section
 
@@ -353,17 +347,15 @@ class BrokenProject:
                 print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.CurrentTarget}")
                 exit(0)
 
-        # Convenience: Symlink Workspace to projects data directory
-        if Broken.DEVELOPMENT:
-            BrokenPath.symlink(
-                virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
-                real=self.DIRECTORIES.WORKSPACE,
-                echo=False
-            )
+        # Convenience symlink the project's workspace
+        if Broken.DEVELOPMENT: BrokenPath.symlink(
+            virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
+            real=self.DIRECTORIES.WORKSPACE,
+            echo=False
+        )
 
-        # Load .env files from the project
-        for env in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            dotenv.load_dotenv(env)
+        for path in self.DIRECTORIES.REPOSITORY.glob("*.env"):
+            dotenv.load_dotenv(path)
 
     def chdir(self) -> Self:
         """Change directory to the project's root"""
@@ -415,7 +407,6 @@ class BrokenProject:
                 input("\nPlease, reopen this Executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
                 exit(0)
             else:
-                # Run `pyapp self restore` and re-run self with same argv
                 shell(executable, os.getenv("PYAPP_COMMAND_NAME"), "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
                 sys.exit(shell(executable, sys.argv[1:]).returncode)

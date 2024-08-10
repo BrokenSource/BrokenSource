@@ -6,7 +6,7 @@
 Example file for running the projects / DepthFlow on [Modal](https://modal.com/). Be sure to follow
   their [User Guide](https://modal.com/docs/guide) for the initial setup (cli, tokens, etc)
 
- (❤️) Consider [Sponsoring](https://brokensrc.dev/about/sponsors) my work, if this helped you (❤️)
+ (❤️) Consider [Supporting](https://brokensrc.dev/about/sponsors) my work, if this helped you (❤️)
 
 |--------------------------------------------------------------------------------------------------|
 
