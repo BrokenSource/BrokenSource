@@ -28,6 +28,7 @@ from Broken import (
     BrokenPlatform,
     BrokenProfiler,
     apply,
+    flatten,
     log,
     shell,
 )
@@ -251,6 +252,11 @@ class _Resources:
 
     __RESOURCES__: Path = None
 
+    @property
+    def ROOT(self) -> Path:
+        # Workaround: Convert a MultiplexedPath to Path
+        return mkdir(self.__RESOURCES__/"workaround"/"..")
+
     def __div__(self, name: str) -> Path:
         return self.__RESOURCES__/name
 
@@ -352,8 +358,12 @@ class BrokenProject:
             echo=False
         )
 
-        for path in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            dotenv.load_dotenv(path)
+        # Load dotenv files in common directories
+        for path in (x for x in flatten(
+            [self.RESOURCES.ROOT/"Release.env"]*Broken.RELEASE,
+            self.DIRECTORIES.REPOSITORY.glob("*.env"),
+        ) if x.exists()):
+            dotenv.load_dotenv(path, override=True)
 
     def chdir(self) -> Self:
         """Change directory to the project's root"""
@@ -404,7 +414,7 @@ class BrokenProject:
                 input("\nPlease, reopen this Executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
                 exit(0)
             else:
-                shell(executable, os.getenv("PYAPP_COMMAND_NAME"), "restore", stdout=subprocess.DEVNULL)
+                shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
                 sys.exit(shell(executable, sys.argv[1:]).returncode)
 

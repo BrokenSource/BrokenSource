@@ -36,7 +36,7 @@ class BrokenTorch:
 
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
         if Broken.PYAPP:
-            version_flavor = os.getenv("PYAPP_COMMAND_NAME", "")
+            version_flavor = os.getenv("TORCH_FLAVOR", "")
             if ("+" not in version_flavor):
                 return None
 

@@ -23,29 +23,53 @@ title: Get/Releases
             </thead>
             <tbody>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:depthflow">🌊 DepthFlow</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">:octicons-download-16: CPU</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">:octicons-download-16: CUDA</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">:octicons-download-16: ROCm</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:depthflow">🌊 DepthFlow
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">
+                        :octicons-download-16: CPU
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">
+                        :octicons-download-16: CUDA
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
+                        :octicons-download-16: ROCm
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:shaderflow">🔥 ShaderFlow
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-windows-amd64-latest.exe">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:pianola">🎹 Pianola</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:pianola">🎹 Pianola
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-windows-amd64-latest.exe">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:spectronote">🎧 SpectroNote</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-windows-amd64-latest.exe">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:spectronote">🎧 SpectroNote
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-windows-amd64-latest.exe">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
             </tbody>
         </table>
     === ":simple-linux: Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
         <table>
-            <!-- Horizontal align -->
             <thead>
                 <tr>
                     <th>Project</th>
@@ -56,22 +80,46 @@ title: Get/Releases
             </thead>
             <tbody>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:depthflow">🌊 DepthFlow</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">:octicons-download-16: CPU</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">:octicons-download-16: CUDA</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">:octicons-download-16: ROCm</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:depthflow">🌊 DepthFlow
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">
+                        :octicons-download-16: CPU
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">
+                        :octicons-download-16: CUDA
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">
+                        :octicons-download-16: ROCm
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:shaderflow">🔥 ShaderFlow
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-linux-amd64-latest.bin">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:pianola">🎹 Pianola</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:pianola">🎹 Pianola
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-linux-amd64-latest.bin">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:spectronote">🎧 SpectroNote</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-linux-amd64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:spectronote">🎧 SpectroNote
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-linux-amd64-latest.bin">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
             </tbody>
         </table>
@@ -86,20 +134,40 @@ title: Get/Releases
             </thead>
             <tbody>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:depthflow">🌊 DepthFlow</a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.bin">:octicons-download-16: CPU</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:depthflow">🌊 DepthFlow
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.app">
+                        :octicons-download-16: CPU
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:shaderflow">🔥 ShaderFlow</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-macos-arm64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:shaderflow">🔥 ShaderFlow
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-macos-arm64-latest.app">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:pianola">🎹 Pianola</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-macos-arm64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:pianola">🎹 Pianola
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-macos-arm64-latest.app">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
                 <tr>
-                    <td><a class="md-button md-button--stretch md-button--elegant" href="site:spectronote">🎧 SpectroNote</a></td>
-                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch" href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-macos-arm64-latest.bin">:octicons-download-16: Download</a></td>
+                    <td><a class="md-button md-button--stretch md-button--elegant"
+                        href="site:spectronote">🎧 SpectroNote
+                        </a></td>
+                    <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-macos-arm64-latest.app">
+                        :octicons-download-16: Download
+                        </a></td>
                 </tr>
             </tbody>
         </table>
