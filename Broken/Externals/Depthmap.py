@@ -157,8 +157,8 @@ class DepthAnythingV1(DepthAnythingBase):
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
-        depth = maximum_filter(input=depth, size=5)
         depth = gaussian_filter(input=depth, sigma=0.3)
+        depth = maximum_filter(input=depth, size=5)
         return depth
 
 # -------------------------------------------------------------------------------------------------|
@@ -170,8 +170,8 @@ class DepthAnythingV2(DepthAnythingBase):
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
-        depth = maximum_filter(input=depth, size=6)
-        depth = gaussian_filter(input=depth, sigma=0.9)
+        depth = gaussian_filter(input=depth, sigma=0.6)
+        depth = maximum_filter(input=depth, size=5)
         return depth
 
 # -------------------------------------------------------------------------------------------------|

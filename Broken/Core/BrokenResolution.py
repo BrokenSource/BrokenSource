@@ -1,6 +1,6 @@
 import math
 from numbers import Number
-from typing import Tuple
+from typing import Iterable, Tuple, Union
 
 from Broken import log
 
@@ -8,12 +8,10 @@ from Broken import log
 class BrokenResolution:
 
     @staticmethod
-    def round_component(value: Number, *, scale: Number=1) -> int:
-        return max(1, 2*round(scale*value/2))
-
-    @staticmethod
-    def round_resolution(width: Number, height: Number, *, scale: Number=1) -> Tuple[int, int]:
-        return (BrokenResolution.round_component(width*scale), BrokenResolution.round_component(height*scale))
+    def round(*numbers: Iterable[Number]) -> Union[int, Tuple[int, ...]]:
+        """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
+        values = tuple(max(1, 2*round(value/2)) for value in numbers)
+        return values[0] if (len(values) == 1) else values
 
     @staticmethod
     def fit(
@@ -107,22 +105,19 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return BrokenResolution.round_resolution(width=width, height=height, scale=scale)
+        return BrokenResolution.round(width, height)
 
 # -------------------------------------------------------------------------------------------------|
 # Test
 
 class _PyTest:
-    def test_round_component(self):
-        assert BrokenResolution.round_component(100) == 100
-        assert BrokenResolution.round_component(2.5) == 2
-        assert BrokenResolution.round_component(3.2) == 4
-
-    def test_round_resolution(self):
-        assert BrokenResolution.round_resolution(1920, 1080)   == (1920, 1080)
-        assert BrokenResolution.round_resolution(1921, 1080.0) == (1920, 1080)
-        assert BrokenResolution.round_resolution(1921.5, 1080) == (1922, 1080)
-        assert BrokenResolution.round_resolution(1920, 1080, scale=2) == (3840, 2160)
+    def test_round(self):
+        assert BrokenResolution.round(100) == 100
+        assert BrokenResolution.round(2.5) == 2
+        assert BrokenResolution.round(3.2) == 4
+        assert BrokenResolution.round(1920, 1080)   == (1920, 1080)
+        assert BrokenResolution.round(1921, 1080.0) == (1920, 1080)
+        assert BrokenResolution.round(1921.5, 1080) == (1922, 1080)
 
     def test_keep_nothing(self):
         assert BrokenResolution.fit(old=(1920, 1080)) == (1920, 1080)
