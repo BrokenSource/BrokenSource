@@ -160,7 +160,7 @@ class _Directories:
             return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
         if (os.name != "nt"):
             return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
-        return mkdir(Path(self.PROJECT.APP_DIRS.user_data_dir))
+        return mkdir(Path(self.APP_DIRS.user_data_dir))
 
     @property
     def CONFIG(self) -> Path:
