@@ -10,7 +10,7 @@ import typer
 from PIL.Image import Image
 from pydantic import Field, field_validator
 
-from Broken import BrokenEnum, BrokenPath, BrokenPlatform, shell, valid
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, every, shell
 from Broken.Externals.Upscaler import BrokenUpscaler
 
 
@@ -127,9 +127,9 @@ class Waifu2x(UpscalerNCNN_Base):
                     self.download(),
                     "-i", input,
                     "-o", output,
-                    valid("-n", self.denoise),
-                    valid("-s", self.scale),
-                    valid("-t", self.tile_size),
+                    every("-n", self.denoise),
+                    every("-s", self.scale),
+                    every("-t", self.tile_size),
                     "-g", self.gpu if not self.cpu else -1,
                     "-j", self._lpc,
                     "-x"*self.tta,
@@ -177,10 +177,10 @@ class Realesr(UpscalerNCNN_Base):
                     self.download(),
                     "-i", input,
                     "-o", output,
-                    valid("-s", self.scale),
-                    valid("-t", self.tile_size),
-                    valid("-g", self.gpu if not self.cpu else -1),
-                    valid("-n", self.model.name.replace("_", "-")),
+                    every("-s", self.scale),
+                    every("-t", self.tile_size),
+                    every("-g", self.gpu if not self.cpu else -1),
+                    every("-n", self.model.name.replace("_", "-")),
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,

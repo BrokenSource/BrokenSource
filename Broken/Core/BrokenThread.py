@@ -5,8 +5,6 @@ from typing import Any, Callable, Dict, List
 
 from attrs import define
 
-from Broken import last_locals
-
 
 @define
 class BrokenThreadPool:
@@ -62,8 +60,6 @@ class BrokenThread:
         pool: str=None,
         max: int=10,
         daemon: bool=False,
-        locals: bool=False,
-        self: bool=False,
         **kwargs: Dict[str, Any],
     ) -> Thread:
         """
@@ -82,29 +78,21 @@ class BrokenThread:
             max:    Maximum threads in the pool
             daemon: When the main thread exits, daemon threads are also terminated
 
-        Advanced:
-            locals:   Whether to pass the current scope locals to the callable or not
-            self:     Include "self" in the locals if locals=True
-
         Returns:
             The created Thread object
         """
 
-        # Update kwargs with locals
-        if locals: kwargs.update(last_locals(level=2, self=self))
-        the_target = target
-
-        # Wrap the callback in a loop
         @functools.wraps(target)
         def looped(*args, **kwargs):
             while True:
                 target(*args, **kwargs)
                 time.sleep(period)
-        the_target = (looped if loop else the_target)
+
+        target = (looped if loop else target)
 
         # Create Thread object
         parallel = Thread(
-            target=the_target,
+            target=target,
             daemon=daemon,
             args=args,
             kwargs=kwargs

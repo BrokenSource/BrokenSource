@@ -60,7 +60,7 @@ def flatten(
     # Note: Recursive implementation
     return cast(flatten(items))
 
-def valid(
+def every(
     *items: Union[Any, Iterable[Any]],
     cast: Optional[type]=list,
     block: List[Any]=[None, ""],
@@ -261,6 +261,21 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None,
             stack.enter_context(context)
         yield
 
+def filter_dict(
+    data: Dict,
+    *,
+    block: Optional[Iterable[Any]]=None,
+    allow: Optional[Iterable[Any]]=None,
+):
+    if block:
+        data = {key: value for key, value in data.items() if key not in block}
+    if allow:
+        data = {key: value for key, value in data.items() if key in allow}
+    return data
+
+def selfless(data: Dict) -> Dict:
+    return filter_dict(data, block=["self"])
+
 # -------------------------------------------------------------------------------------------------|
 
 def transcends(method, base, generator: bool=False):
@@ -291,19 +306,3 @@ def transcends(method, base, generator: bool=False):
 
         return (yields if generator else plain)
     return decorator
-
-def last_locals(level: int=1, self: bool=True) -> dict:
-    locals = inspect.currentframe()
-
-    # Keep getting the previous's frame
-    for _ in range(level):
-        locals = locals.f_back
-
-    # Get the locals
-    locals = locals.f_locals
-
-    # Remove self from locals
-    if self:
-        locals.pop("self", None)
-
-    return locals

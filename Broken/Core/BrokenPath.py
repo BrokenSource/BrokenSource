@@ -479,15 +479,17 @@ class BrokenPath(pathlib.Path):
 
     # # Specific / "Utils"
 
-    def open_in_file_explorer(path: Path):
+    def explore(path: Path):
         """Opens a path in the file explorer"""
-        path = BrokenPath(path)
+        path = Path(path)
+        if path.is_file():
+            path = path.parent
         if BrokenPlatform.OnWindows:
             os.startfile(str(path))
         elif BrokenPlatform.OnLinux:
-            shell("xdg-open", path)
+            shell("xdg-open", path, Popen=True)
         elif BrokenPlatform.OnMacOS:
-            shell("open", path)
+            shell("open", path, Popen=True)
 
     # Fixme: Untested functions, needs better name; are these useful?
 

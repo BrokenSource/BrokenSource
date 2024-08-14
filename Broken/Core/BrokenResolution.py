@@ -1,6 +1,6 @@
 import math
 from numbers import Number
-from typing import Iterable, Tuple, Union
+from typing import Iterable, Optional, Tuple, Union
 
 from Broken import log
 
@@ -15,11 +15,11 @@ class BrokenResolution:
 
     @staticmethod
     def fit(
-        old: Tuple[int, int]=None,
-        new: Tuple[int, int]=None,
-        max: Tuple[int, int]=None,
+        old: Optional[Tuple[int, int]]=None,
+        new: Optional[Tuple[int, int]]=None,
+        max: Optional[Tuple[int, int]]=None,
+        ar: Optional[float]=None,
         scale: float=1.0,
-        ar: float=None,
     ) -> Tuple[int, int]:
         """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
 
@@ -30,7 +30,7 @@ class BrokenResolution:
 
         To which, the behavior is as follows in the two branches:
             No aspect ratio (ar=None) is send:
-                - Returns the original resolution overrided by any new (nw, nh)
+                - Returns the original resolution overridden by any new (nw, nh)
 
             Aspect ratio (ar!=None) is send:
                 - If any of the new (nw, nh) is missing, find the other based on the aspect ratio
@@ -59,8 +59,6 @@ class BrokenResolution:
         (int, int)
             The new best-fit width and height
         """
-
-        # Unpack
         old_width, old_height = (old or (None, None))
         new_width, new_height = (new or (None, None))
         max_width, max_height = (max or (None, None))
@@ -71,7 +69,7 @@ class BrokenResolution:
         (width, height) = ((new_width or old_width), (new_height or old_height))
 
         if not all((width, height)):
-            raise ValueError("Can't build a resolution with missing component(s): ({width}, {height})")
+            raise ValueError(f"Can't build a resolution with missing component(s): ({width=}, {height=})")
 
         if (ar is not None):
             # Build from width (W) or from height (H)
@@ -105,10 +103,9 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return BrokenResolution.round(width, height)
+        return BrokenResolution.round(width*scale, height*scale)
 
 # -------------------------------------------------------------------------------------------------|
-# Test
 
 class _PyTest:
     def test_round(self):

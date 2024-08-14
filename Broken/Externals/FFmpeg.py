@@ -33,11 +33,11 @@ from Broken import (
     BrokenPlatform,
     BrokenSpinner,
     denum,
+    every,
     flatten,
     log,
     nearest,
     shell,
-    valid,
 )
 from Broken.Types import Bytes, Hertz, Seconds
 
@@ -110,8 +110,8 @@ class FFmpegOutputPipe(FFmpegModuleBase):
     ] = Field(default="rgb24")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-f", self.format)
-        yield valid("-pix_fmt", self.pixel_format)
+        yield every("-f", self.format)
+        yield every("-pix_fmt", self.pixel_format)
         yield "-"
 
 class FFmpegOutputPath(FFmpegModuleBase):
@@ -125,7 +125,7 @@ class FFmpegOutputPath(FFmpegModuleBase):
     ]] = Field(default="yuv420p")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-pix_fmt", self.pixel_format)
+        yield every("-pix_fmt", self.pixel_format)
         yield (self.path, self.overwrite*"-y")
 
 FFmpegOutputType = Union[
@@ -191,13 +191,13 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     rgb: bool = Field(default=False)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:v", "libx264rgb" if self.rgb else "libx264")
-        yield valid("-profile", self.profile)
-        yield valid("-preset", self.preset)
-        yield valid("-tune", self.tune)
-        yield valid("-crf", str(self.crf))
-        yield valid("-movflags", "+faststart"*self.faststart)
-        yield valid("-b:v", self.bitrate)
+        yield every("-c:v", "libx264rgb" if self.rgb else "libx264")
+        yield every("-profile", self.profile)
+        yield every("-preset", self.preset)
+        yield every("-tune", self.tune)
+        yield every("-crf", str(self.crf))
+        yield every("-movflags", "+faststart"*self.faststart)
+        yield every("-b:v", self.bitrate)
 
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """`ffmpeg -h encoder=h264_nvenc`"""
@@ -259,16 +259,16 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:v", "h264_nvenc")
-        yield valid("-b:v", 0)
-        yield valid("-preset", self.preset)
-        yield valid("-tune", self.tune)
-        yield valid("-profile", self.profile)
-        yield valid("-rc", self.rc)
-        yield valid("-rc-lookahead", self.rc_lookahead)
-        yield valid("-cbr", int(self.cbr))
-        yield valid("-cq", self.cq)
-        yield valid("-gpu", self.gpu)
+        yield every("-c:v", "h264_nvenc")
+        yield every("-b:v", 0)
+        yield every("-preset", self.preset)
+        yield every("-tune", self.tune)
+        yield every("-profile", self.profile)
+        yield every("-rc", self.rc)
+        yield every("-rc-lookahead", self.rc_lookahead)
+        yield every("-cbr", int(self.cbr))
+        yield every("-cq", self.cq)
+        yield every("-gpu", self.gpu)
 
 
 class FFmpegVideoCodecH265(FFmpegModuleBase):
@@ -293,10 +293,10 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
     ]] = Field(default="slow")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:v", "libx265")
-        yield valid("-preset", self.preset)
-        yield valid("-crf", str(self.crf))
-        yield valid("-b:v", self.bitrate)
+        yield every("-c:v", "libx265")
+        yield every("-preset", self.preset)
+        yield every("-crf", str(self.crf))
+        yield every("-b:v", self.bitrate)
 
 
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
@@ -363,16 +363,16 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:v", "hevc_nvenc")
-        yield valid("-preset", self.preset)
-        yield valid("-tune", self.tune)
-        yield valid("-profile", self.profile)
-        yield valid("-tier", self.tier)
-        yield valid("-rc", self.rc)
-        yield valid("-rc-lookahead", self.rc_lookahead)
-        yield valid("-cbr", int(self.cbr))
-        yield valid("-cq", self.cq)
-        yield valid("-gpu", self.gpu)
+        yield every("-c:v", "hevc_nvenc")
+        yield every("-preset", self.preset)
+        yield every("-tune", self.tune)
+        yield every("-profile", self.profile)
+        yield every("-tier", self.tier)
+        yield every("-rc", self.rc)
+        yield every("-rc-lookahead", self.rc_lookahead)
+        yield every("-cbr", int(self.cbr))
+        yield every("-cq", self.cq)
+        yield every("-gpu", self.gpu)
 
 
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
@@ -544,13 +544,13 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:v", "av1_nvenc")
-        yield valid("-preset", self.preset)
-        yield valid("-tune", self.tune)
-        yield valid("-rc", self.rc)
-        yield valid("-rc-lookahead", self.rc_lookahead)
-        yield valid("-cq", self.cq)
-        yield valid("-gpu", self.gpu)
+        yield every("-c:v", "av1_nvenc")
+        yield every("-preset", self.preset)
+        yield every("-tune", self.tune)
+        yield every("-rc", self.rc)
+        yield every("-rc-lookahead", self.rc_lookahead)
+        yield every("-cq", self.cq)
+        yield every("-gpu", self.gpu)
 
 
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
@@ -597,8 +597,8 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
     """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:a", "aac")
-        yield valid("-b:a", f"{self.bitrate}k")
+        yield every("-c:a", "aac")
+        yield every("-b:a", f"{self.bitrate}k")
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
     """https://trac.ffmpeg.org/wiki/Encode/MP3"""
@@ -608,26 +608,26 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
     """Quality scale, 0-9, Variable Bitrate"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:a", "libmp3lame")
-        yield valid("-qscale:a", self.qscale)
+        yield every("-c:a", "libmp3lame")
+        yield every("-qscale:a", self.qscale)
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
     codec: Literal["libopus"] = "libopus"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:a", "libopus")
+        yield every("-c:a", "libopus")
 
 class FFmpegAudioCodecVorbis(FFmpegModuleBase):
     codec: Literal["libvorbis"] = "libvorbis"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:a", "libvorbis")
+        yield every("-c:a", "libvorbis")
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
     codec: Literal["flac"] = "flac"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield valid("-c:a", "flac")
+        yield every("-c:a", "flac")
 
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
     codec: Literal["copy"] = "copy"
