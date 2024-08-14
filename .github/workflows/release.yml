@@ -6,31 +6,6 @@ on:
       - "Broken/Version.py"
 
 jobs:
-  wheels:
-    name: Release Wheels
-    runs-on: ubuntu-latest
-    steps:
-      - uses: BrokenSource/BrokenSource@main
-        name: Broken Setup
-
-      - name: Build wheels
-        run: rye run broken pypi --publish
-        env:
-          PYPI_TOKEN: ${{secrets.PYPI_TOKEN}}
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: Wheels
-          path: Build/Wheels/*.whl
-
-      - name: Create Release Tag
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git tag -a v$BROKEN_VERSION -m "Release v$BROKEN_VERSION"
-          git push origin v$BROKEN_VERSION
-
   releases:
     name: Release (${{matrix.os}})
     runs-on: ${{matrix.os}}
@@ -84,3 +59,29 @@ jobs:
         with:
           name: SpectroNote
           path: Release/spectronote*
+
+  wheels:
+    name: Release Wheels
+    runs-on: ubuntu-latest
+    needs: releases
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Build wheels
+        run: rye run broken pypi --publish
+        env:
+          PYPI_TOKEN: ${{secrets.PYPI_TOKEN}}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: Wheels
+          path: Build/Wheels/*.whl
+
+      - name: Create Release Tag
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git tag -a v$BROKEN_VERSION -m "Release v$BROKEN_VERSION"
+          git push origin v$BROKEN_VERSION
