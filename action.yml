@@ -13,6 +13,9 @@ runs:
     - name: Install Rye
       uses: eifinger/setup-rye@v4
 
+    - name: Setup Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+
     - name: Sync dependencies
       run: rye sync
       shell: bash
