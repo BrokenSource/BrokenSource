@@ -8,6 +8,7 @@ from attr import Factory, define
 from dotmap import DotMap
 from typer import Argument, Context, Option, Typer
 
+import Broken
 from Broken import (
     BROKEN,
     BrokenEnum,
@@ -449,6 +450,10 @@ class BrokenManager(BrokenSingleton):
     ):
         """🦀 Installs Rustup and a Rust Toolchain"""
         import requests
+
+        # Skip if we're on a GitHub Action
+        if (Broken.GITHUB_CI):
+            return
 
         # Install rustup based on platform
         if not shutil.which("rustup"):
