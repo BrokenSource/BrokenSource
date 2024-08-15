@@ -34,6 +34,8 @@ NOTE: Experimentally, 4 CPUs gives the best encoding speeds, as often some cores
 |--------------------------------------------------------------------------------------------------|
 """
 
+from pathlib import Path
+
 import modal
 
 image = (
@@ -50,11 +52,14 @@ app = modal.App(
 )
 
 @app.function(gpu="l4", cpu=4)
-def run():
+def run() -> bytes:
     from DepthFlow import DepthScene
     scene = DepthScene(backend="headless")
-    scene.main(output="/tmp/video.mp4", vcodec="h264-nvenc", end=30)
+    video = Path("/tmp/video.mp4")
+    scene.main(output=video, vcodec="h264", time=30)
+    return video.read_bytes()
 
 @app.local_entrypoint()
 def main():
-    run.remote()
+    video = run.remote()
+    Path("./output.mp4").write_bytes(video)
