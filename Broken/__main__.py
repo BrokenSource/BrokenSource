@@ -223,8 +223,8 @@ class ProjectCLI:
             return None
 
         # Avoid bad combinations
-        if (torch == TorchFlavor.ROCM)  and ("windows"   in target.name): return
-        if (torch == TorchFlavor.MACOS) and ("macos" not in target.name): return
+        if (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
+        if (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
 
         if self.is_python:
             BrokenManager.rust()

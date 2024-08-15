@@ -84,8 +84,6 @@ class BrokenPlatform:
             """Same as BrokenPlatform.Extension"""
             if ("windows" in self.value):
                 return ".exe"
-            if ("macos" in self.value):
-                return ".app"
             return ".bin"
 
         @property

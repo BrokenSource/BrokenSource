@@ -1,3 +1,3 @@
 #!/usr/bin/env pwsh
-Set-Location -Path (Get-Location).Parent.FullName
+Set-Location -Path (Split-Path -Path $PSScriptRoot -Parent)
 & ./Website/get.ps1

@@ -24,7 +24,7 @@ from Broken import apply, flatten, log, pydantic_cli
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
 typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
-typer.rich_utils.DEFAULT_STRING = "({})"
+typer.rich_utils.DEFAULT_STRING = "(default: {})"
 typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
 
 console = get_console()
