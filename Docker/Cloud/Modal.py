@@ -37,13 +37,17 @@ NOTE: Experimentally, 4 CPUs gives the best encoding speeds, as often some cores
 from pathlib import Path
 
 import modal
+from dotmap import DotMap
+from PIL import Image
 
 image = (
-    modal.Image.from_registry("nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04", add_python="3.10")
+    modal.Image.from_registry("nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04", add_python="3.11")
     .run_commands("python3 -m pip install torch==2.3.0 --index-url https://download.pytorch.org/whl/cu118")
     .apt_install("mesa-utils")
+    .apt_install("ffmpeg")
     .pip_install("transformers")
     .pip_install("depthflow")
+    # .run_commands("depthflow load-model") # Todo: 0.5.1
 )
 
 app = modal.App(
@@ -52,14 +56,20 @@ app = modal.App(
 )
 
 @app.function(gpu="l4", cpu=4)
-def run() -> bytes:
+def run(data: DotMap) -> bytes:
     from DepthFlow import DepthScene
     scene = DepthScene(backend="headless")
-    video = Path("/tmp/video.mp4")
-    scene.main(output=video, vcodec="h264", time=30)
-    return video.read_bytes()
+    scene.input(image=data.image)
+    return scene.main(
+        render=True,
+        height=720,
+        time=5,
+    )[0].read_bytes()
 
 @app.local_entrypoint()
 def main():
-    video = run.remote()
+    data = DotMap(
+        image=Image.open("./input.jpg")
+    )
+    video = run.remote(data)
     Path("./output.mp4").write_bytes(video)

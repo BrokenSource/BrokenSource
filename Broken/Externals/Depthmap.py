@@ -1,11 +1,10 @@
 import functools
 import multiprocessing
-import os
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from threading import Lock
-from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional
+from typing import TYPE_CHECKING, Annotated, Any, Optional
 
 import numpy
 import typer
@@ -46,6 +45,7 @@ class DepthEstimator(BaseModel, ABC):
 
     @property
     def device(self) -> str:
+        self.load_torch()
         if torch.cuda.is_available():
             return "cuda"
         return "cpu"

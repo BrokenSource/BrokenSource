@@ -44,6 +44,10 @@ class LoaderImage(BrokenLoader):
             log.debug("Loading already an Class of Image")
             return value
 
+        elif isinstance(value, bytes):
+            log.debug("Loading Image from Bytes")
+            return PIL.Image.open(io.BytesIO(value), **kwargs)
+
         elif isinstance(value, numpy.ndarray):
             log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
@@ -57,10 +61,6 @@ class LoaderImage(BrokenLoader):
             import requests
             get = getattr(LoaderImage.cache(), "get", requests.get)
             return PIL.Image.open(io.BytesIO(get(value).content), **kwargs)
-
-        elif isinstance(value, bytes):
-            log.debug("Loading Image from Bytes")
-            return PIL.Image.open(io.BytesIO(value), **kwargs)
 
         return None
 
