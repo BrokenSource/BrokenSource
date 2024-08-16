@@ -1,3 +1,4 @@
+import io
 import shutil
 from abc import abstractmethod
 from pathlib import Path
@@ -139,7 +140,7 @@ class Waifu2x(UpscalerNCNN_Base):
                     cwd=self.download().parent,
                     echo=echo,
                 )
-                return PIL.Image.open(output)
+                return PIL.Image.open(io.BytesIO(output.read_bytes()))
 
 # -------------------------------------------------------------------------------------------------|
 
@@ -188,6 +189,6 @@ class Realesr(UpscalerNCNN_Base):
                     cwd=self.download().parent,
                     echo=echo,
                 )
-                return PIL.Image.open(output)
+                return PIL.Image.open(io.BytesIO(output.read_bytes()))
 
 # -------------------------------------------------------------------------------------------------|
