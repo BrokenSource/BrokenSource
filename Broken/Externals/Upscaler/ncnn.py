@@ -81,6 +81,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
         ...
 
     def download(self) -> Path:
+        BrokenPath.update_externals_path()
         if (binary := shutil.which(self._binary_name())):
             return BrokenPath(binary)
         DOWNLOAD = self._base_download().format(BrokenPlatform.Name.replace("linux", "ubuntu"))
