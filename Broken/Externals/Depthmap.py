@@ -19,6 +19,7 @@ from Broken import (
     BrokenTorch,
     SameTracker,
     image_hash,
+    log,
     shell,
 )
 from Broken.Loaders import LoadableImage, LoaderImage
@@ -139,6 +140,7 @@ class DepthAnythingBase(DepthEstimator):
     def _load_model(self) -> None:
         import transformers
         HUGGINGFACE_MODEL = (f"{self.prefix()}{self.model}-hf")
+        log.info(f"Loading Depth Estimator model ({HUGGINGFACE_MODEL})")
         self._processor = transformers.AutoImageProcessor.from_pretrained(HUGGINGFACE_MODEL)
         self._model = transformers.AutoModelForDepthEstimation.from_pretrained(HUGGINGFACE_MODEL)
         self._model.to(self.device)
@@ -195,6 +197,7 @@ class ZoeDepth(DepthEstimator):
         except ImportError:
             shell(sys.executable, "-m", "uv", "pip", "install", "timm==0.6.7", "--no-deps")
 
+        log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model})")
         self._model = torch.hub.load(
             "isl-org/ZoeDepth", f"ZoeD_{self.model.upper()}",
             pretrained=True, trust_repo=True
@@ -227,6 +230,7 @@ class Marigold(DepthEstimator):
 
         from diffusers import DiffusionPipeline
 
+        log.info("Loading Depth Estimator model (Marigold)")
         self._model = DiffusionPipeline.from_pretrained(
             "prs-eth/marigold-v1-0",
             custom_pipeline="marigold_depth_estimation",
