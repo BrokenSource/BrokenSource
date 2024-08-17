@@ -80,6 +80,7 @@ shaderflow = [
     "pretty-midi~=0.2.10",
     "mido~=1.3.2",
     "python-rtmidi~=1.5.8",
+    "ordered-set>=4.1.0",
 ]
 gradio = [
     "gradio==4.22.0",

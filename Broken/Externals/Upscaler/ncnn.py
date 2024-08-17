@@ -52,8 +52,8 @@ class UpscalerNCNN_Base(BrokenUpscaler):
     def _lpc(self) -> str:
         return f"{self.load_threads}:{self.proc_threads}:{self.save_threads}"
 
-    # Make the process only use one random core
     def preexec_fn(self):
+        """Make the process only use one random core"""
         import os
         import random
         import resource
