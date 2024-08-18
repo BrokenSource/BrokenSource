@@ -376,6 +376,8 @@ class BrokenPath(pathlib.Path):
 
     def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
         file = BrokenPath.url_filename(denum(url))
+
+        # Is this file a .zip, .tar, etc..?
         ARCHIVE = any((str(file).endswith(ext) for ext in ShutilFormat.values()))
 
         # File is some known type, move to their own external directory

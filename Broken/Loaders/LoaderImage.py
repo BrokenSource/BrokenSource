@@ -1,8 +1,7 @@
 import io
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
 
-import numpy
 import PIL
 import validators
 from attr import define
@@ -13,6 +12,8 @@ from Broken import log
 from Broken.Loaders import BrokenLoader
 from Broken.Types import URL
 
+if TYPE_CHECKING:
+    import numpy
 
 @define
 class LoaderImage(BrokenLoader):
@@ -48,7 +49,7 @@ class LoaderImage(BrokenLoader):
             log.debug("Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
-        elif isinstance(value, numpy.ndarray):
+        elif ("numpy" in str(type(value))):
             log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
 
@@ -64,4 +65,4 @@ class LoaderImage(BrokenLoader):
 
         return None
 
-LoadableImage = Union[Image, Path, URL, numpy.ndarray, bytes, None]
+LoadableImage: TypeAlias = Union[Image, Path, URL, "numpy.ndarray", bytes, None]

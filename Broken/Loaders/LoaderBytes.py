@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, TypeAlias, Union
 
 from attr import define
 
@@ -30,4 +30,4 @@ class LoaderBytes(BrokenLoader):
 
         return None
 
-LoadableBytes = Union[bytes, str, Path, None]
+LoadableBytes: TypeAlias = Union[bytes, str, Path, None]
