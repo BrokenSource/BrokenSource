@@ -11,7 +11,7 @@ class TorchFlavor(BrokenEnum):
     CPU   = "2.3.1+cpu@cpu"
     CUDA  = "2.3.1+cu118@cuda"
     ROCM  = "2.3.1+rocm6.0@rocm"
-    MACOS = "2.3.1+cpu@mac"
+    MACOS = "2.3.1@mac"
 
 class BrokenTorch:
     """
