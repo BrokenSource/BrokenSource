@@ -11,7 +11,7 @@ class TorchFlavor(BrokenEnum):
     CPU   = "2.3.1+cpu@cpu"
     CUDA  = "2.3.1+cu118@cuda"
     ROCM  = "2.3.1+rocm6.0@rocm"
-    MACOS = "2.3.1@mac"
+    MACOS = "2.3.1+ignore@mac"
 
 class BrokenTorch:
     """
@@ -31,7 +31,8 @@ class BrokenTorch:
         for site_packages in map(Path, reversed(site.getsitepackages())):
             if (torch_version := (site_packages/"torch"/"version.py")).exists():
                 exec(torch_version.read_text(), namespace := {})
-                current_flavor = namespace["__version__"].split("+")[1]
+                version = namespace["__version__"]
+                current_flavor = version.split("+")[1] if ("+" in version) else version
                 break
 
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
@@ -84,10 +85,18 @@ class BrokenTorch:
         # Remove the @ prefix for unique enums, get version and /whl/${flavor}
         version, flavor = version_flavor.value.split("@")[0].split("+")
 
+        # Use UV for faster pip installs 😉
+        PIP = (sys.executable, "-m", "uv", "pip")
+
+        # MacOS flavors aren't 'vendored'
+        if BrokenPlatform.OnMacOS:
+            shell(PIP, "uninstall", "torch", "--quiet")
+            shell(PIP, "install", f"torch=={version}", "torchvision")
+            shell(PIP, "install", "transformers")
+
         # If flavors mismatch, install the correct one
-        if (current_flavor != flavor):
+        elif (current_flavor != flavor):
             log.info(f"Installing PyTorch Flavor ({version_flavor}), current is ({current_flavor})")
-            PIP = (sys.executable, "-m", "uv", "pip")
             source_url = f"https://download.pytorch.org/whl/{flavor}"
             shell(PIP, "uninstall", "torch", "--quiet")
             shell(PIP, "install", f"torch=={version}+{flavor}", "torchvision", "--index-url", source_url)
