@@ -1096,8 +1096,8 @@ class BrokenFFmpeg(SerdeBaseModel):
             )))
         else:
             log.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")
-            for binary in ("ffmpeg", "ffprobe"):
-                BrokenPath.get_external(f"https://evermeet.cx/ffmpeg/getrelease/{binary}/zip")
+            BrokenPath.get_external("https://evermeet.cx/pub/ffmpeg/ffmpeg-7.0.2.zip")
+            BrokenPath.get_external("https://evermeet.cx/pub/ffprobe/ffprobe-7.0.2.zip")
 
     # # Video
 
