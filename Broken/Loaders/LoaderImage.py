@@ -37,27 +37,27 @@ class LoaderImage(BrokenLoader):
         if value is None:
             return None
 
-        elif isinstance(value, Image):
+        if isinstance(value, Image):
             log.debug("Loading already an Instance of Image")
             return value
 
-        elif value is Image:
+        if value is Image:
             log.debug("Loading already an Class of Image")
             return value
 
-        elif isinstance(value, bytes):
+        if isinstance(value, bytes):
             log.debug("Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
-        elif ("numpy" in str(type(value))):
+        if ("numpy" in str(type(value))):
             log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
 
-        elif (path := Path(value).expanduser().resolve()).exists():
+        if (path := Path(value).expanduser().resolve()).exists():
             log.debug(f"Loading Image from Path ({path})")
             return PIL.Image.open(path, **kwargs)
 
-        elif validators.url(value):
+        if validators.url(value):
             log.debug(f"Loading Image from URL ({value})")
             import requests
             get = getattr(LoaderImage.cache(), "get", requests.get)

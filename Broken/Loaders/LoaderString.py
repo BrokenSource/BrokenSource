@@ -15,15 +15,15 @@ class LoaderString(BrokenLoader):
         if not value:
             return ""
 
-        elif isinstance(value, str):
+        if isinstance(value, str):
             log.debug(f"Loading String from String {value}")
             return value
 
-        elif isinstance(value, bytes):
+        if isinstance(value, bytes):
             log.debug("Loading String from Bytes")
             return value.decode(encoding="utf-8")
 
-        elif (path := BrokenPath(value).valid()):
+        if (path := BrokenPath(value).valid()):
             log.debug(f"Loading String from Path ({path})")
             return path.read_text(encoding="utf-8")
 
