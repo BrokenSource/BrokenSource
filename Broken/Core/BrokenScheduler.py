@@ -173,7 +173,7 @@ class BrokenTask:
             self.next_call += self.period
 
         # (Disabled && Once) clients gets deleted
-        self.enabled = not self.once
+        self.enabled = (not self.once)
         return self
 
 @define
