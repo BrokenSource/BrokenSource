@@ -18,8 +18,11 @@ jobs:
 
       # DepthFlow
 
-      - name: Build DepthFlow
+      - name: Build DepthFlow CLI
         run: rye run broken depthflow release --torch
+
+      - name: Build DepthFlow WebUI
+        run: rye run broken depthflow release --torch --webui
 
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
