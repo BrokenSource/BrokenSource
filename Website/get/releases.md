@@ -8,8 +8,7 @@ title: Get/Releases
 ## ⚡️ Installing
 
 !!! success "I make self-installing executables using [**PyApp**](https://github.com/ofek/pyapp) for your convenience!"
-
-!!! abstract "Select your Platform"
+!!! abstract "Select your Platform, Project and Flavor to download"
     === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
         <table>
@@ -28,14 +27,28 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">
-                        :octicons-download-16: CPU
+                        :octicons-download-16: CLI
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">
-                        :octicons-download-16: CUDA
+                        :octicons-download-16: CLI
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
-                        :octicons-download-16: ROCm
+                        :octicons-download-16: CLI
+                        </a></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cpu-windows-amd64-latest.exe">
+                        :octicons-download-16: WebUI
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cuda-windows-amd64-latest.exe">
+                        :octicons-download-16: WebUI
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
+                        :octicons-download-16: WebUI
                         </a></td>
                 </tr>
                 <tr>
@@ -85,15 +98,30 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">
-                        :octicons-download-16: CPU
+                        :octicons-download-16: CLI
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">
-                        :octicons-download-16: CUDA
+                        :octicons-download-16: CLI
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">
-                        :octicons-download-16: ROCm
+                        :octicons-download-16: CLI
+                        </a></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cpu-linux-amd64-latest.bin">
+                        :octicons-download-16: WebUI
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cuda-linux-amd64-latest.bin">
+                        :octicons-download-16: WebUI
+                        </a></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-rocm-linux-amd64-latest.bin">
+                        :octicons-download-16: WebUI
                         </a></td>
                 </tr>
                 <tr>
@@ -139,7 +167,14 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.app">
-                        :octicons-download-16: CPU
+                        :octicons-download-16: CLI
+                        </a></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><a class="md-button md-button--primary md-button--stretch"
+                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-macos-arm64-latest.app">
+                        :octicons-download-16: WebUI
                         </a></td>
                 </tr>
                 <tr>
@@ -172,6 +207,7 @@ title: Get/Releases
             </tbody>
         </table>
         !!! bug "Help needed, I don't have the Hardware to test Apple Silicon builds"
+
 
 !!! warning "Customization options are limited at the moment. Prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi)"
 
