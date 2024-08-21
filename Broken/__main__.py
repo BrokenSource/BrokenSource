@@ -201,7 +201,8 @@ class ProjectCLI:
 
     def release(self,
         target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
-        torch:  Annotated[bool, Option("--torch", help="Build for all PyTorch flavors")]=False,
+        torch:  Annotated[bool, Option("--torch", help="Build for all allowed PyTorch flavors in the target platform")]=False,
+        webui:  Annotated[bool, Option("--webui", help="Build a WebUI release with its own main entry point")]=False,
     ) -> None:
         """
         Release the Project as a distributable binary
@@ -213,13 +214,13 @@ class ProjectCLI:
         # Recurse on all Torch flavors
         if isinstance(torch, bool) and torch:
             for flavor in TorchFlavor:
-                self.release(target=target, torch=flavor)
+                self.release(target=target, torch=flavor, webui=webui)
             return None
 
         # Recurse on each target item
         if isinstance(target, list) and 1:
             for item in target:
-                self.release(target=item, torch=torch)
+                self.release(target=item, torch=torch, webui=webui)
             return None
 
         # Avoid bad combinations
@@ -276,7 +277,7 @@ class ProjectCLI:
             # Rename project binary according to the Broken naming convention
             for version in ("latest", BROKEN.VERSION):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
-                    f"{self.name.lower()}",
+                    f"{self.name.lower()}", "-webui"*webui,
                     f"-{torch.name.lower()}".replace("-macos", "") if torch else "",
                     f"-{target.name}",
                     f"-{target.architecture}",
