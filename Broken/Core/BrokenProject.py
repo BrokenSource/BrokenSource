@@ -426,9 +426,7 @@ class BrokenApp(ABC, BrokenAttrs):
     typer: BrokenTyper = Factory(BrokenTyper)
 
     def __post__(self):
-
-        # Windows users have a tendency to not run stuff on a terminal...
-        self.typer.repl = (Broken.RELEASE and BrokenPlatform.OnWindows)
+        self.typer.release_repl()
 
         with BrokenProfiler(self.PROJECT.APP_NAME):
             self.main()
