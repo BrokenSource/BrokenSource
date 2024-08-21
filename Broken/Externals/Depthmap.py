@@ -116,7 +116,7 @@ class DepthAnythingBase(DepthEstimator):
         return depth.squeeze(1).cpu().numpy()[0]
 
 class DepthAnythingV1(DepthAnythingBase):
-    """Configure and use DepthAnythingV1 [green](See 'dav1     --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+    """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
     def _model_prefix(self) -> str:
         return  "LiheYoung/depth-anything-"
 
@@ -127,7 +127,7 @@ class DepthAnythingV1(DepthAnythingBase):
         return depth
 
 class DepthAnythingV2(DepthAnythingBase):
-    """Configure and use DepthAnythingV2 [green](See 'dav2     --help' for options)[/green] [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
+    """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
     def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
 
@@ -140,7 +140,7 @@ class DepthAnythingV2(DepthAnythingBase):
 # -------------------------------------------------------------------------------------------------|
 
 class ZoeDepth(DepthEstimator):
-    """Configure and use ZoeDepth        [green](See 'zoedepth --help' for options)[/green] [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
+    """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
     class Models(BrokenEnum):
         N  = "n"
         K  = "k"
@@ -174,7 +174,7 @@ class ZoeDepth(DepthEstimator):
 # -------------------------------------------------------------------------------------------------|
 
 class Marigold(DepthEstimator):
-    """Configure and use Marigold        [green](See 'marigold --help' for options)[/green] [dim](by https://github.com/prs-eth/Marigold)[/dim]"""
+    """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/dim]"""
 
     def _load_model(self) -> None:
         try:
