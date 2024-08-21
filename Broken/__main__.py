@@ -246,7 +246,7 @@ class ProjectCLI:
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))),
-                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
+                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main" + ("_webui"*webui),
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
