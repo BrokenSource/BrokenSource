@@ -26,6 +26,7 @@ dependencies = [
     "validators~=0.33.0",
     "diskcache~=5.6.3",
     "toml~=0.10.2",
+    "intervaltree>=3.1.0",
     # Math
     "numpy==1.26.4",
     # Image Processing

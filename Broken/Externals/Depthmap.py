@@ -1,27 +1,27 @@
+# pyright: reportMissingImports=false
+
 import functools
 import multiprocessing
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from threading import Lock
-from typing import TYPE_CHECKING, Annotated, Any, Optional
+from typing import TYPE_CHECKING, Annotated, Any
 
 import numpy
 import typer
 from PIL import Image
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+from pydantic import Field, PrivateAttr
 
 import Broken
 from Broken import (
     BrokenEnum,
     BrokenResolution,
     BrokenSpinner,
-    BrokenTorch,
-    SameTracker,
     image_hash,
     log,
     shell,
 )
+from Broken.Externals import ExternalModelsBase, ExternalTorchBase
 from Broken.Loaders import LoadableImage, LoaderImage
 
 if TYPE_CHECKING:
@@ -30,48 +30,13 @@ if TYPE_CHECKING:
 
 # -------------------------------------------------------------------------------------------------|
 
-class DepthEstimator(BaseModel, ABC):
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        validate_assignment=True
-    )
-
-    model: str = Field(default="any")
-
-    _lock: Optional[Lock] = PrivateAttr(default_factory=Lock)
-    """Calling PyTorch in a multi-threaded environment isn't safe, so lock before any inference"""
+class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
     _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
     """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
 
-    @property
-    def device(self) -> str:
-        self.load_torch()
-        if torch.cuda.is_available():
-            return "cuda"
-        return "cpu"
-
     def normalize(self, array: numpy.ndarray) -> numpy.ndarray:
         return (array - array.min()) / ((array.max() - array.min()) or 1)
-
-    def load_torch(self) -> None:
-        global torch
-        BrokenTorch.install()
-        with BrokenSpinner(text="Importing PyTorch..."):
-            import torch
-
-    _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)
-    """Keeps track of the current loaded model name, to avoid reloading"""
-
-    def load_model(self) -> None:
-        if self._loaded(self.model):
-            return
-        self._load_model()
-
-    @functools.wraps(load_model)
-    @abstractmethod
-    def _load_model(self) -> None:
-        ...
 
     def estimate(self,
         image: LoadableImage,
@@ -120,26 +85,24 @@ class DepthEstimator(BaseModel, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class DepthAnythingBase(DepthEstimator):
-
-    @abstractmethod
-    def prefix(self) -> str:
-        ...
-
-    class Models(str, BrokenEnum):
+    class Models(BrokenEnum):
         Small = "small"
         Base  = "base"
         Large = "large"
 
     model: Annotated[Models, typer.Option("--model", "-m",
         help="[bold][red](🔴 Basic)[/red][/bold] What model of DepthAnythingV2 to use")] = \
-        Field(default="base")
+        Field(default=Models.Base)
 
     _processor: Any = PrivateAttr(default=None)
-    _model: Any = PrivateAttr(default=None)
+
+    @abstractmethod
+    def _model_prefix(self) -> str:
+        ...
 
     def _load_model(self) -> None:
         import transformers
-        HUGGINGFACE_MODEL = (f"{self.prefix()}{self.model}-hf")
+        HUGGINGFACE_MODEL = (f"{self._model_prefix()}{self.model.value}-hf")
         log.info(f"Loading Depth Estimator model ({HUGGINGFACE_MODEL})")
         self._processor = transformers.AutoImageProcessor.from_pretrained(HUGGINGFACE_MODEL)
         self._model = transformers.AutoModelForDepthEstimation.from_pretrained(HUGGINGFACE_MODEL)
@@ -154,7 +117,7 @@ class DepthAnythingBase(DepthEstimator):
 
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [green](See 'dav1     --help' for options)[/green] [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
-    def prefix(self) -> str:
+    def _model_prefix(self) -> str:
         return  "LiheYoung/depth-anything-"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
@@ -167,7 +130,7 @@ class DepthAnythingV1(DepthAnythingBase):
 
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [green](See 'dav2     --help' for options)[/green] [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
-    def prefix(self) -> str:
+    def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
@@ -180,16 +143,14 @@ class DepthAnythingV2(DepthAnythingBase):
 
 class ZoeDepth(DepthEstimator):
     """Configure and use ZoeDepth        [green](See 'zoedepth --help' for options)[/green] [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
-    class Models(str, BrokenEnum):
+    class Models(BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
 
     model: Annotated[Models, typer.Option("--model", "-m",
         help="[bold][red](🔴 Basic)[/red][/bold] What model of ZoeDepth to use")] = \
-        Field(default="n")
-
-    _model: Any = PrivateAttr(default=None)
+        Field(default=Models.N)
 
     def _load_model(self) -> None:
         try:
@@ -197,7 +158,7 @@ class ZoeDepth(DepthEstimator):
         except ImportError:
             shell(sys.executable, "-m", "uv", "pip", "install", "timm==0.6.7", "--no-deps")
 
-        log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model})")
+        log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
         self._model = torch.hub.load(
             "isl-org/ZoeDepth", f"ZoeD_{self.model.upper()}",
             pretrained=True, trust_repo=True
@@ -216,8 +177,6 @@ class ZoeDepth(DepthEstimator):
 
 class Marigold(DepthEstimator):
     """Configure and use Marigold        [green](See 'marigold --help' for options)[/green] [dim](by https://github.com/prs-eth/Marigold)[/dim]"""
-
-    _model: Any = PrivateAttr(default=None)
 
     def _load_model(self) -> None:
         try:

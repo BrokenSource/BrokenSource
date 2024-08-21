@@ -1227,6 +1227,14 @@ class BrokenFFmpeg(SerdeBaseModel):
         except StopIteration as result:
             return result.value
 
+    @staticmethod
+    def get_audio_numpy(path: Path, *, echo: bool=True) -> Optional[numpy.ndarray]:
+        if not (path := BrokenPath(path, valid=True)):
+            return None
+        BrokenFFmpeg.install()
+        log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
+        return numpy.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
+
 # -------------------------------------------------------------------------------------------------|
 # BrokenFFmpeg Spin-offs
 
