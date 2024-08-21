@@ -19,7 +19,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 import Broken
-from Broken import apply, flatten, log, pydantic_cli
+from Broken import BrokenPlatform, apply, flatten, log, pydantic_cli
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -55,6 +55,13 @@ class BrokenTyper:
         f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[/italic grey53]"
     )
+
+    def release_repl(self) -> None:
+        self.repl = all((
+            Broken.RELEASE,
+            not bool(sys.argv[1:]),
+            not BrokenPlatform.OnLinux
+        ))
 
     class BaseModel(ABC, BaseModel):
         """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
@@ -161,9 +168,12 @@ class BrokenTyper:
             if self.default and not bool(args):
                 args.insert(0, self.default)
 
+            # Update sys.argv with new str flat values
+            args = apply(str, flatten(args))
+            sys.argv = [sys.executable, *args]
+
             try:
-                # Safety: Flat cast everything to str
-                self.app(apply(str, flatten(args)))
+                self.app(args)
             except SystemExit:
                 log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:
@@ -189,9 +199,9 @@ class BrokenTyper:
                             "\nHere's your chance to [royal_blue1]run commands on a basic shell[/royal_blue1], interactively\n\n"
                             "> This mode is [royal_blue1]Experimental[/royal_blue1] and projects might not work as expected\n\n"
                             "• Preferably run the projects on a [royal_blue1]Terminal[/royal_blue1] as [spring_green1]./program.exe (args)[/spring_green1]\n"
-                            "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment var\n"
+                            "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment variable\n"
                         ), Panel(
-                                "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
+                            "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
                             "• Press [spring_green1]'CTRL+C'[/spring_green1] to exit this shell [bold bright_black](or close the Terminal)[/bold bright_black]",
                             title="Tips",
                             border_style="green"

@@ -126,8 +126,6 @@ class DepthAnythingV1(DepthAnythingBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# -------------------------------------------------------------------------------------------------|
-
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [green](See 'dav2     --help' for options)[/green] [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
     def _model_prefix(self) -> str:
