@@ -63,6 +63,13 @@ class BrokenTyper:
             not BrokenPlatform.OnLinux
         ))
 
+    @staticmethod
+    def release(single: Callable) -> None:
+        app = BrokenTyper()
+        app.release_repl()
+        app.command(single)
+        app()
+
     class BaseModel(ABC, BaseModel):
         """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
 

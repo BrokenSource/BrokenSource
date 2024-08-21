@@ -85,14 +85,14 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class DepthAnythingBase(DepthEstimator):
-    class Models(BrokenEnum):
+    class Model(BrokenEnum):
         Small = "small"
         Base  = "base"
         Large = "large"
 
-    model: Annotated[Models, typer.Option("--model", "-m",
+    model: Annotated[Model, typer.Option("--model", "-m",
         help="[bold][red](🔴 Basic)[/red][/bold] What model of DepthAnythingV2 to use")] = \
-        Field(default=Models.Base)
+        Field(default=Model.Base)
 
     _processor: Any = PrivateAttr(default=None)
 
@@ -141,14 +141,14 @@ class DepthAnythingV2(DepthAnythingBase):
 
 class ZoeDepth(DepthEstimator):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
-    class Models(BrokenEnum):
+    class Model(BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
 
-    model: Annotated[Models, typer.Option("--model", "-m",
+    model: Annotated[Model, typer.Option("--model", "-m",
         help="[bold][red](🔴 Basic)[/red][/bold] What model of ZoeDepth to use")] = \
-        Field(default=Models.N)
+        Field(default=Model.N)
 
     def _load_model(self) -> None:
         try:
