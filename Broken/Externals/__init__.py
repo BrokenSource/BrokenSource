@@ -4,7 +4,7 @@ import functools
 import inspect
 from abc import ABC, abstractmethod
 from threading import Lock
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
@@ -62,12 +62,13 @@ class ExternalModelsBase(BaseModel, ABC):
     _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)
     """Keeps track of the current loaded model name, to avoid reloading"""
 
-    def load_model(self) -> None:
+    def load_model(self) -> Self:
         if self._loaded(self.model):
             return
         if self._model:
             del self._model
         self._load_model()
+        return self
 
     @functools.wraps(load_model)
     @abstractmethod

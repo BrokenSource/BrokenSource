@@ -141,6 +141,10 @@ class _Directories:
     def BROKEN_PRIVATE(self) -> Path:
         return mkdir(self.REPOSITORY/"Private")
 
+    @property
+    def BROKEN_INSIDERS(self) -> Path:
+        return mkdir(self.REPOSITORY/"Insiders")
+
     # # Meta directories
 
     @property
@@ -352,7 +356,7 @@ class BrokenProject:
                 exit(0)
 
         # Convenience symlink the project's workspace
-        if Broken.DEVELOPMENT: BrokenPath.symlink(
+        Broken.DEVELOPMENT and BrokenPath.symlink(
             virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
             real=self.DIRECTORIES.WORKSPACE,
             echo=False
@@ -398,6 +402,10 @@ class BrokenProject:
         old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
 
+        # Fixme (#ntfs): https://superuser.com/questions/488127
+        # Fixme (#ntfs): https://unix.stackexchange.com/questions/49299
+        ntfs_workaround = venv_path.with_name("0.0.0")
+
         # "If either (not on the first run) and (hash differs)"
         if (old_hash is not None) and (old_hash != this_hash):
             print("-"*shutil.get_terminal_size().columns)
@@ -405,18 +413,17 @@ class BrokenProject:
             log.info(f"• Path: ({venv_path})")
             log.info("• Reinstalling the Virtual Environment alongside dependencies")
 
-            # Fixme (#ntfs): 🤓 https://superuser.com/questions/488127"
-            # Fixme (#ntfs): 💪 https://unix.stackexchange.com/questions/49299
             if BrokenPlatform.OnWindows:
-                previous = venv_path.with_name("0.0.0")
-                BrokenPath.remove(previous)
-                venv_path.rename(previous)
-                input("\nPlease, reopen this Executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
+                BrokenPath.remove(ntfs_workaround)
+                venv_path.rename(ntfs_workaround)
+                input("\nPlease, reopen this executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
                 exit(0)
             else:
                 shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
                 sys.exit(shell(executable, sys.argv[1:]).returncode)
+
+        BrokenPath.remove(ntfs_workaround, echo=False)
 
 # -------------------------------------------------------------------------------------------------|
 

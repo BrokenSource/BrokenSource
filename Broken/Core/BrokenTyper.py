@@ -49,6 +49,9 @@ class BrokenTyper:
     repl: bool = False
     """If True, will run a REPL when no arguments are provided"""
 
+    naih: bool = True
+    """No args is help"""
+
     help: bool = False
 
     credits: str = (
@@ -62,6 +65,7 @@ class BrokenTyper:
             not bool(sys.argv[1:]),
             not BrokenPlatform.OnLinux
         ))
+        self.repl = True
 
     @staticmethod
     def release(single: Callable) -> None:
@@ -81,7 +85,7 @@ class BrokenTyper:
         self.app = typer.Typer(
             add_help_option=self.help,
             pretty_exceptions_enable=False,
-            no_args_is_help=True,
+            no_args_is_help=self.naih,
             add_completion=False,
             rich_markup_mode="rich",
             chain=self.chain,

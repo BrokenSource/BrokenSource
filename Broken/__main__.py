@@ -341,6 +341,9 @@ class BrokenManager(BrokenSingleton):
             self.broken_typer.command(self.tremeschin, hidden=True)
             self.broken_typer.command(self.ryeup, hidden=True)
 
+        with self.broken_typer.panel("🚀 Core"):
+            self.broken_typer.command(self.insiders)
+
         for project in self.projects:
             self.broken_typer.command(
                 target=project.cli,
@@ -354,10 +357,15 @@ class BrokenManager(BrokenSingleton):
         self.broken_typer()
 
     # ---------------------------------------------------------------------------------------------|
-    # Private
+    # Repositories
 
     def tremeschin(self):
         url, path = ("https://github.com/Tremeschin/Private", BROKEN.DIRECTORIES.BROKEN_PRIVATE)
+        shell("git", "clone", url, path, "--recurse-submodules")
+
+    def insiders(self):
+        """💎 Clone the Insiders repository (WIP, Not Available)"""
+        url, path = ("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.BROKEN_INSIDERS)
         shell("git", "clone", url, path, "--recurse-submodules")
 
     # ---------------------------------------------------------------------------------------------|

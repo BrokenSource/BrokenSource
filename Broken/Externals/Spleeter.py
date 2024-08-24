@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Tuple
 
 import typer
-from huggingface_hub.hub_mixin import torch
 from pydantic import Field
 
 from Broken import BROKEN, shell
@@ -14,6 +13,7 @@ from Broken.Externals import ExternalModelsBase, ExternalTorchBase
 
 if TYPE_CHECKING:
     import audio_separator
+    import torch
 
 class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
     cache: Annotated[Path, typer.Option("--cache", "-c",

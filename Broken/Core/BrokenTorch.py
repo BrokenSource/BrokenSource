@@ -8,10 +8,10 @@ from Broken import BrokenEnum, BrokenPlatform, log, shell
 
 # Note: @* suffix to avoid name collisions between Mac and CPU
 class TorchFlavor(BrokenEnum):
-    CPU   = "2.3.1+cpu@cpu"
-    CUDA  = "2.3.1+cu121@cuda"
-    ROCM  = "2.3.1+rocm6.0@rocm"
-    MACOS = "2.3.1+ignore@mac"
+    CPU   = "2.4.0+cpu@cpu"
+    CUDA  = "2.4.0+cu121@cuda"
+    ROCM  = "2.4.0+rocm6.0@rocm"
+    MACOS = "2.4.0+ignore@mac"
 
 class BrokenTorch:
     """
@@ -91,7 +91,7 @@ class BrokenTorch:
         # MacOS flavors aren't 'vendored'
         if BrokenPlatform.OnMacOS:
             shell(PIP, "uninstall", "torch", "--quiet")
-            shell(PIP, "install", f"torch=={version}", "torchvision")
+            shell(PIP, "install", f"torch=={version}", "torchvision", "torchaudio")
             shell(PIP, "install", "transformers")
 
         # If flavors mismatch, install the correct one
@@ -99,7 +99,7 @@ class BrokenTorch:
             log.info(f"Installing PyTorch Flavor ({version_flavor}), current is ({current_flavor})")
             source_url = f"https://download.pytorch.org/whl/{flavor}"
             shell(PIP, "uninstall", "torch", "--quiet")
-            shell(PIP, "install", f"torch=={version}+{flavor}", "torchvision", "--index-url", source_url)
+            shell(PIP, "install", f"torch=={version}+{flavor}", "torchvision", "torchaudio", "--index-url", source_url)
             shell(PIP, "install", "transformers")
         else:
             log.info(f"PyTorch Flavor ({version_flavor}) already installed")
