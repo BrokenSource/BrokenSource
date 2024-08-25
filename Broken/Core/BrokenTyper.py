@@ -65,7 +65,6 @@ class BrokenTyper:
             not bool(sys.argv[1:]),
             not BrokenPlatform.OnLinux
         ))
-        self.repl = True
 
     @staticmethod
     def release(single: Callable) -> None:
