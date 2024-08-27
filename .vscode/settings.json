@@ -53,6 +53,7 @@
 
         // Projects
         "Broken":      "src",
+        "Insiders":    "secure",
         "Ardmin":      "tools",
         "DepthFlow":   "tools",
         "PhasorFlow":  "tools",

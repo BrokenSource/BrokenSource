@@ -1,19 +1,10 @@
 # -------------------------------------------------------------------------------------------------|
-# Tracebacks
-
-import os
-from pathlib import Path
-
-if (os.getenv("RICH_TRACEBACK", "1") == "1"):
-    import rich.traceback
-    rich.traceback.install(width=None)
-
-# -------------------------------------------------------------------------------------------------|
 # General fixes and safety
 
 import os
 import sys
 import typing
+from pathlib import Path
 
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
@@ -31,11 +22,11 @@ if (_venv := Path(__file__).parent.parent/".venv").exists():
 
 # Resolve relative paths and existing files on argv
 for _index, _item in enumerate(sys.argv):
-    if any((
-        any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))),
-        bool(Path(_item).suffix) and Path(_item).exists(),
-    )):
-        sys.argv[_index] = str(Path(_item).expanduser().resolve())
+    if not any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))):
+        continue
+    if not bool(Path(_item).suffix) and Path(_item).exists():
+        continue
+    sys.argv[_index] = str(Path(_item).expanduser().absolute())
 
 # Replace argv[0]=="-c" with PyApp's managed python
 if bool(os.getenv("PYAPP", None)):
@@ -49,22 +40,47 @@ if sys.version_info < (3, 11):
     typing.Self = Self
 
 # -------------------------------------------------------------------------------------------------|
-# Actual package
+# Tracebacks
+
+if (os.getenv("RICH_TRACEBACK", "1") == "1"):
+    import rich.traceback
+    rich.traceback.install(width=None)
+
+# -------------------------------------------------------------------------------------------------|
+# Information about the release and version
 
 import importlib.metadata
 import importlib.resources
 
-# Information about the release and version
-VERSION:     str  = importlib.metadata.version("broken-source")
+VERSION: str  = importlib.metadata.version("broken-source")
+"""The version of the Broken library, and subsequently all projects"""
+
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
-NUITKA:      bool = ("__compiled__" in globals())
-PYAPP:       bool = bool(os.getenv("PYAPP", False))
-PYPI:        bool = ("site-packages" in __file__.lower())
-DOCKER:      bool = bool(os.getenv("DOCKER_RUNTIME", False))
-WSL:         bool = bool(Path("/usr/lib/wsl/lib").exists())
-RELEASE:     bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
-DEVELOPMENT: bool = (not RELEASE)
-GITHUB_CI:   bool = bool(os.getenv("GITHUB_ACTIONS", False))
+"""True if running from a PyInstaller binary build (https://github.com/pyinstaller/pyinstaller)"""
+
+NUITKA: bool = ("__compiled__" in globals())
+"""True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
+
+PYAPP: bool = bool(os.getenv("PYAPP", False))
+"""True if running as a PyApp release (https://github.com/ofek/pyapp)"""
+
+PYPI: bool = ("site-packages" in __file__.lower())
+"""True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
+
+DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
+"""True if running from a Docker container (manual flag required)"""
+
+GITHUB_CI: bool = bool(os.getenv("GITHUB_ACTIONS", False))
+"""True if running from a GitHub Actions CI environment"""
+
+WSL: bool = bool(Path("/usr/lib/wsl/lib").exists())
+"""True if running from a Windows Subsystem for Linux"""
+
+RELEASE: bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
+"""True if running from any release binary build"""
+
+FROM_SOURCE: bool = (not RELEASE)
+"""True if running directly from the source code"""
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
@@ -78,7 +94,7 @@ from Broken.Core import (
     flatten,
     hyphen_range,
     image_hash,
-    limited_integer_ratio,
+    limited_ratio,
     nearest,
     pydantic_cli,
     selfless,
@@ -99,7 +115,7 @@ from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
 from Broken.Core.BrokenTyper import BrokenTyper
 from Broken.Core.BrokenUtils import (
     BrokenAttrs,
-    BrokenFluentBuilder,
+    BrokenFluent,
     BrokenRelay,
     BrokenSingleton,
     BrokenWatchdog,

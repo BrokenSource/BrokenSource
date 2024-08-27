@@ -17,6 +17,9 @@ class BrokenLogging:
             cls._singleton = super().__new__(cls)
         return cls._singleton
 
+    def __init__(self):
+        self.make()
+
     @staticmethod
     def project() -> str:
         return os.getenv("BROKEN_APP_NAME", "Broken")
@@ -36,7 +39,16 @@ class BrokenLogging:
             "│ ▸ {message}"
         ).format(**data)
 
-    def __init__(self) -> None:
+    @property
+    def log_level(self) -> str:
+        return os.getenv("LOGLEVEL", "INFO").upper()
+
+    @log_level.setter
+    def log_level(self, level: str) -> None:
+        os.environ["LOGLEVEL"] = level.upper()
+        self.make()
+
+    def make(self) -> None:
         log.remove()
         log.add(
             sink=rich.print,

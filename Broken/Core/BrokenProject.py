@@ -27,7 +27,6 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenProfiler,
-    apply,
     flatten,
     log,
     shell,
@@ -86,24 +85,24 @@ class _Directories:
     @property
     def REPOSITORY(self) -> Path:
         """Broken Source's Monorepo directory"""
-        return mkdir(self.PACKAGE.parent)
+        return self.PACKAGE.parent
 
     @property
     def HOME(self) -> Path:
         """(Unix: /home/$USER), (Windows: C://Users//$USER)"""
-        return mkdir(Path.home())
+        return Path.home()
 
     # # Common system directories
 
     @property
     def SYSTEM_ROOT(self) -> Path:
         """(Unix: /), (Windows: C://)"""
-        return mkdir("/")
+        return Path("/")
 
     @property
     def SYSTEM_TEMP(self) -> Path:
         """(Unix: /tmp), (Windows: %TEMP%)"""
-        return mkdir(tempfile.gettempdir())
+        return tempfile.gettempdir()
 
     # # Broken monorepo specific, potentially useful
 
@@ -114,12 +113,14 @@ class _Directories:
     @property
     def BROKEN_BUILD(self) -> Path:
         return mkdir(self.REPOSITORY/"Build")
+
     @property
     def BROKEN_WINEPREFIX(self) -> Path:
         return mkdir(self.BROKEN_BUILD/"Wineprefix")
+
     @property
     def BROKEN_WHEELS(self) -> Path:
-        return mkdir(self.BROKEN_BUILD/"Wheels")
+        return (self.BROKEN_BUILD/"Wheels")
 
     @property
     def BROKEN_PROJECTS(self) -> Path:
@@ -139,11 +140,11 @@ class _Directories:
 
     @property
     def BROKEN_PRIVATE(self) -> Path:
-        return mkdir(self.REPOSITORY/"Private")
+        return (self.REPOSITORY/"Private")
 
     @property
     def BROKEN_INSIDERS(self) -> Path:
-        return mkdir(self.REPOSITORY/"Insiders")
+        return (self.REPOSITORY/"Insiders")
 
     # # Meta directories
 
@@ -162,9 +163,9 @@ class _Directories:
         """Root for the current Project's Workspace"""
         if (path := os.getenv("WORKSPACE", None)):
             return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
-        if (os.name != "nt"):
-            return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
-        return mkdir(Path(self.APP_DIRS.user_data_dir))
+        if (os.name == "nt"):
+            return mkdir(BrokenPath.Windows.Documents()/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
+        return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
 
     @property
     def CONFIG(self) -> Path:
@@ -246,7 +247,7 @@ class _Resources:
     def __attrs_post_init__(self):
         if self.PROJECT.RESOURCES:
 
-            # Fixme (#spec): Python 3.9 workaround; Spec-less packages
+            # Fixme (#py39): Python 3.9 workaround; Spec-less packages
             if (sys.version_info < (3, 10)):
                 spec = self.PROJECT.RESOURCES.__spec__
                 spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
@@ -342,7 +343,7 @@ class BrokenProject:
         self.VERSION = Broken.VERSION
         BrokenLogging.set_project(self.APP_NAME)
 
-        # Replace Broken.PROJECT once with the first project
+        # Replace once Broken.PROJECT with the first project
         # initialized that is not the main project itself
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
@@ -356,7 +357,7 @@ class BrokenProject:
                 exit(0)
 
         # Convenience symlink the project's workspace
-        Broken.DEVELOPMENT and BrokenPath.symlink(
+        Broken.FROM_SOURCE and BrokenPath.symlink(
             virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
             real=self.DIRECTORIES.WORKSPACE,
             echo=False
@@ -406,7 +407,7 @@ class BrokenProject:
         # Fixme (#ntfs): https://unix.stackexchange.com/questions/49299
         ntfs_workaround = venv_path.with_name("0.0.0")
 
-        # "If either (not on the first run) and (hash differs)"
+        # "If (not on the first run) and (hash differs)"
         if (old_hash is not None) and (old_hash != this_hash):
             print("-"*shutil.get_terminal_size().columns)
             log.info(f"Detected different binary hash for this release version v{self.VERSION} of the Project {self.APP_NAME}")

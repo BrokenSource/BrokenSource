@@ -105,22 +105,21 @@ class BrokenSingleton(ABC):
         return cls.__instance__
 
 
-class BrokenFluentBuilder:
-    """
-    Do you ever feel like using a builder-like fluent syntax for changing attributes of an object?
-    """
-    def __call__(self, **kwargs) -> Self:
+class BrokenFluent:
+    """Fluent-like .copy(**update) and .(**update) setter for classes"""
+
+    def __call__(self, **update) -> Self:
         """Updates the instance with the provided kwargs"""
-        for key, value in kwargs.items():
+        for key, value in update.items():
             setattr(self, key, value)
         return self
 
-    def copy(self, **kwargs) -> Self:
+    def copy(self, **update) -> Self:
         """Returns a copy of this instance"""
-        new = copy.deepcopy(self)
-        for key, value in kwargs.items():
-            setattr(new, key, value)
-        return new
+        other = copy.deepcopy(self)
+        for key, value in update.items():
+            setattr(other, key, value)
+        return other
 
 
 @define
@@ -203,19 +202,19 @@ class LazyImport:
 class Patch:
     file: Path = field(converter=Path)
     replaces: dict[str, str] = field(factory=dict)
-    __original__: str = None
+    _original: str = None
 
     def __attrs_post_init__(self):
-        self.__original__ = self.file.read_text("utf-8")
+        self._original = self.file.read_text("utf-8")
 
     def apply(self):
-        content = self.__original__
+        content = self._original
         for key, value in self.replaces.items():
             content = content.replace(key, value)
         self.file.write_text(content, "utf-8")
 
     def revert(self):
-        self.file.write_text(self.__original__, "utf-8")
+        self.file.write_text(self._original, "utf-8")
 
     def __enter__(self):
         self.apply()

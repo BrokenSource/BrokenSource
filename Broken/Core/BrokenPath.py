@@ -1,11 +1,11 @@
-from __future__ import annotations
-
 import contextlib
+import ctypes
+import functools
 import hashlib
 import os
-import pathlib
 import shutil
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Generator, List, Optional, Union
 
@@ -28,64 +28,54 @@ class ShutilFormat(BrokenEnum):
     TarBz = "tar.bz2"
     TarXz = "tar.xz"
 
-class BrokenPath(pathlib.Path):
-    """
-    Extended pathlib.Path with utilities, absolute paths always, accepts None
+class BrokenPath:
+    def __new__(cls, *args, **kwargs):
+        raise TypeError(f"{cls.__name__} is a static class and shouldn't be instantiated")
 
-    - Clever mechanism: Functions aren't staticmethods but still can be called from the outside,
-        they just imply self eg. Both BrokenPath("/tmp").valid() or BrokenPath.valid("/tmp") works
-
-    - Convenience: Can use BrokenPath(None), BrokenPath("/ok", None, "file.mp4") -> "/ok/file.mp4"
-    """
-    _flavour = type(pathlib.Path())._flavour
-
-    def __new__(cls, *args, valid: bool=False, **kwargs):
+    def get(*args,
+        absolute: bool=True,
+        exists: bool=False,
+        raises: bool=False,
+    ) -> Optional[Path]:
 
         # Return None if all args are falsy
         if not (args := list(filter(None, args))):
             return None
 
-        # Use absolute expanded user always. Note that we do not want
-        # to .resolve() as having symlink paths _can_ be wanted
-        instance = super().__new__(cls, *args, **kwargs)
-        instance._raw_paths = list(map(str, args)) # Py312 fix
-        instance = instance.expanduser().absolute()
-        if (valid and not instance.exists()):
+        # Create instance as normal, all Python versions
+        path = Path(*args)
+
+        # Note that we do not want to .resolve() as having symlink paths _can_ be wanted
+        path = (path.expanduser().absolute() if absolute else path)
+
+        # Return None if it's invalid
+        if ((exists or raises) and not path.exists()):
+            if raises:
+                raise FileNotFoundError(f"Path ({path}) doesn't exist")
             return None
-        return instance
-
-    def pathlib(self) -> pathlib.Path:
-        """Some packages test `type(var) == pathlib.Path` instead of `isinstance(var, pathlib.Path)`"""
-        return pathlib.Path(self)
-
-    def str(self) -> str:
-        return str(self)
-
-    def valid(path: Optional[BrokenPath]) -> Optional[BrokenPath]:
-        """Returns the BrokenPath if it exists, else None"""
-        return BrokenPath(path, valid=True)
+        return path
 
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
-        src, dst = BrokenPath(src), BrokenPath(dst)
-        BrokenPath.mkdirs(dst.parent, echo=False)
+        src, dst = BrokenPath.get(src), BrokenPath.get(dst)
+        BrokenPath.mkdir(dst.parent, echo=False)
         if src.is_dir():
-            log.info(f"Copying Directory ({src})\n → ({dst})", echo=echo)
+            log.info(f"Copying Directory ({src})\n→ ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
-            log.info(f"Copying File ({src})\n → ({dst})", echo=echo)
+            log.info(f"Copying File ({src})\n→ ({dst})", echo=echo)
             shutil.copy2(src, dst)
         return dst
 
     def move(src: Path, dst: Path, *, echo=True) -> Path:
-        src, dst = BrokenPath(src), BrokenPath(dst)
-        log.info(f"Moving ({src})\n → ({dst})", echo=echo)
+        src, dst = BrokenPath.get(src), BrokenPath.get(dst)
+        log.info(f"Moving ({src})\n→ ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
     def remove(path: Path, *, confirm=False, echo=True) -> Path:
 
         # Already removed or doesn't exist
-        if not (path := BrokenPath(path).valid()):
+        if not (path := BrokenPath.get(path, exists=True)):
             return path
 
         log.info(f"Removing Path ({path})", echo=echo)
@@ -112,35 +102,35 @@ class BrokenPath(pathlib.Path):
 
         return path
 
-    def mkdirs(path: Path, parent: bool=False, *, echo=True) -> Path:
+    def mkdir(path: Path, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
-        path = BrokenPath(path)
-        path = path.parent if parent else path
-        if path.exists():
-            log.success(f"Directory ({path}) already exists", echo=echo)
+        path = BrokenPath.get(path)
+        make = path.parent if parent else path
+        if make.exists():
+            log.success(f"Directory ({make}) already exists", echo=echo)
             return path
-        log.info(f"Creating directory {path}", echo=echo)
-        path.mkdir(parents=True, exist_ok=True)
+        log.info(f"Creating directory {make}", echo=echo)
+        make.mkdir(parents=True, exist_ok=True)
         return path
 
-    def resetdir(path: Path, *, echo=True) -> Path:
+    def recreate(path: Path, *, echo=True) -> Path:
         """Delete and re-create a directory"""
-        return BrokenPath.mkdirs(BrokenPath.remove(path, echo=echo), echo=echo)
+        return BrokenPath.mkdir(BrokenPath.remove(path, echo=echo), echo=echo)
 
     @contextlib.contextmanager
     def pushd(path: Path, *, echo: bool=True) -> Generator[Path, None, None]:
         """Change directory, then change back when done"""
-        path = BrokenPath(path)
+        path = BrokenPath.get(path)
         cwd = os.getcwd()
-        log.info(f"Pushd ({path})", echo=echo)
+        log.minor(f"Pushd ({path})", echo=echo)
         os.chdir(path)
         yield path
-        log.info(f"Popd  ({path})", echo=echo)
+        log.minor(f"Popd  ({path})", echo=echo)
         os.chdir(cwd)
 
     def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
         """
-        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the target
+        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the true path
 
         Args:
             virtual (Path): Symlink path (file)
@@ -149,14 +139,14 @@ class BrokenPath(pathlib.Path):
         Returns:
             None if it fails, else `virtual` Path
         """
-        log.info(f"Symlinking ({virtual})\n → ({real})", echo=echo)
+        log.info(f"Symlinking ({virtual})\n→ ({real})", echo=echo)
 
         # Return if already symlinked
-        if (BrokenPath(virtual) == BrokenPath(real)):
+        if (BrokenPath.get(virtual) == BrokenPath.get(real)):
             return virtual
 
         # Make Virtual's parent directory
-        BrokenPath.mkdirs(virtual.parent, echo=False)
+        BrokenPath.mkdir(virtual.parent, echo=False)
 
         # Remove old symlink if it points to a non existing directory
         if virtual.is_symlink() and (not virtual.resolve().exists()):
@@ -201,11 +191,11 @@ class BrokenPath(pathlib.Path):
             shell("attrib", "+x", path, echo=echo)
         return path
 
-    def zip(path: Path, output: Path=None, *, format: ShutilFormat=ShutilFormat.Zip, echo: bool=True) -> Path:
+    def zip(path: Path, output: Path=None, *, format: ShutilFormat="auto", echo: bool=True) -> Path:
         format = ShutilFormat.get(format)
-        output = BrokenPath(output or path).with_suffix(f".{format}")
-        path   = BrokenPath(path)
-        log.info(f"Zipping ({path})\n → ({output})", echo=echo)
+        output = BrokenPath.get(output or path).with_suffix(f".{format}")
+        path   = BrokenPath.get(path)
+        log.info(f"Zipping ({path})\n→ ({output})", echo=echo)
         BrokenPath.remove(output, echo=echo)
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
@@ -238,7 +228,7 @@ class BrokenPath(pathlib.Path):
             return hashlib.sha256(data).hexdigest()
 
         # String or Path is a valid path
-        elif (path := BrokenPath(data).valid()):
+        elif (path := BrokenPath.get(data, exists=True)):
             with BrokenSpinner(log.info(f"Calculating sha256sum of ({path})")):
                 if path.is_file():
                     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -265,7 +255,7 @@ class BrokenPath(pathlib.Path):
         overwrite: bool=False,
         echo: bool=True
     ) -> Path:
-        path, output = BrokenPath(path), BrokenPath(output)
+        path, output = BrokenPath.get(path), BrokenPath.get(output)
 
         # Extract to the same directory by default
         if (output is None):
@@ -283,7 +273,7 @@ class BrokenPath(pathlib.Path):
             log.minor(f"Already extracted ({output})", echo=echo)
         else:
             # Show progress as this might take a while on slower IOs
-            log.info(f"Extracting ({path})\n → ({output})", echo=echo)
+            log.info(f"Extracting ({path})\n→ ({output})", echo=echo)
             with BrokenSpinner("Extracting archive.."):
                 shutil.unpack_archive(path, output)
             extract_flag.touch()
@@ -317,7 +307,7 @@ class BrokenPath(pathlib.Path):
             output = Broken.BROKEN.DIRECTORIES.DOWNLOADS
 
         # Append url's file name to the output path
-        if (output := BrokenPath(output)).is_dir():
+        if (output := BrokenPath.get(output)).is_dir():
             output /= BrokenPath.url_filename(url)
 
         log.info(f"Downloading\n• URL:  ({url})\n• Path: ({output})", echo=echo)
@@ -413,7 +403,7 @@ class BrokenPath(pathlib.Path):
 
     def which(name: str) -> Optional[Path]:
         BrokenPath.update_externals_path()
-        return BrokenPath(shutil.which(name))
+        return BrokenPath.get(shutil.which(name))
 
     def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
         path = (path or Broken.BROKEN.DIRECTORIES.EXTERNALS)
@@ -442,7 +432,7 @@ class BrokenPath(pathlib.Path):
         Returns:
             The Path argument itself
         """
-        original = path = BrokenPath(path)
+        original = path = BrokenPath.get(path)
 
         if (path.is_file()):
             path = path.parent
@@ -493,63 +483,55 @@ class BrokenPath(pathlib.Path):
         elif BrokenPlatform.OnMacOS:
             shell("open", path, Popen=True)
 
-    # Fixme: Untested functions, needs better name; are these useful?
+    class Windows:
+        class Magic:
+            """Values got from https://learn.microsoft.com/en-us/previous-versions/windows/embedded/aa453707(v=msdn.10)"""
+            Documents: int = 0x05
+            Music:     int = 0x0D
+            Video:     int = 0x0E
+            Desktop:   int = 0x10
+            Roaming:   int = 0x1A
+            Local:     int = 0x1C
+            Pictures:  int = 0x27
+            Home:      int = 0x28
 
-    def non_empty_file(path: Path) -> bool:
-        return path.exists() and path.is_file() and path.stat().st_size > 0
+        class Type(Enum):
+            Current = 0
+            Default = 1
 
-    def empty_file(path: Path, create: bool=True) -> bool:
-        if create and not path.exists():
-            path.parent.mkdirs(parents=True, exist_ok=True)
-            path.touch()
-        return path.exists() and path.is_file() and len(path.read_text()) == 0
+        @staticmethod
+        def get(csidl: int, *, type: Type=Type.Current) -> Path:
+            if (os.name != "nt"):
+                raise RuntimeError("BrokenPath.Windows only makes sense on Windows")
+            buffer = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            ctypes.windll.shell32.SHGetFolderPathW(None, csidl, None, type, buffer)
+            return Path(buffer.value)
 
-    @contextlib.contextmanager
-    def PATH(*,
-        directories: List[Path],
-        recursive: bool=True,
-        prepend: bool=True,
-        clean: bool=False,
-        restore: bool=True,
-    ):
-        """
-        Temporarily limits the PATH to given directories
-        - directories: List of directories to add to PATH
-        - recursive: Whether to add subdirectories of given directories to PATH
-        - prepend: Prioritize binaries found in input directories
-        - restricted: Do not include current PATH in the new PATH
-        """
+        @functools.lru_cache
+        def Documents(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Documents, type=type)
 
-        # Make Path objects
-        directories = apply(Path, flatten(directories))
+        @functools.lru_cache
+        def Music(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Music, type=type)
 
-        # Get current PATH
-        old = os.getenv("PATH")
+        @functools.lru_cache
+        def Video(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Video, type=type)
 
-        # List of all directories in PATH
-        PATH = [] if clean else os.getenv("PATH").split(os.pathsep)
+        @functools.lru_cache
+        def Desktop(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Desktop, type=type)
 
-        # Add directories to PATH
-        for directory in directories:
-            PATH.append(directory)
+        @functools.lru_cache
+        def Roaming(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Roaming, type=type)
 
-            # Do not recurse if so
-            if not recursive:
-                continue
+        @functools.lru_cache
+        def Local(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Local, type=type)
 
-            # WARN: This could be slow on too many directories (wrong input?)
-            # Find all subdirectories of a path
-            for path in directory.rglob("*"):
-                if path.is_dir():
-                    if prepend:
-                        PATH.insert(0, path)
-                    else:
-                        PATH.append(path)
+        @functools.lru_cache
+        def Pictures(*, type: Type=Type.Current) -> Path:
+            return BrokenPath.Windows.get(BrokenPath.Windows.Magic.Pictures, type=type)
 
-        # Set new PATH
-        os.environ["PATH"] = os.pathsep.join(map(str, PATH))
-
-        yield os.getenv("PATH")
-
-        # Restore PATH
-        os.environ["PATH"] = old

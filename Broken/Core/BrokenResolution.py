@@ -10,7 +10,7 @@ class BrokenResolution:
     @staticmethod
     def round(*numbers: Iterable[Number]) -> Union[int, Tuple[int, ...]]:
         """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
-        values = tuple(max(1, 2*round(value/2)) for value in numbers)
+        values = tuple(max(2, 2*round(value/2)) for value in numbers)
         return values[0] if (len(values) == 1) else values
 
     @staticmethod

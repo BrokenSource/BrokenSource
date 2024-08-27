@@ -10,7 +10,7 @@ from Broken import BrokenEnum, BrokenPlatform, log, shell
 class TorchFlavor(BrokenEnum):
     CPU   = "2.4.0+cpu@cpu"
     CUDA  = "2.4.0+cu121@cuda"
-    ROCM  = "2.4.0+rocm6.0@rocm"
+    ROCM  = "2.4.0+rocm6.1@rocm"
     MACOS = "2.4.0+ignore@mac"
 
 class BrokenTorch:

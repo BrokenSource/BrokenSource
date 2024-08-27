@@ -197,12 +197,12 @@ def pydantic_cli(instance: object, post: Callable=None) -> Callable:
     wrapper.__doc__ = instance.__doc__
     return wrapper
 
-def nearest(number: Number, multiple: Number, *, type=int, operator: Callable=round) -> Number:
+def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=round) -> Number:
     """Finds the nearest multiple of a base number, by default ints but works for floats too"""
-    return type(multiple * operator(number/multiple))
+    return cast(multiple * operator(number/multiple))
 
 def dunder(name: str) -> bool:
-    return name.startswith("__") and name.endswith("__")
+    return (name.startswith("__") and name.endswith("__"))
 
 def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
     """
@@ -230,18 +230,19 @@ def image_hash(image) -> str:
     """A Fast-ish method to get an object's hash that implements .tobytes()"""
     return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
 
-def limited_integer_ratio(number: Optional[float], *, limit: float=None) -> Optional[Tuple[int, int]]:
+def limited_ratio(number: Optional[float], *, limit: float=None) -> Optional[Tuple[int, int]]:
     """Same as Number.as_integer_ratio but with an optional upper limit and optional return"""
-    if number is None:
+    if (number is None):
         return None
 
     num, den = number.as_integer_ratio()
 
     if limit and (den > limit or num > limit):
         normalize = limit/min(num, den)
-        num, den = int(num * normalize), int(den * normalize)
+        num *= normalize
+        den *= normalize
 
-    return num, den
+    return (int(num), int(den))
 
 @contextlib.contextmanager
 def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:

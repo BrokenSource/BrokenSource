@@ -24,7 +24,7 @@ class LoaderBytes(BrokenLoader):
             log.debug("Loading Bytes from String")
             return value.encode()
 
-        if (path := BrokenPath(value).valid()):
+        if (path := BrokenPath.get(value, exists=True)):
             log.debug(f"Loading Bytes from Path ({path})")
             return path.read_bytes()
 

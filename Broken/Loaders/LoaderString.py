@@ -23,7 +23,7 @@ class LoaderString(BrokenLoader):
             log.debug("Loading String from Bytes")
             return value.decode(encoding="utf-8")
 
-        if (path := BrokenPath(value).valid()):
+        if (path := BrokenPath.get(value, exists=True)):
             log.debug(f"Loading String from Path ({path})")
             return path.read_text(encoding="utf-8")
 

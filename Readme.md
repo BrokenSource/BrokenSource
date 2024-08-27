@@ -26,3 +26,5 @@
   <h3>✨ Check out my <a href="https://brokensrc.dev"><b>Awesome Website</b></a> instead of a boring Readme ✨</h3>
   <h5>Installation Guides, Usage, Tips, Code Reference and More!</h5>
 </div>
+
+###### © 2023-2024, Tremeschin 🇧🇷

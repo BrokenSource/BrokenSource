@@ -96,7 +96,6 @@ class BrokenTask:
         self.next_call = (self.next_call or self.started)
 
         # Note: We could use numpy.float128 for the most frametime precision on the above..
-        #       .. But the Client code is smart enough to auto adjust itself to sync
 
     # # Useful properties
 
@@ -122,7 +121,7 @@ class BrokenTask:
 
     @property
     def should_live(self) -> bool:
-        return not self.should_delete
+        return (not self.should_delete)
 
     # # Sorting
 
@@ -178,12 +177,12 @@ class BrokenTask:
 
 @define
 class BrokenScheduler:
-    clients: Deque[BrokenTask] = Factory(deque)
+    tasks: Deque[BrokenTask] = Factory(deque)
 
-    def append(self, client: BrokenTask) -> BrokenTask:
+    def append(self, task: BrokenTask) -> BrokenTask:
         """Adds a client to the manager with immediate next call"""
-        self.clients.append(client)
-        return client
+        self.tasks.append(task)
+        return task
 
     def new(self, task: Callable, *a, **k) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
@@ -195,9 +194,9 @@ class BrokenScheduler:
 
     @property
     def enabled_tasks(self) -> Iterable[BrokenTask]:
-        for client in self.clients:
-            if client.enabled:
-                yield client
+        for task in self.tasks:
+            if task.enabled:
+                yield task
 
     @property
     def next_task(self) -> Optional[BrokenTask]:
@@ -208,25 +207,25 @@ class BrokenScheduler:
         """Removes disabled 'once' clients"""
         move = 0
         # Optimization: Replace first N clients with valid ones, then pop remaining pointers
-        for client in self.clients:
-            if client.should_live:
-                self.clients[move] = client
+        for task in self.tasks:
+            if task.should_live:
+                self.tasks[move] = task
                 move += 1
-        for _ in range(len(self.clients) - move):
-            self.clients.pop()
+        for _ in range(len(self.tasks) - move):
+            self.tasks.pop()
 
     def next(self, block=True) -> Optional[BrokenTask]:
-        if (client := self.next_task) is None:
+        if (task := self.next_task) is None:
             return
         try:
-            return client.next(block=block)
+            return task.next(block=block)
         finally:
-            if client.should_delete:
+            if task.should_delete:
                 self._sanitize()
 
     def all_once(self) -> None:
         """Calls all 'once' clients. Useful for @partial calls on the main thread"""
-        for client in self.clients:
-            if client.once:
-                client.next()
+        for task in self.tasks:
+            if task.once:
+                task.next()
         self._sanitize()

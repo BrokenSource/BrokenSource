@@ -300,6 +300,7 @@ class BrokenManager(BrokenSingleton):
         return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_INSIDERS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
 
@@ -313,10 +314,10 @@ class BrokenManager(BrokenSingleton):
 
         # Note: Avoid hidden, workspace, recursion
         for directory in path.iterdir():
-            if BrokenPath(directory) == BROKEN.DIRECTORIES.REPOSITORY:
+            if BrokenPath.get(directory) == BROKEN.DIRECTORIES.REPOSITORY:
                 continue
             if directory.is_symlink() or directory.is_dir():
-                self.find_projects(path=BrokenPath(directory), _depth=_depth+1)
+                self.find_projects(path=BrokenPath.get(directory), _depth=_depth+1)
             if directory.is_file():
                 continue
             if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
@@ -342,7 +343,7 @@ class BrokenManager(BrokenSingleton):
             self.broken_typer.command(self.ryeup, hidden=True)
 
         with self.broken_typer.panel("🚀 Core"):
-            self.broken_typer.command(self.insiders)
+            self.broken_typer.command(self.insiders, hidden=True)
 
         for project in self.projects:
             self.broken_typer.command(
@@ -388,7 +389,7 @@ class BrokenManager(BrokenSingleton):
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         from Broken.Version import __version__ as version
-        BrokenPath.resetdir(output)
+        BrokenPath.recreate(output)
 
         # Files that will be patched
         pyprojects = flatten(
