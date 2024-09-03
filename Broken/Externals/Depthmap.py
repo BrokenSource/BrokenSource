@@ -158,7 +158,7 @@ class ZoeDepth(DepthEstimator):
 
         log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
         self._model = torch.hub.load(
-            "isl-org/ZoeDepth", f"ZoeD_{self.model.upper()}",
+            "isl-org/ZoeDepth", f"ZoeD_{self.model.value.upper()}",
             pretrained=True, trust_repo=True
         ).to(self.device)
 
