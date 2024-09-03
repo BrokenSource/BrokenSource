@@ -20,7 +20,7 @@ title: About/Contact
 
     - Larger uploads can be useful
 
-    [:octicons-arrow-right-24:{.lg.middle} **Join Group**](https://t.me/BrokenSource)
+    [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource)
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub**
 

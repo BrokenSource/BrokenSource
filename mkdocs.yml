@@ -1,11 +1,11 @@
 site_name: Broken Source Software
 site_description: Unified Documentation and Resources
 site_url: https://brokensrc.dev/
-repo_url: https://github.com/BrokenSource/BrokenSource
+repo_url: https://github.com/BrokenSource/BrokenSource/
 edit_uri: edit/main/Website/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: © 2023-2024, <a href="https://github.com/Tremeschin" target="_blank">Tremeschin</a> 🇧🇷
+copyright: © 2023-2024, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
 docs_dir: Website
 site_dir: Build/Website
 nav:
@@ -22,6 +22,7 @@ nav:
       - 🔦 PyTorch: get/pytorch.md
       - ❤️ Sponsors: about/sponsors.md
     - About:
+      - 🛠️ Contribuing: about/contributing.md
       - 👤 Developers: about/developers.md
       - 🧭 Roadmap: about/roadmap.md
       - 💬 Contact: about/contact.md

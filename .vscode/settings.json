@@ -1,7 +1,6 @@
 {
     "files.exclude": {
         "**/__pycache__": true,
-        "*/**/.github": true,
         ".stfolder": true,
     },
 

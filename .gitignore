@@ -1,17 +1,17 @@
 # Monorepo
-Meta
+.cache
 Build
 Insiders
+Meta
 Private
 Release
 Temp
 Workspace
-.cache
 
 # Python
 **__pycache__*
-dist
 *.pyc
+dist
 
 # Rye
 requirements*.lock
