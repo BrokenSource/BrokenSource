@@ -1,6 +1,6 @@
-name: 🐞 New Bug Report
+name: 🐞 Create a new bug report ticket
 description: Facing some unexpected behavior or error? Let me help you! •
-title: Describe what went wrong to your best guess. Don't worry, we can edit it later
+title: Describe what went wrong, to your best guess • don't worry, we can edit the title later
 labels:
   - bug
 
@@ -9,14 +9,20 @@ body:
   attributes:
     value: |
       > [!IMPORTANT]
+      > - Only the [**latest versions**](https://brokensrc.dev/get/) of the Projects or **git main branch** are **supported**<sup>*1</sup>
       > - **Consider** getting in touch on [**Discord or Telegram**](https://brokensrc.dev/about/contact/) first
-      > - **Languages** I speak: (🇺🇸 English) (🇧🇷 Portuguese)
-      > - [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
+      > - Help with formatting: [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
+      <sub><i>*1: I can still help you, please try the latests version first, or include what version you're on</i></sub>
+
+- type: markdown
+  attributes:
+    value: <div align="center"><h2>📦 Platform & Environment 📦</h2></div>
 
 - type: dropdown
+  id: operating-system
   attributes:
-    label: Operating System
-    description: Where you're experiencing and tested the problem
+    label: 🔵 Operating system
+    description: Where you're experiencing the problem
     options:
       - Windows 11
       - Windows 10
@@ -33,10 +39,25 @@ body:
     required: true
 
 - type: dropdown
+  id: runtime
   attributes:
-    label: Python Version
+    label: 🔴 Runtime enviroment
+    description: Where are you running the project from
+    options:
+      - PyPI Wheels (pip, poetry, pdm, rye, etc)
+      - Source Code (Install scripts or manual)
+      - PyAPP Executables (experimental)
+      - N/A
+    default: 0
+  validations:
+    required: true
+
+- type: dropdown
+  id: python-version
+  attributes:
+    label: 🟡 Python version
     description: |
-      - **If running directly from Source Code**, Rye will use the `.python-version` file (Currently 3.11)
+      - **If running from Source Code**, Rye will use the `.python-version` (currently 3.11)
       - **If running from PyPI Wheels**, check yours Python version with `python -V`
     options:
       - Python 3.10
@@ -49,22 +70,12 @@ body:
     required: true
 
 - type: dropdown
+  id: gpu-vendor
   attributes:
-    label: Runtime Enviroment
-    description: Where are you running the project from
-    options:
-      - PyPI Wheels (pip, poetry, pdm, rye, etc)
-      - Source Code (Install Scripts or Manual)
-      - PyAPP Executables (experimental)
-      - N/A
-    default: 0
-  validations:
-    required: true
-
-- type: dropdown
-  attributes:
-    label: GPU Vendor (if applicable)
-    description: "**Not all projects use GPUs**. Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc."
+    label: 🟢 GPU Vendor (if applicable)
+    description: |
+      - Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc.
+      - Note: you might be running on the wrong GPU on **hybrid systems**, search how to switch GPUs on your OS
     options:
       - N/A
       - NVIDIA (Proprietary)
@@ -80,40 +91,49 @@ body:
 
 - type: markdown
   attributes:
-    value: <hr>
+    value: <div align="center"><h2>🔥 Issue details 🔥</h2></div>
 
 - type: textarea
+  id: description
   attributes:
-    label: Description
+    label: 🔵 Description
     description: |
-      ⚠️ Issues might be file or hardware specific, if the project deals with audio or video at all
+      - ⚠️ **Issues might be file or hardware specific**, if the project deals with audio or video at all
       - Report what (and how) a certain code or feature is failing, should be enough to get started
   validations:
     required: true
 
 - type: textarea
+  id: reproducing
   attributes:
-    label: Reproducing (if applicable)
+    label: 🔴 Reproducing
     description: |
-      - You can provide a Python script, commands, gist and repo links, steps to reproduce the issue?
+      - You can provide a Python script, commands, gist and repo links, steps to reproduce the issue
     render: python
   validations:
     required: false
 
 - type: textarea
+  id: resources
   attributes:
-    label: Resources
+    label: 🟡 Resources
     description: |
-      - You can add Screenshots, Videos or Terminal outputs to help explain the issue (<kbd>CTRL+V</kbd> them!)
+      - You can <kbd>CTRL+V</kbd> Screenshots, Videos or Terminal outputs to help explain the issue!
     render: shell
   validations:
     required: false
 
 - type: textarea
+  id: solution
   attributes:
-    label: Solution
+    label: 🟢 Solution
     description: |
       Any guess on what went wrong? You can provide a solution, workaround or the idea of one
       - Don't worry, leave it blank if you feel unsure!
   validations:
     required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ###### © CC-BY-4.0, Issue Template by [**Tremeschin**](https://github.com/Tremeschin) 🔥
