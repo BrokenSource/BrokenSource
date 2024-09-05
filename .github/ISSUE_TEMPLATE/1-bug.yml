@@ -12,7 +12,7 @@ body:
       > - Only the [**latest versions**](https://brokensrc.dev/get/) of the Projects or **git main branch** are **supported**<sup>*1</sup>
       > - **Consider** getting in touch on [**Discord or Telegram**](https://brokensrc.dev/about/contact/) first
       > - Help with formatting: [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
-      <sub><i>*1: I can still help you, please try the latests version first, or include what version you're on</i></sub>
+      <sub><i>*1: I can still help you, but please try the latest version first, or say what version you're on</i></sub>
 
 - type: markdown
   attributes:
@@ -21,8 +21,9 @@ body:
 - type: dropdown
   id: operating-system
   attributes:
-    label: 🔵 Operating system
-    description: Where you're experiencing the problem
+    label: 🔘 Operating system
+    description: |
+      - Where are you experiencing the problem?
     options:
       - Windows 11
       - Windows 10
@@ -41,8 +42,9 @@ body:
 - type: dropdown
   id: runtime
   attributes:
-    label: 🔴 Runtime enviroment
-    description: Where are you running the project from
+    label: 🔘 Runtime enviroment
+    description: |
+      - Where are you running the project from?
     options:
       - PyPI Wheels (pip, poetry, pdm, rye, etc)
       - Source Code (Install scripts or manual)
@@ -55,10 +57,10 @@ body:
 - type: dropdown
   id: python-version
   attributes:
-    label: 🟡 Python version
+    label: 🔘 Python version
     description: |
-      - **If running from Source Code**, Rye will use the `.python-version` (currently 3.11)
-      - **If running from PyPI Wheels**, check yours Python version with `python -V`
+      - **If running from Source Code**: Rye will use the `.python-version` (Currently 3.11)
+      - **If running from PyPI Wheels**: Check the Python version with `python --version`
     options:
       - Python 3.10
       - Python 3.11
@@ -72,18 +74,22 @@ body:
 - type: dropdown
   id: gpu-vendor
   attributes:
-    label: 🟢 GPU Vendor (if applicable)
+    label: 🔘 GPU Vendor
     description: |
       - Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc.
-      - Note: you might be running on the wrong GPU on **hybrid systems**, search how to switch GPUs on your OS
+      - ⚠️ **Hybrid systems:** ShaderFlow logs the GPU being used, switch on your OS if wrong one, else select all that apply
+      - ⚠️ **Not all projects uses the GPU**, feel free to leave this blank if applicable
     options:
       - N/A
-      - NVIDIA (Proprietary)
-      - NVIDIA (Nouveau)
-      - AMDGPU (Proprietary)
-      - AMDGPU (Mesa)
-      - Intel Graphics
-      - Intel Arc
+      - Apple Silicon
+      - NVIDIA Desktop
+      - NVIDIA Laptop
+      - AMD Integrated (Vega)
+      - AMD Desktop (RX)
+      - AMD Laptop (RX)
+      - Intel HD Graphics/Iris
+      - Intel Desktop Arc
+      - Intel Laptop Arc
     multiple: true
     default: 0
   validations:
@@ -96,40 +102,23 @@ body:
 - type: textarea
   id: description
   attributes:
-    label: 🔵 Description
+    label: 🔘 Description
     description: |
       - ⚠️ **Issues might be file or hardware specific**, if the project deals with audio or video at all
       - Report what (and how) a certain code or feature is failing, should be enough to get started
+      - Any guess on what went wrong? You can provide a solution, workaround or the idea of one
+      - **Tip:** You can provide a Python script, commands, links, steps to reproduce the issue
+      - **Tip:** You can <kbd>CTRL+V</kbd> Screenshots, Videos, to help explain the issue
   validations:
     required: true
 
 - type: textarea
-  id: reproducing
+  id: traceback
   attributes:
-    label: 🔴 Reproducing
+    label: 🔘 Terminal Output
     description: |
-      - You can provide a Python script, commands, gist and repo links, steps to reproduce the issue
-    render: python
-  validations:
-    required: false
-
-- type: textarea
-  id: resources
-  attributes:
-    label: 🟡 Resources
-    description: |
-      - You can <kbd>CTRL+V</kbd> Screenshots, Videos or Terminal outputs to help explain the issue!
+      - Paste the full traceback, error message, or log file here
     render: shell
-  validations:
-    required: false
-
-- type: textarea
-  id: solution
-  attributes:
-    label: 🟢 Solution
-    description: |
-      Any guess on what went wrong? You can provide a solution, workaround or the idea of one
-      - Don't worry, leave it blank if you feel unsure!
   validations:
     required: false
 
