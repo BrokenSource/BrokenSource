@@ -520,7 +520,7 @@ class BrokenManager(BrokenSingleton):
         for project in self.projects:
             for file in flatten(
                 (root/".github"/"funding.yml"),
-                (root/".github"/"Contributing.md"),
+                (root/".github"/"contributing.md"),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.yml"),
             ):
                 target = project.path/file.relative_to(root)
