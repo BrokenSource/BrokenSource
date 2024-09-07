@@ -1,17 +1,55 @@
----
-name: 🚀 New Feature Request
-about: Suggest your idea for a new Feature, Improvement or User Experience Enhancements
-title: (Request) What idea you have in mind and how it would help?
-labels: ''
+name: 💡 Create a new general feedback ticket
+description: Have an idea or feedback to improve the project? Let me hear it! •
+title: Describe the main point of your idea or feedback • don't worry, we can edit the title later
+labels:
+  - enhancement
 
----
+body:
+- type: markdown
+  attributes:
+    value: |
+      > [!IMPORTANT]
+      > - Not all ideas aligns with the project's goals, but all feedback is valuable and appreciated
+      > - **Consider** discussing your idea on [**Discord or Telegram**](https://brokensrc.dev/about/contact/) first
 
-Hi, some quick Guidelines (please read, it's not long):
+- type: markdown
+  attributes:
+    value: <div align="center"><h2>📦 Basic Information 📦</h2></div>
 
-- Consider getting in touch on [Discord](https://discord.com/invite/KjqvcYwRHm) or [Telegram](https://t.me/brokensource) before officializing the request for discussing the idea and its feasibility
+- type: dropdown
+  id: type
+  attributes:
+    label: 🔘 Request type
+    description: |
+      - What kind of report are you proposing?
+    options:
+      - General feedback
+      - New functionality
+      - User experience
+      - Documentation
+      - Enhancement
+      - Integration
+      - Others (specify)
+    default: 0
+  validations:
+    required: true
 
-- **Description**: A description of what the problem is. _"I'm always frustrated when (...)"_
+- type: markdown
+  attributes:
+    value: <div align="center"><h2>🔥 Ticket details 🔥</h2></div>
 
-- **Solution**: If you can and applicable, provide mockups or pseudo-codes of the feature you're suggesting
+- type: textarea
+  id: description
+  attributes:
+    label: 🔘 Description
+    description: |
+      - ✅ Describe the feature you'd like to see implemented or feedback to be heard
+      - **Tip:** You can provide a Python script, commands, of how the feature would work
+      - **Tip:** You can <kbd>CTRL+V</kbd> Screenshots, Videos, to provide examples or mockups
+  validations:
+    required: true
 
-- **Alternatives**: Any alternative solutions or features you've considered
+- type: markdown
+  attributes:
+    value: |
+      ###### © CC-BY-4.0, Issue Template by [**Tremeschin**](https://github.com/Tremeschin) 🇧🇷

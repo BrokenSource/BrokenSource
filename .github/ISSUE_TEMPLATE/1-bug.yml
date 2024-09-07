@@ -9,14 +9,13 @@ body:
   attributes:
     value: |
       > [!IMPORTANT]
-      > - Only the [**latest versions**](https://brokensrc.dev/get/) of the Projects or **git main branch** are **supported**<sup>*1</sup>
+      > - Only the [**latest versions**](https://brokensrc.dev/get/) of the Projects are **supported**<sup>*1</sup>
       > - **Consider** getting in touch on [**Discord or Telegram**](https://brokensrc.dev/about/contact/) first
-      > - Help with formatting: [**Markdown Cheatsheet**](https://learnxinyminutes.com/docs/markdown)
-      <sub><i>*1: I can still help you, but please try the latest version first, or say what version you're on</i></sub>
+      <sub><i>*1: I can still help you, please try the latest first, or say what version you're on</i></sub>
 
 - type: markdown
   attributes:
-    value: <div align="center"><h2>📦 Platform & Environment 📦</h2></div>
+    value: <div align="center"><h2>📦 Basic Information 📦</h2></div>
 
 - type: dropdown
   id: operating-system
@@ -32,7 +31,8 @@ body:
       - Linux (Ubuntu-like)
       - Linux (Fedora-like)
       - Linux (Arch-like)
-      - Linux (Others)
+      - Linux (Specify)
+      - BSD (Specify)
       - N/A
     multiple: true
     default: 0
@@ -44,7 +44,7 @@ body:
   attributes:
     label: 🔘 Runtime enviroment
     description: |
-      - Where are you running the project from?
+      - Where are you running the projects from?
     options:
       - PyPI Wheels (pip, poetry, pdm, rye, etc)
       - Source Code (Install scripts or manual)
@@ -59,7 +59,7 @@ body:
   attributes:
     label: 🔘 Python version
     description: |
-      - **If running from Source Code**: Rye will use the `.python-version` (Currently 3.11)
+      - **If running from Source Code**: Rye will use the `.python-version` (default below)
       - **If running from PyPI Wheels**: Check the Python version with `python --version`
     options:
       - Python 3.10
@@ -76,17 +76,16 @@ body:
   attributes:
     label: 🔘 GPU Vendor
     description: |
-      - Some issues might be hardware specific, often shader compile errors, bad texture sizes, corrupted output video, etc.
-      - ⚠️ **Hybrid systems:** ShaderFlow logs the GPU being used, switch on your OS if wrong one, else select all that apply
-      - ⚠️ **Not all projects uses the GPU**, feel free to leave this blank if applicable
+      - **⚠️ Select all that apply**; Feel free to leave it blank if the issue/project isn't GPU related
+      - **Hybrid systems:** See in logs the GPU being used, switch on your OS if wrong one
     options:
       - N/A
       - Apple Silicon
       - NVIDIA Desktop
       - NVIDIA Laptop
-      - AMD Integrated (Vega)
-      - AMD Desktop (RX)
-      - AMD Laptop (RX)
+      - AMD Integrated
+      - AMD Desktop
+      - AMD Laptop
       - Intel HD Graphics/Iris
       - Intel Desktop Arc
       - Intel Laptop Arc
@@ -97,27 +96,27 @@ body:
 
 - type: markdown
   attributes:
-    value: <div align="center"><h2>🔥 Issue details 🔥</h2></div>
+    value: <div align="center"><h2>🔥 Ticket details 🔥</h2></div>
 
 - type: textarea
   id: description
   attributes:
     label: 🔘 Description
     description: |
-      - ⚠️ **Issues might be file or hardware specific**, if the project deals with audio or video at all
-      - Report what (and how) a certain code or feature is failing, should be enough to get started
-      - Any guess on what went wrong? You can provide a solution, workaround or the idea of one
+      - ✅ Report what (and how) a certain code or feature is failing, should be enough to get started
+      - ✅ Any guess on what went wrong? You can provide a solution, workaround or the idea of one
       - **Tip:** You can provide a Python script, commands, links, steps to reproduce the issue
-      - **Tip:** You can <kbd>CTRL+V</kbd> Screenshots, Videos, to help explain the issue
+      - **Tip:** You can <kbd>CTRL+V</kbd> screenshots, videos, to help explain the issue
   validations:
     required: true
 
 - type: textarea
   id: traceback
   attributes:
-    label: 🔘 Terminal Output
+    label: 🔘 Traceback
     description: |
-      - Paste the full traceback, error message, or log file here
+      - **If relevant**, paste the full traceback, error message, or log file here
+      - **Tip:** You can use [**GitHub Gists**](https://gist.github.com/) to share multiple files
     render: shell
   validations:
     required: false
@@ -125,4 +124,4 @@ body:
 - type: markdown
   attributes:
     value: |
-      ###### © CC-BY-4.0, Issue Template by [**Tremeschin**](https://github.com/Tremeschin) 🔥
+      ###### © CC-BY-4.0, Issue Template by [**Tremeschin**](https://github.com/Tremeschin) 🇧🇷

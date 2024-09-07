@@ -1,16 +1,6 @@
 #!/usr/bin/env pwsh
-
-<# Kudos for your cautiousness in checking out the script before running it !
-
-    The script does the following:
-
-    - Install Winget if not found: The official Microsoft's Package Manager
-    - Install Git and Rye using Winget: To download the Projects and manage Python
-    - Add Rye shims to PATH: So that 'rye' command is available in the shell
-    - Clone the BrokenSource Monorepo
-    - Create a Virtual Environment and install dependencies
-    - Spawn a new shell in the Virtual Environment
-#>
+# (c) MIT License, Tremeschin
+# Script version: 2024.10.5
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution
@@ -21,15 +11,15 @@ function Reload-Path {
     $env:Path    = $machinePath + ";" + $userPath + ";" + $wingetPath
 }
 
-# Consistency in showing steps
-function Print-Step {
-    echo "`n:: $args`n"
-}
-
 # Option to continue normally even on errors
 function Ask-Continue {
     echo "`nPress Enter to continue normally, or Ctrl+C to exit"
     Read-Host
+}
+
+# Consistency in showing steps
+function Print-Step {
+    echo "`n:: $args`n"
 }
 
 # This function immediately exits if Winget is found, else it tries to install it with
@@ -43,7 +33,7 @@ function Have-Winget {
 
     Print-Step "Installing Winget"
 
-    # Try installing with Add-AppxPackage
+    # Attempt via: https://learn.microsoft.com/en-us/windows/package-manager/winget/
     Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
     Reload-Path
 
