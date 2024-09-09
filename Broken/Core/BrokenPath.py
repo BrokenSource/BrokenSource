@@ -504,7 +504,7 @@ class BrokenPath:
             if (os.name != "nt"):
                 raise RuntimeError("BrokenPath.Windows only makes sense on Windows")
             buffer = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-            ctypes.windll.shell32.SHGetFolderPathW(None, csidl, None, type, buffer)
+            ctypes.windll.shell32.SHGetFolderPathW(None, csidl, None, type.value, buffer)
             return Path(buffer.value)
 
         @functools.lru_cache

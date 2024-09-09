@@ -1,6 +1,3 @@
-[submodule ".github/.github"]
-	path = .github/special
-	url  = https://github.com/BrokenSource/.github
 [submodule "Projects/DepthFlow"]
 	path = Projects/DepthFlow
 	url  = https://github.com/BrokenSource/DepthFlow
