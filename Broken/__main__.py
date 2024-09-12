@@ -305,7 +305,7 @@ class BrokenManager(BrokenSingleton):
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
-        if _depth > 4:
+        if _depth > 1:
             return
         if not path.exists():
             return

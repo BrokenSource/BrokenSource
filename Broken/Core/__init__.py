@@ -38,6 +38,7 @@ from typing import (
 import click
 from attrs import Factory, define, field
 from loguru import logger as log
+from pydantic import BaseModel
 
 
 def flatten(
@@ -369,6 +370,20 @@ class BrokenWatchdog(ABC):
         """Calls __changed__ when a property changes"""
         super().__setattr__(key, value)
         self.__changed__(key, value)
+
+class SerdeBaseModel(BaseModel):
+    def serialize(self, json: bool=True) -> Union[dict, str]:
+        if json: return self.model_dump_json()
+        return self.model_dump()
+
+    @classmethod
+    def deserialize(cls, value: Union[dict, str]) -> Self:
+        if isinstance(value, dict):
+            return cls.model_validate(value)
+        elif isinstance(value, str):
+            return cls.model_validate_json(value)
+        else:
+            raise ValueError(f"Can't deserialize value of type {type(value)}")
 
 # # Trackers
 

@@ -21,7 +21,7 @@ requires-python = ">=3.9"
 dependencies = [
     # Data Structures
     "attrs~=24.2.0",
-    "pydantic~=2.8.2",
+    "pydantic~=2.9.1",
     "dotmap~=1.3.30",
     "validators~=0.34.0",
     "diskcache~=5.6.3",
@@ -34,15 +34,15 @@ dependencies = [
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    "setuptools~=74.1.1",
-    "uv~=0.4.3",
+    "setuptools~=74.1.2",
+    "uv~=0.4.9",
     # "yt-dlp~=2024.5.27",
     # Utils
     "arrow~=1.3.0",
-    "rich~=13.8.0",
+    "rich~=13.8.1",
     "distro~=1.9.0",
     "appdirs~=1.4.4",
-    "typer~=0.12.5",
+    "typer-slim~=0.12.5",
     "tqdm~=4.66.5",
     "thefuzz~=0.22.1",
     "python-dotenv~=1.0.1",
@@ -51,7 +51,7 @@ dependencies = [
     "loguru~=0.7.2",
     "python-magic~=0.4.27",
     # (LLM/ML/NN)
-    "ollama~=0.3.2",
+    "ollama~=0.3.3",
     # Enable all extra on pyapp binaries
     #<pyapp>"broken-source[shaderflow]",
     #<pyapp>"broken-source[gradio]",
@@ -93,7 +93,7 @@ staging = [
 ]
 website = [
     "mkdocs~=1.6.1",
-    "mkdocstrings~=0.26.0",
+    "mkdocstrings~=0.26.1",
     "mkdocstrings-python~=1.11.1",
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.2.0",
@@ -101,7 +101,7 @@ website = [
     "mkdocs-section-index~=0.3.9",
     "mkdocs-material[imaging]~=9.5.34",
     "mkdocs-minify-plugin~=0.8.0",
-    "mkdocs-git-revision-date-localized-plugin~=1.2.7",
+    "mkdocs-git-revision-date-localized-plugin~=1.2.9",
     "mkdocs-include-markdown-plugin~=6.2.2",
     "mkdocs-site-urls~=0.2.0",
     "markdown-callouts~=0.4.0",
@@ -122,7 +122,7 @@ dev-dependencies = [
     "tuna~=0.5.11",
     # Manager
     "userpath~=1.9.2",
-    "pyshortcuts~=1.9.1",
+    # "pyshortcuts~=1.9.1",
     # Self reference
     "broken-source[website]",
 ]
@@ -174,9 +174,9 @@ exclude = ["*"]
 
 [tool.ruff.lint]
 ignore = [
-    "F401",
-    "E402",
-    "E701",
+    "F401", # Chill down when re-exporting stuff..
+    "E402", # Late/runtime imports are ok for torch
+    "E701", # Rarely this looks better than new line
     "E741", # Don't tell the Electrical Engineers
 ]
 

@@ -39,14 +39,15 @@ if (os.getenv("RICH_TRACEBACK", "1") == "1"):
 # -------------------------------------------------------------------------------------------------|
 # Information about the release and version
 
-import importlib.metadata
 import importlib.resources
 import struct
 
 BITNESS: int = (struct.calcsize("P") * 8)
 """The word size of the Python interpreter (32, 64 bits)"""
 
-VERSION: str = importlib.metadata.version("broken-source")
+from Broken.Version import __version__
+
+VERSION: str = __version__
 """The version of the Broken library, and subsequently all projects"""
 
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
@@ -89,6 +90,7 @@ from Broken.Core import (
     Patch,
     PlainTracker,
     SameTracker,
+    SerdeBaseModel,
     Stack,
     apply,
     clamp,

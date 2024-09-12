@@ -34,6 +34,7 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenSpinner,
+    SerdeBaseModel,
     denum,
     every,
     flatten,
@@ -103,11 +104,35 @@ class FFmpegInputPipe(FFmpegModuleBase):
 
 
 FFmpegInputType: TypeAlias = Union[
+    FFmpegInputPath,
     FFmpegInputPipe,
-    FFmpegInputPath
 ]
 
 # -------------------------------------------------------------------------------------------------|
+
+class FFmpegOutputPath(FFmpegModuleBase):
+    _type: Literal["path"] = PrivateAttr("path")
+
+    overwrite: Annotated[bool,
+        typer.Option("--overwrite", "-y", " /--no-overwrite", " /-n")] = \
+        Field(default=True)
+
+    path: Annotated[Path,
+        typer.Argument(help="The output file path")] = \
+        Field(...)
+
+    class PixelFormat(str, BrokenEnum):
+        YUV420P = "yuv420p"
+        YUV444P = "yuv444p"
+
+    pixel_format: Annotated[PixelFormat,
+        typer.Option("--pixel-format", "-p")] = \
+        Field(default=PixelFormat.YUV420P)
+
+    def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
+        yield every("-pix_fmt", denum(self.pixel_format))
+        yield (self.path, self.overwrite*"-y")
+
 
 class FFmpegOutputPipe(FFmpegModuleBase):
     _type: Literal["pipe"] = PrivateAttr("pipe")
@@ -133,30 +158,6 @@ class FFmpegOutputPipe(FFmpegModuleBase):
         yield every("-f", denum(self.format))
         yield every("-pix_fmt", denum(self.pixel_format))
         yield "-"
-
-
-class FFmpegOutputPath(FFmpegModuleBase):
-    _type: Literal["path"] = PrivateAttr("path")
-
-    overwrite: Annotated[bool,
-        typer.Option("--overwrite", "-y", " /--no-overwrite", " /-n")] = \
-        Field(default=True)
-
-    path: Annotated[Path,
-        typer.Argument(help="The output file path")] = \
-        Field(...)
-
-    class PixelFormat(str, BrokenEnum):
-        YUV420P = "yuv420p"
-        YUV444P = "yuv444p"
-
-    pixel_format: Annotated[PixelFormat,
-        typer.Option("--pixel-format", "-p")] = \
-        Field(default=PixelFormat.YUV420P)
-
-    def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield every("-pix_fmt", denum(self.pixel_format))
-        yield (self.path, self.overwrite*"-y")
 
 
 FFmpegOutputType = Union[
@@ -949,30 +950,48 @@ FFmpegFilterType: TypeAlias = Union[
 
 # -------------------------------------------------------------------------------------------------|
 
-class SerdeBaseModel(BaseModel):
-    def serialize(self, json: bool=True) -> Union[dict, str]:
-        if json: return self.model_dump_json()
-        return self.model_dump()
-
-    @classmethod
-    def deserialize(cls, value: Union[dict, str]) -> Self:
-        if isinstance(value, dict):
-            return cls.model_validate(value)
-        elif isinstance(value, str):
-            return cls.model_validate_json(value)
-        else:
-            raise ValueError(f"Can't deserialize value of type {type(value)}")
-
-# -------------------------------------------------------------------------------------------------|
-
 class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     """
     Your Premium (^Fluent) FFmpeg class in Python, safety checks and sane defaults
-
-    Todo: Write quick usage examples
-
-    Note: FFmpeg always outputs text to the stderr, as stdout is reserved for pipe outputs `a | b`
     """
+
+    # ------------------------------------------|
+    # Make all class available on BrokenFFmpeg.*
+
+    class Input:
+        Path = FFmpegInputPath
+        Pipe = FFmpegInputPipe
+    class Output:
+        Path = FFmpegOutputPath
+        Pipe = FFmpegOutputPipe
+    class VideoCodec:
+        H264       = FFmpegVideoCodecH264
+        H264_NVENC = FFmpegVideoCodecH264_NVENC
+        H265       = FFmpegVideoCodecH265
+        H265_NVENC = FFmpegVideoCodecH265_NVENC
+        VP9        = FFmpegVideoCodecVP9
+        AV1_LIBAOM = FFmpegVideoCodecAV1_LIBAOM
+        AV1_SVT    = FFmpegVideoCodecAV1_SVT
+        AV1_NVENC  = FFmpegVideoCodecAV1_NVENC
+        AV1_RAV1E  = FFmpegVideoCodecAV1_RAV1E
+        Rawvideo   = FFmpegVideoCodecRawvideo
+        NoVideo    = FFmpegVideoCodecNoVideo
+        Copy       = FFmpegVideoCodecCopy
+    class AudioCodec:
+        AAC   = FFmpegAudioCodecAAC
+        MP3   = FFmpegAudioCodecMP3
+        Opus  = FFmpegAudioCodecOpus
+        FLAC  = FFmpegAudioCodecFLAC
+        Copy  = FFmpegAudioCodecCopy
+        None_ = FFmpegAudioCodecNone
+        Empty = FFmpegAudioCodecEmpty
+        PCM   = FFmpegAudioCodecPCM
+    class Filter:
+        Scale        = FFmpegFilterScale
+        VerticalFlip = FFmpegFilterVerticalFlip
+        Custom       = FFmpegFilterCustom
+
+    # ------------------------------------------|
 
     hide_banner: bool = True
     """Hides the compilation information of FFmpeg from the output"""
@@ -1110,28 +1129,34 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         return self
 
     @functools.wraps(FFmpegInputPath)
-    def input(self, path: Path, **kwargs) -> Self:
-        return self.add_input(FFmpegInputPath(path=path, **kwargs))
+    def input(self, path: Path, **options) -> Self:
+        return self.add_input(FFmpegInputPath(path=path, **options))
 
     @functools.wraps(FFmpegInputPipe)
-    def pipe_input(self, **kwargs) -> Self:
-        return self.add_input(FFmpegInputPipe(**kwargs))
+    def pipe_input(self, **options) -> Self:
+        return self.add_input(FFmpegInputPipe(**options))
 
     def typer_inputs(self, typer: BrokenTyper) -> None:
-        typer.command(FFmpegInputPath, post=self.add_input, name="input")
-        typer.command(FFmpegInputPipe, post=self.add_input, name="ipipe")
+        with typer.panel("📦 (FFmpeg) Input"):
+            typer.command(FFmpegInputPath, post=self.add_input, name="ipath")
+            typer.command(FFmpegInputPipe, post=self.add_input, name="ipipe")
 
     def add_output(self, output: FFmpegOutputType) -> Self:
         self.outputs.append(output)
         return self
 
     @functools.wraps(FFmpegOutputPath)
-    def output(self, path: Path, **kwargs) -> Self:
-        return self.add_output(FFmpegOutputPath(path=path, **kwargs))
+    def output(self, path: Path, **options) -> Self:
+        return self.add_output(FFmpegOutputPath(path=path, **options))
 
     @functools.wraps(FFmpegOutputPipe)
-    def pipe_output(self, **kwargs) -> Self:
-        return self.add_output(FFmpegOutputPipe(**kwargs))
+    def pipe_output(self, **options) -> Self:
+        return self.add_output(FFmpegOutputPipe(**options))
+
+    def typer_outputs(self, typer: BrokenTyper) -> None:
+        with typer.panel("📦 (FFmpeg) Output"):
+            typer.command(FFmpegOutputPath, post=self.add_output, name="opath")
+            typer.command(FFmpegOutputPipe, post=self.add_output, name="opipe")
 
     # Video codecs
 
@@ -1140,52 +1165,52 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         return self
 
     @functools.wraps(FFmpegVideoCodecH264)
-    def h264(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecH264(**kwargs))
+    def h264(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecH264(**options))
 
     @functools.wraps(FFmpegVideoCodecH264_NVENC)
-    def h264_nvenc(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecH264_NVENC(**kwargs))
+    def h264_nvenc(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecH264_NVENC(**options))
 
     @functools.wraps(FFmpegVideoCodecH265)
-    def h265(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecH265(**kwargs))
+    def h265(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecH265(**options))
 
     @functools.wraps(FFmpegVideoCodecH265_NVENC)
-    def h265_nvenc(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecH265_NVENC(**kwargs))
+    def h265_nvenc(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecH265_NVENC(**options))
 
     @functools.wraps(FFmpegVideoCodecVP9)
-    def vp9(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecVP9(**kwargs))
+    def vp9(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecVP9(**options))
 
     @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
-    def av1_aom(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecAV1_LIBAOM(**kwargs))
+    def av1_aom(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecAV1_LIBAOM(**options))
 
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
-    def av1_svt(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecAV1_SVT(**kwargs))
+    def av1_svt(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecAV1_SVT(**options))
 
     @functools.wraps(FFmpegVideoCodecAV1_NVENC)
-    def av1_nvenc(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecAV1_NVENC(**kwargs))
+    def av1_nvenc(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecAV1_NVENC(**options))
 
     @functools.wraps(FFmpegVideoCodecAV1_RAV1E)
-    def av1_rav1e(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecAV1_RAV1E(**kwargs))
+    def av1_rav1e(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecAV1_RAV1E(**options))
 
     @functools.wraps(FFmpegVideoCodecRawvideo)
-    def rawvideo(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecRawvideo(**kwargs))
+    def rawvideo(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecRawvideo(**options))
 
     @functools.wraps(FFmpegVideoCodecCopy)
-    def copy_video(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecCopy(**kwargs))
+    def copy_video(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecCopy(**options))
 
     @functools.wraps(FFmpegVideoCodecNoVideo)
-    def no_video(self, **kwargs) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecNoVideo(**kwargs))
+    def no_video(self, **options) -> Self:
+        return self.set_video_codec(FFmpegVideoCodecNoVideo(**options))
 
     def typer_vcodecs(self, typer: BrokenTyper) -> None:
         with typer.panel("📦 (Exporting) Video encoder"):
@@ -1206,36 +1231,36 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         return self
 
     @functools.wraps(FFmpegAudioCodecAAC)
-    def aac(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecAAC(**kwargs))
+    def aac(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecAAC(**options))
 
     @functools.wraps(FFmpegAudioCodecMP3)
-    def mp3(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecMP3(**kwargs))
+    def mp3(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecMP3(**options))
 
     @functools.wraps(FFmpegAudioCodecOpus)
-    def opus(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecOpus(**kwargs))
+    def opus(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecOpus(**options))
 
     @functools.wraps(FFmpegAudioCodecFLAC)
-    def flac(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecFLAC(**kwargs))
+    def flac(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecFLAC(**options))
 
     @functools.wraps(FFmpegAudioCodecPCM)
     def pcm(self, format: FFmpegAudioCodecPCM="pcm_f32le") -> Self:
         return self.set_audio_codec(FFmpegAudioCodecPCM(format=format))
 
     @functools.wraps(FFmpegAudioCodecCopy)
-    def copy_audio(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecCopy(**kwargs))
+    def copy_audio(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecCopy(**options))
 
     @functools.wraps(FFmpegAudioCodecNone)
-    def no_audio(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecNone(**kwargs))
+    def no_audio(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecNone(**options))
 
     @functools.wraps(FFmpegAudioCodecEmpty)
-    def empty_audio(self, **kwargs) -> Self:
-        return self.set_audio_codec(FFmpegAudioCodecEmpty(**kwargs))
+    def empty_audio(self, **options) -> Self:
+        return self.set_audio_codec(FFmpegAudioCodecEmpty(**options))
 
     def typer_acodecs(self, typer: BrokenTyper) -> None:
         with typer.panel("📦 (Exporting) Audio encoder"):
@@ -1249,20 +1274,27 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     # Filters
 
+    def add_filter(self, filter: FFmpegFilterType) -> Self:
+        self.filters.append(filter)
+        return
+
     @functools.wraps(FFmpegFilterScale)
-    def scale(self, **kwargs) -> Self:
-        self.filters.append(FFmpegFilterScale(**kwargs))
-        return self
+    def scale(self, **options) -> Self:
+        return self.add_filter(FFmpegFilterScale(**options))
 
     @functools.wraps(FFmpegFilterVerticalFlip)
-    def vflip(self, **kwargs) -> Self:
-        self.filters.append(FFmpegFilterVerticalFlip(**kwargs))
-        return self
+    def vflip(self, **options) -> Self:
+        return self.add_filter(FFmpegFilterVerticalFlip(**options))
 
     @functools.wraps(FFmpegFilterCustom)
-    def filter(self, **kwargs) -> Self:
-        self.filters.append(FFmpegFilterCustom(**kwargs))
-        return self
+    def filter(self, **options) -> Self:
+        return self.add_filter(FFmpegFilterCustom(**options))
+
+    def typer_filters(self, typer: BrokenTyper) -> None:
+        with typer.panel("📦 (FFmpeg) Filters"):
+            typer.command(FFmpegFilterScale,        post=self.add_filter, name="scale")
+            typer.command(FFmpegFilterVerticalFlip, post=self.add_filter, name="vflip")
+            typer.command(FFmpegFilterCustom,       post=self.add_filter, name="filter")
 
     # ---------------------------------------------------------------------------------------------|
     # Command building and running
@@ -1304,11 +1336,11 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         extend(("-t", self.time)*bool(self.time))
         return list(map(str, denum(flatten(command))))
 
-    def run(self, **kwargs) -> subprocess.CompletedProcess:
-        return shell(self.command, **kwargs)
+    def run(self, **options) -> subprocess.CompletedProcess:
+        return shell(self.command, **options)
 
-    def popen(self, **kwargs) -> subprocess.Popen:
-        return shell(self.command, Popen=True, **kwargs)
+    def popen(self, **options) -> subprocess.Popen:
+        return shell(self.command, Popen=True, **options)
 
     # ---------------------------------------------------------------------------------------------|
     # High level functions
