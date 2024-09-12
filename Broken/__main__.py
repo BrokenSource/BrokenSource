@@ -519,8 +519,7 @@ class BrokenManager(BrokenSingleton):
 
         for project in self.projects:
             for file in flatten(
-                (root/".github"/"funding.yml"),
-                (root/".github"/"contributing.md"),
+                ((root/".github").glob(ext) for ext in ("*.md", "*.yml")),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.yml"),
             ):
                 target = project.path/file.relative_to(root)
