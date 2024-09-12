@@ -27,4 +27,4 @@
   <h5>Installation Guides, Usage, Tips, Code Reference and More!</h5>
 </div>
 
-###### © 2023-2024, Tremeschin 🇧🇷
+###### <sub>© AGPLv3, Readme by [**Tremeschin**](https://github.com/Tremeschin) 🇧🇷</sub>

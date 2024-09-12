@@ -1,4 +1,4 @@
-# 📜 Community Guidelines
+## 📜 Community Guidelines
 
 > ##### 🤝 Clear guidelines help us work together, effectively and respectfully 🤝
 

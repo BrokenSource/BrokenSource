@@ -1,4 +1,4 @@
-# 🛠️ Help wanted: You!
+## 🛠️ Help wanted: You!
 
 > ##### ✨ Hey friend, thanks for your interest in contributing to the Projects ✨
 

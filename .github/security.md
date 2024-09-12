@@ -1,4 +1,4 @@
-# 🔓 Reporting Security Vulnerabilities
+## 🔓 Reporting Security Vulnerabilities
 
 > ##### 🛡️ Identified a potential security risk? Act responsibly! 🛡️
 
