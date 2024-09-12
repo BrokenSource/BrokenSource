@@ -68,10 +68,11 @@ class BrokenTyper:
 
     @staticmethod
     def release(single: Callable) -> None:
-        app = BrokenTyper()
-        app.release_repl()
-        app.command(single)
-        app()
+        single()
+        # app = BrokenTyper()
+        # app.release_repl()
+        # app.command(single)
+        # app()
 
     class BaseModel(ABC, BaseModel):
         """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
@@ -112,6 +113,7 @@ class BrokenTyper:
         default: bool=False,
         panel: str=None,
         post: Callable=None,
+        hidden: bool=False,
         **kwargs,
     ) -> None:
 
@@ -143,6 +145,7 @@ class BrokenTyper:
             add_help_option=add_help_option,
             no_args_is_help=naih,
             rich_help_panel=(panel or self._panel),
+            hidden=hidden,
             context_settings=dict(
                 allow_extra_args=True,
                 ignore_unknown_options=True,
@@ -202,7 +205,7 @@ class BrokenTyper:
                     break
 
             # Insert default command if none
-            if self.default and not bool(sys.argv[1:]):
+            if self.default and not any((name in sys.argv for name in self.commands)):
                 sys.argv.insert(1, self.default)
 
             # Update sys.argv with new str flat values

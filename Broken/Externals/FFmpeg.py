@@ -10,6 +10,7 @@ from collections import deque
 from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import (
+    Annotated,
     Generator,
     Iterable,
     List,
@@ -24,8 +25,9 @@ from typing import (
 import numpy
 import PIL
 import PIL.Image
+import typer
 from attrs import define
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
 
 from Broken import (
     BrokenEnum,
@@ -39,12 +41,16 @@ from Broken import (
     nearest,
     shell,
 )
+from Broken.Core import BrokenFluent, BrokenTyper
 from Broken.Types import Bytes, Hertz, Seconds
 
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegModuleBase(BaseModel, ABC):
-    model_config = ConfigDict(validate_assignment=True)
+    model_config = ConfigDict(
+        use_attribute_docstrings=True,
+        validate_assignment=True,
+    )
 
     @abstractmethod
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -53,41 +59,48 @@ class FFmpegModuleBase(BaseModel, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegInputPath(FFmpegModuleBase):
-    type: Literal["path"] = "path"
+    _type: Literal["path"] = PrivateAttr("path")
     path: Path
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         return ("-i", self.path)
 
+
 class FFmpegInputPipe(FFmpegModuleBase):
-    type: Literal["pipe"] = "pipe"
+    _type: Literal["pipe"] = PrivateAttr("pipe")
 
-    format: Optional[Literal[
-        "rawvideo",
-        "image2pipe",
-        "null",
-    ]] = Field(default="rawvideo")
+    class Format(str, BrokenEnum):
+        Rawvideo   = "rawvideo"
+        Image2Pipe = "image2pipe"
+        Null       = "null"
 
-    pixel_format: Literal[
-        "rgb24",
-        "rgba",
-    ] = Field(default="rgb24")
+    format: Annotated[Optional[Format],
+        typer.Option("--format", "-f")] = \
+        Field(default=Format.Rawvideo)
+
+    class PixelFormat(str, BrokenEnum):
+        RGB24 = "rgb24"
+        RGBA  = "rgba"
+
+    pixel_format: Annotated[PixelFormat,
+        typer.Option("--pixel-format", "-p")] = \
+        Field(default=PixelFormat.RGB24)
 
     width: int = Field(default=1920, gt=0)
     height: int = Field(default=1080, gt=0)
-
-    framerate: float = Field(default=60.0, gt=-1.0)
+    framerate: float = Field(default=60.0, ge=1.0)
 
     @field_validator("framerate", mode="plain")
     def validate_framerate(cls, value: Union[float, str]) -> float:
         return eval(str(value))
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield ("-f", self.format)
+        yield ("-f", denum(self.format))
         yield ("-s", f"{self.width}x{self.height}")
-        yield ("-pix_fmt", self.pixel_format)
+        yield ("-pix_fmt", denum(self.pixel_format))
         yield ("-r", self.framerate)
         yield ("-i", "-")
+
 
 FFmpegInputType: TypeAlias = Union[
     FFmpegInputPipe,
@@ -97,36 +110,54 @@ FFmpegInputType: TypeAlias = Union[
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegOutputPipe(FFmpegModuleBase):
-    type: Literal["pipe"] = "pipe"
-    format: Optional[Literal[
-        "rawvideo",
-        "image2pipe",
-        "null",
-    ]] = Field(default=None)
+    _type: Literal["pipe"] = PrivateAttr("pipe")
 
-    pixel_format: Literal[
-        "rgb24",
-        "rgba",
-    ] = Field(default="rgb24")
+    class Format(str, BrokenEnum):
+        Rawvideo   = "rawvideo"
+        Image2Pipe = "image2pipe"
+        Null       = "null"
+
+    format: Annotated[Optional[Format],
+        typer.Option("--format", "-f")] = \
+        Field(default=None)
+
+    class PixelFormat(str, BrokenEnum):
+        RGB24 = "rgb24"
+        RGBA  = "rgba"
+
+    pixel_format: Annotated[PixelFormat,
+        typer.Option("--pixel-format", "-p")] = \
+        Field(default=PixelFormat.RGB24)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield every("-f", self.format)
-        yield every("-pix_fmt", self.pixel_format)
+        yield every("-f", denum(self.format))
+        yield every("-pix_fmt", denum(self.pixel_format))
         yield "-"
 
-class FFmpegOutputPath(FFmpegModuleBase):
-    type: Literal["path"] = "path"
-    overwrite: bool = True
-    path: Path
 
-    pixel_format: Optional[Literal[
-        "yuv420p",
-        "yuv444p",
-    ]] = Field(default="yuv420p")
+class FFmpegOutputPath(FFmpegModuleBase):
+    _type: Literal["path"] = PrivateAttr("path")
+
+    overwrite: Annotated[bool,
+        typer.Option("--overwrite", "-y", " /--no-overwrite", " /-n")] = \
+        Field(default=True)
+
+    path: Annotated[Path,
+        typer.Argument(help="The output file path")] = \
+        Field(...)
+
+    class PixelFormat(str, BrokenEnum):
+        YUV420P = "yuv420p"
+        YUV444P = "yuv444p"
+
+    pixel_format: Annotated[PixelFormat,
+        typer.Option("--pixel-format", "-p")] = \
+        Field(default=PixelFormat.YUV420P)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield every("-pix_fmt", self.pixel_format)
+        yield every("-pix_fmt", denum(self.pixel_format))
         yield (self.path, self.overwrite*"-y")
+
 
 FFmpegOutputType = Union[
     FFmpegOutputPipe,
@@ -136,299 +167,398 @@ FFmpegOutputType = Union[
 # -------------------------------------------------------------------------------------------------|
 # Todo: QSV, AMF, VVC ?
 
+# Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
-    """https://trac.ffmpeg.org/wiki/Encode/H.264"""
-    codec: Literal["h264"] = "h264"
+    """Configure and use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/blue link] encoder"""
+    _codec: Literal["h264"] = PrivateAttr("h264")
+
+    class Preset(str, BrokenEnum):
+        None_     = None
+        UltraFast = "ultrafast"
+        SuperFast = "superfast"
+        VeryFast  = "veryfast"
+        Faster    = "faster"
+        Fast      = "fast"
+        Medium    = "medium"
+        Slow      = "slow"
+        Slower    = "slower"
+        VerySlow  = "veryslow"
+
+    preset: Annotated[Optional[Preset],
+        typer.Option("--preset", "-p")] = \
+        Field(default=Preset.Slow)
+    """How much time to spend on encoding. Slower options gives better compression
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Preset]→ Documentation[/blue link]"""
+
+    class Tune(str, BrokenEnum):
+        None_       = None
+        Film        = "film"
+        Animation   = "animation"
+        Grain       = "grain"
+        StillImage  = "stillimage"
+        FastDecode  = "fastdecode"
+        ZeroLatency = "zerolatency"
+
+    tune: Annotated[Optional[Tune],
+        typer.Option("--tune", "-t")] = \
+        Field(default=None)
+    """Tune x264 to keep and optimize for certain aspects of the input media
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Tune]→ Documentation[/blue link]"""
+
+    class Profile(str, BrokenEnum):
+        None_    = None
+        Baseline = "baseline"
+        Main     = "main"
+        High     = "high"
+        High10   = "high10"
+        High422  = "high422"
+        High444p = "high444p"
+
+    profile: Annotated[Optional[Profile],
+        typer.Option("--profile", "-p")] = \
+        Field(default=None)
+    """How many features the encoder can use, the playback device must support them
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Profile]→ Documentation[/blue link]"""
+
+    faststart: Annotated[bool,
+        typer.Option("--faststart", " /--no-faststart", hidden=True)] = \
+        Field(default=True)
+    """Move the index (moov atom) to the beginning of the file for faster initial playback"""
+
+    rgb: Annotated[bool,
+        typer.Option("--rgb", " /--yuv")] = \
+        Field(default=False)
+    """Use RGB colorspace instead of YUV"""
 
     crf: int = Field(default=20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
-    • https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/blue link]"""
 
-    bitrate: Optional[int] = Field(default=None, gt=-1)
+    crf: Annotated[int,
+        typer.Option("--crf", "-c", min=0, max=51)] = \
+        Field(default=20, ge=0, le=51)
+    """Constant Rate Factor. 0 is lossless, 51 is the worst quality
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/blue link]"""
 
-    preset: Optional[Literal[
-        "ultrafast",
-        "superfast",
-        "veryfast",
-        "faster",
-        "fast",
-        "medium",
-        "slow",
-        "slower",
-        "veryslow",
-    ]] = Field(default="slow")
-    """How much time to spend on encoding. Slower options gives better compression
-    • https://trac.ffmpeg.org/wiki/Encode/H.264#Preset
-    """
-
-    tune: Optional[Literal[
-        "film",
-        "animation",
-        "grain",
-        "stillimage",
-        "fastdecode",
-        "zerolatency"
-    ]] = Field(default=None)
-    """Tune x264 to keep and optimize for certain aspects of the input media. See link for more:
-    • https://trac.ffmpeg.org/wiki/Encode/H.264#Tune
-    """
-
-    profile: Optional[Literal[
-        "baseline",
-        "main",
-        "high",
-        "high10",
-        "high422",
-        "high444",
-    ]] = Field(default=None)
-    """What features the encoder can use. The playback device must support the same profile level
-    • https://trac.ffmpeg.org/wiki/Encode/H.264#Profile
-    """
-
-    faststart: bool = Field(default=True)
-
-    rgb: bool = Field(default=False)
+    bitrate: Annotated[Optional[int],
+        typer.Option("--bitrate", "-b", min=0)] = \
+        Field(default=None, ge=0)
+    """Bitrate in kilobits per second, the higher the better quality and file size"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "libx264rgb" if self.rgb else "libx264")
-        yield every("-profile", self.profile)
-        yield every("-preset", self.preset)
-        yield every("-tune", self.tune)
-        yield every("-crf", str(self.crf))
         yield every("-movflags", "+faststart"*self.faststart)
+        yield every("-profile", denum(self.profile))
+        yield every("-preset", denum(self.preset))
+        yield every("-tune", denum(self.tune))
         yield every("-b:v", self.bitrate)
+        yield every("-crf", self.crf)
 
+
+# Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
-    """`ffmpeg -h encoder=h264_nvenc`"""
-    codec: Literal["h264_nvenc"] = "h264_nvenc"
+    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/blue link] encoder"""
+    _codec: Literal["h264_nvenc"] = PrivateAttr("h264_nvenc")
 
-    preset: Optional[Literal[
-        "default", # Defaults to p4
-        "slow", # High quality 2 passes
-        "medium", # High quality 1 pass
-        "fast", # High quality 1 pass
-        "hp", # High performance
-        "hq", # High quality
-        "bd", # Balanced
-        "ll", # Low latency
-        "llhq", # Low latency high quality
-        "llhp", # Low latency high performance
-        "lossless", # Lossless
-        "losslesshp", # Lossless high performance
-        "p1", # fastest
-        "p2", # faster
-        "p3", # fast
-        "p4", # medium
-        "p5", # slow
-        "p6", # slower
-        "p7", # slowest
-    ]] = Field(default="p4")
+    class Preset(str, BrokenEnum):
+        None_                     = None
+        HighQuality2Passes        = "slow"
+        HighQuality1Pass          = "medium"
+        HighPerformance1Pass      = "fast"
+        HighPerformance           = "hp"
+        HighQuality               = "hq"
+        Balanced                  = "bd"
+        LowLatency                = "ll"
+        LowLatencyHighQuality     = "llhq"
+        LowLatencyHighPerformance = "llhp"
+        Lossless                  = "lossless"
+        LosslessHighPerformance   = "losslesshp"
+        Fastest                   = "p1"
+        Faster                    = "p2"
+        Fast                      = "p3"
+        Medium                    = "p4"
+        Slow                      = "p5"
+        Slower                    = "p6"
+        Slowest                   = "p7"
 
-    tune: Optional[Literal[
-        "hq", # High quality
-        "ll", # Low latency
-        "ull", # Ultra low latency
-        "lossless" # Lossless
-    ]] = Field(default="hq")
+    preset: Annotated[Optional[Preset],
+        typer.Option("--preset", "-p")] = \
+        Field(default=Preset.Medium)
+    """How much time to spend on encoding. Slower options gives better compression"""
 
-    profile: Optional[Literal[
-        "baseline", # Very old devices
-        "main", # Relatively modern devices
-        "high", # Modern devices
-        "high444p" # Modern devices
-    ]] = Field(default="high")
+    class Tune(str, BrokenEnum):
+        None_           = None
+        HighQuality     = "hq"
+        LowLatency      = "ll"
+        UltraLowLatency = "ull"
+        Lossless        = "lossless"
 
-    rc: Optional[Literal[
-        "constqp", # Constant Quality 'Factor'
-        "vbr", # Variable bitrate
-        "cbr", # Constant bitrate
-    ]] = Field(default="vbr")
-    """'Rate Control' mode"""
+    tune: Annotated[Optional[Tune],
+        typer.Option("--tune", "-t")] = \
+        Field(default=Tune.HighQuality)
+    """Tune the encoder for a specific tier of performance"""
 
-    rc_lookahead: Optional[int] = Field(default=32, gt=-1)
+    class Profile(str, BrokenEnum):
+        None_    = None
+        Baseline = "baseline"
+        Main     = "main"
+        High     = "high"
+        High444p = "high444p"
+
+    profile: Annotated[Optional[Profile],
+        typer.Option("--profile", "-p")] = \
+        Field(default=Profile.High)
+    """How many features the encoder can use, the playback device must support them"""
+
+    class RateControl(str, BrokenEnum):
+        None_ = None
+        ConstantBitrateHighQuality = "cbr_hq"
+        VariableBitrateHighQuality = "vbr_hq"
+        ConstantQuality = "constqp"
+        VariableBitrate = "vbr"
+        ConstantBitrate = "cbr"
+
+    rate_control: Annotated[Optional[RateControl],
+        typer.Option("--rc", "-r", hidden=True)] = \
+        Field(default=RateControl.VariableBitrateHighQuality)
+    """Rate control mode of the bitrate"""
+
+    rc_lookahead: Annotated[Optional[int],
+        typer.Option("--rc-lookahead", "-l", hidden=True, min=0)] = \
+        Field(default=32, ge=0)
     """Number of frames to look ahead for the rate control"""
 
-    cbr: bool = Field(default=False)
-    """Use Constant Bitrate mode"""
+    cbr: Annotated[bool,
+        typer.Option("--cbr", "-c", " /--no-cbr", " /-nc", hidden=True)] = \
+        Field(default=False)
+    """Enable Constant Bitrate mode"""
 
-    gpu: int = Field(default=0, gt=-1)
-    """Use the Nth NVENC capable GPU for encoding"""
+    gpu: Annotated[int,
+        typer.Option("--gpu", "-g", min=0)] = \
+        Field(default=0, ge=0)
+    """Use the Nth NVENC capable GPU for encoding, 0 for first available"""
 
-    cq: int = Field(default=25, gt=-1)
-    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+    cq: Annotated[int,
+        typer.Option("--cq", "-q", min=0)] = \
+        Field(default=25, ge=0)
+    """(VBR) Similar to CRF, 0 is automatic, 1 is 'lossless', 51 is the worst quality"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "h264_nvenc")
         yield every("-b:v", 0)
-        yield every("-preset", self.preset)
-        yield every("-tune", self.tune)
-        yield every("-profile", self.profile)
-        yield every("-rc", self.rc)
+        yield every("-preset", denum(self.preset))
+        yield every("-tune", denum(self.tune))
+        yield every("-profile", denum(self.profile))
+        yield every("-rc", denum(self.rate_control))
         yield every("-rc-lookahead", self.rc_lookahead)
         yield every("-cbr", int(self.cbr))
         yield every("-cq", self.cq)
         yield every("-gpu", self.gpu)
 
 
+# Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
-    """https://trac.ffmpeg.org/wiki/Encode/H.265"""
-    codec: Literal["h265"] = "h265"
+    """Configure and use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/blue link] encoder"""
+    _codec: Literal["h265"] = PrivateAttr("h265")
 
-    crf: int = Field(default=25, ge=0, le=51)
+    crf: Annotated[int,
+        typer.Option("--crf", "-c", min=0, max=51)] = \
+        Field(default=25, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality"""
 
-    bitrate: Optional[int] = Field(default=None, gt=-1)
+    bitrate: Annotated[Optional[int],
+        typer.Option("--bitrate", "-b", min=0)] = \
+        Field(default=None, ge=1)
+    """Bitrate in kilobits per second, the higher the better quality and file size"""
 
-    preset: Optional[Literal[
-        "ultrafast",
-        "superfast",
-        "veryfast",
-        "faster",
-        "fast",
-        "medium",
-        "slow",
-        "slower",
-        "veryslow",
-    ]] = Field(default="slow")
+    class Preset(str, BrokenEnum):
+        None_     = None
+        UltraFast = "ultrafast"
+        SuperFast = "superfast"
+        VeryFast  = "veryfast"
+        Faster    = "faster"
+        Fast      = "fast"
+        Medium    = "medium"
+        Slow      = "slow"
+        Slower    = "slower"
+        VerySlow  = "veryslow"
+
+    preset: Annotated[Optional[Preset],
+        typer.Option("--preset", "-p")] = \
+        Field(default=Preset.Slow)
+    """How much time to spend on encoding. Slower options gives better compression"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "libx265")
-        yield every("-preset", self.preset)
-        yield every("-crf", str(self.crf))
+        yield every("-preset", denum(self.preset))
+        yield every("-crf", self.crf)
         yield every("-b:v", self.bitrate)
 
 
+# Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
-    """`ffmpeg -h encoder=hevc_nvenc`"""
-    codec: Literal["hevc_nvenc"] = "hevc_nvenc"
+    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/blue link] encoder"""
+    _codec: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
 
-    preset: Optional[Literal[
-        "default", # Defaults to p4
-        "slow", # High quality 2 passes
-        "medium", # High quality 1 pass
-        "fast", # High quality 1 pass
-        "hp", # High performance
-        "hq", # High quality
-        "bd", # Balanced
-        "ll", # Low latency
-        "llhq", # Low latency high quality
-        "llhp", # Low latency high performance
-        "lossless", # Lossless
-        "losslesshp", # Lossless high performance
-        "p1", # fastest
-        "p2", # faster
-        "p3", # fast
-        "p4", # medium
-        "p5", # slow
-        "p6", # slower
-        "p7", # slowest
-    ]] = Field(default="p5")
+    class Preset(str, BrokenEnum):
+        HighQuality2Passes        = "slow"
+        HighQuality1Pass          = "medium"
+        HighPerformance1Pass      = "fast"
+        HighPerformance           = "hp"
+        HighQuality               = "hq"
+        Balanced                  = "bd"
+        LowLatency                = "ll"
+        LowLatencyHighQuality     = "llhq"
+        LowLatencyHighPerformance = "llhp"
+        Lossless                  = "lossless"
+        LosslessHighPerformance   = "losslesshp"
+        Fastest                   = "p1"
+        Faster                    = "p2"
+        Fast                      = "p3"
+        Medium                    = "p4"
+        Slow                      = "p5"
+        Slower                    = "p6"
+        Slowest                   = "p7"
 
-    tune: Optional[Literal[
-        "hq", # High quality
-        "ll", # Low latency
-        "ull", # Ultra low latency
-        "lossless" # Lossless
-    ]] = Field(default="hq")
+    preset: Annotated[Preset,
+        typer.Option("--preset", "-p")] = \
+        Field(default=Preset.Medium)
+    """How much time to spend on encoding. Slower options gives better compression"""
 
-    profile: Optional[Literal[
-        "main", # Modern devices
-        "main10", # HDR 10 bits
-        "rext"
-    ]] = Field(default=None)
+    class Tune(str, BrokenEnum):
+        None_           = None
+        HighQuality     = "hq"
+        LowLatency      = "ll"
+        UltraLowLatency = "ull"
+        Lossless        = "lossless"
 
-    tier: Optional[Literal[
-        "main",
-        "high",
-    ]] = Field(default="high")
+    tune: Annotated[Optional[Tune],
+        typer.Option("--tune", "-t")] = \
+        Field(default=Tune.HighQuality)
 
-    rc: Optional[Literal[
-        "constqp", # Constant Quality 'Factor'
-        "vbr", # Variable bitrate
-        "cbr", # Constant bitrate
-    ]] = Field(default="vbr")
-    """'Rate Control' mode"""
+    class Profile(str, BrokenEnum):
+        None_  = None
+        Main   = "main"
+        Main10 = "main10"
+        ReXT   = "rext"
 
-    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    profile: Annotated[Optional[Profile],
+        typer.Option("--profile", "-p")] = \
+        Field(default=Profile.Main)
+
+    class Tier(str, BrokenEnum):
+        None_ = None
+        Main  = "main"
+        High  = "high"
+
+    tier: Annotated[Optional[Tier],
+        typer.Option("--tier", "-t")] = \
+        Field(default=Tier.High)
+
+    class RateControl(str, BrokenEnum):
+        None_           = None
+        ConstantQuality = "constqp"
+        VariableBitrate = "vbr"
+        ConstantBitrate = "cbr"
+
+    rate_control: Annotated[Optional[RateControl],
+        typer.Option("--rc", "-r", hidden=True)] = \
+        Field(default=RateControl.VariableBitrate)
+
+    rc_lookahead: Annotated[Optional[int],
+        typer.Option("--rc-lookahead", "-l", hidden=True)] = \
+        Field(default=10, ge=1)
     """Number of frames to look ahead for the rate control"""
 
-    cbr: bool = Field(default=False)
+    cbr: Annotated[bool,
+        typer.Option("--cbr", "-c", " /--vbr", " /-v", hidden=True)] = \
+        Field(default=False)
     """Use Constant Bitrate mode"""
 
-    gpu: int = Field(default=0, gt=-1)
+    gpu: Annotated[int,
+        typer.Option("--gpu", "-g", min=0)] = \
+        Field(default=0, ge=0)
     """Use the Nth NVENC capable GPU for encoding"""
 
-    cq: int = Field(default=25, gt=-1)
-    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+    cq: Annotated[int,
+        typer.Option("--cq", "-q", min=0)] = \
+        Field(default=25, ge=0)
+    """(VBR) Similar to CRF, 0 is automatic, 1 is 'lossless', 51 is the worst quality"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "hevc_nvenc")
-        yield every("-preset", self.preset)
-        yield every("-tune", self.tune)
-        yield every("-profile", self.profile)
-        yield every("-tier", self.tier)
-        yield every("-rc", self.rc)
+        yield every("-preset", denum(self.preset))
+        yield every("-tune", denum(self.tune))
+        yield every("-profile", denum(self.profile))
+        yield every("-tier", denum(self.tier))
+        yield every("-rc", denum(self.rate_control))
         yield every("-rc-lookahead", self.rc_lookahead)
         yield every("-cbr", int(self.cbr))
         yield every("-cq", self.cq)
         yield every("-gpu", self.gpu)
 
 
+# Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """https://trac.ffmpeg.org/wiki/Encode/VP9"""
-    codec: Literal["libvpx-vp9"] = "libvpx-vp9"
+    """Configure and use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/blue link] for VP9 encoding"""
+    _codec: Literal["vp9"] = PrivateAttr("vp9")
 
-    crf: int = Field(default=30, gt=-1, lt=64)
+    crf: Annotated[int,
+        typer.Option("--crf", "-c", min=1, max=63)] = \
+        Field(default=30, ge=1, le=64)
     """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#constantq
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#constantq]→ Documentation[/blue link]"""
 
-    speed: int = Field(default=4, gt=-1, lt=6)
+    speed: Annotated[int,
+        typer.Option("--speed", "-s", min=1, max=6)] = \
+        Field(default=4, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed]→ Documentation[/blue link]"""
 
-    deadline: Optional[Literal[
-        "good", # General cases
-        "best", # Offline renders
-        "realtime",
-    ]] = Field(default="good")
-    """Tweak the encoding time philosophy. 'good' for general cases, 'best' for offline renders when
-    there's plenty time available and best quality, 'realtime' for streams and low latency
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality
-    """
+    class Deadline(str, BrokenEnum):
+        Good     = "good"
+        Best     = "best"
+        Realtime = "realtime"
 
-    row_multithreading: bool = Field(default=True)
-    """Faster encodes by splitting rows into multiple threads. Slight innacuracy on the rate control.
-    Recommended for >= 1080p videos. Requires libvpx >= 1.7.0 (you should have it)
-    • https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt
-    """
+    deadline: Annotated[Deadline,
+        typer.Option("--deadline", "-d")] = \
+        Field(default=Deadline.Good)
+    """Tweak the encoding time philosophy for better quality or faster encoding
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality]→ Documentation[/blue link]"""
+
+    row_multithreading: Annotated[bool,
+        typer.Option("--row-multithreading", "-rmt", " /--no-row-multithreading", " /-rmt")] = \
+        Field(default=True)
+    """Faster encodes by splitting rows into multiple threads
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt]→ Documentation[/blue link]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libvpx-vp9")
         yield ("-crf", self.crf)
         yield ("-b:v", 0)
-        yield ("-deadline", self.deadline)
+        yield ("-deadline", denum(self.deadline))
         yield ("-cpu-used", self.speed)
         yield ("-row-mt", "1") * self.row_multithreading
 
 
+# Note: See full help with `ffmpeg -h encoder=libaom-av1`
 class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
     """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
     • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
     """
-    codec: Literal["libaom-av1"] = "libaom-av1"
+    _codec: Literal["libaom-av1"] = PrivateAttr("libaom-av1")
 
-    crf: int = Field(default=23, gt=-1, lt=64)
+    crf: Annotated[int,
+        typer.Option("--crf", "-c", min=1, max=63)] = \
+        Field(default=23, ge=1, le=63)
     """Constant Rate Factor (0-63). Lower values mean better quality, AV1 CRF 23 == x264 CRF 19
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality]→ Documentation[/blue link]"""
 
-    speed: int = Field(default=3, gt=-1, lt=7)
+    speed: Annotated[int,
+        typer.Option("--speed", "-s", min=1, max=6)] = \
+        Field(default=3, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality]→ Documentation[/blue link]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libaom-av1")
@@ -438,21 +568,22 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
         yield ("-tiles", "2x2")
 
 
+# Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
-    """The official codec for future development of AV1. Faster than libaom reference
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#SVT-AV1
-    """
-    codec: Literal["libsvtav1"] = "libsvtav1"
+    """Configure and use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/blue link] encoder"""
+    _codec: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
 
-    crf: int = Field(default=25, gt=-1, lt=64)
-    """Constant Rate Factor (0-63). Lower values mean better quality,
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#CRF
-    """
+    crf: Annotated[int,
+        typer.Option("--crf", "-c", min=1, max=63)] = \
+        Field(default=25, ge=1, le=63)
+    """Constant Rate Factor (0-63). Lower values mean better quality
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#CRF]→ Documentation[/blue link]"""
 
-    preset: int = Field(default=3, gt=-1, lt=9)
+    preset: Annotated[int,
+        typer.Option("--preset", "-p", min=1, max=8)] = \
+        Field(default=3, ge=1, le=8)
     """The speed of the encoding, 0 is slowest, 8 is fastest. Decreases compression efficiency.
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes
-    """
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes]→ Documentation[/blue link]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libsvtav1")
@@ -461,22 +592,29 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
         yield ("-svtav1-params", "tune=0")
 
 
+# Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
-    """`ffmpeg -h encoder=librav1e`
-    https://github.com/xiph/rav1e
-    """
-    codec: Literal["librav1e"] = "librav1e"
+    """Configure and use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/blue link] encoder"""
+    _codec: Literal["librav1e"] = PrivateAttr("librav1e")
 
-    qp: int = Field(default=80, gt=-2)
+    qp: Annotated[int,
+        typer.Option("--qp", "-q", min=-1)] = \
+        Field(default=80, ge=-1)
     """Constant quantizer mode (from -1 to 255). Smaller values are higher quality"""
 
-    speed: int = Field(default=4, gt=-1, lt=11)
+    speed: Annotated[int,
+        typer.Option("--speed", "-s", min=1, max=10)] = \
+        Field(default=4, ge=1, le=10)
     """What speed preset to use (from -1 to 10) (default -1)"""
 
-    tile_rows: int = Field(default=2, gt=-1)
+    tile_rows: Annotated[int,
+        typer.Option("--tile-rows", "-tr", min=-1)] = \
+        Field(default=2, ge=-1)
     """Number of tile rows to encode with (from -1 to I64_MAX) (default 0)"""
 
-    tile_columns: int = Field(default=2, gt=-1)
+    tile_columns: Annotated[int,
+        typer.Option("--tile-columns", "-tc", min=-1)] = \
+        Field(default=2, ge=-1)
     """Number of tile columns to encode with (from -1 to I64_MAX) (default 0)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -487,87 +625,114 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
         yield ("-tile-columns", self.tile_columns)
 
 
+# Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
-    """`ffmpeg -h encoder=av1_nvenc`
-    NVIDIA's NVENC encoder for AV1
-    # Warning: REQUIRES A RTX 4000+ GPU (ADA Love Lace Architecture or newer
-    """
-    codec: Literal["av1_nvenc"] = "av1_nvenc"
+    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/blue link] encoder [dim light_coral](RTX 4000+ GPU)[/dim light_coral]"""
+    _codec: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
 
-    preset: Optional[Literal[
-        "default", # Defaults to p4
-        "slow", # High quality 2 passes
-        "medium", # High quality 1 pass
-        "fast", # High quality 1 pass
-        "p1", # fastest
-        "p2", # faster
-        "p3", # fast
-        "p4", # medium
-        "p5", # slow
-        "p6", # slower
-        "p7", # slowest
-    ]] = Field(default="p5")
+    class Preset(str, BrokenEnum):
+        Default              = "default"
+        HighQuality2Passes   = "slow"
+        HighQuality1Pass     = "medium"
+        HighPerformance1Pass = "fast"
+        Fastest              = "p1"
+        Faster               = "p2"
+        Fast                 = "p3"
+        Medium               = "p4"
+        Slow                 = "p5"
+        Slower               = "p6"
+        Slowest              = "p7"
 
-    tune: Optional[Literal[
-        "hq", # High quality
-        "ll", # Low latency
-        "ull", # Ultra low latency
-        "lossless" # Lossless
-    ]] = Field(default="hq")
+    preset: Annotated[Preset,
+        typer.Option("--preset", "-p")] = \
+        Field(default=Preset.Slow)
+    """How much time to spend on encoding. Slower options gives better compression"""
 
-    rc: Optional[Literal[
-        "constqp", # Constant Quality 'Factor'
-        "vbr", # Variable bitrate
-        "cbr", # Constant bitrate
-    ]] = Field(default="vbr")
-    """'Rate Control' mode"""
+    class Tune(str, BrokenEnum):
+        HighQuality      = "hq"
+        LowLatency       = "ll"
+        UltraLowLatency  = "ull"
+        Lossless         = "lossless"
 
-    multipass: Optional[Literal[
-        "disabled",
-        "qres", # First pass is quarter resolution
-        "fullres", # First pass is full resolution
-    ]] = Field(default="fullres")
+    tune: Annotated[Optional[Tune],
+        typer.Option("--tune", "-t")] = \
+        Field(default=Tune.HighQuality)
+    """Tune the encoder for a specific tier of performance"""
 
-    tile_rows: Optional[int] = Field(default=2, gt=-1, lt=65)
+    class RateControl(str, BrokenEnum):
+        None_           = None
+        ConstantQuality = "constqp"
+        VariableBitrate = "vbr"
+        ConstantBitrate = "cbr"
+
+    rate_control: Annotated[Optional[RateControl],
+        typer.Option("--rc", "-r", hidden=True)] = \
+        Field(default=RateControl.VariableBitrate)
+
+    class Multipass(str, BrokenEnum):
+        None_    = None
+        Disabled = "disabled"
+        Quarter  = "qres"
+        Full     = "fullres"
+
+    multipass: Annotated[Optional[Multipass],
+        typer.Option("--multipass", "-m", hidden=True)] = \
+        Field(default=Multipass.Full)
+
+    tile_rows: Annotated[Optional[int],
+        typer.Option("--tile-rows", "-tr", min=1, max=64)] = \
+        Field(default=2, ge=1, le=64)
     """Number of encoding tile rows, similar to -row-mt"""
 
-    tile_columns: Optional[int] = Field(default=2, gt=-1, lt=65)
+    tile_columns: Annotated[Optional[int],
+        typer.Option("--tile-columns", "-tc", min=1, max=64)] = \
+        Field(default=2, ge=1, le=64)
     """Number of encoding tile columns, similar to -col-mt"""
 
-    rc_lookahead: Optional[int] = Field(default=10, gt=-1)
+    rc_lookahead: Annotated[Optional[int],
+        typer.Option("--rc-lookahead", "-l", hidden=True)] = \
+        Field(default=10, ge=1)
     """Number of frames to look ahead for the rate control"""
 
-    gpu: int = Field(default=0, gt=-1)
+    gpu: Annotated[int,
+        typer.Option("--gpu", "-g", min=0)] = \
+        Field(default=0, ge=0)
     """Use the Nth NVENC capable GPU for encoding"""
 
-    cq: int = Field(default=25, gt=-1)
+    cq: int = Field(default=25, ge=1)
+    """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
+
+    cq: Annotated[Optional[int],
+        typer.Option("--cq", "-q", min=0)] = \
+        Field(default=25, ge=0)
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "av1_nvenc")
-        yield every("-preset", self.preset)
-        yield every("-tune", self.tune)
-        yield every("-rc", self.rc)
+        yield every("-preset", denum(self.preset))
+        yield every("-tune", denum(self.tune))
+        yield every("-rc", denum(self.rate_control))
         yield every("-rc-lookahead", self.rc_lookahead)
         yield every("-cq", self.cq)
         yield every("-gpu", self.gpu)
 
 
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
-    codec: Literal["rawvideo"] = "rawvideo"
+    _codec: Literal["rawvideo"] = PrivateAttr("rawvideo")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "rawvideo")
 
+
 class FFmpegVideoCodecNoVideo(FFmpegModuleBase):
-    codec: Literal["null"] = "null"
+    _codec: Literal["null"] = PrivateAttr("null")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "null")
 
 
 class FFmpegVideoCodecCopy(FFmpegModuleBase):
-    codec: Literal["copy"] = "copy"
+    _codec: Literal["copy"] = PrivateAttr("copy")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "copy")
@@ -591,64 +756,90 @@ FFmpegVideoCodecType: TypeAlias = Union[
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
-    codec: Literal["aac"] = "aac"
+    """Configure and use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
+    _codec: Literal["aac"] = PrivateAttr("aac")
 
-    bitrate: int = Field(default=192, gt=-1)
+    bitrate: Annotated[int,
+        typer.Option("--bitrate", "-b", min=1)] = \
+        Field(default=192, ge=1)
     """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "aac")
         yield every("-b:a", f"{self.bitrate}k")
 
-class FFmpegAudioCodecMP3(FFmpegModuleBase):
-    """https://trac.ffmpeg.org/wiki/Encode/MP3"""
-    codec: Literal["mp3"] = "mp3"
 
-    qscale: int = Field(default=2, gt=-1)
+class FFmpegAudioCodecMP3(FFmpegModuleBase):
+    """Configure and use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]Mpeg Layer 3 (MP3)[/blue link] audio codec"""
+    _codec: Literal["mp3"] = PrivateAttr("mp3")
+
+    bitrate: Annotated[int,
+        typer.Option("--bitrate", "-b", min=1)] = \
+        Field(default=192, ge=1)
+    """Bitrate in kilobits per second. This value is shared between all audio channels"""
+
+    qscale: Annotated[int,
+        typer.Option("--qscale", "-q", min=1)] = \
+        Field(default=2, ge=1)
     """Quality scale, 0-9, Variable Bitrate"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "libmp3lame")
+        yield every("-b:a", f"{self.bitrate}k")
         yield every("-qscale:a", self.qscale)
 
+
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
-    codec: Literal["libopus"] = "libopus"
+    """Configure and use the Opus audio codec"""
+    _codec: Literal["libopus"] = PrivateAttr("libopus")
+
+    bitrate: Annotated[int,
+        typer.Option("--bitrate", "-b", min=1)] = \
+        Field(default=192, ge=1)
+    """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "libopus")
+        yield every("-b:a", f"{self.bitrate}k")
 
-class FFmpegAudioCodecVorbis(FFmpegModuleBase):
-    codec: Literal["libvorbis"] = "libvorbis"
-
-    def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield every("-c:a", "libvorbis")
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
-    codec: Literal["flac"] = "flac"
+    """Configure and use the Free Lossless Audio Codec (FLAC)"""
+    _codec: Literal["flac"] = PrivateAttr("flac")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "flac")
 
+
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
-    codec: Literal["copy"] = "copy"
+    """Copy the input's audio stream without re-encoding"""
+    _codec: Literal["copy"] = PrivateAttr("copy")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:a", "copy")
 
+
 class FFmpegAudioCodecNone(FFmpegModuleBase):
-    codec: Literal["none"] = "none"
+    """Remove any audio from the output, it simply doesn't exist"""
+    _codec: Literal["none"] = PrivateAttr("none")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-an")
 
+
 class FFmpegAudioCodecEmpty(FFmpegModuleBase):
-    codec: Literal["anullsrc"] = "anullsrc"
-    samplerate: float = 44100
+    """Adds a silent audio, videos could work incorrectly without audio"""
+    _codec: Literal["anullsrc"] = PrivateAttr("anullsrc")
+
+    samplerate: Annotated[float,
+        typer.Option("--samplerate", "-r", min=1)] = \
+        Field(default=44100, ge=1)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-f", "lavfi")
         yield ("-t", ffmpeg.time) * bool(ffmpeg.time)
         yield ("-i", f"anullsrc=channel_layout=stereo:sample_rate={self.samplerate}")
+
 
 class FFmpegPCM(BrokenEnum):
     """Raw pcm formats `ffmpeg -formats | grep PCM`"""
@@ -690,6 +881,7 @@ class FFmpegPCM(BrokenEnum):
 
 class FFmpegAudioCodecPCM(FFmpegModuleBase):
     """Raw pcm formats `ffmpeg -formats | grep PCM`"""
+    _codec: Literal["pcm"] = PrivateAttr("pcm")
     format: FFmpegPCM = Field(default=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -721,13 +913,20 @@ class FFmpegFilterBase(BaseModel, ABC):
 class FFmpegFilterScale(FFmpegFilterBase):
     width: int = Field(gt=0)
     height: int = Field(gt=0)
-    resample: Literal[
-        "lanczos",
-        "bicubic",
-        "fast_bilinear",
-        "point",
-        "spline",
-    ] = Field(default="lanczos")
+
+    class Resample(str, BrokenEnum):
+        Bilinear   = "bilinear"
+        Nearest    = "nearest"
+        Oversample = "oversample"
+        Lanczos    = "lanczos"
+        Spline     = "spline36"
+        EwaLanczos = "ewa_lanczos"
+        Gaussian   = "gaussian"
+        Mitchell   = "mitchell"
+
+    resample: Annotated[Resample,
+        typer.Option("--resample", "-r")] = \
+        Field(default=Resample.Lanczos)
 
     def string(self) -> str:
         return f"scale={self.width}:{self.height}:flags={self.resample}"
@@ -766,7 +965,7 @@ class SerdeBaseModel(BaseModel):
 
 # -------------------------------------------------------------------------------------------------|
 
-class BrokenFFmpeg(SerdeBaseModel):
+class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     """
     Your Premium (^Fluent) FFmpeg class in Python, safety checks and sane defaults
 
@@ -804,22 +1003,28 @@ class BrokenFFmpeg(SerdeBaseModel):
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#Advanced-options)
     """
 
-    loglevel: Literal[
-        "error",
-        "info",
-        "verbose",
-        "debug",
-        "warning",
-        "panic",
-        "fatal",
-    ] = Field(default="info")
+    class LogLevel(str, BrokenEnum):
+        Error   = "error"
+        Info    = "info"
+        Verbose = "verbose"
+        Debug   = "debug"
+        Warning = "warning"
+        Panic   = "panic"
+        Fatal   = "fatal"
 
-    hwaccel: Optional[Literal[
-        "auto",
-        "cuda",
-        "nvdec",
-        "vulkan",
-    ]] = Field(default=None)
+    loglevel: Annotated[LogLevel,
+        typer.Option("--loglevel", "-log")] = \
+        Field(default=LogLevel.Info)
+
+    class HardwareAcceleration(str, BrokenEnum):
+        Auto   = "auto"
+        CUDA   = "cuda"
+        NVDEC  = "nvdec"
+        Vulkan = "vulkan"
+
+    hwaccel: Annotated[Optional[HardwareAcceleration],
+        typer.Option("--hwaccel", "-hw")] = \
+        Field(default=None)
     """
     What device to bootstrap, for decoding with hardware acceleration. In practice, it's only useful
     when decoding from a source video file, might cause overhead on pipe input mode
@@ -831,7 +1036,7 @@ class BrokenFFmpeg(SerdeBaseModel):
     [**FFmpeg docs**](https://trac.ffmpeg.org/wiki/HWAccelIntro)
     """
 
-    threads: int = Field(default=0, gt=-1)
+    threads: int = Field(default=0, ge=1)
     """
     The number of threads the codec should use. Generally speaking, more threads yields worse quality
     and compression ratios, but drastically improves performance. It's not that bad though. Some
@@ -859,160 +1064,188 @@ class BrokenFFmpeg(SerdeBaseModel):
         return self
 
     # ---------------------------------------------------------------------------------------------|
+    # Recycling
+
+    def clear_inputs(self) -> Self:
+        self.inputs = list()
+        return self
+
+    def clear_filters(self) -> Self:
+        self.filters = list()
+        return self
+
+    def clear_outputs(self) -> Self:
+        self.outputs = list()
+        return self
+
+    def clear_video_codec(self) -> Self:
+        self.video_codec = None
+        return self
+
+    def clear_audio_codec(self) -> Self:
+        self.audio_codec = None
+        return self
+
+    def clear(self,
+        inputs: bool=True,
+        filters: bool=True,
+        outputs: bool=True,
+        video_codec: bool=True,
+        audio_codec: bool=True,
+    ) -> Self:
+        if inputs:      self.clear_inputs()
+        if filters:     self.clear_filters()
+        if outputs:     self.clear_outputs()
+        if video_codec: self.clear_video_codec()
+        if audio_codec: self.clear_audio_codec()
+        return self
+
+    # ---------------------------------------------------------------------------------------------|
     # Wrappers for all classes
 
     # Inputs and Outputs
 
+    def add_input(self, input: FFmpegInputType) -> Self:
+        self.inputs.append(input)
+        return self
+
     @functools.wraps(FFmpegInputPath)
     def input(self, path: Path, **kwargs) -> Self:
-        self.inputs.append(FFmpegInputPath(path=path, **kwargs))
-        return self
+        return self.add_input(FFmpegInputPath(path=path, **kwargs))
 
     @functools.wraps(FFmpegInputPipe)
     def pipe_input(self, **kwargs) -> Self:
-        self.inputs.append(FFmpegInputPipe(**kwargs))
+        return self.add_input(FFmpegInputPipe(**kwargs))
+
+    def typer_inputs(self, typer: BrokenTyper) -> None:
+        typer.command(FFmpegInputPath, post=self.add_input, name="input")
+        typer.command(FFmpegInputPipe, post=self.add_input, name="ipipe")
+
+    def add_output(self, output: FFmpegOutputType) -> Self:
+        self.outputs.append(output)
         return self
 
     @functools.wraps(FFmpegOutputPath)
     def output(self, path: Path, **kwargs) -> Self:
-        self.outputs.append(FFmpegOutputPath(path=path, **kwargs))
-        return self
+        return self.add_output(FFmpegOutputPath(path=path, **kwargs))
 
     @functools.wraps(FFmpegOutputPipe)
     def pipe_output(self, **kwargs) -> Self:
-        self.outputs.append(FFmpegOutputPipe(**kwargs))
-        return self
+        return self.add_output(FFmpegOutputPipe(**kwargs))
 
     # Video codecs
 
+    def set_video_codec(self, codec: FFmpegVideoCodecType) -> Self:
+        self.video_codec = codec
+        return self
+
     @functools.wraps(FFmpegVideoCodecH264)
     def h264(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecH264(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecH264(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecH264_NVENC)
     def h264_nvenc(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecH264_NVENC(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecH264_NVENC(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecH265)
     def h265(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecH265(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecH265(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecH265_NVENC)
     def h265_nvenc(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecH265_NVENC(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecH265_NVENC(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecVP9)
     def vp9(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecVP9(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecVP9(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
     def av1_aom(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecAV1_LIBAOM(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecAV1_LIBAOM(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
     def av1_svt(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecAV1_SVT(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecAV1_SVT(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecAV1_NVENC)
     def av1_nvenc(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecAV1_NVENC(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecAV1_NVENC(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecAV1_RAV1E)
     def av1_rav1e(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecAV1_RAV1E(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecAV1_RAV1E(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecRawvideo)
     def rawvideo(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecRawvideo(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecRawvideo(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecCopy)
     def copy_video(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecCopy(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecCopy(**kwargs))
 
     @functools.wraps(FFmpegVideoCodecNoVideo)
     def no_video(self, **kwargs) -> Self:
-        self.video_codec = FFmpegVideoCodecNoVideo(**kwargs)
-        return self
+        return self.set_video_codec(FFmpegVideoCodecNoVideo(**kwargs))
 
-    def apply_vcodec_str(self, codec: str) -> Self:
-        codec = codec.replace("_", "-").lower()
-        if   (codec == "h264"      ): self.h264()
-        elif (codec == "h264-nvenc"): self.h264_nvenc()
-        elif (codec == "h265"      ): self.h265()
-        elif (codec == "h265-nvenc"): self.h265_nvenc()
-        elif (codec == "hevc-nvenc"): self.h265_nvenc()
-        elif (codec == "vp9"       ): self.vp9()
-        elif (codec == "av1-aom"   ): self.av1_aom()
-        elif (codec == "av1-svt"   ): self.av1_svt()
-        elif (codec == "av1-nvenc" ): self.av1_nvenc()
-        elif (codec == "av1-rav1e" ): self.av1_rav1e()
-        else: raise ValueError(f"Unknown Video Codec: {codec}")
-        return self
+    def typer_vcodecs(self, typer: BrokenTyper) -> None:
+        with typer.panel("📦 (Exporting) Video encoder"):
+            typer.command(FFmpegVideoCodecH264,       post=self.set_video_codec, name="h264")
+            typer.command(FFmpegVideoCodecH264_NVENC, post=self.set_video_codec, name="h264-nvenc")
+            typer.command(FFmpegVideoCodecH265,       post=self.set_video_codec, name="h265")
+            typer.command(FFmpegVideoCodecH265_NVENC, post=self.set_video_codec, name="h265-nvenc")
+            typer.command(FFmpegVideoCodecVP9,        post=self.set_video_codec, name="vp9", hidden=True)
+            typer.command(FFmpegVideoCodecAV1_LIBAOM, post=self.set_video_codec, name="av1-aom", hidden=True)
+            typer.command(FFmpegVideoCodecAV1_SVT,    post=self.set_video_codec, name="av1-svt")
+            typer.command(FFmpegVideoCodecAV1_NVENC,  post=self.set_video_codec, name="av1-nvenc")
+            typer.command(FFmpegVideoCodecAV1_RAV1E,  post=self.set_video_codec, name="av1-rav1e")
 
     # Audio codecs
 
+    def set_audio_codec(self, codec: FFmpegAudioCodecType) -> Self:
+        self.audio_codec = codec
+        return self
+
     @functools.wraps(FFmpegAudioCodecAAC)
     def aac(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecAAC(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecAAC(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecMP3)
     def mp3(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecMP3(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecMP3(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecOpus)
     def opus(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecOpus(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecOpus(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecFLAC)
     def flac(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecFLAC(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecFLAC(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecPCM)
     def pcm(self, format: FFmpegAudioCodecPCM="pcm_f32le") -> Self:
-        self.audio_codec = FFmpegAudioCodecPCM(format=format)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecPCM(format=format))
 
     @functools.wraps(FFmpegAudioCodecCopy)
     def copy_audio(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecCopy(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecCopy(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecNone)
     def no_audio(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecNone(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecNone(**kwargs))
 
     @functools.wraps(FFmpegAudioCodecEmpty)
     def empty_audio(self, **kwargs) -> Self:
-        self.audio_codec = FFmpegAudioCodecEmpty(**kwargs)
-        return self
+        return self.set_audio_codec(FFmpegAudioCodecEmpty(**kwargs))
 
-    def apply_acodec_str(self, codec: str) -> Self:
-        codec = codec.lower()
-        if   (codec == "aac"   ): self.aac()
-        elif (codec == "mp3"   ): self.mp3()
-        elif (codec == "opus"  ): self.opus()
-        elif (codec == "flac"  ): self.flac()
-        elif (codec == "copy"  ): self.copy_audio()
-        elif (codec == "none"  ): self.no_audio()
-        elif (codec == "empty" ): self.empty_audio()
-        else: raise ValueError(f"Unknown Audio Codec: {codec}")
-        return self
+    def typer_acodecs(self, typer: BrokenTyper) -> None:
+        with typer.panel("📦 (Exporting) Audio encoder"):
+            typer.command(FFmpegAudioCodecAAC,   post=self.set_audio_codec, name="aac")
+            typer.command(FFmpegAudioCodecMP3,   post=self.set_audio_codec, name="mp3")
+            typer.command(FFmpegAudioCodecOpus,  post=self.set_audio_codec, name="opus")
+            typer.command(FFmpegAudioCodecFLAC,  post=self.set_audio_codec, name="flac")
+            typer.command(FFmpegAudioCodecCopy,  post=self.set_audio_codec, name="copy")
+            typer.command(FFmpegAudioCodecNone,  post=self.set_audio_codec, name="none")
+            typer.command(FFmpegAudioCodecEmpty, post=self.set_audio_codec, name="empty")
 
     # Filters
 
@@ -1056,8 +1289,8 @@ class BrokenFFmpeg(SerdeBaseModel):
         extend(("-stream_loop", self.stream_loop)*bool(self.stream_loop))
         extend("-threads", self.threads)
         extend("-hide_banner"*self.hide_banner)
-        extend("-loglevel", self.loglevel)
-        extend(("-hwaccel", self.hwaccel)*bool(self.hwaccel))
+        extend("-loglevel", denum(self.loglevel))
+        extend(("-hwaccel", denum(self.hwaccel))*bool(self.hwaccel))
         extend(self.inputs)
 
         # Note: https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs

@@ -229,6 +229,7 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
     will send all default ones overriden by the user commands. The 'post' method is called afterwards,
     for example `post = self.set_object` for back-communication between the caller and the instance"""
+    import typer
     from pydantic import BaseModel
 
     if not issubclass(this := type(instance), BaseModel):
@@ -241,6 +242,13 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
 
     wrapper.__signature__ = inspect.signature(instance.__class__)
     wrapper.__doc__ = instance.__doc__
+
+    # Inject docstring into typer.Option's help
+    for value in instance.model_fields.values():
+        for metadata in value.metadata:
+            if isinstance(metadata, type(typer.Option())):
+                metadata.help = (metadata.help or value.description)
+
     return wrapper
 
 def clamp(value: float, low: float=0, high: float=1) -> float:
@@ -293,6 +301,7 @@ def override(
     old: Optional[Any],
     new: Optional[Any],
 ) -> Optional[Any]:
+    """Returns 'new' only if it's not None, else keeps 'old' value"""
     if (new is None):
         return old
     return new
