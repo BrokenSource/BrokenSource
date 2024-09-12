@@ -929,7 +929,7 @@ class FFmpegFilterScale(FFmpegFilterBase):
         Field(default=Resample.Lanczos)
 
     def string(self) -> str:
-        return f"scale={self.width}:{self.height}:flags={self.resample}"
+        return f"scale={self.width}:{self.height}:flags={denum(self.resample)}"
 
 class FFmpegFilterVerticalFlip(FFmpegFilterBase):
     def string(self) -> str:
