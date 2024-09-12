@@ -13,7 +13,7 @@ class BrokenEnum(enum.Enum):
     @functools.lru_cache()
     def from_name(cls, name: str, *, lowercase: bool=True) -> Optional[enum.Enum]:
         """
-        Get enum members from their name
+        Get enum members from their name (name=value)
 
         Example:
             ```python

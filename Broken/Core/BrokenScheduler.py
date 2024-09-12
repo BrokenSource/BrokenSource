@@ -184,13 +184,13 @@ class BrokenScheduler:
         self.tasks.append(task)
         return task
 
-    def new(self, task: Callable, *a, **k) -> BrokenTask:
+    def new(self, task: Callable, **options) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.append(BrokenTask(task=task, *a, **k))
+        return self.append(BrokenTask(task=task, **options))
 
-    def once(self, task: Callable, *a, **k) -> BrokenTask:
+    def once(self, task: Callable, **options) -> BrokenTask:
         """Wraps around BrokenVsync for convenience"""
-        return self.append(BrokenTask(task=task, *a, **k, once=True))
+        return self.append(BrokenTask(task=task, **options, once=True))
 
     @property
     def enabled_tasks(self) -> Iterable[BrokenTask]:
@@ -205,8 +205,8 @@ class BrokenScheduler:
 
     def _sanitize(self) -> None:
         """Removes disabled 'once' clients"""
-        move = 0
         # Optimization: Replace first N clients with valid ones, then pop remaining pointers
+        move = 0
         for task in self.tasks:
             if task.should_live:
                 self.tasks[move] = task

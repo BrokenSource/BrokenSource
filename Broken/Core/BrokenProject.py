@@ -22,17 +22,12 @@ from rich.panel import Panel
 from typer import Context
 
 import Broken
-from Broken import (
-    BrokenLogging,
-    BrokenPath,
-    BrokenPlatform,
-    BrokenProfiler,
-    flatten,
-    log,
-    shell,
-)
+from Broken.Core import BrokenAttrs, flatten, shell
+from Broken.Core.BrokenLogging import BrokenLogging, log
+from Broken.Core.BrokenPath import BrokenPath
+from Broken.Core.BrokenPlatform import BrokenPlatform
+from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenTyper import BrokenTyper
-from Broken.Core.BrokenUtils import BrokenAttrs
 
 
 def mkdir(path: Path, resolve: bool=True) -> Path:

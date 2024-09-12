@@ -85,6 +85,7 @@
         {"tag": "todo",         "color": "#FF8C00"},
         {"tag": "note",         "color": "#584576"},
         {"tag": "//",           "color": "#98C379"},
+        {"tag": "nice",         "color": "#00FF00"},
         {"tag": "idea",         "color": "#B10DC9"},
         {"tag": "hack",         "color": "#FF2D00"},
         {"tag": "info",         "color": "#3498DB"},

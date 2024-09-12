@@ -11,52 +11,52 @@ class BrokenPlatform:
     Host Platform information, Cross Compilation targets and some utilities
     """
 
-    # Name of the current platform - (linux, windows, macos, bsd)
-    Name:         str  = platform.system().lower().replace("darwin", "macos")
+    Name: str = platform.system().lower().replace("darwin", "macos")
+    """Name of the current platform - (linux, windows, macos, bsd)"""
 
     # Booleans if the current platform is the following
-    OnLinux:      bool = (Name == "linux")
-    OnWindows:    bool = (Name == "windows")
-    OnMacOS:      bool = (Name == "macos")
-    OnBSD:        bool = (Name == "bsd")
+    OnLinux:   bool = (Name == "linux")
+    OnWindows: bool = (Name == "windows")
+    OnMacOS:   bool = (Name == "macos")
+    OnBSD:     bool = (Name == "bsd")
 
     # Platform release binaries extension and CPU architecture
-    Extension:    str  = (".exe" if OnWindows else ".bin")
-    Architecture: str  = (platform.machine().lower().replace("x86_64", "amd64"))
+    Extension:    str = (".exe" if OnWindows else ".bin")
+    Architecture: str = (platform.machine().lower().replace("x86_64", "amd64"))
 
     # Family of platforms
-    OnUnix:       bool = (OnLinux or OnMacOS or OnBSD)
+    OnUnix: bool = (OnLinux or OnMacOS or OnBSD)
 
     # Distro IDs: https://distro.readthedocs.io/en/latest/
-    LinuxDistro:  str  = distro.id()
+    LinuxDistro: str = distro.id()
 
     # # Booleans if the current platform is the following
 
     # Ubuntu-like
-    OnUbuntu:     bool = (LinuxDistro == "ubuntu")
-    OnDebian:     bool = (LinuxDistro == "debian")
-    OnMint:       bool = (LinuxDistro == "linuxmint")
-    OnRaspberry:  bool = (LinuxDistro == "raspbian")
-    OnUbuntuLike: bool = (OnUbuntu or OnDebian or OnMint or OnRaspberry)
+    OnUbuntu:    bool = (LinuxDistro == "ubuntu")
+    OnDebian:    bool = (LinuxDistro == "debian")
+    OnMint:      bool = (LinuxDistro == "linuxmint")
+    OnRaspberry: bool = (LinuxDistro == "raspbian")
+    UbuntuLike:  bool = (OnUbuntu or OnDebian or OnMint or OnRaspberry)
 
     # Arch-like
-    OnArch:       bool = (LinuxDistro == "arch")
-    OnManjaro:    bool = (LinuxDistro == "manjaro")
-    OnArchLike:   bool = (OnArch or OnManjaro)
+    OnArch:    bool = (LinuxDistro == "arch")
+    OnManjaro: bool = (LinuxDistro == "manjaro")
+    ArchLike:  bool = (OnArch or OnManjaro)
 
     # RedHat-like
-    OnFedora:     bool = (LinuxDistro == "fedora")
-    OnCentOS:     bool = (LinuxDistro == "centos")
-    OnRedHat:     bool = (LinuxDistro == "rhel")
-    OnRedHatLike: bool = (OnFedora or OnCentOS or OnRedHat)
+    OnFedora:   bool = (LinuxDistro == "fedora")
+    OnCentOS:   bool = (LinuxDistro == "centos")
+    OnRedHat:   bool = (LinuxDistro == "rhel")
+    FedoraLike: bool = (OnFedora or OnCentOS or OnRedHat)
 
     # Others
-    OnGentoo:     bool = (LinuxDistro == "gentoo")
+    OnGentoo: bool = (LinuxDistro == "gentoo")
 
     # BSD-like
-    OnOpenBSD:    bool = (LinuxDistro == "openbsd")
-    OnNetBSD:     bool = (LinuxDistro == "netbsd")
-    OnBSDLike:    bool = (OnOpenBSD or OnNetBSD)
+    OnFreeBSD: bool = (LinuxDistro == "freebsd")
+    OnOpenBSD: bool = (LinuxDistro == "openbsd")
+    OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)
 
     class Targets(BrokenEnum):
         """List of common platforms targets for releases"""
@@ -110,3 +110,33 @@ class BrokenPlatform:
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1
     PyScripts         = ("Scripts" if OnWindows else "bin")
     PyScriptExtension = (".cmd" if OnWindows else "")
+
+    class DeveloperMode:
+
+        @staticmethod
+        def enabled() -> bool:
+            if (os.system != "nt"):
+                return True
+            try:
+                import winreg
+                key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
+                value, _ = winreg.QueryValueEx(key, "AllowDevelopmentWithoutDevLicense")
+                winreg.CloseKey(key)
+                return bool(value)
+            except Exception:
+                return False
+
+        @staticmethod
+        def enable() -> bool:
+            if (os.system != "nt"):
+                return
+            try:
+                import winreg
+                key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+                key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)
+                winreg.SetValueEx(key, "AllowDevelopmentWithoutDevLicense", 0, winreg.REG_DWORD, 1)
+                winreg.CloseKey(key)
+                return True
+            except Exception:
+                return False

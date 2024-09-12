@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------------------------|
-# General fixes and safety
+# General fixes, improvements and safety
 
 import os
 import sys
@@ -20,14 +20,6 @@ os.environ["__GL_YIELD"] = "USLEEP"
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
-# Resolve relative paths and existing files on argv
-for _index, _item in enumerate(sys.argv):
-    if not any((_item.startswith(x) for x in ("./", "../", ".\\", "..\\"))):
-        continue
-    if not bool(Path(_item).suffix) and Path(_item).exists():
-        continue
-    sys.argv[_index] = str(Path(_item).expanduser().absolute())
-
 # Replace argv[0]=="-c" with PyApp's managed python
 if bool(os.getenv("PYAPP", None)):
     sys.argv[0] = sys.executable
@@ -39,9 +31,7 @@ if sys.version_info < (3, 11):
     typing.TypeAlias = TypeAlias
     typing.Self = Self
 
-# -------------------------------------------------------------------------------------------------|
-# Tracebacks
-
+# Pretty tracebacks
 if (os.getenv("RICH_TRACEBACK", "1") == "1"):
     import rich.traceback
     rich.traceback.install(width=None)
@@ -51,8 +41,12 @@ if (os.getenv("RICH_TRACEBACK", "1") == "1"):
 
 import importlib.metadata
 import importlib.resources
+import struct
 
-VERSION: str  = importlib.metadata.version("broken-source")
+BITNESS: int = (struct.calcsize("P") * 8)
+"""The word size of the Python interpreter (32, 64 bits)"""
+
+VERSION: str = importlib.metadata.version("broken-source")
 """The version of the Broken library, and subsequently all projects"""
 
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
@@ -68,22 +62,33 @@ PYPI: bool = ("site-packages" in __file__.lower())
 """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
 DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
-"""True if running from a Docker container (manual flag required)"""
+"""True if running from a Docker container""" # Fixme: Detect without manual flag
 
 GITHUB_CI: bool = bool(os.getenv("GITHUB_ACTIONS", False))
-"""True if running from a GitHub Actions CI environment"""
+"""True if running from a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
 
 WSL: bool = bool(Path("/usr/lib/wsl/lib").exists())
-"""True if running from a Windows Subsystem for Linux"""
+"""True if running from a Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
 
 RELEASE: bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
-"""True if running from any release binary build"""
+"""True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
 
 FROM_SOURCE: bool = (not RELEASE)
-"""True if running directly from the source code"""
+"""True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
+    BrokenAttrs,
+    BrokenFluent,
+    BrokenRelay,
+    BrokenSingleton,
+    BrokenWatchdog,
+    LazyImport,
+    Nothing,
+    OnceTracker,
+    Patch,
+    PlainTracker,
+    SameTracker,
     Stack,
     apply,
     clamp,
@@ -96,7 +101,8 @@ from Broken.Core import (
     image_hash,
     limited_ratio,
     nearest,
-    pydantic_cli,
+    override,
+    pydantic2typer,
     selfless,
     shell,
     temp_env,
@@ -113,26 +119,12 @@ from Broken.Core.BrokenSpinner import BrokenSpinner
 from Broken.Core.BrokenThread import BrokenThread, BrokenThreadPool
 from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
 from Broken.Core.BrokenTyper import BrokenTyper
-from Broken.Core.BrokenUtils import (
-    BrokenAttrs,
-    BrokenFluent,
-    BrokenRelay,
-    BrokenSingleton,
-    BrokenWatchdog,
-    Ignore,
-    LazyImport,
-    OnceTracker,
-    Patch,
-    PlainTracker,
-    SameTracker,
-)
 
 BROKEN = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
-    RESOURCES=BrokenResources
-)
+    RESOURCES=BrokenResources)
 """The main library's BrokenProject instance. Useful for common downloads and resources"""
 
 PROJECT = BROKEN

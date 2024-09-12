@@ -219,3 +219,4 @@ python_files = [
 
 [tool.pyright]
 exclude = [".venv/**"]
+typeCheckingMode = "off"

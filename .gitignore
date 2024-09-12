@@ -1,5 +1,6 @@
 # Monorepo
 .cache
+.venv
 Build
 Insiders
 Meta

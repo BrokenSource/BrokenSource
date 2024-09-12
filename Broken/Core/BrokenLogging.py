@@ -1,21 +1,17 @@
 import os
 import time
-from typing import Self
 
 import rich
 from loguru import logger as log
+
+from Broken.Core import BrokenSingleton
 
 # Don't log contiguous long paths
 console = rich.get_console()
 console.soft_wrap = True
 
-class BrokenLogging:
+class BrokenLogging(BrokenSingleton):
     LOG_START = time.perf_counter()
-
-    def __new__(cls) -> Self:
-        if not hasattr(cls, "_singleton"):
-            cls._singleton = super().__new__(cls)
-        return cls._singleton
 
     def __init__(self):
         self.make()

@@ -9,13 +9,14 @@ import PIL
 import PIL.Image
 import typer
 from PIL.Image import Image
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from Broken import BrokenEnum, BrokenResolution, denum
+from Broken.Externals import ExternalModelsBase
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
-class BrokenUpscaler(BaseModel, ABC):
+class BrokenUpscaler(ExternalModelsBase, ABC):
     model_config = ConfigDict(validate_assignment=True)
 
     width: Annotated[int, typer.Option("--width", "-w", min=0,
@@ -155,10 +156,16 @@ class BrokenUpscaler(BaseModel, ABC):
 # -------------------------------------------------------------------------------------------------|
 
 class PillowUpscaler(BrokenUpscaler):
+    def _load_model(self):
+        pass
+
     def _upscale(self, image: Image) -> Image:
         return image.resize(self.output_size(*image.size), PIL.Image.LANCZOS)
 
 class NoUpscaler(BrokenUpscaler):
+    def _load_model(self):
+        pass
+
     def upscale(self, *args, **kwargs) -> Image:
         return args[0]
 

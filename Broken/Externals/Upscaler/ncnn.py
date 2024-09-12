@@ -88,6 +88,9 @@ class UpscalerNCNN_Base(BrokenUpscaler):
         EXECUTABLE = self._binary_name() + (".exe"*BrokenPlatform.OnWindows)
         return BrokenPath.make_executable(next(BrokenPath.get_external(DOWNLOAD).rglob(EXECUTABLE)))
 
+    def _load_model(self):
+        self.download()
+
 # -------------------------------------------------------------------------------------------------|
 
 class Waifu2x(UpscalerNCNN_Base):

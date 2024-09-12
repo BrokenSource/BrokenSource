@@ -6,7 +6,7 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generator, Iterable, Set, Union
+from typing import Any, Callable, Generator, Iterable, List, Set, Union
 
 import click
 import typer
@@ -19,7 +19,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 import Broken
-from Broken import BrokenPlatform, apply, flatten, log, pydantic_cli
+from Broken import BrokenPlatform, apply, flatten, log, pydantic2typer
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -124,7 +124,7 @@ class BrokenTyper:
         _instance = (target() if isinstance(target, type) else target)
 
         if issubclass(_class, BaseModel):
-            target = pydantic_cli(instance=_instance, post=post)
+            target = pydantic2typer(instance=_instance, post=post)
             name = (name or _class.__name__)
             naih = True # (Complex command)
 
@@ -155,35 +155,61 @@ class BrokenTyper:
         BYPASS = (os.getenv("REPL", "1") == "0")
         return (self.repl and not BYPASS)
 
-    def __call__(self, *args: Iterable[Any]) -> None:
-        self.app.info.help = (self.description or "No help provided")
-        args = (flatten(args) or sys.argv[1:])
+    def repl_welcome(self) -> None:
+        console.print(Panel(
+            title="( 🔴🟡🟢 ) Welcome to the Interactive Shell mode for Releases 🚀",
+            title_align="left",
+            border_style="bold grey42",
+            expand=False,
+            renderable=Group(
+                Text.from_markup(
+                    "\nHere's your chance to [royal_blue1]run commands on a basic shell[/royal_blue1], interactively\n\n"
+                    "> This mode is [royal_blue1]Experimental[/royal_blue1] and projects might not work as expected\n\n"
+                    "• Preferably run the projects on a [royal_blue1]Terminal[/royal_blue1] as [spring_green1]./program.exe (args)[/spring_green1]\n"
+                    "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment variable\n"
+                ), Panel(
+                    "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
+                    "• Press [spring_green1]'CTRL+C'[/spring_green1] to exit this shell [bold bright_black](or close the Terminal)[/bold bright_black]",
+                    title="Tips",
+                    border_style="green"
+                )
+            ),
+        ))
 
-        for i in itertools.count():
+    def repl_prompt(self) -> bool:
+        try:
+            options = shlex.split(typer.prompt(
+                text="", prompt_suffix="❯",
+                show_default=False,
+                default=""
+            ))
+            options = apply(str, flatten(options))
+            sys.argv = [sys.executable, *options]
+        except click.exceptions.Abort:
+            log.trace("BrokenTyper Repl exit KeyboardInterrupt")
+            return False
+        return True
+
+    def __call__(self, *args: Iterable[Any]) -> None:
+        self.app.info.help = (self.description or "No help provided for this CLI")
+        sys.argv[1:] = (flatten(args) or sys.argv[1:])
+
+        for index in itertools.count():
 
             # On subsequent runs, prompt for command
-            if (self._repl) and (i > 0):
-                try:
-                    args = shlex.split(typer.prompt(
-                        text="",
-                        prompt_suffix="❯",
-                        show_default=False,
-                        default=""
-                    ))
-                except click.exceptions.Abort:
-                    log.trace("BrokenTyper exit KeyboardInterrupt")
+            if (self._repl) and (index > 0):
+                if not self.repl_prompt():
                     break
 
             # Insert default command if none
-            if self.default and not bool(args):
-                args.insert(0, self.default)
+            if self.default and not bool(sys.argv[1:]):
+                sys.argv.insert(1, self.default)
 
             # Update sys.argv with new str flat values
-            args = apply(str, flatten(args))
-            sys.argv = [sys.executable, *args]
+            sys.argv = apply(str, flatten(sys.argv))
 
             try:
-                self.app(args)
+                self.app(sys.argv[1:])
             except SystemExit:
                 log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:
@@ -194,30 +220,12 @@ class BrokenTyper:
                 break
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
-            if (i == 0) and bool(args):
+            if (index == 0) and bool(sys.argv[1:]):
                 break
 
             # Pretty welcome message on the first 'empty' run
-            if (i == 0):
-                console.print(Panel(
-                    title="( 🔴🟡🟢 ) Welcome to the Interactive Shell mode for Releases 🚀",
-                    title_align="left",
-                    border_style="bold grey42",
-                    expand=False,
-                    renderable=Group(
-                        Text.from_markup(
-                            "\nHere's your chance to [royal_blue1]run commands on a basic shell[/royal_blue1], interactively\n\n"
-                            "> This mode is [royal_blue1]Experimental[/royal_blue1] and projects might not work as expected\n\n"
-                            "• Preferably run the projects on a [royal_blue1]Terminal[/royal_blue1] as [spring_green1]./program.exe (args)[/spring_green1]\n"
-                            "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment variable\n"
-                        ), Panel(
-                            "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
-                            "• Press [spring_green1]'CTRL+C'[/spring_green1] to exit this shell [bold bright_black](or close the Terminal)[/bold bright_black]",
-                            title="Tips",
-                            border_style="green"
-                        )
-                    ),
-                ))
+            if (index == 0):
+                self.repl_welcome()
 
             # The args were "consumed"
-            args = []
+            sys.argv = sys.argv[:1]
