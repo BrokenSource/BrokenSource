@@ -323,8 +323,9 @@ class BrokenProject:
     """Send the importer's __init__.py's __file__ variable"""
 
     # App information
-    APP_NAME:   str
+    APP_NAME: str
     APP_AUTHOR: str
+    ABOUT: str = "No description provided"
 
     # Standard Broken objects for a project
     DIRECTORIES: _Directories = None
@@ -430,6 +431,7 @@ class BrokenApp(ABC, BrokenAttrs):
 
     def __post__(self):
         self.typer.release_repl()
+        self.typer.description = self.PROJECT.ABOUT
 
         with BrokenProfiler(self.PROJECT.APP_NAME):
             self.main()
@@ -479,7 +481,8 @@ class BrokenApp(ABC, BrokenAttrs):
             def run(ctx: Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))
-                namespace[name]().cli(*ctx.args)
+                sys.argv[1:] = ctx.args
+                namespace[name]().cli()
             return run
 
         # Match all scenes and their optional docstrings

@@ -23,8 +23,6 @@ from typing import (
 )
 
 import numpy
-import PIL
-import PIL.Image
 import typer
 from attrs import define
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
@@ -1276,7 +1274,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     def add_filter(self, filter: FFmpegFilterType) -> Self:
         self.filters.append(filter)
-        return
+        return self
 
     @functools.wraps(FFmpegFilterScale)
     def scale(self, **options) -> Self:
@@ -1374,6 +1372,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Resolution of ({path})", echo=echo)
+        import PIL
         return PIL.Image.open(io.BytesIO(shell(
             shutil.which("ffmpeg"), "-hide_banner", "-loglevel", "error",
             "-i", path, "-vframes", "1", "-f", "image2pipe", "-",

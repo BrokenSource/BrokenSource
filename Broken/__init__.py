@@ -39,16 +39,15 @@ if (os.getenv("RICH_TRACEBACK", "1") == "1"):
 # -------------------------------------------------------------------------------------------------|
 # Information about the release and version
 
-import importlib.resources
 import struct
-
-BITNESS: int = (struct.calcsize("P") * 8)
-"""The word size of the Python interpreter (32, 64 bits)"""
 
 from Broken.Version import __version__
 
 VERSION: str = __version__
 """The version of the Broken library, and subsequently all projects"""
+
+BITNESS: int = (struct.calcsize("P") * 8)
+"""The word size of the Python interpreter (32, 64 bits)"""
 
 PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
 """True if running from a PyInstaller binary build (https://github.com/pyinstaller/pyinstaller)"""
