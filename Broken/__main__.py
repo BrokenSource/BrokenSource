@@ -1,7 +1,8 @@
 import os
 import shutil
+import sys
 from pathlib import Path
-from typing import Annotated, List, Self
+from typing import Annotated, List, Self, Set
 
 import toml
 from attr import Factory, define
@@ -44,9 +45,9 @@ class ProjectCLI:
 
     def cli(self, ctx: Context) -> None:
         self.typer = BrokenTyper(help=False)
-        self.typer.command(self.update,  add_help_option=True)
-        self.typer.command(self.release, add_help_option=True)
-        self.typer.command(self.run,     add_help_option=False, default=True)
+        self.typer.command(self.update,  help=True)
+        self.typer.command(self.release, help=True)
+        self.typer.command(self.run,     help=False, context=True)
         with BrokenPath.pushd(self.path, echo=False):
             self.typer(ctx.args)
 
@@ -93,7 +94,7 @@ class ProjectCLI:
         return description
 
     @property
-    def languages(self) -> set[ProjectLanguage]:
+    def languages(self) -> Set[ProjectLanguage]:
         languages = set()
 
         # Best attempts to detect language
@@ -144,11 +145,11 @@ class ProjectCLI:
 
     # # Commands
 
-    def update(self, dependencies: bool=True, version: bool=True) -> None:
-
-        # # Dependencies
+    def update(self, dependencies: bool=True) -> None:
+        """✨ Update this project's dependencies"""
         if dependencies:
             if self.is_python:
+                raise NotImplementedError("Standalone Python projects are not supported yet")
                 shell("rye", "lock", "--update-all")
             if self.is_nodejs:
                 shell("pnpm", "update")
@@ -162,6 +163,7 @@ class ProjectCLI:
         clear: Annotated[bool, Option("--clear", help="Clear terminal before running")]=False,
         debug: Annotated[bool, Option("--debug", help="Debug mode for Rust projects")]=False,
     ) -> None:
+        """🔥 Run this project with all arguments that follow"""
 
         while True:
             BrokenPlatform.clear_terminal() if clear else None
@@ -205,7 +207,7 @@ class ProjectCLI:
         webui:  Annotated[bool, Option("--webui", help="Build a WebUI release with its own main entry point")]=False,
     ) -> None:
         """
-        Release the Project as a distributable binary
+        📦 Release the Project as a distributable binary
 
         Note:
             - Requires mingw packages for Windows cross compilation from Linux
@@ -223,7 +225,7 @@ class ProjectCLI:
                 self.release(target=item, torch=torch, webui=webui)
             return None
 
-        # Avoid bad combinations
+        # Avoid bad combinations (Windows + ROCM) (Non macOS => macOS)
         if (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
         if (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
 
@@ -349,13 +351,14 @@ class BrokenManager(BrokenSingleton):
             self.broken_typer.command(
                 target=project.cli,
                 name=project.name.lower(),
-                help=project.description_pretty_language,
+                description=project.description_pretty_language,
                 panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
-                add_help_option=False,
                 hidden=("Projects/Others" in str(project.path)),
+                context=True,
+                help=False,
             )
 
-        self.broken_typer()
+        self.broken_typer(sys.argv[1:])
 
     # ---------------------------------------------------------------------------------------------|
     # Repositories
@@ -399,10 +402,11 @@ class BrokenManager(BrokenSingleton):
 
         # What to temporarily replace
         replaces = {
-            '"Private/': '# "Private/', # Ignore private projects
-            '"0.0.0"': f'"{version}"',  # Pin current version
-            '>=0.0.0': f"=={version}",  # Pin dependencies version
             "#<pyapp>": ("" if _pyapp else "#"),
+            '"Private/': '# "Private/', # Ignore private projects
+            '"0.0.0"': f'"{version}"',  # Write current version
+            '>=0.0.0': f"=={version}",  # Pin broken projects version
+            '~=': '==',                 # Pin dependencies version
         }
 
         # We patch to include all projects on binary releases

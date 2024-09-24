@@ -75,7 +75,7 @@ class BrokenPath:
     def remove(path: Path, *, confirm=False, echo=True) -> Path:
 
         # Already removed or doesn't exist
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return path
 
         log.info(f"Removing Path ({path})", echo=echo)
@@ -228,7 +228,7 @@ class BrokenPath:
             return hashlib.sha256(data).hexdigest()
 
         # String or Path is a valid path
-        elif (path := BrokenPath.get(data, exists=True)):
+        elif (path := BrokenPath.get(data)).exists():
             with BrokenSpinner(log.info(f"Calculating sha256sum of ({path})")):
                 if path.is_file():
                     return hashlib.sha256(path.read_bytes()).hexdigest()

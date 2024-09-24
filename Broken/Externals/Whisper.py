@@ -89,7 +89,7 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         reference: Optional[str]=None
     ) -> Spoken:
         if isinstance(audio, str) or isinstance(audio, Path):
-            if not (audio := BrokenPath.get(audio, exists=True)):
+            if not (audio := BrokenPath.get(audio)).exists():
                 raise RuntimeError(f"Audio file doesn't exist: {audio}")
             audio = str(audio)
 

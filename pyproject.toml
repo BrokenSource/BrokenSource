@@ -53,11 +53,14 @@ dependencies = [
     # (LLM/ML/NN)
     "ollama~=0.3.3",
     # Enable all extra on pyapp binaries
-    #<pyapp>"broken-source[shaderflow]",
-    #<pyapp>"broken-source[gradio]",
+    #<pyapp>"broken-source[all]",
 ]
 
 [project.optional-dependencies]
+all = [
+    "broken-source[shaderflow]",
+    "broken-source[gradio]",
+]
 shaderflow = [
     "watchdog~=5.0.2",
     # Math
@@ -84,6 +87,7 @@ shaderflow = [
     "mido~=1.3.2",
     "python-rtmidi~=1.5.8",
     "ordered-set~=4.1.0",
+    "pytimeparse2>=1.7.1",
 ]
 gradio = [
     "gradio==4.44.0",

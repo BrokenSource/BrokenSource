@@ -346,6 +346,9 @@ class BrokenProject:
                 self.pyapp_new_binary_restore_hook()
                 Broken.PROJECT = self
 
+                if (BrokenPlatform.Administrator and not Broken.DOCKER):
+                    log.warning("Running as [red]Admin/Root[/red] is not required and discouraged")
+
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
             if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
@@ -461,13 +464,12 @@ class BrokenApp(ABC, BrokenAttrs):
 
         # Add commands of all files, exit if none was sucessfully added
         if (sum(map(lambda file: self.add_project(python=file, tag=tag), files)) == 0):
-            log.warning(f"No {self.PROJECT.APP_NAME} Projects found, searched in:")
+            log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in:")
             log.warning('\n'.join(map(lambda file: f"• {file}", files)))
-            exit(1)
 
     def regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
-        inheritance, and its optional docstring on the next line"""
+        inheritance substring, and its optional docstring on the next line"""
         return re.compile(
             r"^class\s+(\w+)\s*\(.*?(?:" + tag + r").*\):\s*(?:\"\"\"((?:\n|.)*?)\"\"\")?",
             re.MULTILINE
@@ -481,20 +483,19 @@ class BrokenApp(ABC, BrokenAttrs):
             def run(ctx: Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))
-                sys.argv[1:] = ctx.args
-                namespace[name]().cli()
+                namespace[name]().cli(*ctx.args)
             return run
 
         # Match all scenes and their optional docstrings
-        for match in self.regex(tag).finditer(code := python.read_text(encoding="utf-8")):
+        for match in self.regex(tag).finditer(code := python.read_text("utf-8")):
             class_name, docstring = match.groups()
             self.typer.command(
                 target=run(python, class_name, code),
                 name=class_name.lower(),
-                help=(docstring or "No description provided"),
+                description=(docstring or "No description provided"),
                 panel=f"📦 Projects at [bold]({python})[/bold]",
-                add_help_option=False,
                 context=True,
+                help=False,
             )
 
         return bool(self.typer.commands)

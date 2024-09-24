@@ -102,7 +102,7 @@ from Broken.Core import (
     image_hash,
     limited_ratio,
     nearest,
-    override,
+    overrides,
     pydantic2typer,
     selfless,
     shell,

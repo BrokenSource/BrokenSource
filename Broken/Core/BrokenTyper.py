@@ -52,27 +52,12 @@ class BrokenTyper:
     naih: bool = True
     """No args is help"""
 
-    help: bool = False
+    help: bool = True
 
     credits: str = (
         f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[/italic grey53]"
     )
-
-    def release_repl(self) -> None:
-        self.repl = all((
-            Broken.RELEASE,
-            not bool(sys.argv[1:]),
-            not BrokenPlatform.OnLinux
-        ))
-
-    @staticmethod
-    def release(single: Callable) -> None:
-        single()
-        # app = BrokenTyper()
-        # app.release_repl()
-        # app.command(single)
-        # app()
 
     class BaseModel(ABC, BaseModel):
         """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
@@ -105,11 +90,11 @@ class BrokenTyper:
 
     def command(self,
         target: Union[Callable, BaseModel],
-        help: str=None,
-        add_help_option: bool=True,
+        description: str=None,
+        help: bool=True,
         naih: bool=False,
         name: str=None,
-        context: bool=True,
+        context: bool=False,
         default: bool=False,
         panel: str=None,
         post: Callable=None,
@@ -121,11 +106,11 @@ class BrokenTyper:
         if getattr(target, "__isabstractmethod__", False):
             return
 
-        # Convert pydantic to a wrapper with same signature
         _class = (target if isinstance(target, type) else target.__class__)
-        _instance = (target() if isinstance(target, type) else target)
 
+        # Convert pydantic to a wrapper with same signature
         if issubclass(_class, BaseModel):
+            _instance = (target() if isinstance(target, type) else target)
             target = pydantic2typer(instance=_instance, post=post)
             name = (name or _class.__name__)
             naih = True # (Complex command)
@@ -141,8 +126,8 @@ class BrokenTyper:
         self.default = (name if default else self.default)
         self.commands.add(name)
         self.app.command(name=name,
-            help=(help or target.__doc__),
-            add_help_option=add_help_option,
+            help=(description or target.__doc__),
+            add_help_option=help,
             no_args_is_help=naih,
             rich_help_panel=(panel or self._panel),
             hidden=hidden,
@@ -157,6 +142,24 @@ class BrokenTyper:
     def _repl(self) -> bool:
         BYPASS = (os.getenv("REPL", "1") == "0")
         return (self.repl and not BYPASS)
+
+    def release_repl(self) -> None:
+        self.repl = all((
+            Broken.RELEASE,
+            not bool(sys.argv[1:]),
+            not BrokenPlatform.OnLinux
+        ))
+
+    @staticmethod
+    def release(single: Callable) -> None:
+        app = BrokenTyper()
+        app.release_repl()
+        app.command(
+            target=single,
+            help=False,
+            context=True
+        )
+        app(sys.argv[1:])
 
     def repl_welcome(self) -> None:
         console.print(Panel(
@@ -181,21 +184,22 @@ class BrokenTyper:
 
     def repl_prompt(self) -> bool:
         try:
-            options = shlex.split(typer.prompt(
+            sys.argv[1:] = shlex.split(typer.prompt(
                 text="", prompt_suffix="❯",
                 show_default=False,
                 default=""
             ))
-            options = apply(str, flatten(options))
-            sys.argv = [sys.executable, *options]
+            return True
         except click.exceptions.Abort:
             log.trace("BrokenTyper Repl exit KeyboardInterrupt")
-            return False
-        return True
+        return False
 
     def __call__(self, *args: Iterable[Any]) -> None:
+        """
+        Warn: Send sys.argv[1:] if running directly from user input
+        """
         self.app.info.help = (self.description or "No help provided for this CLI")
-        sys.argv[1:] = (flatten(args) or sys.argv[1:])
+        sys.argv[1:] = apply(str, flatten(args))
 
         for index in itertools.count():
 
@@ -207,9 +211,6 @@ class BrokenTyper:
             # Insert default command if none
             if self.default and not any((name in sys.argv for name in self.commands)):
                 sys.argv.insert(1, self.default)
-
-            # Update sys.argv with new str flat values
-            sys.argv = apply(str, flatten(sys.argv))
 
             try:
                 self.app(sys.argv[1:])

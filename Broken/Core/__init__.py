@@ -191,6 +191,7 @@ def filter_dict(
     block: Optional[Container[Any]] = None,
     allow: Optional[Container[Any]] = None,
 ) -> Dict[str, Any]:
+    """Filters a dictionary by removing 'block' or only allowing 'allow' keys"""
     if block:
         data = {key: value for key, value in data.items() if (key not in block)}
     if allow:
@@ -198,13 +199,27 @@ def filter_dict(
     return data
 
 def selfless(data: Dict) -> Dict:
+    """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
     return filter_dict(data, block=["self"])
 
+def border(name: str, substring: str) -> bool:
+    """Returns True if 'substring' is the border [^1] of 'name'
+
+    [^1]: https://en.wikipedia.org/wiki/Substring#Border
+    """
+    return (name.startswith(substring) and name.endswith(reversed(substring)))
+
 def dunder(name: str) -> bool:
-    return (name.startswith("__") and name.endswith("__"))
+    """Checks if a string is a double underscore '__name__'"""
+    return border(name, "__")
 
 def sunder(name: str) -> bool:
-    return (name.startswith("_") and not dunder(name))
+    """Checks if a string is a single underscore '_name_'"""
+    return (border(name, "_") and not dunder(name))
+
+def private(name: str) -> bool:
+    """Checks if a string is a private name"""
+    return name.startswith("_")
 
 @contextlib.contextmanager
 def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
@@ -298,7 +313,7 @@ def limited_ratio(
 
     return (int(num), int(den))
 
-def override(
+def overrides(
     old: Optional[Any],
     new: Optional[Any],
 ) -> Optional[Any]:

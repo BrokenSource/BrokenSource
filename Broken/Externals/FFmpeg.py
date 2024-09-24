@@ -123,7 +123,7 @@ class FFmpegOutputPath(FFmpegModuleBase):
         YUV420P = "yuv420p"
         YUV444P = "yuv444p"
 
-    pixel_format: Annotated[PixelFormat,
+    pixel_format: Annotated[Optional[PixelFormat],
         typer.Option("--pixel-format", "-p")] = \
         Field(default=PixelFormat.YUV420P)
 
@@ -148,7 +148,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
         RGB24 = "rgb24"
         RGBA  = "rgba"
 
-    pixel_format: Annotated[PixelFormat,
+    pixel_format: Annotated[Optional[PixelFormat],
         typer.Option("--pixel-format", "-p")] = \
         Field(default=PixelFormat.RGB24)
 
@@ -168,7 +168,7 @@ FFmpegOutputType = Union[
 
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
-    """Configure and use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/blue link] encoder"""
+    """Use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/blue link]"""
     _codec: Literal["h264"] = PrivateAttr("h264")
 
     class Preset(str, BrokenEnum):
@@ -256,7 +256,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
-    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/blue link] encoder"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/blue link]"""
     _codec: Literal["h264_nvenc"] = PrivateAttr("h264_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -357,7 +357,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
-    """Configure and use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/blue link] encoder"""
+    """Use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/blue link]"""
     _codec: Literal["h265"] = PrivateAttr("h265")
 
     crf: Annotated[int,
@@ -396,7 +396,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
-    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/blue link] encoder"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/blue link]"""
     _codec: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -499,7 +499,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
 # Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """Configure and use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/blue link] for VP9 encoding"""
+    """Use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/blue link] for VP9 encoding"""
     _codec: Literal["vp9"] = PrivateAttr("vp9")
 
     crf: Annotated[int,
@@ -569,7 +569,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
-    """Configure and use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/blue link] encoder"""
+    """Use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/blue link]"""
     _codec: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
 
     crf: Annotated[int,
@@ -593,7 +593,7 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
-    """Configure and use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/blue link] encoder"""
+    """Use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/blue link]"""
     _codec: Literal["librav1e"] = PrivateAttr("librav1e")
 
     qp: Annotated[int,
@@ -626,7 +626,7 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
-    """Configure and use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/blue link] encoder [dim light_coral](RTX 4000+ GPU)[/dim light_coral]"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/blue link] [dim light_coral](RTX 4000+ GPU)[/dim light_coral]"""
     _codec: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -755,7 +755,8 @@ FFmpegVideoCodecType: TypeAlias = Union[
 # -------------------------------------------------------------------------------------------------|
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
-    """Configure and use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
+    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
+
     _codec: Literal["aac"] = PrivateAttr("aac")
 
     bitrate: Annotated[int,
@@ -769,7 +770,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
-    """Configure and use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]Mpeg Layer 3 (MP3)[/blue link] audio codec"""
+    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[/blue link]"""
     _codec: Literal["mp3"] = PrivateAttr("mp3")
 
     bitrate: Annotated[int,
@@ -789,7 +790,7 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
-    """Configure and use the Opus audio codec"""
+    """Use the [blue link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[/blue link] audio codec"""
     _codec: Literal["libopus"] = PrivateAttr("libopus")
 
     bitrate: Annotated[int,
@@ -803,7 +804,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
-    """Configure and use the Free Lossless Audio Codec (FLAC)"""
+    """Use the [blue link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[/blue link]"""
     _codec: Literal["flac"] = PrivateAttr("flac")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -811,7 +812,7 @@ class FFmpegAudioCodecFLAC(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
-    """Copy the input's audio stream without re-encoding"""
+    """Copy the inputs' audio streams"""
     _codec: Literal["copy"] = PrivateAttr("copy")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -819,7 +820,7 @@ class FFmpegAudioCodecCopy(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecNone(FFmpegModuleBase):
-    """Remove any audio from the output, it simply doesn't exist"""
+    """Remove all audio tracks from the output"""
     _codec: Literal["none"] = PrivateAttr("none")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -827,7 +828,7 @@ class FFmpegAudioCodecNone(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecEmpty(FFmpegModuleBase):
-    """Adds a silent audio, videos could work incorrectly without audio"""
+    """Adds a silent stereo audio track"""
     _codec: Literal["anullsrc"] = PrivateAttr("anullsrc")
 
     samplerate: Annotated[float,
@@ -949,9 +950,7 @@ FFmpegFilterType: TypeAlias = Union[
 # -------------------------------------------------------------------------------------------------|
 
 class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
-    """
-    Your Premium (^Fluent) FFmpeg class in Python, safety checks and sane defaults
-    """
+    """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
 
     # ------------------------------------------|
     # Make all class available on BrokenFFmpeg.*
@@ -1055,8 +1054,8 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     threads: int = Field(default=0, ge=1)
     """
-    The number of threads the codec should use. Generally speaking, more threads yields worse quality
-    and compression ratios, but drastically improves performance. It's not that bad though. Some
+    The number of threads the codecs should use (). Generally speaking, more threads drastically
+    improves performance, at the cost of worse quality and compression ratios. It's not that bad though. Some
     codecs might not use all available CPU threads. '0' finds the optimal amount automatically
 
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options)
@@ -1266,9 +1265,9 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
             typer.command(FFmpegAudioCodecMP3,   post=self.set_audio_codec, name="mp3")
             typer.command(FFmpegAudioCodecOpus,  post=self.set_audio_codec, name="opus")
             typer.command(FFmpegAudioCodecFLAC,  post=self.set_audio_codec, name="flac")
-            typer.command(FFmpegAudioCodecCopy,  post=self.set_audio_codec, name="copy")
-            typer.command(FFmpegAudioCodecNone,  post=self.set_audio_codec, name="none")
-            typer.command(FFmpegAudioCodecEmpty, post=self.set_audio_codec, name="empty")
+            typer.command(FFmpegAudioCodecCopy,  post=self.set_audio_codec, name="audio-copy")
+            typer.command(FFmpegAudioCodecNone,  post=self.set_audio_codec, name="audio-none")
+            typer.command(FFmpegAudioCodecEmpty, post=self.set_audio_codec, name="audio-empty")
 
     # Filters
 
@@ -1368,7 +1367,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @functools.lru_cache
     def get_video_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Resolution of ({path})", echo=echo)
@@ -1382,7 +1381,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     def iter_video_frames(path: Path, *, skip: int=0, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         (width, height) = BrokenFFmpeg.get_video_resolution(path)
@@ -1404,7 +1403,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @functools.lru_cache
     def get_video_total_frames(path: Path, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video by decode voiding and parsing stats output"""
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         with BrokenSpinner(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
@@ -1417,7 +1416,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_video_duration(path: Path, *, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Duration of file ({path})", echo=echo)
@@ -1432,7 +1431,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_video_framerate(path: Path, *, precise: bool=False, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
@@ -1454,7 +1453,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_audio_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
@@ -1469,7 +1468,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_audio_channels(path: Path, *, stream: int=0, echo: bool=True) -> Optional[int]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
@@ -1483,7 +1482,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     @staticmethod
     def get_audio_duration(path: Path, *, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return
         try:
             generator = BrokenAudioReader(path=path, chunk=10).stream
@@ -1493,7 +1492,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     @staticmethod
     def get_audio_numpy(path: Path, *, echo: bool=True) -> Optional[numpy.ndarray]:
-        if not (path := BrokenPath.get(path, exists=True)):
+        if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
@@ -1545,7 +1544,7 @@ class BrokenAudioReader:
 
     @property
     def stream(self) -> Generator[numpy.ndarray, None, None]:
-        if not (path := BrokenPath.get(self.path, exists=True)):
+        if not (path := BrokenPath.get(self.path)).exists():
             return None
         self.path = path
 

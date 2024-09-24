@@ -1,3 +1,4 @@
+import ctypes
 import os
 import platform
 
@@ -140,3 +141,8 @@ class BrokenPlatform:
                 return True
             except Exception:
                 return False
+
+    try:
+        Administrator: bool = (os.getuid() == 0)
+    except AttributeError:
+        Administrator: bool = ctypes.windll.shell32.IsUserAnAdmin() != 0
