@@ -1,6 +1,6 @@
 #!/bin/bash
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.5
+# Script version: 2024.9.5
 
 { # Prevent execution if partially downloaded
 

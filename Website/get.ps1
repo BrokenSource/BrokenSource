@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.5
+# Script version: 2024.9.24
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution
@@ -40,7 +40,7 @@ function Have-Winget {
     # Attempt manual method if still not found
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         echo "Winget installation with Add-AppxPackage failed, trying 'manual' method.."
-        Print-Step "Downloading Winget installer, might take a while."
+        Print-Step "Downloading Winget installer, might take a while.."
 
         # Why tf does disabling progress bar yields 50x faster downloads????? https://stackoverflow.com/a/43477248
         $msi="https://github.com/microsoft/winget-cli/releases/download/v1.7.10582/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
@@ -49,7 +49,7 @@ function Have-Winget {
         Invoke-WebRequest -Uri $msi -OutFile $tempFile
 
         # Install the Appx package
-        echo "Finished download, now installing it.."
+        echo "Finished download, now installing it, can take a while on HDDs systems.."
         Add-AppxPackage -Path $tempFile
         Reload-Path
     }
@@ -59,12 +59,11 @@ function Have-Winget {
         Print-Step "Winget was not found, and installation failed with Add-AppxPackage"
         echo "Winget was installed but still not found. Probably a Path issue or installation failure"
         echo "> Please get it at https://learn.microsoft.com/en-us/windows/package-manager/winget"
-        echo "> Alternatively, install manually what previously failed"
+        echo "> Alternatively, install manually what was meant to be installed but failed"
         Ask-Continue
     }
 }
 
-# Install Git
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Print-Step "Git was not found, installing with Winget"
     Have-Winget
@@ -80,7 +79,6 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     }
 }
 
-# Install Rye
 if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
     Print-Step "Rye was not found, installing with Winget"
     Have-Winget
@@ -96,7 +94,7 @@ if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
     }
 }
 
-# Add %USERPROFILE%\.rye\shims to PATH permanently if not there
+# Add %USERPROFILE%\.rye\shims to PATH permanently if not already
 # This is where the main 'rye' tool is located, make it available
 $ryePath = $env:USERPROFILE + "\.rye\shims"
 if ($env:Path -notlike "*$ryePath*") {
@@ -127,6 +125,20 @@ rye config --set-bool behavior.autosync=true
 rye config --set-bool behavior.use-uv=true
 rye config --set-bool global-python=false
 rye sync
+
+# The PowerShell execution policy must allow for the Python activation script to run
+if ((Get-ExecutionPolicy -Scope CurrentUser) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
+    echo "`n(Warning) The current PowerShell ExecutionPolicy disallows activating the Python venv"
+    echo "> More info: https://github.com/microsoft/vscode-python/issues/2559"
+    echo "> Need any of: 'Unrestricted', 'RemoteSigned', or 'Bypass'"
+    echo "> Current ExecutionPolicy: '$(Get-ExecutionPolicy -Scope CurrentUser)'"
+
+    echo "`nDon't worry, we just need to run as admin the following:"
+    echo "> 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser'`n"
+    Read-Host "Press Enter to do it, or Ctrl+C to exit"
+
+    Start-Process powershell -Verb RunAs -ArgumentList "-Command Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
+}
 
 Print-Step "Spawning a new Shell in the Virtual Environment"
 powershell -NoLogo -NoExit -File .\.venv\Scripts\Activate.ps1
