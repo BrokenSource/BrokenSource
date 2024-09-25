@@ -44,6 +44,8 @@ nav:
     - Quick start:
       - ✅ Installation: depthflow/easy/install.md
       - ⭐️ Examples: depthflow/easy/examples.md
+    - Learn:
+      - Parameters: depthflow/learn/parameters.md
     - Code reference:
       - 📦 Package: code/depthflow/
 
@@ -75,6 +77,12 @@ nav:
 
 exclude_docs: |
   make.py
+
+watch:
+  - Broken
+  - Projects
+  - Scripts
+  - Website
 
 extra_css:
   - css/extra.css
