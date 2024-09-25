@@ -147,6 +147,6 @@ BROKEN = BrokenProject(
 """The main library's BrokenProject instance. Useful for common downloads and resources"""
 
 PROJECT = BROKEN
-"""The first BrokenProject initialized after, but including, BROKEN itself"""
+"""The first BrokenProject initialized after (but including) BROKEN itself"""
 
 # ------------------------------------------------------------------------------------------------ #

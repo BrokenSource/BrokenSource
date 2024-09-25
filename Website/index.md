@@ -4,7 +4,7 @@ title: Landing Page
 
 <div align="center">
   <a href="https://brokensrc.dev"><img src="./resources/images/broken.png" width="200"></a>
-  <h1>Broken Source Software</h1>
+  <h1 style="margin-top: 0">Broken Source Software</h1>
   I'm an <b>Open-Source Developer</b> dedicated on making <b>Useful Niched Software</b>
   <h6>My mission is simple: Give as much power to all my users as possible</h6>
 </div>
@@ -14,14 +14,14 @@ title: Landing Page
 
 ⭐️ Learn about my projects:
 
-- [**DepthFlow**](depthflow/index.md): Image to → 2.5D Parallax Effect Video
-- [**ShaderFlow**](shaderflow/index.md): Audio Reactive Shader Render engine
-- [**Pianola**](pianola/index.md): World's smoothest Piano Roll, spring physics
-- [**SpectroNote**](spectronote/index.md): Unlock a Hidden Perfect Pitch in You
+- [**DepthFlow**](site:depthflow): Image to → 2.5D Parallax Effect Video
+- [**ShaderFlow**](site:shaderflow): Audio Reactive Shader Render engine
+- [**Pianola**](site:pianola): World's smoothest Piano Roll, spring physics
+- [**SpectroNote**](site:spectronote): Unlock a Hidden Perfect Pitch in You
 
 <hr>
 
-💬 Join the [**Community**](about/contact.md) servers on **Discord** and **Telegram**
+💬 Join the [**Community**](site:about/contact) servers on **Discord** and **Telegram**
 
 <hr>
 

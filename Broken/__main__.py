@@ -312,7 +312,7 @@ class BrokenManager(BrokenSingleton):
         if not path.exists():
             return
 
-        IGNORED_DIRECTORIES = (".", "_", "modernglw", "workspace", "pyapp")
+        IGNORED_DIRECTORIES = (".", "_", "workspace", "pyapp")
 
         # Note: Avoid hidden, workspace, recursion
         for directory in path.iterdir():

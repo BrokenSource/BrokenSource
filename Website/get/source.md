@@ -3,7 +3,7 @@ title: Get/Source
 ---
 
 !!! quote "**The most flexible** way to use the Projects • Latest features, bugs, fixes, git clone"
-    **Recommended for**: Advanced users, Contributors, Developers
+    **Recommended for**: Basic++ users, Contributors, Developers
 
 ## ⚡️ Installing
 
@@ -22,17 +22,11 @@ title: Get/Source
         irm https://brokensrc.dev/get.ps1 | iex
         ```
 
-        <hr>
-
-        ??? success "Read what `get.ps1` does"
-            ```powershell
+        ??? success "Read what the [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1) script does"
+            The content below is a **verbatim copy** of the current live script on this website
+            ```powershell title=""
             {% include-markdown "get.ps1" %}
             ```
-
-        ??? quote "Enable <a href="https://rye.astral.sh/guide/faq/#windows-developer-mode" target="_blank">Developer Mode</a> for a Better Experience"
-            To have <a href="https://en.wikipedia.org/wiki/Symbolic_link" target="_blank"><b>Folder Shortcuts</b></a> (Symbolic Links) to the **Project's Workspace** Directory (Data, Downloads, Config, etc) where the Source Code is, please enable <a href="https://rye.astral.sh/guide/faq/#windows-developer-mode" target="_blank"><b>Developer Mode</b></a> on **Windows Settings** per **Rye FAQ**.
-
-            - This will also drastically speed up Virtual Environment creation
 
     === ":simple-linux: Linux"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
@@ -43,10 +37,9 @@ title: Get/Source
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
 
-        <hr>
-
-        ??? success "Read what `get.sh` does"
-            ```powershell
+        ??? success "Read what the [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) script does"
+            The content below is a **verbatim copy** of the current live script on this website
+            ```powershell title=""
             {% include-markdown "get.sh" %}
             ```
 
@@ -59,10 +52,9 @@ title: Get/Source
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
 
-        <hr>
-
-        ??? success "Read what `get.sh` does"
-            ```powershell
+        ??? success "Read what the [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) script does"
+            The content below is a **verbatim copy** of the current live script on this website
+            ```powershell title=""
             {% include-markdown "get.sh" %}
             ```
 
@@ -100,7 +92,7 @@ title: Get/Source
 
 <hr>
 
-??? bug "Something Failed?"
+??? question "Something Failed?"
     Try following the **Manual Instructions** Tab above, else [**Get in Touch**](../about/contact.md) with me, preferably Discord
 
     - Please, show some effort or try solving the problem first, often you'll get it :)

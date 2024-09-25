@@ -14,14 +14,6 @@ title: About/Contact
 
     [:octicons-arrow-right-24:{.lg .middle} **Join Server**](https://discord.gg/KjqvcYwRHm)
 
--   :fontawesome-brands-telegram:{.lg .middle} **Telegram**
-
-    I'm more "real time" here than Discord
-
-    - Larger uploads can be useful
-
-    [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource)
-
 -   :fontawesome-brands-github:{.lg .middle} **GitHub**
 
     Officialize your Requests or Issues
@@ -29,6 +21,14 @@ title: About/Contact
     - One repository per project
 
     [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories)
+
+-   :fontawesome-brands-telegram:{.lg .middle} **Telegram**
+
+    I'm more "real time" here than Discord
+
+    - Larger uploads can be useful
+
+    [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource)
 
 -   :fontawesome-solid-envelope:{.lg .middle} **Email** [^1]
 
@@ -42,7 +42,7 @@ title: About/Contact
 
 [^1]: Feel free to Direct Message me on [**Discord**](https://discord.com/users/183692720064299008) or [**Telegram**](https://t.me/Tremeschin) for Formal enquiries as well
 
-!!! note "I live on **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
+!!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
     - 🇧🇷 **Brazilian Portuguese**, my native language

@@ -10,6 +10,7 @@
 
     "material-icon-theme.folders.associations": {
         "Cloud": "aws",
+        "Easy": "other",
 
         // Rust
         "Rust": "src",

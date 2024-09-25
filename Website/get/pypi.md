@@ -22,7 +22,7 @@ title: Get/PyPI
 
     === ":simple-rye: Rye"
         ```shell title="Command"
-        rye add {package}
+        rye add {package} --pin equal
         ```
 
     === ":simple-pdm: PDM"
@@ -33,6 +33,15 @@ title: Get/PyPI
     ...where **`{package}`** is the **name of the project** you want to install:
 
     - [`depthflow`](https://pypi.org/project/depthflow/), [`shaderflow`](https://pypi.org/project/shaderflow/), [`broken-source`](https://pypi.org/project/broken-source/), [`pianola`](https://pypi.org/project/pianola/), [`spectronote`](https://pypi.org/project/spectronote/), [`turbopipe`](https://pypi.org/project/turbopipe/)
+
+??? warning "A **Python 64 bits** interpreter is required"
+    **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits[^1]
+
+    - ✅ Check your installation with: `python -c "import struct; print(struct.calcsize('P') * 8)"`
+    - This is specially important on **Windows** as [**python.org**](https://www.python.org/) front page links to 32 bit versions
+
+    [^1]: Most notably `imgui`, and moderate chance of issues with `torch`, `numpy`, etc.
+
 
 ## ⭐️ Usage
 After **Installing** the Package, you can simply import it in your Code
@@ -53,6 +62,7 @@ python -m DepthFlow input -i ./background.png main -o ./video.mp4
 ```
 
 - **For more,** go to the project tab of your interest above and see its usage
+
 
 ## 🚀 Upgrading
 

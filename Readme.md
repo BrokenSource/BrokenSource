@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://brokensrc.dev"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/main/Broken/Resources/Images/Broken.png" width="200"></a>
-  <h2>Broken Source Software</h2>
+  <h2 style="margin-top: 0">Broken Source Software</h2>
   Here lies <b>Broken</b>: The <b>Shared Library</b> and <b>Submodules</b> of all my <b>Projects</b>
   <br>
   <br>
@@ -15,6 +15,10 @@
 
 <br>
 
+# 🔥 Description
+
+> **Broken** is the shared library that powers all my projects • utilities of a lifetime
+
 - **🌟 Framework**: A solution for Unification and Consistency
 - **🚀 Automation**: Spend more time **using** the Projects
 
@@ -26,5 +30,3 @@
   <h3>✨ Check out my <a href="https://brokensrc.dev"><b>Awesome Website</b></a> instead of a boring Readme ✨</h3>
   <h5>Installation Guides, Usage, Tips, Code Reference and More!</h5>
 </div>
-
-###### <sub>© AGPLv3, Readme by [**Tremeschin**](https://github.com/Tremeschin) 🇧🇷</sub>
