@@ -8,10 +8,10 @@ from Broken import BrokenEnum, BrokenPlatform, log, shell
 
 # Note: @* suffix to avoid name collisions between Mac and CPU
 class TorchFlavor(BrokenEnum):
-    CPU   = "2.4.0+cpu@cpu"
-    CUDA  = "2.4.0+cu121@cuda"
-    ROCM  = "2.4.0+rocm6.1@rocm"
-    MACOS = "2.4.0+ignore@mac"
+    CPU   = "2.4.1+cpu@cpu"
+    CUDA  = "2.4.1+cu121@cuda"
+    ROCM  = "2.4.1+rocm6.1@rocm"
+    MACOS = "2.4.1+ignore@mac"
 
 class BrokenTorch:
     """

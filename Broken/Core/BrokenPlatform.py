@@ -131,7 +131,7 @@ class BrokenPlatform:
         @staticmethod
         def enable() -> bool:
             if (os.system != "nt"):
-                return
+                return True
             try:
                 import winreg
                 key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"

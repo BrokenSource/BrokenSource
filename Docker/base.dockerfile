@@ -4,7 +4,7 @@ WORKDIR /App
 
 # Base requirements
 RUN apt update && apt install -y python3 python3-pip python-is-python3 curl
-RUN pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu
+RUN pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install transformers
 
 # Fixme: Why BtbN FFmpeg binaries "are faster" than 'apt install ffmpeg'?
