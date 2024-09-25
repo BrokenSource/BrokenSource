@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Annotated, Optional, Union
 
 import numpy
 import typer
+from halo import Halo
 from intervaltree import IntervalTree
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,7 +16,6 @@ from Broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
-    BrokenSpinner,
     log,
     shell,
 )
@@ -96,7 +96,7 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         self.load_model()
         spoken = Spoken()
 
-        with BrokenSpinner(f"Transcribing audio with Whisper model ({self.model}).."):
+        with Halo(f"Transcribing audio with Whisper model ({self.model}).."):
             for segment in self._model.transcribe(
                 audio=audio,
                 word_timestamps=True,

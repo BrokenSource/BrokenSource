@@ -4,9 +4,10 @@ from typing import Annotated
 
 import ollama
 import typer
+from halo import Halo
 from pydantic import Field
 
-from Broken import BrokenPath, BrokenPlatform, BrokenSpinner, log, shell
+from Broken import BrokenPath, BrokenPlatform, log, shell
 from Broken.Externals import ExternalModelsBase
 
 
@@ -56,7 +57,7 @@ class BrokenOllama(ExternalModelsBase):
     ) -> str:
         self.load_model()
 
-        with BrokenSpinner(f"Ollama model ({self.model}) is thinking.."):
+        with Halo(f"Ollama model ({self.model}) is thinking.."):
             return ollama.generate(
                 model=self.model,
                 prompt=prompt,

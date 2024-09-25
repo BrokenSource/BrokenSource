@@ -12,12 +12,12 @@ from typing import Generator, List, Optional, Union
 import click
 import tqdm
 import validators
+from halo import Halo
 
 import Broken
 from Broken import apply, denum, flatten, log, shell
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenPlatform import BrokenPlatform
-from Broken.Core.BrokenSpinner import BrokenSpinner
 from Broken.Types import FileExtensions
 
 
@@ -229,7 +229,7 @@ class BrokenPath:
 
         # String or Path is a valid path
         elif (path := BrokenPath.get(data)).exists():
-            with BrokenSpinner(log.info(f"Calculating sha256sum of ({path})")):
+            with Halo(log.info(f"Calculating sha256sum of ({path})")):
                 if path.is_file():
                     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -274,7 +274,7 @@ class BrokenPath:
         else:
             # Show progress as this might take a while on slower IOs
             log.info(f"Extracting ({path})\n→ ({output})", echo=echo)
-            with BrokenSpinner("Extracting archive.."):
+            with Halo("Extracting archive.."):
                 shutil.unpack_archive(path, output)
             extract_flag.touch()
 

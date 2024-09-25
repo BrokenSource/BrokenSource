@@ -290,7 +290,7 @@ class ProjectCLI:
                 BrokenPath.make_executable(release_path)
                 log.success(f"Built Project Release at ({release_path})")
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 @define
 class BrokenManager(BrokenSingleton):
@@ -529,7 +529,7 @@ class BrokenManager(BrokenSingleton):
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 def main():
     with BrokenProfiler("BROKEN"):

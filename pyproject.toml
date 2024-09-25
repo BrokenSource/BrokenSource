@@ -50,6 +50,7 @@ dependencies = [
     "pyfiglet~=1.0.2",
     "loguru~=0.7.2",
     "python-magic~=0.4.27",
+    "halo~=0.0.31",
     # (LLM/ML/NN)
     "ollama~=0.3.3",
     # Enable all extra on pyapp binaries

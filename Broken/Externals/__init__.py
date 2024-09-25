@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Self
 
+from halo import Halo
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from Broken import (
-    BrokenSpinner,
     BrokenTorch,
     SameTracker,
 )
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     import diffusers
     import torch
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class ExternalTorchBase(BaseModel):
 
@@ -35,13 +35,13 @@ class ExternalTorchBase(BaseModel):
     def load_torch(self) -> None:
         global torch
         BrokenTorch.install()
-        with BrokenSpinner(text="Importing PyTorch..."):
+        with Halo(text="Importing PyTorch..."):
             import torch
 
         # Inject torch in the caller's global namespace
         inspect.currentframe().f_back.f_globals["torch"] = torch
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class ExternalModelsBase(BaseModel, ABC):
     model_config = ConfigDict(
@@ -70,4 +70,4 @@ class ExternalModelsBase(BaseModel, ABC):
     def _load_model(self) -> None:
         ...
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #

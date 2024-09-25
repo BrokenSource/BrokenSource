@@ -91,7 +91,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
     def _load_model(self):
         self.download()
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class Waifu2x(UpscalerNCNN_Base):
     """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/dim]"""
@@ -146,7 +146,7 @@ class Waifu2x(UpscalerNCNN_Base):
                 )
                 return PIL.Image.open(io.BytesIO(output.read_bytes()))
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class Realesr(UpscalerNCNN_Base):
     """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[/dim]"""
@@ -195,4 +195,4 @@ class Realesr(UpscalerNCNN_Base):
                 )
                 return PIL.Image.open(io.BytesIO(output.read_bytes()))
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #

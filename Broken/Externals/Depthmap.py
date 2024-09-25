@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Annotated, Any
 
 import numpy
 import typer
+from halo import Halo
 from PIL import Image
 from pydantic import Field, PrivateAttr
 
@@ -16,7 +17,6 @@ import Broken
 from Broken import (
     BrokenEnum,
     BrokenResolution,
-    BrokenSpinner,
     image_hash,
     log,
     shell,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     import diffusers
     import torch
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
@@ -54,7 +54,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         else:
             self.load_torch()
             self.load_model()
-            with self._lock, BrokenSpinner(f"Estimating Depthmap (Torch: {self.device})"):
+            with self._lock, Halo(f"Estimating Depthmap (Torch: {self.device})"):
                 torch.set_num_threads(max(4, multiprocessing.cpu_count()//2))
                 depth = self._estimate(image)
             depth = (self.normalize(depth) * 2**16).astype(numpy.uint16)
@@ -82,7 +82,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         """A step to apply post processing on the depth map if needed"""
         return depth
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class DepthAnythingBase(DepthEstimator):
     class Model(BrokenEnum):
@@ -137,7 +137,7 @@ class DepthAnythingV2(DepthAnythingBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class ZoeDepth(DepthEstimator):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
@@ -171,7 +171,7 @@ class ZoeDepth(DepthEstimator):
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         return depth
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class Marigold(DepthEstimator):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/dim]"""
@@ -209,4 +209,4 @@ class Marigold(DepthEstimator):
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         return depth
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #

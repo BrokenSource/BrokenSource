@@ -25,13 +25,13 @@ from typing import (
 import numpy
 import typer
 from attrs import define
+from halo import Halo
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
 
 from Broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
-    BrokenSpinner,
     SerdeBaseModel,
     denum,
     every,
@@ -43,7 +43,7 @@ from Broken import (
 from Broken.Core import BrokenFluent, BrokenTyper
 from Broken.Types import Bytes, Hertz, Seconds
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class FFmpegModuleBase(BaseModel, ABC):
     model_config = ConfigDict(
@@ -55,7 +55,7 @@ class FFmpegModuleBase(BaseModel, ABC):
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         ...
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class FFmpegInputPath(FFmpegModuleBase):
     _type: Literal["path"] = PrivateAttr("path")
@@ -106,7 +106,7 @@ FFmpegInputType: TypeAlias = Union[
     FFmpegInputPipe,
 ]
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class FFmpegOutputPath(FFmpegModuleBase):
     _type: Literal["path"] = PrivateAttr("path")
@@ -163,7 +163,7 @@ FFmpegOutputType = Union[
     FFmpegOutputPath,
 ]
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 # Todo: QSV, AMF, VVC ?
 
 # Note: See full help with `ffmpeg -h encoder=h264`
@@ -752,7 +752,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecCopy,
 ]
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
     """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
@@ -899,7 +899,7 @@ FFmpegAudioCodecType: TypeAlias = Union[
     FFmpegAudioCodecPCM,
 ]
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class FFmpegFilterBase(BaseModel, ABC):
 
@@ -947,7 +947,7 @@ FFmpegFilterType: TypeAlias = Union[
     FFmpegFilterCustom
 ]
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
@@ -1406,7 +1406,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         if not (path := BrokenPath.get(path)).exists():
             return None
         BrokenFFmpeg.install()
-        with BrokenSpinner(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
+        with Halo(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
             return int(re.compile(r"frame=\s*(\d+)").findall((
                 BrokenFFmpeg(vsync="cfr")
                 .input(path=path)
@@ -1498,7 +1498,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
         return numpy.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 # BrokenFFmpeg Spin-offs
 
 @define

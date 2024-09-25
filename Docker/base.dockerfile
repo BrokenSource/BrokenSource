@@ -12,14 +12,14 @@ ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
 ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
 RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 # Audio
 
 # SoundCard needs libpulse.so and server
 RUN apt install -y pulseaudio
 RUN adduser root pulse-access
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 # Broken Source stuff
 
 # Use uv for faster package installation
@@ -40,7 +40,7 @@ ENV DOCKER_RUNTIME="1"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 EXPOSE 7860
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 # NVIDIA
 
 # Basic required configuration
@@ -52,7 +52,7 @@ ENV WINDOW_BACKEND="headless"
 ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
-# -------------------------------------------------------------------------------------------------|
+# ------------------------------------------------------------------------------------------------ #
 
 # Install development version of broken-source
 COPY . /App
