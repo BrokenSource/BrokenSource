@@ -1,55 +1,130 @@
+/* ---------------------------------------------------------------------------------------------- */
+
+/* Justify all text */
+.md-typeset p {
+  text-align: justify;
+}
+
+/* Hide "Important" admonition, GitHub alerts workaround */
+.md-typeset .admonition.important,
+.md-typeset details.important {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
 
 /* https://squidfunk.github.io/mkdocs-material/reference/admonitions/#classic-admonitions */
 .md-typeset .admonition,
 .md-typeset details {
-    border-width: 0;
-    border-left-width: 4px;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+  border-width: 0;
+  border-left-width: 4px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Un-bold Admonition titles */
 .md-typeset .admonition-title,
 .md-typeset details summary {
-    font-weight: normal;
-}
-
-/* Justify all text */
-.md-typeset p {
-    text-align: justify;
+  font-weight: normal;
 }
 
 .doc-label {
-    border-radius: 15px;
-    padding: 2px 8px;
-    font-weight: bold;
+  border-radius: 15px;
+  padding: 2px 8px;
+  font-weight: bold;
 }
 
-/* I'm not Walter White */
-.doc-symbol-parameter::after {
-    content: "argument";
+/* ------------------------------------ Tables configuration ------------------------------------ */
+/* https://github.com/squidfunk/mkdocs-material/issues/3430#issuecomment-1005966126 */
+.md-typeset .md-typeset__table {
+  display: block;
+}
+.md-typeset__table table:not([class]) {
+  display: table;
 }
 
-.doc-symbol-attribute::after {
-    content: "attribute";
+/* Always align table headers */
+table > thead > tr > th {
+  text-align: center !important;
 }
 
-.doc-symbol-function::after {
-    content: "function";
+/* Stretch a button to the full width */
+.md-button--stretch {
+  text-align: center;
+  width: 100%;
 }
 
-.doc-symbol-method::after {
-    content: "method";
+/* Disabled buttons */
+.md-button--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
 }
 
-.doc-symbol-class::after {
-    content: "class";
+/* Elegant button */
+.md-button--elegant {
+  border: 1px solid !important;
 }
 
-.doc-symbol-module::after {
-    content: "module";
+/* Spread content tabs to full width */
+.tabbed-labels--linked label {
+  text-align: center;
+  flex: 1;
 }
 
-/* Custom Admonitions */
+/* ----------------------------------- Code reference styling ----------------------------------- */
+
+/* https://mkdocstrings.github.io/python/usage/customization */
+
+/* Add indentation for all .doc-contents */
+.doc-contents:not(.first) {
+  padding-left: 25px;
+}
+
+/* Apply left border only on .doc-class */
+.doc-class > .doc-contents:not(.first) {
+  border-left: .1rem solid var(--md-typeset-table-color);
+}
+
+.doc-attribute, .doc-function {
+  border: 1px solid var(--md-typeset-table-color);
+  border-radius: 4px;
+  padding-left: 6px;
+  padding-right: 8px;
+  padding-bottom: 2px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.doc-attribute h4, .doc-function h4 {
+  margin: 0;
+}
+
+h2.doc.doc-heading {
+  font-weight: bold;
+}
+
+/* ------------------------------------------ Write-ups ----------------------------------------- */
+
+/* Paper titles */
+.paper-title {
+  font-size: 1em;
+  font-weight: bold;
+  font-family: "Times New Roman", serif;
+}
+
+/* Drop cap */
+.the {
+  float: left;
+  font-size: 3em;
+  line-height: 0.8em;
+  padding-top: 0.1em;
+  padding-right: 0.1em;
+  padding-left: 0.1em;
+  font-family: "Times New Roman", serif;
+  font-weight: bold;
+}
+
+/* ------------------------------------- Custom Admonitions ------------------------------------- */
 
 :root {
   --md-admonition-icon--heart: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/></svg>')
@@ -69,53 +144,9 @@
           mask-image: var(--md-admonition-icon--heart);
 }
 
-/* Hide "Important" admonition, GitHub alerts workaround */
-.md-typeset .admonition.important,
-.md-typeset details.important {
-  display: none;
-}
-
 /* [data-md-color-scheme="slate"] {
 --md-default-bg-color: hsla(0, 0%, 10%, 1);
 --md-default-bg-color--light: hsla(0, 0%, 25%, 0.54);
 --md-default-bg-color--lighter: hsla(0, 0%, 27.5%, 0.26);
 --md-default-bg-color--lightest: hsla(0, 0%, 30%, 0.07);
 } */
-
-/* https://github.com/squidfunk/mkdocs-material/issues/3430#issuecomment-1005966126 */
-.md-typeset .md-typeset__table {
-    display: block;
-}
-
-.md-typeset__table table:not([class]) {
-    display: table;
-}
-
-/* Always align table headers */
-table > thead > tr > th {
-    text-align: center !important;
-}
-
-/* Stretch a button to the full width */
-.md-button--stretch {
-    text-align: center;
-    width: 100%;
-}
-
-/* Disabled buttons */
-.md-button--disabled {
-    cursor: not-allowed;
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-/* Elegant button */
-.md-button--elegant {
-    border: 1px solid !important;
-}
-
-/* Spread content tabs to full width */
-.tabbed-labels--linked label {
-  text-align: center;
-  flex: 1;
-}

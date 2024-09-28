@@ -45,7 +45,8 @@ nav:
       - ✅ Installation: depthflow/easy/install.md
       - ⭐️ Examples: depthflow/easy/examples.md
     - Learn:
-      - Parameters: depthflow/learn/parameters.md
+      - 📜 Paper: depthflow/paper.md
+      - 🔧 Parameters: depthflow/learn/parameters.md
     - Code reference:
       - 📦 Package: code/depthflow/
 
@@ -83,9 +84,6 @@ watch:
   - Projects
   - Scripts
   - Website
-
-extra_css:
-  - css/extra.css
 
 theme:
   name: material
@@ -136,16 +134,16 @@ plugins:
   # - meta
   - blog:
       blog_dir: "news"
-      post_url_date_format: yyyy
+      post_url_date_format: yyyy/MM
       draft: true
   - social:
       cards_layout_options:
         font_family: Roboto Slab
         background_color: "#4854b4"
   - search
+  # - privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641
   - autorefs
   - site-urls
-  - privacy
   - literate-nav
   - gen-files:
       scripts:
@@ -153,20 +151,21 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          load_external_modules: true
 
           # https://mkdocstrings.github.io/python/usage
           options:
 
             # General
-            show_bases: false
-            show_source: true
+            show_bases: true
+            show_source: false
 
             # Headings
-            # heading_level: 2
+            heading_level: 2
             show_root_heading: true
             show_root_toc_entry: true
             show_root_full_path: true
-            show_root_members_full_path: true
+            show_root_members_full_path: false
             show_object_full_path: false
             show_category_heading: true
             show_symbol_type_heading: true
@@ -177,8 +176,7 @@ plugins:
             members_order: "source"
             group_by_category: false
             show_submodules: false
-            summary: true
-            show_labels: true
+            show_labels: false
 
             # Docstrings
             docstring_style: google
@@ -194,9 +192,9 @@ plugins:
             line_length: 60
 
   - minify:
-      minify_html: false
-      minify_js: false
-      minify_css: false
+      minify_html: true
+      minify_js: true
+      minify_css: true
       htmlmin_opts:
           remove_comments: true
       cache_safe: true
@@ -212,7 +210,6 @@ plugins:
       # end: <!--end-->
 
 markdown_extensions:
-  - pymdownx.arithmatex
   - pymdownx.magiclink
   - pymdownx.critic
   - pymdownx.caret
@@ -246,6 +243,15 @@ markdown_extensions:
   - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_css:
+  - css/extra.css
+
+extra_javascript:
+  - javascript/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 extra:
   social:

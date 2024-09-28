@@ -169,7 +169,7 @@ FFmpegOutputType = Union[
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
     """Use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/blue link]"""
-    _codec: Literal["h264"] = PrivateAttr("h264")
+    _type: Literal["h264"] = PrivateAttr("h264")
 
     class Preset(str, BrokenEnum):
         None_     = None
@@ -257,7 +257,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/blue link]"""
-    _codec: Literal["h264_nvenc"] = PrivateAttr("h264_nvenc")
+    _type: Literal["h264-nvenc"] = PrivateAttr("h264-nvenc")
 
     class Preset(str, BrokenEnum):
         None_                     = None
@@ -332,12 +332,12 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
         Field(default=False)
     """Enable Constant Bitrate mode"""
 
-    gpu: Annotated[int,
+    gpu: Annotated[Optional[int],
         typer.Option("--gpu", "-g", min=0)] = \
         Field(default=0, ge=0)
     """Use the Nth NVENC capable GPU for encoding, 0 for first available"""
 
-    cq: Annotated[int,
+    cq: Annotated[Optional[int],
         typer.Option("--cq", "-q", min=0)] = \
         Field(default=25, ge=0)
     """(VBR) Similar to CRF, 0 is automatic, 1 is 'lossless', 51 is the worst quality"""
@@ -358,7 +358,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
     """Use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/blue link]"""
-    _codec: Literal["h265"] = PrivateAttr("h265")
+    _type: Literal["h265"] = PrivateAttr("h265")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=0, max=51)] = \
@@ -397,7 +397,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/blue link]"""
-    _codec: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
+    _type: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
 
     class Preset(str, BrokenEnum):
         HighQuality2Passes        = "slow"
@@ -500,7 +500,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 # Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
     """Use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/blue link] for VP9 encoding"""
-    _codec: Literal["vp9"] = PrivateAttr("vp9")
+    _type: Literal["vp9"] = PrivateAttr("vp9")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=1, max=63)] = \
@@ -545,7 +545,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
     """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
     • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
     """
-    _codec: Literal["libaom-av1"] = PrivateAttr("libaom-av1")
+    _type: Literal["libaom-av1"] = PrivateAttr("libaom-av1")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=1, max=63)] = \
@@ -570,7 +570,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
     """Use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/blue link]"""
-    _codec: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
+    _type: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=1, max=63)] = \
@@ -594,7 +594,7 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
     """Use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/blue link]"""
-    _codec: Literal["librav1e"] = PrivateAttr("librav1e")
+    _type: Literal["librav1e"] = PrivateAttr("librav1e")
 
     qp: Annotated[int,
         typer.Option("--qp", "-q", min=-1)] = \
@@ -627,7 +627,7 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/blue link] [dim light_coral](RTX 4000+ GPU)[/dim light_coral]"""
-    _codec: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
+    _type: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
 
     class Preset(str, BrokenEnum):
         Default              = "default"
@@ -717,21 +717,21 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
 
 
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
-    _codec: Literal["rawvideo"] = PrivateAttr("rawvideo")
+    _type: Literal["rawvideo"] = PrivateAttr("rawvideo")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "rawvideo")
 
 
 class FFmpegVideoCodecNoVideo(FFmpegModuleBase):
-    _codec: Literal["null"] = PrivateAttr("null")
+    _type: Literal["null"] = PrivateAttr("null")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "null")
 
 
 class FFmpegVideoCodecCopy(FFmpegModuleBase):
-    _codec: Literal["copy"] = PrivateAttr("copy")
+    _type: Literal["copy"] = PrivateAttr("copy")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "copy")
@@ -756,8 +756,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
     """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
-
-    _codec: Literal["aac"] = PrivateAttr("aac")
+    _type: Literal["aac"] = PrivateAttr("aac")
 
     bitrate: Annotated[int,
         typer.Option("--bitrate", "-b", min=1)] = \
@@ -771,7 +770,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
     """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[/blue link]"""
-    _codec: Literal["mp3"] = PrivateAttr("mp3")
+    _type: Literal["mp3"] = PrivateAttr("mp3")
 
     bitrate: Annotated[int,
         typer.Option("--bitrate", "-b", min=1)] = \
@@ -791,7 +790,7 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
     """Use the [blue link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[/blue link] audio codec"""
-    _codec: Literal["libopus"] = PrivateAttr("libopus")
+    _type: Literal["libopus"] = PrivateAttr("libopus")
 
     bitrate: Annotated[int,
         typer.Option("--bitrate", "-b", min=1)] = \
@@ -805,7 +804,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
     """Use the [blue link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[/blue link]"""
-    _codec: Literal["flac"] = PrivateAttr("flac")
+    _type: Literal["flac"] = PrivateAttr("flac")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "flac")
@@ -813,7 +812,7 @@ class FFmpegAudioCodecFLAC(FFmpegModuleBase):
 
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
     """Copy the inputs' audio streams"""
-    _codec: Literal["copy"] = PrivateAttr("copy")
+    _type: Literal["copy"] = PrivateAttr("copy")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:a", "copy")
@@ -821,7 +820,7 @@ class FFmpegAudioCodecCopy(FFmpegModuleBase):
 
 class FFmpegAudioCodecNone(FFmpegModuleBase):
     """Remove all audio tracks from the output"""
-    _codec: Literal["none"] = PrivateAttr("none")
+    _type: Literal["none"] = PrivateAttr("none")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-an")
@@ -829,7 +828,7 @@ class FFmpegAudioCodecNone(FFmpegModuleBase):
 
 class FFmpegAudioCodecEmpty(FFmpegModuleBase):
     """Adds a silent stereo audio track"""
-    _codec: Literal["anullsrc"] = PrivateAttr("anullsrc")
+    _type: Literal["anullsrc"] = PrivateAttr("anullsrc")
 
     samplerate: Annotated[float,
         typer.Option("--samplerate", "-r", min=1)] = \
@@ -881,7 +880,7 @@ class FFmpegPCM(BrokenEnum):
 
 class FFmpegAudioCodecPCM(FFmpegModuleBase):
     """Raw pcm formats `ffmpeg -formats | grep PCM`"""
-    _codec: Literal["pcm"] = PrivateAttr("pcm")
+    _type: Literal["pcm"] = PrivateAttr("pcm")
     format: FFmpegPCM = Field(default=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -1052,7 +1051,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     [**FFmpeg docs**](https://trac.ffmpeg.org/wiki/HWAccelIntro)
     """
 
-    threads: int = Field(default=0, ge=1)
+    threads: int = Field(default=0, ge=0)
     """
     The number of threads the codecs should use (). Generally speaking, more threads drastically
     improves performance, at the cost of worse quality and compression ratios. It's not that bad though. Some

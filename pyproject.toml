@@ -21,7 +21,7 @@ requires-python = ">=3.9"
 dependencies = [
     # Data Structures
     "attrs~=24.2.0",
-    "pydantic~=2.9.1",
+    "pydantic~=2.9.2",
     "dotmap~=1.3.30",
     "validators~=0.34.0",
     "diskcache~=5.6.3",
@@ -34,8 +34,8 @@ dependencies = [
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    "setuptools~=74.1.2",
-    "uv~=0.4.9",
+    "setuptools~=75.1.0",
+    "uv~=0.4.16",
     # "yt-dlp~=2024.5.27",
     # Utils
     "arrow~=1.3.0",
@@ -64,6 +64,7 @@ all = [
 ]
 shaderflow = [
     "watchdog~=5.0.2",
+    "pytimeparse2~=1.7.1",
     # Math
     "numpy-quaternion~=2023.0.4",
     "opensimplex~=0.4.5.1",
@@ -88,7 +89,6 @@ shaderflow = [
     "mido~=1.3.2",
     "python-rtmidi~=1.5.8",
     "ordered-set~=4.1.0",
-    "pytimeparse2>=1.7.1",
 ]
 gradio = [
     "gradio==4.44.0",
@@ -104,12 +104,13 @@ website = [
     "mkdocs-autorefs~=1.2.0",
     "mkdocs-literate-nav~=0.6.1",
     "mkdocs-section-index~=0.3.9",
-    "mkdocs-material[imaging]~=9.5.34",
+    "mkdocs-material[imaging]~=9.5.38",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-git-revision-date-localized-plugin~=1.2.9",
     "mkdocs-include-markdown-plugin~=6.2.2",
     "mkdocs-site-urls~=0.2.0",
     "markdown-callouts~=0.4.0",
+    "black~=24.8.0",
 ]
 
 [project.scripts]
@@ -121,7 +122,7 @@ universal = true
 dev-dependencies = [
     # Development and Utilities
     "pytest-sugar~=1.0.0",
-    "poethepoet~=0.28.0",
+    "poethepoet~=0.29.0",
     # Profiling
     "snakeviz~=2.2.0",
     "tuna~=0.5.11",

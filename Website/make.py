@@ -31,18 +31,9 @@ manager = BrokenManager()
 def lower(string: str) -> str:
     return string.lower()
 
-def dunder2markdown(string: str) -> str:
-    string = string.replace("__init__", "init")
-    string = string.replace("__main__", "main")
-    return string
-
-def dunder2navbar(string: str) -> str:
-    string = string.replace("__init__", "`__init__`")
-    string = string.replace("__main__", "`__main__`")
-    return string
-
-def noinit(string: str) -> str:
+def path2package(string: str) -> str:
     string = string.replace("__init__", "")
+    string = string.replace(".py", "")
     return string
 
 def parts(path: Path, *functions: Callable[[str], str]) -> Path:
@@ -63,7 +54,6 @@ class Directory(BrokenEnum):
     Root      = "root"
     Package   = "package"
     Website   = "website"
-    Examples  = "examples"
     Resources = "resources"
 
 @define
@@ -80,12 +70,15 @@ class BrokenWebsite:
     website: Path = field(converter=Path)
     """What subdirectory to put on the website"""
 
+    @property
+    def name(self) -> str:
+        return self.package.name
+
     def __attrs_post_init__(self):
         sys.path.append(self.package)
         self.make(self.root,    type=Directory.Root)
         self.make(self.package, type=Directory.Package)
-        self.make(self.root/"Website",  type=Directory.Website)
-        self.make(self.root/"Examples", type=Directory.Examples)
+        self.make(self.root/"Website", type=Directory.Website)
 
     def make(self, path: Path, *, type: Directory):
         if (not path.exists()):
@@ -93,7 +86,13 @@ class BrokenWebsite:
 
         match type:
             case Directory.Root:
-                self.write(self.website/"index.md", (path/"Readme.md").read_text())
+                self.write(path=self.website/"index.md",
+                    content='\n'.join((
+                        "---",
+                        f"title: '{self.name} Project'",
+                        "---\n",
+                        ((path/"Readme.md").read_text().split("<!-- Website end -->")[0])
+                )))
 
             # Raw copy contents
             case Directory.Website:
@@ -109,39 +108,37 @@ class BrokenWebsite:
                     self.write(self.website/"resources"/file.relative_to(path),
                         file.read_bytes())
 
-            # Copy all *.py files
-            case Directory.Examples:
-                content = []
-                content.append("# ⭐️ Examples")
-                content.append((
-                    f"The examples below are a _verbatim_ copy of the files in the "
-                    f"[**GitHub Repository**]({self.repository}/tree/main/Examples)"
-                ))
-
-                for index, python in enumerate(path.rglob("*.py")):
-                    example = str(python.relative_to(path)).replace('.py', '')
-                    content.append(f"## {'🔴🟡🟢🔵'[index]} {example}")
-                    content.append("```python")
-                    content.append(python.read_text())
-                    content.append("```")
-                    content.append("\n<hr>\n")
-
-                self.write((self.website/"easy"/"examples.md"), '\n'.join(content))
-
             # Write the Code Reference
             case Directory.Package:
                 if not eval(os.getenv("CODE_REFERENCE", "0")):
                     return
+                for file in path.rglob("*.py"):
+                    # (File    ) "/home/tremeschin/Code/Broken/Externals/FFmpeg.py"
+                    # (Relative) "Externals/FFmpeg.py"
+                    # (Markdown) "externals/ffmpeg.md"
+                    # (Source  ) "externals/ffmpeg.py"
+                    # (Module  ) "Broken/Externals/FFmpeg.py"
+                    # (Package ) "Broken.Externals.FFmpeg"
+                    relative: Path = file.relative_to(path)
+                    markdown: Path = parts(relative.with_suffix(".md"), lower)
+                    source:   Path = parts(relative, lower)
+                    module:   Path = file.relative_to(path.parent)
+                    package:  str  = '.'.join(parts(module, path2package).parts)
 
-                for python in path.rglob("*.py"):
-                    package  = python.relative_to(path).with_suffix("")
-                    markdown = (Path("code")/self.website/parts(package, lower, dunder2markdown))
-                    module   = Path(self.package.name)/parts(package, noinit)
-
-                    self.write(f"{markdown}.md", '\n'.join((
-                        f"# {parts(package, dunder2navbar).name}",
-                        f"::: {'.'.join(module.parts)}",
+                    # Write code reference with mkdocstrings
+                    self.write(path=Path("code", self.website, markdown), content='\n'.join((
+                        "---",
+                        f"title: '{module.stem}'",
+                        f"description: 'Code reference for the {module} file of the {self.name} project'",
+                        "---",
+                        "",
+                        f"# <b>File: <a href='{self.repository}/blob/main/{module}' target='_blank'>`{module}`</a></b>",
+                        "",
+                        f"::: {package}",
                     )))
+
+                    # Write raw .py file for reference
+                    self.write(Path("code", self.website, source), file.read_text())
 
     def write(self, path: Path, content: Union[str, bytes]):
         mode = ("wb" if isinstance(content, bytes) else "w")
