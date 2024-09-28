@@ -13,14 +13,14 @@ from Broken.Externals import ExternalModelsBase
 
 class BrokenOllama(ExternalModelsBase):
     model: Annotated[str, typer.Option("--model", "-m",
-        help="[bold green](🟢 Basic)[/bold green] Any valid model name from https://ollama.com/library")] = \
+        help="[bold green](🟢 Basic)[reset] Any valid model name from https://ollama.com/library")] = \
         Field(default="qwen2")
 
     def install(self):
         if bool(shutil.which("ollama")):
             return
 
-        log.warning("Ollama binary [green]'ollama'[/green] wasn't found on PATH, installing..")
+        log.warning("Ollama binary [green]'ollama'[reset] wasn't found on PATH, installing..")
 
         if BrokenPlatform.OnMacOS:
             raise RuntimeError("Ollama installaion on macOS is untested, please get it at their website")
@@ -33,7 +33,7 @@ class BrokenOllama(ExternalModelsBase):
             log.warning("")
             log.warning("The installation on Linux is slightly non-trivial, and it's better to use their official script")
             log.warning("• Please, get it at their website https://ollama.com/download/linux")
-            log.warning("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[/green]")
+            log.warning("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[reset]")
             log.warning("• Alternatively, install from your distro's package manager")
             exit(0)
 

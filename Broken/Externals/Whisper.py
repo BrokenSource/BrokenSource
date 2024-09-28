@@ -16,6 +16,7 @@ from Broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
+    install,
     log,
     shell,
 )
@@ -45,20 +46,16 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         LargeDist3   = "distil-large-v3"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold green](🟢 Basic)[/bold green] Model to use for Transcription [green](tiny, base, small, medium, large)[/green]")] = \
+        help="[bold green](🟢 Basic)[reset] Model to use for Transcription [green](tiny, base, small, medium, large)[reset]")] = \
         Field(default=Model.LargeV2)
 
     lowvram: Annotated[bool, typer.Option("--lowvram", "-l",
-        help="[bold green](🟢 Basic)[/bold green] Use INT8 instead of FP16 for low VRAM GPUs")] = \
+        help="[bold green](🟢 Basic)[reset] Use INT8 instead of FP16 for low VRAM GPUs")] = \
         Field(default=False)
 
     def _load_model(self):
         self.load_torch()
-
-        try:
-            import faster_whisper
-        except ImportError:
-            shell(sys.executable, "-m", "uv", "pip", "install", "faster-whisper")
+        install("faster_whisper")
 
         # Copy PyPI libcudnn to avoid setting LD_LIBRARY_PATH
         if BrokenPlatform.OnLinux:

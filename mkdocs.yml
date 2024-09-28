@@ -45,7 +45,7 @@ nav:
       - ✅ Installation: depthflow/easy/install.md
       - ⭐️ Examples: depthflow/easy/examples.md
     - Learn:
-      - 📜 Paper: depthflow/paper.md
+      - 📜 Foundations: depthflow/learn/foundations.md
       - 🔧 Parameters: depthflow/learn/parameters.md
     - Code reference:
       - 📦 Package: code/depthflow/

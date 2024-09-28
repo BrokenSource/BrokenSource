@@ -97,7 +97,7 @@ class _Directories:
     @property
     def SYSTEM_TEMP(self) -> Path:
         """(Unix: /tmp), (Windows: %TEMP%)"""
-        return tempfile.gettempdir()
+        return Path(tempfile.gettempdir())
 
     # # Broken monorepo specific, potentially useful
 
@@ -347,7 +347,7 @@ class BrokenProject:
                 Broken.PROJECT = self
 
                 if (BrokenPlatform.Administrator and not Broken.DOCKER):
-                    log.warning("Running as [red]Admin/Root[/red] is not required and discouraged")
+                    log.warning("Running as [red]Admin/Root[reset] is not required and discouraged")
 
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
@@ -493,7 +493,7 @@ class BrokenApp(ABC, BrokenAttrs):
                 target=run(python, class_name, code),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
-                panel=f"📦 Projects at [bold]({python})[/bold]",
+                panel=f"📦 Projects at [bold]({python})[reset]",
                 context=True,
                 help=False,
             )

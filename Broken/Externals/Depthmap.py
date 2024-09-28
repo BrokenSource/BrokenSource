@@ -18,8 +18,8 @@ from Broken import (
     BrokenEnum,
     BrokenResolution,
     image_hash,
+    install,
     log,
-    shell,
 )
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
 from Broken.Loaders import LoadableImage, LoaderImage
@@ -91,7 +91,7 @@ class DepthAnythingBase(DepthEstimator):
         Large = "large"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold][red](🔴 Basic)[/red][/bold] What model of DepthAnythingV2 to use")] = \
+        help="[bold red](🔴 Basic)[reset] What model of DepthAnythingV2 to use")] = \
         Field(default=Model.Base)
 
     _processor: Any = PrivateAttr(default=None)
@@ -116,7 +116,7 @@ class DepthAnythingBase(DepthEstimator):
         return depth.squeeze(1).cpu().numpy()[0]
 
 class DepthAnythingV1(DepthAnythingBase):
-    """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/dim]"""
+    """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[reset]"""
     def _model_prefix(self) -> str:
         return  "LiheYoung/depth-anything-"
 
@@ -127,7 +127,7 @@ class DepthAnythingV1(DepthAnythingBase):
         return depth
 
 class DepthAnythingV2(DepthAnythingBase):
-    """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/dim]"""
+    """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[reset]"""
     def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
 
@@ -140,21 +140,18 @@ class DepthAnythingV2(DepthAnythingBase):
 # ------------------------------------------------------------------------------------------------ #
 
 class ZoeDepth(DepthEstimator):
-    """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/dim]"""
+    """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[reset]"""
     class Model(BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold][red](🔴 Basic)[/red][/bold] What model of ZoeDepth to use")] = \
+        help="[bold red](🔴 Basic)[reset] What model of ZoeDepth to use")] = \
         Field(default=Model.N)
 
     def _load_model(self) -> None:
-        try:
-            import timm
-        except ImportError:
-            shell(sys.executable, "-m", "uv", "pip", "install", "timm==0.6.7", "--no-deps")
+        install(packages="timm", pypi="timm==0.6.7", args="--no-deps")
 
         log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
         self._model = torch.hub.load(
@@ -174,16 +171,10 @@ class ZoeDepth(DepthEstimator):
 # ------------------------------------------------------------------------------------------------ #
 
 class Marigold(DepthEstimator):
-    """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/dim]"""
+    """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[reset]"""
 
     def _load_model(self) -> None:
-        try:
-            import accelerate
-            import diffusers
-            import matplotlib
-        except ImportError:
-            shell(sys.executable, "-m", "uv", "pip", "install",
-                "diffusers", "accelerate", "matplotlib")
+        install("accelerate", "diffusers", "matplotlib")
 
         from diffusers import DiffusionPipeline
 

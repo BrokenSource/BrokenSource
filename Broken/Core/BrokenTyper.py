@@ -55,8 +55,8 @@ class BrokenTyper:
     help: bool = True
 
     credits: str = (
-        f"• Made with [red]:heart:[/red] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/green] [yellow]v{Broken.VERSION}[/yellow]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[/italic grey53]"
+        f"• Made with [red]:heart:[reset] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][reset] [yellow]v{Broken.VERSION}[reset]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[reset]"
     )
 
     class BaseModel(ABC, BaseModel):
@@ -169,13 +169,13 @@ class BrokenTyper:
             expand=False,
             renderable=Group(
                 Text.from_markup(
-                    "\nHere's your chance to [royal_blue1]run commands on a basic shell[/royal_blue1], interactively\n\n"
-                    "> This mode is [royal_blue1]Experimental[/royal_blue1] and projects might not work as expected\n\n"
-                    "• Preferably run the projects on a [royal_blue1]Terminal[/royal_blue1] as [spring_green1]./program.exe (args)[/spring_green1]\n"
-                    "• You can skip this shell mode with [spring_green1]'REPL=0'[/spring_green1] environment variable\n"
+                    "\nHere's your chance to [royal_blue1]run commands on a basic shell[reset], interactively\n\n"
+                    "> This mode is [royal_blue1]Experimental[reset] and projects might not work as expected\n\n"
+                    "• Preferably run the projects on a [royal_blue1]Terminal[reset] as [spring_green1]./program.exe (args)[reset]\n"
+                    "• You can skip this shell mode with [spring_green1]'REPL=0'[reset] environment variable\n"
                 ), Panel(
-                    "• Run [spring_green1]'--help'[/spring_green1] or press [spring_green1]'Enter'[/spring_green1] for a command list [bold bright_black](seen above)[/bold bright_black]\n"
-                    "• Press [spring_green1]'CTRL+C'[/spring_green1] to exit this shell [bold bright_black](or close the Terminal)[/bold bright_black]",
+                    "• Run [spring_green1]'--help'[reset] or press [spring_green1]'Enter'[reset] for a command list [bold bright_black](seen above)[reset]\n"
+                    "• Press [spring_green1]'CTRL+C'[reset] to exit this shell [bold bright_black](or close the Terminal)[reset]",
                     title="Tips",
                     border_style="green"
                 )

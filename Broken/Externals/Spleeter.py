@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Annotated, Tuple
 import typer
 from pydantic import Field
 
-from Broken import BROKEN, shell
+from Broken import BROKEN, install
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
 
 if TYPE_CHECKING:
@@ -17,20 +17,17 @@ if TYPE_CHECKING:
 
 class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
     cache: Annotated[Path, typer.Option("--cache", "-c",
-        help="[bold green](🟢 Basic)[/bold green] Output directory for the stems, works as cache")] = \
+        help="[bold green](🟢 Basic)[reset] Output directory for the stems, works as cache")] = \
         BROKEN.DIRECTORIES.SYSTEM_TEMP/"Spleeter"
 
     format: Annotated[str, typer.Option("--format", "-f",
-        help="[bold green](🟢 Basic)[/bold green] Output format for the stems")] = \
+        help="[bold green](🟢 Basic)[reset] Output format for the stems")] = \
         Field(default="ogg")
 
     def _load_model(self) -> None:
-        try:
-            import audio_separator
-        except ImportError:
-            self.load_torch()
-            gpu = ("[gpu]" if torch.cuda.is_available() else "")
-            shell(sys.executable, "-m", "uv", "pip", "install", f"audio_separator{gpu}")
+        self.load_torch()
+        gpu = ("[gpu]" if torch.cuda.is_available() else "")
+        install("audio_separator", pypi=f"audio_separator{gpu}")
 
         from audio_separator.separator import Separator
 

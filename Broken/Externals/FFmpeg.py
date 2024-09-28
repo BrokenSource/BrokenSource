@@ -168,7 +168,7 @@ FFmpegOutputType = Union[
 
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
-    """Use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/blue link]"""
+    """Use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[reset]"""
     _type: Literal["h264"] = PrivateAttr("h264")
 
     class Preset(str, BrokenEnum):
@@ -187,7 +187,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         typer.Option("--preset", "-p")] = \
         Field(default=Preset.Slow)
     """How much time to spend on encoding. Slower options gives better compression
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Preset]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Preset]→ Documentation[reset]"""
 
     class Tune(str, BrokenEnum):
         None_       = None
@@ -202,7 +202,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         typer.Option("--tune", "-t")] = \
         Field(default=None)
     """Tune x264 to keep and optimize for certain aspects of the input media
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Tune]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Tune]→ Documentation[reset]"""
 
     class Profile(str, BrokenEnum):
         None_    = None
@@ -217,7 +217,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         typer.Option("--profile", "-p")] = \
         Field(default=None)
     """How many features the encoder can use, the playback device must support them
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Profile]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Profile]→ Documentation[reset]"""
 
     faststart: Annotated[bool,
         typer.Option("--faststart", " /--no-faststart", hidden=True)] = \
@@ -231,13 +231,13 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
     crf: int = Field(default=20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[reset]"""
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=0, max=51)] = \
         Field(default=20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[reset]"""
 
     bitrate: Annotated[Optional[int],
         typer.Option("--bitrate", "-b", min=0)] = \
@@ -256,7 +256,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/blue link]"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[reset]"""
     _type: Literal["h264-nvenc"] = PrivateAttr("h264-nvenc")
 
     class Preset(str, BrokenEnum):
@@ -357,7 +357,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
-    """Use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[/bold orange3 link] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/blue link]"""
+    """Use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[reset]"""
     _type: Literal["h265"] = PrivateAttr("h265")
 
     crf: Annotated[int,
@@ -396,7 +396,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/blue link]"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[reset]"""
     _type: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -499,20 +499,20 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
 # Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """Use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/blue link] for VP9 encoding"""
+    """Use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[reset] for VP9 encoding"""
     _type: Literal["vp9"] = PrivateAttr("vp9")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=1, max=63)] = \
         Field(default=30, ge=1, le=64)
     """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#constantq]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#constantq]→ Documentation[reset]"""
 
     speed: Annotated[int,
         typer.Option("--speed", "-s", min=1, max=6)] = \
         Field(default=4, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed]→ Documentation[reset]"""
 
     class Deadline(str, BrokenEnum):
         Good     = "good"
@@ -523,13 +523,13 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
         typer.Option("--deadline", "-d")] = \
         Field(default=Deadline.Good)
     """Tweak the encoding time philosophy for better quality or faster encoding
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality]→ Documentation[reset]"""
 
     row_multithreading: Annotated[bool,
         typer.Option("--row-multithreading", "-rmt", " /--no-row-multithreading", " /-rmt")] = \
         Field(default=True)
     """Faster encodes by splitting rows into multiple threads
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt]→ Documentation[reset]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libvpx-vp9")
@@ -551,13 +551,13 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
         typer.Option("--crf", "-c", min=1, max=63)] = \
         Field(default=23, ge=1, le=63)
     """Constant Rate Factor (0-63). Lower values mean better quality, AV1 CRF 23 == x264 CRF 19
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality]→ Documentation[reset]"""
 
     speed: Annotated[int,
         typer.Option("--speed", "-s", min=1, max=6)] = \
         Field(default=3, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality]→ Documentation[reset]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libaom-av1")
@@ -569,20 +569,20 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
-    """Use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/blue link]"""
+    """Use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[reset] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[reset]"""
     _type: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
 
     crf: Annotated[int,
         typer.Option("--crf", "-c", min=1, max=63)] = \
         Field(default=25, ge=1, le=63)
     """Constant Rate Factor (0-63). Lower values mean better quality
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#CRF]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#CRF]→ Documentation[reset]"""
 
     preset: Annotated[int,
         typer.Option("--preset", "-p", min=1, max=8)] = \
         Field(default=3, ge=1, le=8)
     """The speed of the encoding, 0 is slowest, 8 is fastest. Decreases compression efficiency.
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes]→ Documentation[/blue link]"""
+    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes]→ Documentation[reset]"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "libsvtav1")
@@ -593,7 +593,7 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
-    """Use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[/bold orange3 link] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/blue link]"""
+    """Use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[reset] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[reset]"""
     _type: Literal["librav1e"] = PrivateAttr("librav1e")
 
     qp: Annotated[int,
@@ -626,7 +626,7 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/bold green link] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/blue link] [dim light_coral](RTX 4000+ GPU)[/dim light_coral]"""
+    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[reset] [dim light_coral](RTX 4000+ GPU)[reset]"""
     _type: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -755,7 +755,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
 # ------------------------------------------------------------------------------------------------ #
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
-    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/blue link]"""
+    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[reset]"""
     _type: Literal["aac"] = PrivateAttr("aac")
 
     bitrate: Annotated[int,
@@ -769,7 +769,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
-    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[/blue link]"""
+    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[reset]"""
     _type: Literal["mp3"] = PrivateAttr("mp3")
 
     bitrate: Annotated[int,
@@ -789,7 +789,7 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
-    """Use the [blue link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[/blue link] audio codec"""
+    """Use the [blue link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[reset] audio codec"""
     _type: Literal["libopus"] = PrivateAttr("libopus")
 
     bitrate: Annotated[int,
@@ -803,7 +803,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
-    """Use the [blue link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[/blue link]"""
+    """Use the [blue link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[reset]"""
     _type: Literal["flac"] = PrivateAttr("flac")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:

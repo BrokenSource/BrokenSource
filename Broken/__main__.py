@@ -352,7 +352,7 @@ class BrokenManager(BrokenSingleton):
                 target=project.cli,
                 name=project.name.lower(),
                 description=project.description_pretty_language,
-                panel=f"🔥 Projects at [bold]({project.path.parent})[/bold]",
+                panel=f"🔥 Projects at [bold]({project.path.parent})[reset]",
                 hidden=("Projects/Others" in str(project.path)),
                 context=True,
                 help=False,

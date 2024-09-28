@@ -119,6 +119,7 @@ from Broken.Core import (
     flatten,
     hyphen_range,
     image_hash,
+    install,
     limited_ratio,
     nearest,
     overrides,

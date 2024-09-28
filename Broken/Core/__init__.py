@@ -317,10 +317,41 @@ def overrides(
     old: Optional[Any],
     new: Optional[Any],
 ) -> Optional[Any]:
-    """Returns 'new' only if it's not None, else keeps 'old' value"""
+    """Returns 'new' if is not None, else keeps 'old' value"""
     if (new is None):
         return old
     return new
+
+def install(
+    *packages: Union[str, Iterable[str]],
+    pypi: Optional[Union[str, Iterable[str]]]=None,
+    args: Optional[Union[str, Iterable[str]]]=None
+) -> None:
+    # Ensure arguments are tuples
+    packages = flatten(packages, cast=tuple)
+    pypi = flatten(pypi or packages, cast=tuple)
+    args = flatten(args, cast=tuple)
+
+    caller = inspect.currentframe().f_back.f_globals
+
+    # Import the package and insert on the caller's globals
+    def inject_packages():
+        for package in packages:
+            caller[package] = __import__(package)
+
+    try:
+        return inject_packages()
+    except ImportError:
+        log.info(f"Installing packages: {packages}..")
+
+    for method in (
+        (sys.executable, "-m", "uv", "pip", "install"),
+        (sys.executable, "-m", "pip", "install")
+    ):
+        if shell(*method, *pypi, *args).returncode == 0:
+            return inject_packages()
+
+    raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
 
 # ------------------------------------------------------------------------------------------------ #
 # Classes
