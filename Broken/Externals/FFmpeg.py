@@ -244,6 +244,11 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         Field(default=None, ge=0)
     """Bitrate in kilobits per second, the higher the better quality and file size"""
 
+    x264params: Annotated[List[str],
+        typer.Option("--x264-params", hidden=True)] = \
+        Field(default_factory=list)
+    """Additional options to pass to x264"""
+
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:v", "libx264rgb" if self.rgb else "libx264")
         yield every("-movflags", "+faststart"*self.faststart)
@@ -252,6 +257,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         yield every("-tune", denum(self.tune))
         yield every("-b:v", self.bitrate)
         yield every("-crf", self.crf)
+        yield every("-x264opts", ":".join(self.x264params))
 
 
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`

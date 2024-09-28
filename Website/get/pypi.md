@@ -44,24 +44,7 @@ title: Get/PyPI
 
 
 ## ⭐️ Usage
-After **Installing** the Package, you can simply import it in your Code
-
-```python title="Example with <a href='https://pypi.org/project/depthflow/' target='_blank'><b>DepthFlow</b></a>"
-from DepthFlow import DepthScene
-
-depthflow = DepthScene()
-depthflow.input(image="./background.png")
-depthflow.main(output="./video.mp4", ...)
-```
-
-.. or run its command line interface:
-
-```shell title="Terminal"
-# You can also use 'depthflow' instead of 'python -m DepthFlow'
-python -m DepthFlow input -i ./background.png main -o ./video.mp4
-```
-
-- **For more,** go to the project tab of your interest above and see its usage
+**For more,** go to the project tab of your interest above and see its examples!
 
 
 ## 🚀 Upgrading

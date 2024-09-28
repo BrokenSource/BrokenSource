@@ -2,12 +2,13 @@
 title: Get/Installation
 ---
 
+<!--start-->
+
 # ✅ Installation
 
 - There are **three ways** to get started with the Projects:
 
-
-### [**🧀 From PyPI**](site:get/pypi)
+### [**🧀 From PyPI**](site:/get/pypi)
 
 <a href="site:get/pypi">
 !!! success "**The most reliable** way to use the Projects"
@@ -19,7 +20,7 @@ title: Get/Installation
 
 <hr>
 
-### [**🔥 From Source**](site:get/source)
+### [**🔥 From Source**](site:/get/source)
 
 <a href="site:get/source">
 !!! success "**The most flexible** way to use the Projects"
@@ -31,12 +32,12 @@ title: Get/Installation
 
 <hr>
 
-### [**📦 From Releases**](site:get/releases)
+### [**📦 From Releases**](site:/get/releases)
 
 <a href="site:get/releases">
 !!! example "**The most convenient** way to use the Projects"
     - Self-installing {==portable executable files==}
     - {==Not as much configurable==} {>>at the moment<<}
 
-    <sup><b>Recommended for:</b> Basic users</sup>
+    <sup><b>Recommended for:</b> Basic users, alpha testers</sup>
 </a>

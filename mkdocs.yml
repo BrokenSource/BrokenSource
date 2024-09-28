@@ -64,7 +64,7 @@ nav:
     - pianola/index.md
     - Quick start:
       - ✅ Installation: pianola/easy/install.md
-      # - ⭐️ Examples: pianola/easy/examples.md
+      - ⭐️ Examples: pianola/easy/examples.md
     - Code reference:
       - 📦 Package: code/pianola/
 
@@ -72,7 +72,7 @@ nav:
     - spectronote/index.md
     - Quick start:
       - ✅ Installation: spectronote/easy/install.md
-      # - ⭐️ Examples: spectronote/easy/examples.md
+      - ⭐️ Examples: spectronote/easy/examples.md
     - Code reference:
       - 📦 Package: code/spectronote/
 
@@ -206,7 +206,7 @@ plugins:
       comments: false
       rewrite_relative_urls: true
       heading_offset: 0
-      # start: <!--start-->
+      start: <!--start-->
       # end: <!--end-->
 
 markdown_extensions:
@@ -250,6 +250,7 @@ extra_css:
   - css/extra.css
 
 extra_javascript:
+  - javascript/video.js
   - javascript/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
