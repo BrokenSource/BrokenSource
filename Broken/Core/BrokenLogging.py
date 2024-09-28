@@ -30,7 +30,8 @@ class BrokenLogging(BrokenSingleton):
         return (
             f"\r│[dodger_blue3]{self.project()}[/dodger_blue3]├"
             "┤[green]{time}[/green]├"
-            "┤{level:7}│ ▸ {message}"
+            "┤[{level.icon}]{level:7}[/{level.icon}]│ "
+            "▸ {message}"
         ).format(**data)
 
     @property
