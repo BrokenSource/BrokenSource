@@ -2,7 +2,7 @@
 title: Get/Installation
 ---
 
-<!--start-->
+<!-- include start -->
 
 # ✅ Installation
 

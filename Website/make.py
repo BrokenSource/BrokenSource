@@ -55,6 +55,7 @@ class Directory(BrokenEnum):
     Package   = "package"
     Website   = "website"
     Resources = "resources"
+    Examples  = "examples"
 
 @define
 class BrokenWebsite:
@@ -79,6 +80,8 @@ class BrokenWebsite:
         self.make(self.root,    type=Directory.Root)
         self.make(self.package, type=Directory.Package)
         self.make(self.root/"Website", type=Directory.Website)
+        self.make(self.root/"Examples", type=Directory.Examples)
+        self.make(self.package/"Resources", type=Directory.Resources)
 
     def make(self, path: Path, *, type: Directory):
         if (not path.exists()):
@@ -105,13 +108,18 @@ class BrokenWebsite:
             # Raw copy resources
             case Directory.Resources:
                 for file in files(path.rglob("*")):
-                    self.write(self.website/"resources"/file.relative_to(path),
-                        file.read_bytes())
+                    script = parts(self.website/"resources"/file.relative_to(path), lower)
+                    self.write(script, file.read_bytes())
+
+            # Raw copy examples
+            case Directory.Examples:
+                for file in files(path.rglob("*")):
+                    script = parts(self.website/"examples"/file.relative_to(path), lower)
+                    self.write(script, file.read_text())
+                    print(script)
 
             # Write the Code Reference
             case Directory.Package:
-                if not eval(os.getenv("CODE_REFERENCE", "0")):
-                    return
                 for file in path.rglob("*.py"):
                     # (File    ) "/home/tremeschin/Code/Broken/Externals/FFmpeg.py"
                     # (Relative) "Externals/FFmpeg.py"
@@ -125,6 +133,13 @@ class BrokenWebsite:
                     module:   Path = file.relative_to(path.parent)
                     package:  str  = '.'.join(parts(module, path2package).parts)
 
+                    # Write raw .py file for reference
+                    self.write(Path("code", self.website, source), file.read_text())
+
+                    # Note: Code reference takes a bit to generate
+                    if not eval(os.getenv("CODE_REFERENCE", "0")):
+                        continue
+
                     # Write code reference with mkdocstrings
                     self.write(path=Path("code", self.website, markdown), content='\n'.join((
                         "---",
@@ -137,8 +152,6 @@ class BrokenWebsite:
                         f"::: {package}",
                     )))
 
-                    # Write raw .py file for reference
-                    self.write(Path("code", self.website, source), file.read_text())
 
     def write(self, path: Path, content: Union[str, bytes]):
         mode = ("wb" if isinstance(content, bytes) else "w")

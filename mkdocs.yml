@@ -87,6 +87,7 @@ watch:
 
 theme:
   name: material
+  custom_dir: Website/overrides
   logo: resources/images/broken.png
   favicon: resources/images/broken.png
   font:
@@ -103,7 +104,7 @@ theme:
     - navigation.indexes
     - navigation.top
     - navigation.footer
-    - navigation.instant
+    # - navigation.instant
     # - navigation.instant.progress
     - search.suggest
     - search.highlight
@@ -139,7 +140,7 @@ plugins:
   - social:
       cards_layout_options:
         font_family: Roboto Slab
-        background_color: "#4854b4"
+        background_color: "#3948a2"
   - search
   # - privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641
   - autorefs
@@ -158,7 +159,7 @@ plugins:
 
             # General
             show_bases: true
-            show_source: false
+            show_source: true
 
             # Headings
             heading_level: 2
@@ -188,7 +189,7 @@ plugins:
             show_signature: true
             show_signature_annotations: true
             signature_crossrefs: true
-            separate_signature: false
+            separate_signature: true
             line_length: 60
 
   - minify:
@@ -206,7 +207,8 @@ plugins:
       comments: false
       rewrite_relative_urls: true
       heading_offset: 0
-      start: <!--start-->
+      recursive: true
+      # start: <!--start-->
       # end: <!--end-->
 
 markdown_extensions:

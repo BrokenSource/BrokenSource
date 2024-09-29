@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block announce %}
+  ✅ &nbsp; This website is a <b>🚧 Work in Progress 🚧</b> and the Software is in <b>Alpha (0.x versions)</b>
+{% endblock %}
+
+{% block footer %}
+
+  <!-- Spacer -->
+  <div style="height: 2rem;"></div>
+
+  <!-- On issues get in touch footer -->
+  <footer class="md-footer">
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-custom">
+          Found any issues on this page? Please, <b><a href="https://brokensrc.dev/about/contact/">Get in Touch!</a></b>
+        </div>
+      </div>
+    </div>
+    {{ super() }}
+  </footer>
+
+  <style>
+    .md-footer-custom {
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.5rem 0;
+      color: var(--md-footer-fg-color--light);
+      width: 100%;
+    }
+    .md-footer-custom a {
+      text-decoration: underline;
+    }
+  </style>
+
+{% endblock %}
