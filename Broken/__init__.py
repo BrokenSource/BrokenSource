@@ -76,16 +76,19 @@ PYAPP: bool = bool(os.getenv("PYAPP", False))
 PYPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
 """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
-RELEASE: bool = (PYINSTALLER or NUITKA or PYAPP or PYPI)
+EXECUTABLE: bool = (PYINSTALLER or NUITKA or PYAPP)
+"""True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
+
+RELEASE: bool = (EXECUTABLE or PYPI)
 """True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
 
 FROM_SOURCE: bool = (not RELEASE)
 """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-# # Special and Containers
-
-RUNTIME: str = (FROM_SOURCE and "Source") or (RELEASE and "Release") or (PYPI and "PyPI")
+RUNTIME: str = (FROM_SOURCE and "Source") or (EXECUTABLE and "Release") or (PYPI and "PyPI")
 """The runtime environment of the current project release (Source, Release, PyPI)"""
+
+# # Special and Containers
 
 DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
 """True if running from a Docker container""" # Fixme: Detect without manual flag
@@ -93,7 +96,7 @@ DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
 GITHUB_CI: bool = bool(os.getenv("GITHUB_ACTIONS", False))
 """True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
 
-WSL: bool = bool(Path("/usr/lib/wsl/lib").exists())
+WSL: bool = Path("/usr/lib/wsl/lib").exists()
 """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
 
 # ---------------------------------------- Module imports ---------------------------------------- #
