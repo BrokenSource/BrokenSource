@@ -84,6 +84,9 @@ FROM_SOURCE: bool = (not RELEASE)
 
 # # Special and Containers
 
+RUNTIME: str = (FROM_SOURCE and "Source") or (RELEASE and "Release") or (PYPI and "PyPI")
+"""The runtime environment of the current project release (Source, Release, PyPI)"""
+
 DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
 """True if running from a Docker container""" # Fixme: Detect without manual flag
 

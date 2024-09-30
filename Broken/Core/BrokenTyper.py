@@ -55,8 +55,8 @@ class BrokenTyper:
     help: bool = True
 
     credits: str = (
-        f"• Made with [red]:heart:[reset] by [green][link=https://github.com/Tremeschin]Tremeschin[/link][reset] [yellow]v{Broken.VERSION}[reset]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work[reset]"
+        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][reset] [yellow]{Broken.RUNTIME} v{Broken.VERSION}[reset]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[reset]"
     )
 
     class BaseModel(ABC, BaseModel):
