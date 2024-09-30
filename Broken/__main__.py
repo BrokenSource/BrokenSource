@@ -215,14 +215,14 @@ class ProjectCLI:
 
         # Recurse on all Torch flavors
         if isinstance(torch, bool) and torch:
-            for flavor in TorchFlavor:
-                self.release(target=target, torch=flavor, webui=webui)
+            for torch in TorchFlavor:
+                ProjectCLI.release(**locals())
             return None
 
         # Recurse on each target item
         if isinstance(target, list) and 1:
-            for item in target:
-                self.release(target=item, torch=torch, webui=webui)
+            for target in target:
+                ProjectCLI.release(**locals())
             return None
 
         # Avoid bad combinations (Windows + ROCM) (Non macOS => macOS)
