@@ -164,11 +164,10 @@ FFmpegOutputType = Union[
 ]
 
 # ------------------------------------------------------------------------------------------------ #
-# Todo: QSV, AMF, VVC ?
 
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
-    """Use [bold orange3 link=https://www.videolan.org/developers/x264.html]VideoLAN's[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[reset]"""
+    """Use [bold orange3][link=https://www.videolan.org/developers/x264.html]VideoLAN's[/link][reset] [blue][link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/link][reset]"""
     _type: Literal["h264"] = PrivateAttr("h264")
 
     class Preset(str, BrokenEnum):
@@ -262,7 +261,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[reset]"""
+    """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][reset] [blue][link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/link][reset]"""
     _type: Literal["h264-nvenc"] = PrivateAttr("h264-nvenc")
 
     class Preset(str, BrokenEnum):
@@ -361,9 +360,17 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
         yield every("-gpu", self.gpu)
 
 
+class FFmpegVideoCodecH264_QSV(FFmpegModuleBase):
+    ... # Todo
+
+
+class FFmpegVideoCodecH264_AMF(FFmpegModuleBase):
+    ... # Todo
+
+
 # Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
-    """Use [bold orange3 link=https://www.videolan.org/developers/x265.html]VideoLAN's[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[reset]"""
+    """Use [bold orange3][link=https://www.videolan.org/developers/x265.html]VideoLAN's[/link][reset] [blue][link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/link][reset]"""
     _type: Literal["h265"] = PrivateAttr("h265")
 
     crf: Annotated[int,
@@ -402,7 +409,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[reset]"""
+    """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][reset] [blue][link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/link][reset]"""
     _type: Literal["hevc_nvenc"] = PrivateAttr("hevc_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -503,9 +510,17 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         yield every("-gpu", self.gpu)
 
 
+class FFmpegVideoCodecH265_QSV(FFmpegModuleBase):
+    ... # Todo
+
+
+class FFmpegVideoCodecH265_AMF(FFmpegModuleBase):
+    ... # Todo
+
+
 # Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """Use [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[reset] for VP9 encoding"""
+    """Use [blue][link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/link][reset] for VP9 encoding"""
     _type: Literal["vp9"] = PrivateAttr("vp9")
 
     crf: Annotated[int,
@@ -575,7 +590,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
-    """Use [bold orange3 link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[reset] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[reset]"""
+    """Use [bold orange3][link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/link][reset] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/link][reset]"""
     _type: Literal["libsvtav1"] = PrivateAttr("libsvtav1")
 
     crf: Annotated[int,
@@ -599,7 +614,7 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
-    """Use [bold orange3 link=https://github.com/xiph/rav1e]Xiph's[reset] [blue link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[reset]"""
+    """Use [bold orange3][link=https://github.com/xiph/rav1e]Xiph's[/link][reset] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/link][reset]"""
     _type: Literal["librav1e"] = PrivateAttr("librav1e")
 
     qp: Annotated[int,
@@ -632,7 +647,7 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 
 # Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
-    """Use [bold green link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[reset] [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[reset] [dim light_coral](RTX 4000+ GPU)[reset]"""
+    """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][reset] [blue][link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/link][reset] [dim light_coral](RTX 4000+ GPU)[reset]"""
     _type: Literal["av1_nvenc"] = PrivateAttr("av1_nvenc")
 
     class Preset(str, BrokenEnum):
@@ -722,6 +737,14 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
         yield every("-gpu", self.gpu)
 
 
+class FFmpegVideoCodecAV1_QSV(FFmpegModuleBase):
+    ... # Todo
+
+
+class FFmpegVideoCodecAV1_AMF(FFmpegModuleBase):
+    ... # Todo
+
+
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
     _type: Literal["rawvideo"] = PrivateAttr("rawvideo")
 
@@ -761,7 +784,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
 # ------------------------------------------------------------------------------------------------ #
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
-    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[reset]"""
+    """Use the [blue][link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/link][reset]"""
     _type: Literal["aac"] = PrivateAttr("aac")
 
     bitrate: Annotated[int,
@@ -775,7 +798,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
-    """Use the [blue link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[reset]"""
+    """Use the [blue][link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[/link][reset]"""
     _type: Literal["mp3"] = PrivateAttr("mp3")
 
     bitrate: Annotated[int,
@@ -795,7 +818,7 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
-    """Use the [blue link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[reset] audio codec"""
+    """Use the [blue][link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[/link][reset] audio codec"""
     _type: Literal["libopus"] = PrivateAttr("libopus")
 
     bitrate: Annotated[int,
@@ -809,7 +832,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
-    """Use the [blue link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[reset]"""
+    """Use the [blue][link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[/link][reset]"""
     _type: Literal["flac"] = PrivateAttr("flac")
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:

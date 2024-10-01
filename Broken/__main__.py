@@ -204,7 +204,6 @@ class ProjectCLI:
     def release(self,
         target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
         torch:  Annotated[bool, Option("--torch", help="Build for all allowed PyTorch flavors in the target platform")]=False,
-        webui:  Annotated[bool, Option("--webui", help="Build a WebUI release with its own main entry point")]=False,
     ) -> None:
         """
         📦 Release the Project as a distributable binary
@@ -248,7 +247,7 @@ class ProjectCLI:
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))),
-                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main" + ("_webui"*webui),
+                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
@@ -279,7 +278,7 @@ class ProjectCLI:
             # Rename project binary according to the Broken naming convention
             for version in ("latest", BROKEN.VERSION):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
-                    f"{self.name.lower()}", "-webui"*webui,
+                    f"{self.name.lower()}",
                     f"-{torch.name.lower()}".replace("-macos", "") if torch else "",
                     f"-{target.name}",
                     f"-{target.architecture}",

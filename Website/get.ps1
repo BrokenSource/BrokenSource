@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2024.9.24
+# Script version: 2024.10.1
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution

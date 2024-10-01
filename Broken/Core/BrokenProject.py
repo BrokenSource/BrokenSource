@@ -38,6 +38,7 @@ def mkdir(path: Path, resolve: bool=True) -> Path:
         path.mkdir(parents=True, exist_ok=True)
     return path
 
+
 @define(slots=False)
 class _Directories:
     """You shouldn't really use this class directly"""

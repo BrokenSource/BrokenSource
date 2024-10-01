@@ -151,15 +151,32 @@ class BrokenTyper:
         ))
 
     @staticmethod
-    def release(single: Callable) -> None:
+    def release(main: Callable, *others: Iterable[Callable]) -> None:
         app = BrokenTyper()
         app.release_repl()
-        app.command(
-            target=single,
-            help=False,
-            context=True
-        )
-        app(sys.argv[1:])
+
+        # Redirects a ctx to sys.argv and calls the method
+        def proxy(callable: Callable) -> None:
+            def wrapper(ctx: typer.Context) -> None:
+                sys.argv[1:] = ctx.args
+                callable()
+            return wrapper
+
+        for method in flatten(main, others):
+
+            # Automatically select 'main' method on non-repl or with incoming args
+            default = ((method is main) and (not app.repl or bool(sys.argv[1:])))
+
+            app.command(
+                target=proxy(method),
+                name=method.__name__,
+                description=method.__doc__,
+                default=default,
+                context=True,
+                help=False,
+            )
+
+        return app(sys.argv[1:])
 
     def repl_welcome(self) -> None:
         console.print(Panel(
@@ -174,7 +191,7 @@ class BrokenTyper:
                     "• Preferably run the projects on a [royal_blue1]Terminal[reset] as [spring_green1]./program.exe (args)[reset]\n"
                     "• You can skip this shell mode with [spring_green1]'REPL=0'[reset] environment variable\n"
                 ), Panel(
-                    "• Run [spring_green1]'--help'[reset] or press [spring_green1]'Enter'[reset] for a command list [bold bright_black](seen above)[reset]\n"
+                    "• Run any [spring_green1]'command --help'[reset] for a command list [bold bright_black](seen above)[reset]\n"
                     "• Press [spring_green1]'CTRL+C'[reset] to exit this shell [bold bright_black](or close the Terminal)[reset]",
                     title="Tips",
                     border_style="green"

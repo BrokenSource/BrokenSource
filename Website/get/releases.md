@@ -7,7 +7,7 @@ title: Get/Releases
 
 ## ⚡️ Installing
 
-!!! success "I make self-installing executables using [**PyApp**](https://github.com/ofek/pyapp) for your convenience!"
+!!! warning "**Binaries are experimental** • self-installing executables made with [**PyAPP**](https://github.com/ofek/pyapp) ✨"
 !!! abstract "Select your Platform, Project and Flavor to download"
     === ":material-microsoft: Windows"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80"></div>
@@ -27,28 +27,14 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">
-                        :octicons-download-16: CLI
+                        :octicons-download-16: CPU
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">
-                        :octicons-download-16: CLI
+                        :octicons-download-16: CUDA
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
-                        :octicons-download-16: CLI
-                        </a></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cpu-windows-amd64-latest.exe">
-                        :octicons-download-16: WebUI
-                        </a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cuda-windows-amd64-latest.exe">
-                        :octicons-download-16: WebUI
-                        </a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
-                        :octicons-download-16: WebUI
+                        :octicons-download-16: ROCm
                         </a></td>
                 </tr>
                 <tr>
@@ -98,30 +84,15 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">
-                        :octicons-download-16: CLI
+                        :octicons-download-16: CPU
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">
-                        :octicons-download-16: CLI
+                        :octicons-download-16: CUDA
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">
-                        :octicons-download-16: CLI
-                        </a></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cpu-linux-amd64-latest.bin">
-                        :octicons-download-16: WebUI
-                        </a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-cuda-linux-amd64-latest.bin">
-                        :octicons-download-16: WebUI
-                        </a></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-rocm-linux-amd64-latest.bin">
-                        :octicons-download-16: WebUI
+                        :octicons-download-16: ROCm
                         </a></td>
                 </tr>
                 <tr>
@@ -167,14 +138,7 @@ title: Get/Releases
                         </a></td>
                     <td><a class="md-button md-button--primary md-button--stretch"
                         href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.app">
-                        :octicons-download-16: CLI
-                        </a></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td><a class="md-button md-button--primary md-button--stretch"
-                        href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-webui-macos-arm64-latest.app">
-                        :octicons-download-16: WebUI
+                        :octicons-download-16: Download
                         </a></td>
                 </tr>
                 <tr>
@@ -209,33 +173,31 @@ title: Get/Releases
         !!! bug "Help needed, I don't have the Hardware to test Apple Silicon builds"
 
 
-!!! warning "Customization options are limited at the moment. Prefer [**From Source**](site:get/source) or [**From PyPI**](site:get/pypi)"
-
 ## ⭐️ Usage
 Simply **double click** and run the executable on your platform
 
-- Preferably **Open it on a Terminal**, for example:
+- There'll be a simple prompt to guide you on the usage;
+
+- Preferably **run it directly**, for example:
 
 ```shell title="Terminal"
-./shaderflow-linux-amd64-0.3.1.bin default -o ./video.mp4
+# Zero arguments will open the simple prompt
+./depthflow-cpu-linux-amd64-latest.bin
+
+# List all available commands and quit
+./depthflow-cpu-linux-amd64-latest.bin --help
+
+# Any argument will skip it and quit when finished
+./depthflow-cpu-linux-amd64-latest.bin main -o ./video.mp4
 ```
 
-!!! warning "Not all projects have a default "visible" behavior"
-    Projects like [**ShaderFlow**](site:shaderflow) **requires** a Scene name to be sent as a argument:
-
-    - When no arguments are sent, the behavior is to list all Scenes and quit
-    - The immediate interpretation is that it crashed, when it ran fine
-
-    <hr>
-
-    Projects like [**DepthFlow**](https://brokensrc.dev/depthflow) have a default configuration and implicitly call the Scene's `main`
-
-    - To select your own image, run as CLI, e.g. `depthflow input -i ./image.png main -o ./video.mp4`
-
-    - Downloading the models on the first execution takes a while, progress is seen running on Terminal
 
 ## 🚀 Upgrading
-Download a newer release from **GitHub** or from your **Package Manager**
+
+Download a newer release from here, or your package manager[^1]
+
+[^1]: You know what you are doing if using this. Reach me if you want to package for any package manager, we could make it official and write a proper page and guide for it!
 
 ## ♻️ Uninstalling
+
 See the <a href="site:get/uninstalling"><b>Uninstalling</b></a> page
