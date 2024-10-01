@@ -258,7 +258,7 @@ class ProjectCLI:
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
             shell("rustup", "target", "add", target.rust)
 
-            # We're not 'installing' a utility, remove cargo warning
+            # Cargo warning: We're not 'installing' a utility
             BrokenPath.add_to_path(BUILD_DIR/"bin")
 
             if shell("cargo", "install",

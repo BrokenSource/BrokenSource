@@ -127,17 +127,17 @@ rye config --set-bool global-python=false
 rye sync
 
 # The PowerShell execution policy must allow for the Python activation script to run
-if ((Get-ExecutionPolicy -Scope CurrentUser) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
+if ((Get-ExecutionPolicy) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
     echo "`n(Warning) The current PowerShell ExecutionPolicy disallows activating the Python venv"
     echo "> More info: https://github.com/microsoft/vscode-python/issues/2559"
     echo "> Need any of: 'Unrestricted', 'RemoteSigned', or 'Bypass'"
-    echo "> Current ExecutionPolicy: '$(Get-ExecutionPolicy -Scope CurrentUser)'"
+    echo "> Current ExecutionPolicy: '$(Get-ExecutionPolicy)'"
 
     echo "`nDon't worry, we just need to run as admin the following:"
-    echo "> 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser'`n"
+    echo "> 'Set-ExecutionPolicy RemoteSigned'`n"
     Read-Host "Press Enter to do it, or Ctrl+C to exit"
 
-    Start-Process powershell -Verb RunAs -ArgumentList "-Command Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
+    Start-Process powershell -Verb RunAs -ArgumentList "-Command Set-ExecutionPolicy RemoteSigned"
 }
 
 Print-Step "Spawning a new Shell in the Virtual Environment"

@@ -183,7 +183,7 @@ def apply(callback: Callable, iterable: Iterable[Any], *, cast: Callable=list) -
     return cast(map(callback, iterable))
 
 def denum(item: Union[enum.Enum, Any]) -> Any:
-    """De-enumerates an item, if it's an Enum returns the value, else the item itself"""
+    """De-enumerates an item: if it's an Enum, returns the value, else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
 
 def filter_dict(

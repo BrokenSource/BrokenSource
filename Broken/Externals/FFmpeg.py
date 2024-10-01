@@ -1225,6 +1225,9 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
             typer.command(FFmpegVideoCodecAV1_SVT,    post=self.set_video_codec, name="av1-svt")
             typer.command(FFmpegVideoCodecAV1_NVENC,  post=self.set_video_codec, name="av1-nvenc")
             typer.command(FFmpegVideoCodecAV1_RAV1E,  post=self.set_video_codec, name="av1-rav1e")
+            typer.command(FFmpegVideoCodecRawvideo,   post=self.set_video_codec, name="rawvideo", hidden=True)
+            typer.command(FFmpegVideoCodecCopy,       post=self.set_video_codec, name="video-copy", hidden=True)
+            typer.command(FFmpegVideoCodecNoVideo,    post=self.set_video_codec, name="video-none", hidden=True)
 
     # Audio codecs
 
@@ -1289,8 +1292,8 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         return self.add_filter(FFmpegFilterVerticalFlip(**options))
 
     @functools.wraps(FFmpegFilterCustom)
-    def filter(self, **options) -> Self:
-        return self.add_filter(FFmpegFilterCustom(**options))
+    def filter(self, content: str) -> Self:
+        return self.add_filter(FFmpegFilterCustom(content=content))
 
     def typer_filters(self, typer: BrokenTyper) -> None:
         with typer.panel("📦 (FFmpeg) Filters"):
@@ -1372,7 +1375,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @functools.lru_cache
     def get_video_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Resolution of ({path})", echo=echo)
@@ -1386,7 +1389,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     def iter_video_frames(path: Path, *, skip: int=0, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         (width, height) = BrokenFFmpeg.get_video_resolution(path)
@@ -1408,7 +1411,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @functools.lru_cache
     def get_video_total_frames(path: Path, *, echo: bool=True) -> Optional[int]:
         """Count the total frames of a video by decode voiding and parsing stats output"""
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         with Halo(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
@@ -1421,7 +1424,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_video_duration(path: Path, *, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Duration of file ({path})", echo=echo)
@@ -1436,7 +1439,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_video_framerate(path: Path, *, precise: bool=False, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
@@ -1458,7 +1461,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_audio_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
@@ -1473,7 +1476,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     @functools.lru_cache
     def get_audio_channels(path: Path, *, stream: int=0, echo: bool=True) -> Optional[int]:
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
@@ -1487,8 +1490,8 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     @staticmethod
     def get_audio_duration(path: Path, *, echo: bool=True) -> Optional[float]:
-        if not (path := BrokenPath.get(path)).exists():
-            return
+        if not (path := BrokenPath.get(path, exists=True)):
+            return None
         try:
             generator = BrokenAudioReader(path=path, chunk=10).stream
             while next(generator) is not None: ...
@@ -1497,7 +1500,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     @staticmethod
     def get_audio_numpy(path: Path, *, echo: bool=True) -> Optional[numpy.ndarray]:
-        if not (path := BrokenPath.get(path)).exists():
+        if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
@@ -1549,7 +1552,7 @@ class BrokenAudioReader:
 
     @property
     def stream(self) -> Generator[numpy.ndarray, None, None]:
-        if not (path := BrokenPath.get(self.path)).exists():
+        if not (path := BrokenPath.get(self.path, exists=True)):
             return None
         self.path = path
 

@@ -35,7 +35,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
     _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
     """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
 
-    def normalize(self, array: numpy.ndarray) -> numpy.ndarray:
+    def normalize(self, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
     def estimate(self,
