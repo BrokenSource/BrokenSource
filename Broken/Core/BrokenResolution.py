@@ -8,10 +8,10 @@ from Broken import log
 class BrokenResolution:
 
     @staticmethod
-    def round(*numbers: Iterable[Number]) -> Union[int, Tuple[int, ...]]:
+    def round(*numbers: Iterable[Number], multiple: int=2) -> Union[int, Tuple[int, ...]]:
         """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
-        values = tuple(max(2, 2*round(value/2)) for value in numbers)
-        return values[0] if (len(values) == 1) else values
+        values = tuple(max(multiple, multiple*round(value/multiple)) for value in numbers)
+        return (values[0] if (len(values) == 1) else values)
 
     @staticmethod
     def fit(
@@ -20,6 +20,7 @@ class BrokenResolution:
         max: Optional[Tuple[int, int]]=None,
         ar: Optional[float]=None,
         scale: float=1.0,
+        multiple: int=2,
     ) -> Tuple[int, int]:
         """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
 
@@ -87,6 +88,8 @@ class BrokenResolution:
                 (width, height) = from_width
             elif (new_height != old_height):
                 (width, height) = from_height
+            else:
+                (width, height) = from_width
 
             # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
             # - The idea is to find the maximum reduce factor for either component so it normalizes
@@ -103,7 +106,7 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return BrokenResolution.round(width*scale, height*scale)
+        return BrokenResolution.round(width*scale, height*scale, multiple=multiple)
 
 # ------------------------------------------------------------------------------------------------ #
 

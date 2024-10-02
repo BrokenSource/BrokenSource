@@ -59,6 +59,14 @@ class BrokenTyper:
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[reset]"
     )
 
+    @staticmethod
+    def exclude() -> typer.Option:
+        return typer.Option(
+            parser=(lambda type: type),
+            expose_value=False,
+            hidden=True,
+        )
+
     class BaseModel(ABC, BaseModel):
         """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
 
@@ -149,6 +157,16 @@ class BrokenTyper:
             not bool(sys.argv[1:]),
             not BrokenPlatform.OnLinux
         ))
+
+    @staticmethod
+    def simple(*commands: Iterable[Callable]) -> None:
+        app = BrokenTyper()
+        app.release_repl()
+
+        for command in commands:
+            app.command(command)
+
+        return app(sys.argv[1:])
 
     @staticmethod
     def release(main: Callable, *others: Iterable[Callable]) -> None:

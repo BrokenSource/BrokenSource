@@ -198,8 +198,17 @@ def filter_dict(
         data = {key: value for key, value in data.items() if (key in allow)}
     return data
 
+def iter_dict(data: Dict[str, Any]) -> Generator[Any, None, None]:
+    """Recursively yields all values from a dictionary"""
+    for value in data.values():
+        if isinstance(value, dict):
+            yield from iter_dict(value)
+            continue
+        yield value
+
 def selfless(data: Dict) -> Dict:
     """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
+    # Note: It's also possible to call Class.method(**locals()) instead!
     return filter_dict(data, block=["self"])
 
 def border(name: str, substring: str) -> bool:

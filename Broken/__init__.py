@@ -126,6 +126,7 @@ from Broken.Core import (
     hyphen_range,
     image_hash,
     install,
+    iter_dict,
     limited_ratio,
     nearest,
     overrides,
