@@ -422,7 +422,10 @@ class BrokenProject:
             else:
                 shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
-                sys.exit(shell(executable, sys.argv[1:]).returncode)
+                try:
+                    sys.exit(shell(executable, sys.argv[1:]).returncode)
+                except KeyboardInterrupt:
+                    exit(0)
 
         BrokenPath.remove(ntfs_workaround, echo=False)
 

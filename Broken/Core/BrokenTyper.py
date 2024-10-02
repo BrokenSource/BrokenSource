@@ -170,7 +170,10 @@ class BrokenTyper:
 
     @staticmethod
     def release(main: Callable, *others: Iterable[Callable]) -> None:
-        app = BrokenTyper()
+        app = BrokenTyper(description=(
+            "📦 [bold orange3]BrokenTyper's[reset] Multiple entry points handler for releases executables\n\n"
+            "• Chose an option below for what parts of the software you want to run!\n"
+        ))
         app.release_repl()
 
         # Redirects a ctx to sys.argv and calls the method
@@ -225,7 +228,7 @@ class BrokenTyper:
                 default=""
             ))
             return True
-        except click.exceptions.Abort:
+        except (click.exceptions.Abort, KeyboardInterrupt):
             log.trace("BrokenTyper Repl exit KeyboardInterrupt")
         return False
 
