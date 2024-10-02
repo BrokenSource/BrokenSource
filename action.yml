@@ -20,6 +20,6 @@ runs:
       run: rye sync
       shell: bash
 
-    - name: Get version
-      run: echo BROKEN_VERSION=$(rye version) >> $GITHUB_ENV
+    - name: Get workflow options
+      run: rye run python ./Broken/Version.py >> $GITHUB_ENV
       shell: bash

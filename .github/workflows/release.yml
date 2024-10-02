@@ -19,10 +19,8 @@ jobs:
       # DepthFlow
 
       - name: Build DepthFlow CLI
+        if: ${{ env.BROKEN_BINARY == 'True' }}
         run: rye run broken depthflow release --torch
-
-      - name: Build DepthFlow WebUI
-        run: rye run broken depthflow release --torch --webui
 
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
@@ -33,6 +31,7 @@ jobs:
       # Pianola
 
       - name: Build Pianola
+        if: ${{ env.BROKEN_BINARY == 'True' }}
         run: rye run broken pianola release
 
       - name: Upload Pianola releases
@@ -44,6 +43,7 @@ jobs:
       # ShaderFlow
 
       - name: Build ShaderFlow
+        if: ${{ env.BROKEN_BINARY == 'True' }}
         run: rye run broken shaderflow release
 
       - name: Upload ShaderFlow releases
@@ -55,6 +55,7 @@ jobs:
       # SpectroNote
 
       - name: Build SpectroNote
+        if: ${{ env.BROKEN_BINARY == 'True' }}
         run: rye run broken spectronote release
 
       - name: Upload SpectroNote releases
@@ -72,7 +73,8 @@ jobs:
         name: Broken Setup
 
       - name: Build wheels
-        run: rye run broken pypi --publish
+        if: ${{ env.BROKEN_PYPI == 'True' }}
+        run: rye run broken pypi # --publish
         env:
           PYPI_TOKEN: ${{secrets.PYPI_TOKEN}}
 
@@ -83,6 +85,7 @@ jobs:
           path: Build/Wheels/*.whl
 
       - name: Create Release Tag
+        if: ${{ env.BROKEN_TAG == 'True' }}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

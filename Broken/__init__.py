@@ -26,6 +26,9 @@ os.environ["OMP_NUM_THREADS"] = "1"
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
 os.environ["__GL_YIELD"] = "USLEEP"
 
+# Force UTF-8 encoding for the environment
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 # Replace argv[0]=="-c" with PyApp's managed python
 if bool(os.getenv("PYAPP", None)):
     sys.argv[0] = sys.executable

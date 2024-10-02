@@ -62,11 +62,6 @@ class ProjectCLI:
     # # Utility Attributes
 
     @property
-    def lname(self) -> str:
-        """Lowercase name"""
-        return self.name.lower()
-
-    @property
     def version(self) -> str:
         import arrow
         return self.config.setdefault("version", arrow.utcnow().format("YYYY.M.D"))
@@ -417,8 +412,9 @@ class BrokenManager(BrokenSingleton):
                 "--repository", ("testpypi" if test else "pypi"),
                 "--token", os.getenv("PYPI_TOKEN"),
                 "--username", "__token__",
-                f"{output}/*.whl", echo=False
-            ) if publish else None
+                f"{output}/*.whl", echo=False,
+                skip=(not bool(publish)),
+            )
 
         return Path(output)
 

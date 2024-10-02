@@ -1,10 +1,11 @@
 import os
 import time
-from typing import Dict
+from typing import Callable, Dict
 
 import rich
 from loguru import logger as log
 
+import Broken
 from Broken.Core import BrokenSingleton
 
 # Don't log contiguous long paths
@@ -27,8 +28,14 @@ class BrokenLogging(BrokenSingleton):
     def format(self, data: Dict) -> str:
         when = time.absolute()
         data["time"] = f"{int(when//60)}'{(when%60):06.3f}"
+        data["project"] = self.project()
+
+        # Simpler logging for non utf8
+        if Broken.GITHUB_CI:
+            return ("[{project}][{time}][{level:7}] {message}").format(**data)
+
         return (
-            f"\r│[dodger_blue3]{self.project()}[/dodger_blue3]├"
+            f"│[dodger_blue3]{self.project()}[/dodger_blue3]├"
             "┤[green]{time}[/green]├"
             "┤[{level.icon}]{level:7}[/{level.icon}]│ "
             "▸ {message}"
@@ -43,10 +50,16 @@ class BrokenLogging(BrokenSingleton):
         os.environ["LOGLEVEL"] = level.upper()
         self.reset()
 
+    @property
+    def sink(self) -> Callable:
+        if Broken.GITHUB_CI:
+            return print
+        return rich.print
+
     def reset(self) -> None:
         log.remove()
         log.add(
-            sink=rich.print,
+            sink=self.sink,
             format=self.format,
             level=os.getenv("LOGLEVEL", "INFO").upper(),
             colorize=False,
