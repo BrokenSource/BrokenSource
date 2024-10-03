@@ -8,22 +8,25 @@ from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 from attrs import Factory, define, field
 
 
-def precise_sleep(seconds: float, *, error: float=0.001) -> None:
+def precise(sleep: float, *, error: float=0.001) -> None:
     """A precise alternative of time.sleep(), low cpu near-end thread spin"""
     start = time.perf_counter()
 
     # Sleep close to the due time
-    if (ahead := max(0, seconds - error)):
+    if (ahead := max(0, sleep - error)):
         time.sleep(ahead)
     else:
         return
 
     # Spin the thread until the time is up (precise Sleep)
-    while (time.perf_counter() - start) < seconds:
+    while (time.perf_counter() - start) < sleep:
         pass
 
-time.precise_sleep = precise_sleep
+time.precise = precise
 
+# ------------------------------------------------------------------------------------------------ #
+
+NULL_CONTEXT = contextlib.nullcontext()
 
 @define
 class BrokenTask:
@@ -82,20 +85,16 @@ class BrokenTask:
     """Last time task was called (initializes $now+last_call, value in now() seconds)"""
 
     # # Flags
-    _time: bool = False
     _dt: bool = False
 
     def __attrs_post_init__(self):
         signature = inspect.signature(self.task)
-        self._dt   = ("dt"   in signature.parameters)
-        self._time = ("time" in signature.parameters)
+        self._dt = ("dt" in signature.parameters)
 
         # Assign idealistic values for decoupled
         if self.freewheel: self.started = time.zero
         self.last_call = (self.last_call or self.started) - self.period
         self.next_call = (self.next_call or self.started)
-
-        # Note: We could use numpy.float128 for the most frametime precision on the above..
 
     # # Useful properties
 
@@ -146,7 +145,7 @@ class BrokenTask:
             pass
         elif block:
             if self.precise:
-                time.precise_sleep(wait)
+                time.precise(wait)
             else:
                 time.sleep(wait)
         elif wait > 0:
@@ -154,17 +153,16 @@ class BrokenTask:
 
         # The assumed instant the code below will run instantly
         now = self.next_call if self.freewheel else time.absolute()
-        if self._dt:   self.kwargs["dt"]   = (now - self.last_call)
-        if self._time: self.kwargs["time"] = (now - self.started)
+        self.kwargs["dt"] = (now - self.last_call)
         self.last_call = now
 
-        # We only "skip" frames when \sum{dt_i} > period
-        if self.frameskip:
-            self._dt = min(self._dt, self.period)
+        # Frameskip limits maximum dt to period
+        if (not self.frameskip):
+            self.kwargs["dt"] = min(self.kwargs["dt"], self.period)
 
         # Enter or not the given context, call task with args and kwargs
-        with (self.lock or contextlib.nullcontext()):
-            with (self.context or contextlib.nullcontext()):
+        with (self.lock or NULL_CONTEXT):
+            with (self.context or NULL_CONTEXT):
                 self.output = self.task(*self.args, **self.kwargs)
 
         # Find a future multiple of period
@@ -174,6 +172,8 @@ class BrokenTask:
         # (Disabled && Once) clients gets deleted
         self.enabled = (not self.once)
         return self
+
+# ------------------------------------------------------------------------------------------------ #
 
 @define
 class BrokenScheduler:

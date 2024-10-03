@@ -219,7 +219,7 @@ class ProjectCLI:
                 ProjectCLI.release(**locals())
             return None
 
-        # Avoid bad combinations (Windows + ROCM) (Non macOS => macOS)
+        # Avoid bad pytorch combinations (Windows + ROCM) (Non macOS => macOS)
         if (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
         if (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
 

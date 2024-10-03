@@ -6,12 +6,12 @@ import Broken
 from Broken import BrokenEnum, BrokenPlatform, log, shell
 
 
-# Note: @* suffix to avoid name collisions between Mac and CPU
 class TorchFlavor(BrokenEnum):
     CPU   = "2.4.1+cpu@cpu"
     CUDA  = "2.4.1+cu121@cuda"
     ROCM  = "2.4.1+rocm6.1@rocm"
     MACOS = "2.4.1+ignore@mac"
+
 
 class BrokenTorch:
     """
@@ -58,7 +58,7 @@ class BrokenTorch:
                     "• https://brokensrc.dev/special/pytorch",
                     "",
                     "As a rule of thumb:",
-                    "• [royal_blue1](Windows + Linux)[reset] NVIDIA GPU (>= GTX 700): 'cuda'",
+                    "• [royal_blue1](Windows or Linux)[reset] NVIDIA GPU (>= GTX 700): 'cuda'",
                     "• [royal_blue1](Linux)[reset] AMD GPU (>= Radeon RX 5000): 'rocm'",
                     "• [royal_blue1](Other)[reset] Intel ARC, No discrete GPU: 'cpu'",
                     "",
