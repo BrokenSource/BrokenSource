@@ -52,5 +52,7 @@ class BrokenProfiler:
             output = self.output.with_suffix(".prof")
             self.__profiler__.disable()
             self.__profiler__.dump_stats(output)
-            shell("snakeviz", output)
-            return
+            try:
+                shell("snakeviz", output)
+            except KeyboardInterrupt:
+                pass
