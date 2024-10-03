@@ -629,12 +629,12 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 
     tile_rows: Annotated[int,
         typer.Option("--tile-rows", "-tr", min=-1)] = \
-        Field(default=2, ge=-1)
+        Field(default=4, ge=-1)
     """Number of tile rows to encode with (from -1 to I64_MAX) (default 0)"""
 
     tile_columns: Annotated[int,
         typer.Option("--tile-columns", "-tc", min=-1)] = \
-        Field(default=2, ge=-1)
+        Field(default=4, ge=-1)
     """Number of tile columns to encode with (from -1 to I64_MAX) (default 0)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:

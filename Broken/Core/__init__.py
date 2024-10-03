@@ -123,7 +123,7 @@ def shell(
     _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
     _log = (log.skip if skip else log.info)
     _the = ("Skipping" if skip else "Running")
-    _log(_the + f" Command {args}{_cwd}", echo=echo)
+    _log(_the + f" command {args}{_cwd}", echo=echo)
     if skip: return
 
     if kwargs.get("shell", False):
