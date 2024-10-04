@@ -116,7 +116,6 @@ class BrokenWebsite:
                 for file in files(path.rglob("*")):
                     script = parts(self.website/"examples"/file.relative_to(path), lower)
                     self.write(script, file.read_text())
-                    print(script)
 
             # Write the Code Reference
             case Directory.Package:

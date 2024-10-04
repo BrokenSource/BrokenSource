@@ -11,26 +11,28 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
 !!! tip "**Project Workspaces**: Where Cache, Data, etc are stored"
     The main Library uses [**AppDirs**](https://pypi.org/project/appdirs) {>>to decide per-platform directories<<}
 
-    For unification, all project's Workspaces are located at your Platform's **User Data** directory, followed by a {++**AppAuthor**++} and {++**AppName**++} subdirectories, which will be <kbd>BrokenSource</kbd> and <kbd>ProjectName</kbd> in most cases
+    For unification, all project's Workspaces are located at your Platform's **User Data** or **Documents** directory, followed by a {++**AppAuthor**++} and {++**AppName**++}, which will be <kbd>BrokenSource</kbd> and <kbd>ProjectName</kbd> in most cases
 
     - **Linux**: `~/.local/share/BrokenSource/AppName/*`
-    - **Windows**: `%localappdata%\BrokenSource\AppName\*`
+    - **Windows**: `Documents\BrokenSource\AppName\*`
     - **MacOS**: `~/Library/Application Support/BrokenSource/AppName/*`
 
-!!! tip "**[**PyTorch**](https://pytorch.org/) Models**: [HuggingFace](https://huggingface.co/), [TorchHub](https://pytorch.org/hub/), [Transformers](https://github.com/huggingface/transformers)"
-    You may find cache directories, {==**if** the project uses **PyTorch**==}, for **Neural Network** models at your Platform's **Cache** directory (or the one managed by any of those tools), usually found at:
+## 📦 Releases installation
 
-    - **Linux**: `~/.cache/{huggingface,transformers,torch}/*`
-    - **Windows**: `%localappdata%\{huggingface,transformers,torch}\*`
-    - **MacOS**: `~/Library/Caches/{huggingface,transformers,torch}/*`
+!!! tip "Where the executables manages themselves"
+    [**PyApp**](https://github.com/ofek/pyapp) stores cache, installs packages, creates venv on:
 
-## 🐍 Virtual Environment
+    - **Linux**: `~/.local/share/pyapp`
+    - **Windows**: `%applocaldata%\pyapp`
+    - **MacOS**: `~/Library/Application Support/pyapp`
+
+## 🐍 Python stuff
 
 !!! tip "Where Dependencies are installed"
-    Depending on what **Package Manager** you use {==(⚠️ Rye is used on the **From Source** installation)==}, you'll find the Python **Virtual Environment** in a couple different places:
+    Depending on what **Python Manager** you used, {==(⚠️ Rye is used on the **From Source** installation)==}, you'll find the Python **Virtual Environment** in a couple different places:
 
     === ":simple-python: Pip"
-        Manual method, you either **created it yourself** with `python -m venv (path)` or it's located at the **System Site Packages** for your Platform. It's a **BAD IDEA** to remove the later, so `pip uninstall {packages}`
+        Manual method, you either **created it yourself** with `python -m venv (path)` or it's located at the **System Site Packages** for your Platform. It's a **BAD IDEA** to remove the later, so do a `pip uninstall {packages}`
 
     === ":simple-poetry: Poetry"
         Poetry, by default, installs venvs at your Platform's Cache directory:
@@ -40,25 +42,15 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
         - **MacOS**: `~/Library/Caches/pypoetry/virtualenvs/*`
 
     === ":simple-rye: Rye"
-        **Rye** creates Virtual Environments on the `.venv` directory on the Monorepo root or your Project's
+        **Rye** creates Virtual Environments on the `.venv` directory on the repository root
 
     === ":simple-pdm: PDM"
-        **PDM** creates Virtual Environments on the `.venv` directory on the Monorepo root or your Project's
+        **PDM** creates Virtual Environments on the `.venv` directory on the repository root
 
-## 📦 From Releases
 
-!!! tip "Where the executables manages themselves"
-    [**PyApp**](https://github.com/ofek/pyapp) stores cache, installs packages, creates venv on:
+!!! tip "**[**PyTorch**](https://pytorch.org/) Models**: [HuggingFace](https://huggingface.co/), [TorchHub](https://pytorch.org/hub/), [Transformers](https://github.com/huggingface/transformers)"
+    You may find cache directories, {==**if** the project uses **PyTorch**==}, for **Neural Network** models at your Platform's **Cache** directory (or the one managed by any of those tools), usually found at:
 
-    - **Linux**: `~/.local/share/pyapp`
-    - **Windows**: `%applocaldata%\pyapp`
-    - **MacOS**: `~/Library/Application Support/pyapp`
-
-## 🔮 Package Manager Cache
-
-!!! abstract "Where download cache is located"
-    Depending on what Python Package Manager you use, you may find **cache directories** at:
-
-    - **Linux**: `~/.cache/{pip,uv,poetry,pdm}/*`
-    - **Windows**: `%localappdata%\{pip,uv,poetry,pdm}\*`
-    - **MacOS**: `~/Library/Caches/{pip,uv,poetry,pdm}/*`
+    - **Linux**: `~/.cache/{huggingface,transformers,torch}/*`
+    - **Windows**: `%localappdata%\{huggingface,transformers,torch}\*`
+    - **MacOS**: `~/Library/Caches/{huggingface,transformers,torch}/*`

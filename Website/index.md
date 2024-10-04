@@ -14,10 +14,10 @@ title: Landing Page
 
 ⭐️ Learn about my projects:
 
-- [**DepthFlow**](site:depthflow): Image to → 2.5D Parallax Effect Video
-- [**ShaderFlow**](site:shaderflow): Audio Reactive Shader Render engine
-- [**Pianola**](site:pianola): World's smoothest Piano Roll, spring physics
-- [**SpectroNote**](site:spectronote): Unlock a Hidden Perfect Pitch in You
+- [**DepthFlow**](site:depthflow): Image to → 2.5D parallax effect video
+- [**ShaderFlow**](site:shaderflow): Audio reactive shader render engine
+- [**Pianola**](site:pianola): World's smoothest piano roll, spring physics
+- [**SpectroNote**](site:spectronote): Unlock a hidden perfect pitch in you
 
 <hr>
 

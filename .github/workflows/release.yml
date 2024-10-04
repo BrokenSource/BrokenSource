@@ -19,7 +19,7 @@ jobs:
       # DepthFlow
 
       - name: Build DepthFlow CLI
-        if: ${{ env.BROKEN_BINARY == 'True' }}
+        if: ${{ env.BROKEN_PYAPP == 'True' }}
         run: rye run broken depthflow release --torch
 
       - name: Upload DepthFlow releases
@@ -31,7 +31,7 @@ jobs:
       # Pianola
 
       - name: Build Pianola
-        if: ${{ env.BROKEN_BINARY == 'True' }}
+        if: ${{ env.BROKEN_PYAPP == 'True' }}
         run: rye run broken pianola release
 
       - name: Upload Pianola releases
@@ -43,7 +43,7 @@ jobs:
       # ShaderFlow
 
       - name: Build ShaderFlow
-        if: ${{ env.BROKEN_BINARY == 'True' }}
+        if: ${{ env.BROKEN_PYAPP == 'True' }}
         run: rye run broken shaderflow release
 
       - name: Upload ShaderFlow releases
@@ -55,7 +55,7 @@ jobs:
       # SpectroNote
 
       - name: Build SpectroNote
-        if: ${{ env.BROKEN_BINARY == 'True' }}
+        if: ${{ env.BROKEN_PYAPP == 'True' }}
         run: rye run broken spectronote release
 
       - name: Upload SpectroNote releases

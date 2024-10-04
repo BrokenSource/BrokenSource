@@ -2,14 +2,12 @@
 title: Get/PyPI
 ---
 
-!!! quote "**The most reliable** way to use the Projects • As a dependency or direct module CLI"
-    **Recommended for**: Basic users, Advanced users, Developers
+!!! success "{++The most reliable++} way to use the Projects • Run the packaged command or as a python import."
+    **Recommended for**: Basic users, advanced users, developers.
 
 ## ⚡️ Installing
 
-!!! success "All Projects have their own independent package"
-
-!!! abstract "Install the Package"
+!!! abstract ""
     === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip install {package}
@@ -34,6 +32,10 @@ title: Get/PyPI
 
     - [`depthflow`](https://pypi.org/project/depthflow/), [`shaderflow`](https://pypi.org/project/shaderflow/), [`broken-source`](https://pypi.org/project/broken-source/), [`pianola`](https://pypi.org/project/pianola/), [`spectronote`](https://pypi.org/project/spectronote/), [`turbopipe`](https://pypi.org/project/turbopipe/)
 
+    <hr>
+
+    ✅ Preferably pin the package version `==x.y.z` on `pyproject.toml` for stability!
+
 ??? warning "A **Python 64 bits** interpreter is required"
     **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits[^1]
 
@@ -42,14 +44,13 @@ title: Get/PyPI
 
     [^1]: Most notably `imgui`, and moderate chance of issues with `torch`, `numpy`, etc.
 
-
 ## ⭐️ Usage
-**For more,** go to the project tab of your interest above and see its examples!
 
+Go to the project tab of your interest above and see the quickstart!
 
 ## 🚀 Upgrading
 
-!!! abstract "Simply **upgrade the dependency** on your Python project"
+!!! abstract "Simply upgrade the python dependency"
     === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip install --upgrade {package}
@@ -70,11 +71,6 @@ title: Get/PyPI
         pdm update {package}
         ```
 
-!!! tip "**Consider** staying on a fixed version if you need stability"
-    Small or breaking parts of the code can be changed on any new release
-
-    - Define `{package}==X.Y.Z` in `pyproject.toml` to pin it
-
-
 ## ♻️ Uninstalling
+
 See the <a href="site:get/uninstalling"><b>Uninstalling</b></a> page
