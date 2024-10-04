@@ -4,5 +4,5 @@ title: About/Contributing
 
 !!! warning "🚧 Work in Progress 🚧"
 
-Will write this page eventually.
+This page will be written eventually.
 
