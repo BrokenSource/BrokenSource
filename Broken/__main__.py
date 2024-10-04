@@ -371,10 +371,9 @@ class BrokenManager(BrokenSingleton):
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
         """📚 Generate or Deploy the Unified Broken Source Software Website"""
-        GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
             os.environ.update(CODE_REFERENCE="1")
-            shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)
+            shell("mkdocs", "gh-deploy", "--force")
         else:
             shell("mkdocs", "serve")
 
