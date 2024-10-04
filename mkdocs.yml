@@ -18,6 +18,7 @@ nav:
       - 📦 From Releases: get/releases.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
+      - ❓ FAQ: about/faq.md
       - ☁️ Cloud: get/cloud.md
       - 🐳 Docker: get/docker.md
       - 🔦 PyTorch: get/pytorch.md

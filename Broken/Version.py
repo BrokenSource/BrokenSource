@@ -2,14 +2,14 @@
 __version__ = "0.7.0.dev1"
 __all__ = ["__version__"]
 
-# Continuous Integration options
-BROKEN_VERSION: str = __version__
-BROKEN_PYAPP: bool = True
-BROKEN_PYPI: bool = True
-BROKEN_TAG: bool = True
+def export(**options) -> None:
+    for key, value in options.items():
+        print(f"{key}={value}")
 
 if (__name__ == "__main__"):
-    print(f"{BROKEN_VERSION=}")
-    print(f"{BROKEN_PYAPP=}")
-    print(f"{BROKEN_PYPI=}")
-    print(f"{BROKEN_TAG=}")
+    export(
+        BROKEN_VERSION=__version__,
+        BROKEN_PYAPP=True,
+        BROKEN_PYPI=True,
+        BROKEN_TAG=True,
+    )

@@ -220,8 +220,8 @@ class ProjectCLI:
             return None
 
         # Avoid bad pytorch combinations (Windows + ROCM) (Non macOS => macOS)
-        if (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
-        if (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
+        if (torch) and (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
+        if (torch) and (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
 
         if self.is_python:
             BrokenManager.rust()
@@ -321,7 +321,6 @@ class BrokenManager(BrokenSingleton):
             if (project := ProjectCLI(directory)).is_known:
                 self.projects.append(project)
 
-    # Builds CLI commands and starts Typer
     def cli(self) -> None:
         self.broken_typer = BrokenTyper(description=(
             "🚀 Broken Source Software Monorepo development manager script\n\n"
