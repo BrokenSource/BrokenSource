@@ -18,7 +18,7 @@ jobs:
 
       # DepthFlow
 
-      - name: Build DepthFlow CLI
+      - name: Build DepthFlow
         if: ${{ env.BROKEN_PYAPP == 'True' }}
         run: rye run broken depthflow release --torch
 
