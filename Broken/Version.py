@@ -4,12 +4,12 @@ __all__ = ["__version__"]
 
 # Continuous Integration options
 BROKEN_VERSION: str = __version__
-BROKEN_BINARY: bool = False
-BROKEN_PYPI: bool = False
-BROKEN_TAG: bool = False
+BROKEN_PYAPP: bool = True
+BROKEN_PYPI: bool = True
+BROKEN_TAG: bool = True
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     print(f"{BROKEN_VERSION=}")
-    print(f"{BROKEN_BINARY=}")
+    print(f"{BROKEN_PYAPP=}")
     print(f"{BROKEN_PYPI=}")
     print(f"{BROKEN_TAG=}")
