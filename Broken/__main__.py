@@ -373,7 +373,7 @@ class BrokenManager(BrokenSingleton):
         """📚 Generate or Deploy the Unified Broken Source Software Website"""
         GITHUB_PAGE = "git@github.com:BrokenSource/brokensource.github.io.git"
         if deploy:
-            os.environ.update(dict(CODE_REFERENCE="1"))
+            os.environ.update(CODE_REFERENCE="1")
             shell("mkdocs", "gh-deploy", "--force", "--remote-name", GITHUB_PAGE)
         else:
             shell("mkdocs", "serve")
