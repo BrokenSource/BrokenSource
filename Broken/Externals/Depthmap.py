@@ -38,6 +38,9 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
     def normalize(self, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
+    def normalize_uint16(self, array: numpy.ndarray) -> numpy.ndarray:
+        return ((2**16 - 1) * self.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
+
     def estimate(self,
         image: LoadableImage,
         cache: bool=True
@@ -57,7 +60,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
             with self._lock, Halo(f"Estimating Depthmap (Torch: {self.device})"):
                 torch.set_num_threads(max(4, multiprocessing.cpu_count()//2))
                 depth = self._estimate(image)
-            depth = (self.normalize(depth) * (2**16 - 1)).astype(numpy.uint16)
+            depth = self.normalize_uint16(depth)
             Image.fromarray(depth).save(cached_image)
         return self.normalize(self._post_processing(depth))
 

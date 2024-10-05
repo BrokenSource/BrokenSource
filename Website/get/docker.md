@@ -159,7 +159,7 @@ scene = ShaderScene(backend="headless")
 I've configured a Dockerfile for you to test your setup. Check its output messages:
 
 ```ps title="Terminal"
-docker-compose run --build glinfo
+docker-compose up glinfo
 ```
 
 If everything is nominal until now, you've _probably_ got a healthy setup 🎉
@@ -180,10 +180,10 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 
 ```bash title="Terminal"
 # Torch CPU already managed 😉
-docker-compose run --build depthflow
+docker-compose up --build depthflow
 
 # Somehow, faster than native linux?
-docker-compose run --build shaderflow
+docker-compose up --build shaderflow
 ```
 
 !!! note "Funcionality is limited"
