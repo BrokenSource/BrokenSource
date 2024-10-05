@@ -30,15 +30,23 @@ RUN python -m uv pip install \
     depthflow \
     pianola \
     shaderflow \
-    spectronote \
-    upscalin
+    spectronote
 
 # Signal Python we're Docker
+ENV WINDOW_BACKEND="headless"
 ENV DOCKER_RUNTIME="1"
 
-# Gradio apps
-ENV GRADIO_SERVER_NAME="0.0.0.0"
-EXPOSE 7860
+# Important: Cache Depth Estimator model
+RUN python -m DepthFlow load-model
+
+# Install development version of broken-source
+COPY . /App
+RUN python -m uv pip install --upgrade .[all] \
+    ./Projects/DepthFlow \
+    ./Projects/Pianola \
+    ./Projects/ShaderFlow \
+    ./Projects/SpectroNote \
+    --no-deps
 
 # ------------------------------------------------------------------------------------------------ #
 # NVIDIA
@@ -46,19 +54,9 @@ EXPOSE 7860
 # Basic required configuration
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 ENV NVIDIA_VISIBLE_DEVICES="all"
-ENV WINDOW_BACKEND="headless"
 
 # Don't use llvmpipe (Software Rendering) on WSL
 ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
 # ------------------------------------------------------------------------------------------------ #
-
-# Install development version of broken-source
-COPY . /App
-RUN python -m uv pip install --upgrade .[shaderflow] \
-    ./Projects/DepthFlow \
-    ./Projects/Pianola \
-    ./Projects/ShaderFlow \
-    ./Projects/SpectroNote \
-    ./Projects/Upscalin

@@ -50,4 +50,8 @@ services:
       dockerfile: Docker/depthflow.dockerfile
     depends_on:
       - broken-base
+    ports:
+      - "7860:7860"
+    expose:
+      - "7860"
     <<: *common

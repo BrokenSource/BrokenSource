@@ -47,7 +47,9 @@ image = (
     .apt_install("ffmpeg")
     .pip_install("transformers")
     .pip_install("depthflow")
-    # .run_commands("depthflow load-model") # Todo: 0.5.1
+
+    # Download depth estimator model once
+    .run_commands("depthflow load-model")
 )
 
 app = modal.App(

@@ -85,7 +85,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 # ------------------------------------------------------------------------------------------------ #
 
 class DepthAnythingBase(DepthEstimator):
-    class Model(BrokenEnum):
+    class Model(str, BrokenEnum):
         Small = "small"
         Base  = "base"
         Large = "large"
@@ -141,7 +141,7 @@ class DepthAnythingV2(DepthAnythingBase):
 
 class ZoeDepth(DepthEstimator):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[reset]"""
-    class Model(BrokenEnum):
+    class Model(str, BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
