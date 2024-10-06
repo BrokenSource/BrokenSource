@@ -51,7 +51,7 @@ class ExternalModelsBase(BaseModel, ABC):
 
     model: str = Field(default="any")
 
-    _model: Any = PrivateAttr(default=None)
+    _model: Any = PrivateAttr(None)
     """The true loaded model object"""
 
     _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)

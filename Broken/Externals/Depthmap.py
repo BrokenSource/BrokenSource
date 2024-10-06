@@ -1,5 +1,6 @@
 # pyright: reportMissingImports=false
 
+import copy
 import functools
 import multiprocessing
 import sys
@@ -16,6 +17,7 @@ from pydantic import Field, PrivateAttr
 import Broken
 from Broken import (
     BrokenEnum,
+    BrokenPath,
     BrokenResolution,
     image_hash,
     install,
@@ -35,6 +37,9 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
     _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
     """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
 
+    _format: str = PrivateAttr("png")
+    """The format to save the depth map as"""
+
     def normalize(self, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
@@ -48,7 +53,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
         # Load image and find expected cache path
         image = numpy.array(LoaderImage(image).convert("RGB"))
-        cached_image = self._cache/f"{image_hash(image)}-{self.__class__.__name__}-{self.model}.png"
+        cached_image = self._cache/f"{image_hash(image)}-{self.__class__.__name__}-{self.model}.{self._format}"
         cached_image.parent.mkdir(parents=True, exist_ok=True)
 
         # Load cached estimation if found
@@ -97,7 +102,7 @@ class DepthAnythingBase(DepthEstimator):
         help="[bold red](🔴 Basic)[reset] What model of DepthAnythingV2 to use")] = \
         Field(default=Model.Base)
 
-    _processor: Any = PrivateAttr(default=None)
+    _processor: Any = PrivateAttr(None)
 
     @abstractmethod
     def _model_prefix(self) -> str:
@@ -121,7 +126,7 @@ class DepthAnythingBase(DepthEstimator):
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[reset]"""
     def _model_prefix(self) -> str:
-        return  "LiheYoung/depth-anything-"
+        return "LiheYoung/depth-anything-"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
@@ -137,6 +142,56 @@ class DepthAnythingV2(DepthAnythingBase):
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
         depth = gaussian_filter(input=depth, sigma=0.6)
+        depth = maximum_filter(input=depth, size=5)
+        return depth
+
+# ------------------------------------------------------------------------------------------------ #
+
+class DepthPro(DepthEstimator):
+    """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[reset]"""
+    _model: Any = PrivateAttr(None)
+    _transform: Any = PrivateAttr(None)
+
+    def _load_model(self) -> None:
+        log.info("Loading Depth Estimator model (DepthPro)")
+        install("depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
+
+        # Download external checkpoint model
+        checkpoint = BrokenPath.get_external("https://ml-site.cdn-apple.com/models/depth-pro/depth_pro.pt")
+
+        import torch
+        from depth_pro import create_model_and_transforms
+        from depth_pro.depth_pro import DEFAULT_MONODEPTH_CONFIG_DICT
+
+        # Change the checkpoint URI to the downloaded checkpoint
+        config = copy.deepcopy(DEFAULT_MONODEPTH_CONFIG_DICT)
+        config.checkpoint_uri = checkpoint
+
+        with Halo("Creating DepthPro model"):
+            self._model, self._transform = create_model_and_transforms(
+                precision=torch.float16,
+                device=self.device,
+                config=config
+            )
+            self._model.eval()
+
+    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
+
+        # Infer, transfer to CPU, invert depth values
+        depth = self._model.infer(self._transform(image))["depth"]
+        depth = depth.detach().cpu().numpy().squeeze()
+        depth = (numpy.max(depth) - depth)
+
+        # Limit resolution to 1024 as there's no gains in interpoilation
+        depth = numpy.array(Image.fromarray(depth).resize(BrokenResolution.fit(
+            old=depth.shape, max=(1024, 1024),
+            ar=(depth.shape[1]/depth.shape[0]),
+        ), resample=Image.LANCZOS))
+
+        return depth
+
+    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+        from scipy.ndimage import maximum_filter
         depth = maximum_filter(input=depth, size=5)
         return depth
 
