@@ -68,7 +68,7 @@ class BrokenTorch:
                 ))),
                 try:
                     version_flavor = Prompt.ask(
-                        "\n:: What PyTorch flavor do you want to install?\n\n",
+                        prompt="\n:: What PyTorch flavor do you want to install?\n\n",
                         choices=[f"{flavor.name.lower()}" for flavor in TorchFlavor if flavor != TorchFlavor.MACOS],
                         default="cuda"
                     )
@@ -101,5 +101,3 @@ class BrokenTorch:
             shell(PIP, "uninstall", "torch", "--quiet")
             shell(PIP, "install", f"torch=={version}+{flavor}", "torchvision", "torchaudio", "--index-url", source_url)
             shell(PIP, "install", "transformers")
-        else:
-            log.info(f"PyTorch Flavor ({version_flavor}) already installed")

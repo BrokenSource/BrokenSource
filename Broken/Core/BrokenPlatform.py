@@ -113,34 +113,32 @@ class BrokenPlatform:
     PyScriptExtension = (".cmd" if OnWindows else "")
 
     class DeveloperMode:
+        # https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging
 
         @staticmethod
-        def enabled() -> bool:
-            if (os.system != "nt"):
-                return True
-            try:
-                import winreg
-                key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
-                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
-                value, _ = winreg.QueryValueEx(key, "AllowDevelopmentWithoutDevLicense")
-                winreg.CloseKey(key)
-                return bool(value)
-            except Exception:
-                return False
+        def status() -> bool:
+            import winreg
+            key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
+            value, _ = winreg.QueryValueEx(key, "AllowDevelopmentWithoutDevLicense")
+            winreg.CloseKey(key)
+            return bool(value)
+
+        @staticmethod
+        def set(state: bool=True):
+            import winreg
+            key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+            key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)
+            winreg.SetValueEx(key, "AllowDevelopmentWithoutDevLicense", 0, winreg.REG_DWORD, int(state))
+            winreg.CloseKey(key)
 
         @staticmethod
         def enable() -> bool:
-            if (os.system != "nt"):
-                return True
-            try:
-                import winreg
-                key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
-                key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)
-                winreg.SetValueEx(key, "AllowDevelopmentWithoutDevLicense", 0, winreg.REG_DWORD, 1)
-                winreg.CloseKey(key)
-                return True
-            except Exception:
-                return False
+            return BrokenPlatform.DeveloperMode.set(True)
+
+        @staticmethod
+        def enabled() -> bool:
+            return BrokenPlatform.DeveloperMode.status()
 
     try:
         Administrator: bool = (os.getuid() == 0)

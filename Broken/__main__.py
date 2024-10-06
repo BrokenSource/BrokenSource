@@ -480,16 +480,15 @@ class BrokenManager(BrokenSingleton):
                 exit(0)
 
         # Install Visual C++ Build Tools on Windows
-        if BrokenPlatform.OnWindows and build_tools:
-            log.warning("You must install Microsoft Visual C++ Build Tools, we will try, else install manually")
-            shell((
-                'winget install Microsoft.VisualStudio.2022.BuildTools --override '
-                '"--wait --passive'
-                    ' --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
-                    ' --add Microsoft.VisualStudio.Component.Windows10SDK'
-                    ' --add Microsoft.VisualStudio.Component.Windows11SDK.22000'
-                '"'
-            ), shell=True)
+        if (BrokenPlatform.OnWindows and build_tools):
+            log.warning("You must have Microsoft Visual C++ Build Tools installed to compile Rust projects")
+            log.warning("• Broken will try installing it, you might need to restart your shell afterwards")
+            shell("winget", "install", "-e", "--id", "Microsoft.VisualStudio.2022.BuildTools", "--override", (
+                "--wait --passive"
+                " --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+                " --add Microsoft.VisualStudio.Component.Windows10SDK"
+                " --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
+            ))
 
         class RustToolchain(BrokenEnum):
             Stable  = "stable"

@@ -102,6 +102,9 @@ GITHUB_CI: bool = bool(os.getenv("GITHUB_ACTIONS", False))
 WSL: bool = Path("/usr/lib/wsl/lib").exists()
 """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
 
+INTERACTIVE: bool = sys.stdout.isatty()
+"""True if running in an interactive terminal session (user can input)"""
+
 # ---------------------------------------- Module imports ---------------------------------------- #
 
 import Broken.Resources as BrokenResources

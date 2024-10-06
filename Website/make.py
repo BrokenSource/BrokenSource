@@ -2,7 +2,6 @@ import functools
 import logging
 import os
 import sys
-from importlib.resources import Resource
 from pathlib import Path
 from typing import Callable, Generator, Iterable, Union
 

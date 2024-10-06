@@ -81,9 +81,9 @@ def every(
 
     Usage:
         ```python
-        valid(1, 2, 3) # [1, 2, 3]
-        valid(1, 2, 3, None) # None
-        valid("-arg, "") # None
+        every(1, 2, 3) # [1, 2, 3]
+        every(1, 2, 3, None) # None
+        every("-arg, "") # None
         ```
     """
     items = flatten(*items, block=None, cast=cast)
@@ -116,7 +116,7 @@ def shell(
     args = tuple(map(str, flatten(args)))
 
     # Assert command won't fail due unknown binary
-    if (not shutil.which(args[0])):
+    if (not shell) and (not shutil.which(args[0])):
         raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({args[0]})"))
 
     # Log the command being run, temp variables
@@ -127,7 +127,7 @@ def shell(
     if skip: return
 
     if kwargs.get("shell", False):
-        args = '"' + '" "'.join(args) + '"'
+        args = ' '.join(args)
         log.warning((
             "Running command with (shell=True), be careful.. "
             "Consider using (confirm=True)"*(not confirm)

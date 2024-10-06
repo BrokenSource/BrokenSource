@@ -16,6 +16,7 @@ from typing import Self
 import dotenv
 from appdirs import AppDirs
 from attr import Factory, define, field
+from halo import Halo
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
@@ -344,11 +345,10 @@ class BrokenProject:
         # initialized that is not the main project itself
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
-                self.pyapp_new_binary_restore_hook()
-                Broken.PROJECT = self
-
                 if (BrokenPlatform.Administrator and not Broken.DOCKER):
-                    log.warning("Running as [red]Admin/Root[reset] is not required and discouraged")
+                    log.warning("Running as [bold blink red]Administrator/Root[/] is not required and discouraged")
+                self.pyapp_management()
+                Broken.PROJECT = self
 
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
@@ -390,7 +390,7 @@ class BrokenProject:
             )),
         ))
 
-    def pyapp_new_binary_restore_hook(self) -> None:
+    def pyapp_management(self) -> None:
         """One might send rolling releases or development betas of the same major version; whenever
         the current PyApp binary changes hash, we reinstall the virtual environment"""
         if not (executable := os.getenv("PYAPP", False)):
@@ -398,7 +398,7 @@ class BrokenProject:
 
         import hashlib
         venv_path = Path(os.getenv("VIRTUAL_ENV"))
-        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}.sha256"
+        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}-{Broken.VERSION}.sha256"
         this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
         old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
@@ -417,7 +417,11 @@ class BrokenProject:
             if BrokenPlatform.OnWindows:
                 BrokenPath.remove(ntfs_workaround)
                 venv_path.rename(ntfs_workaround)
-                input("\nPlease, reopen this executable due technical reasons of Windows NTFS. Press Enter to exit.\n")
+                try:
+                    rprint("\n[bold orange3 blink](Warning)[/] Please, reopen this executable to continue! Press Enter to exit..", end='')
+                    input()
+                except KeyboardInterrupt:
+                    pass
                 exit(0)
             else:
                 shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
@@ -427,7 +431,66 @@ class BrokenProject:
                 except KeyboardInterrupt:
                     exit(0)
 
+        # Note: Remove before unused version checking
         BrokenPath.remove(ntfs_workaround, echo=False)
+
+        # Note: Skip further prompts if any arguments are passed
+        if bool(sys.argv[1:]):
+            return
+
+        # Remove unused versions of the software
+        def manage_tracker(version: Path):
+            tracker = (version/"tracker.txt")
+            tracker.touch()
+            retention = 7
+            import arrow
+
+            def update_tracker(shift: int=0):
+                tracker.write_text(str(arrow.utcnow().shift(days=shift)))
+
+            # Initialize old, empty or new trackers; this is also a "first run"
+            # condition, take advantage to clean previous packages cache
+            if (not tracker.read_text()):
+                shell(sys.executable, "-m", "uv", "cache", "clean", "--quiet")
+                return update_tracker()
+
+            last_run = arrow.get(tracker.read_text() or arrow.utcnow())
+            sleeping = last_run.humanize(only_distance=True, granularity=("day"))
+
+            # Skip in-use versions not older than the limit
+            if (arrow.utcnow() < last_run.shift(days=retention)):
+                return
+
+            # Note: Only update current version tracker when it's over to avoid
+            # updating it every time, avoiding issues with multiple instances
+            if (version == venv_path):
+                return update_tracker()
+
+            from rich.prompt import Prompt
+
+            log.warning((
+                f"The version [bold green]v{version.name}[/] of the projects "
+                f"hasn't been used for {sleeping}!"
+                f"\n• [bold blue]{version}[/]"
+            ))
+
+            try:
+                match Prompt.ask(
+                    prompt="\n:: Choose an action:",
+                    choices=("keep", "delete"),
+                    default="delete",
+                ):
+                    case "delete":
+                        print()
+                        with Halo(f"Deleting unused version v{version.name}.."):
+                            shutil.rmtree(version, ignore_errors=True)
+                    case "keep":
+                        return update_tracker(shift=retention)
+            except KeyboardInterrupt:
+                exit(0)
+
+        for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
+            manage_tracker(version)
 
 # ------------------------------------------------------------------------------------------------ #
 
