@@ -68,6 +68,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
                 depth = self._estimate(image)
             depth = self.normalize_uint16(depth)
             Image.fromarray(depth).save(cached_image)
+
         return self.normalize(self._post_processing(depth))
 
     def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:

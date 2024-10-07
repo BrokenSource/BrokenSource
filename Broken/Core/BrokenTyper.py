@@ -6,7 +6,7 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generator, Iterable, List, Self, Set, Union
+from typing import Any, Callable, Generator, Iterable, Self, Set, Union
 
 import click
 import typer
@@ -133,16 +133,17 @@ class BrokenTyper:
         name = name.replace("_", "-").lower()
         self.default = (name if default else self.default)
         self.commands.add(name)
-        self.app.command(name=name,
+        self.app.command(
+            name=(name),
             help=(description or target.__doc__),
-            add_help_option=help,
-            no_args_is_help=naih,
+            add_help_option=(help),
+            no_args_is_help=(naih),
             rich_help_panel=(panel or self._panel),
-            hidden=hidden,
             context_settings=dict(
                 allow_extra_args=True,
                 ignore_unknown_options=True,
             ) if context else None,
+            hidden=(hidden),
             **kwargs,
         )(target)
 
@@ -237,7 +238,7 @@ class BrokenTyper:
             # On subsequent runs, prompt for command
             if (self._repl) and (index > 0):
                 if not self.repl_prompt():
-                    break
+                    return
 
             # Insert default command if none
             if self.default and not any((name in sys.argv for name in self.commands)):
@@ -258,11 +259,11 @@ class BrokenTyper:
 
             # Exit out non-repl mode
             if (not self._repl):
-                break
+                return
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
             if (index == 0) and actions():
-                break
+                return
 
             # Pretty welcome message on the first 'empty' run
             if (index == 0):
