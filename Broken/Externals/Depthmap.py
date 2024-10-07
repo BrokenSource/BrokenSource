@@ -53,12 +53,13 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
         # Load image and find expected cache path
         image = numpy.array(LoaderImage(image).convert("RGB"))
-        cached_image = self._cache/f"{image_hash(image)}-{self.__class__.__name__}-{self.model}.{self._format}"
+        cached_image = self._cache/f"{self.__class__.__name__}-{self.model}-{image_hash(image)}.{self._format}"
         cached_image.parent.mkdir(parents=True, exist_ok=True)
 
         # Load cached estimation if found
         if (cache and cached_image.exists()):
             depth = numpy.array(Image.open(cached_image))
+            cached_image.touch()
         else:
             self.load_torch()
             self.load_model()
@@ -78,6 +79,17 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
         normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
         return self.normalize(normal).astype(numpy.float32)
+
+    def cleanup(self, days: int=2) -> None:
+        import os
+        import time
+
+        for file in os.scandir(self._cache):
+            sleeping = os.path.getmtime(file)
+
+            if (time.time() < sleeping + ((3600*24)*days)):
+                log.minor(f"Removing unused depthmap cache: {file.path}")
+                os.unlink(file.path)
 
     @functools.wraps(estimate)
     @abstractmethod
@@ -99,7 +111,7 @@ class DepthAnythingBase(DepthEstimator):
         Large = "large"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold red](🔴 Basic)[reset] What model of DepthAnythingV2 to use")] = \
+        help="[bold red](🔴 Basic)[/] What model of DepthAnythingV2 to use")] = \
         Field(default=Model.Base)
 
     _processor: Any = PrivateAttr(None)
@@ -124,7 +136,7 @@ class DepthAnythingBase(DepthEstimator):
         return depth.squeeze(1).cpu().numpy()[0]
 
 class DepthAnythingV1(DepthAnythingBase):
-    """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[reset]"""
+    """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
     def _model_prefix(self) -> str:
         return "LiheYoung/depth-anything-"
 
@@ -135,7 +147,7 @@ class DepthAnythingV1(DepthAnythingBase):
         return depth
 
 class DepthAnythingV2(DepthAnythingBase):
-    """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[reset]"""
+    """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
     def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
 
@@ -148,7 +160,7 @@ class DepthAnythingV2(DepthAnythingBase):
 # ------------------------------------------------------------------------------------------------ #
 
 class DepthPro(DepthEstimator):
-    """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[reset]"""
+    """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[/]"""
     _model: Any = PrivateAttr(None)
     _transform: Any = PrivateAttr(None)
 
@@ -198,14 +210,14 @@ class DepthPro(DepthEstimator):
 # ------------------------------------------------------------------------------------------------ #
 
 class ZoeDepth(DepthEstimator):
-    """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[reset]"""
+    """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/]"""
     class Model(str, BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold red](🔴 Basic)[reset] What model of ZoeDepth to use")] = \
+        help="[bold red](🔴 Basic)[/] What model of ZoeDepth to use")] = \
         Field(default=Model.N)
 
     def _load_model(self) -> None:
@@ -229,7 +241,7 @@ class ZoeDepth(DepthEstimator):
 # ------------------------------------------------------------------------------------------------ #
 
 class Marigold(DepthEstimator):
-    """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[reset]"""
+    """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
 
     def _load_model(self) -> None:
         install("accelerate", "diffusers", "matplotlib")

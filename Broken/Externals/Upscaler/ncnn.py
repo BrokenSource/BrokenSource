@@ -17,23 +17,23 @@ from Broken.Externals.Upscaler import BrokenUpscaler
 
 class UpscalerNCNN_Base(BrokenUpscaler):
     denoise: Annotated[int, typer.Option("--denoise", "-n", min=0, max=3,
-        help="[bold yellow](🟡 Specific)[reset] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
+        help="[bold yellow](🟡 Specific)[/] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
         Field(default=3, gt=-1)
 
     tile_size: Annotated[int, typer.Option("--tile-size", "-t", min=0,
-        help="[bold yellow](🟡 Specific)[reset] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
+        help="[bold yellow](🟡 Specific)[/] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
         Field(default=0, gt=-1)
 
     tta: Annotated[bool, typer.Option("--tta", "-x",
-        help="[bold yellow](🟡 Specific)[reset] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[reset]")] = \
+        help="[bold yellow](🟡 Specific)[/] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/]")] = \
         Field(default=False)
 
     cpu: Annotated[bool, typer.Option("--cpu", "-c",
-        help="[bold yellow](🟡 Specific)[reset] Use CPU for processing instead of the GPU [yellow](SLOW)[reset]")] = \
+        help="[bold yellow](🟡 Specific)[/] Use CPU for processing instead of the GPU [yellow](SLOW)[/]")] = \
         Field(default=False)
 
     gpu: Annotated[int, typer.Option("--gpu", "-g", min=0,
-        help="[bold yellow](🟡 Specific)[reset] Use the Nth GPU for processing")] = \
+        help="[bold yellow](🟡 Specific)[/] Use the Nth GPU for processing")] = \
         Field(default=0, gt=-1)
 
     load_threads: Annotated[int, typer.Option("--load-threads", "-lt", min=1,
@@ -94,7 +94,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 # ------------------------------------------------------------------------------------------------ #
 
 class Waifu2x(UpscalerNCNN_Base):
-    """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[reset]"""
+    """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/]"""
 
     class Model(str, BrokenEnum):
         models_cunet = "models_cunet"
@@ -149,7 +149,7 @@ class Waifu2x(UpscalerNCNN_Base):
 # ------------------------------------------------------------------------------------------------ #
 
 class Realesr(UpscalerNCNN_Base):
-    """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[reset]"""
+    """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[/]"""
 
     class Model(str, BrokenEnum):
         realesr_animevideov3    = "realesr_animevideov3"

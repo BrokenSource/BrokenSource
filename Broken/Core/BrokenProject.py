@@ -23,7 +23,7 @@ from rich.panel import Panel
 from typer import Context
 
 import Broken
-from Broken.Core import BrokenAttrs, flatten, shell
+from Broken.Core import BrokenAttrs, actions, flatten, shell
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
@@ -60,9 +60,8 @@ class _Directories:
         When running from a Release:
             - Directory where the executable is located
         """
-        if Broken.RELEASE:
+        if Broken.EXECUTABLE:
             return Path(sys.executable).parent.resolve()
-
         return Path(self.PROJECT.PACKAGE).parent.resolve()
 
     # # Unknown / new project directories
@@ -435,7 +434,7 @@ class BrokenProject:
         BrokenPath.remove(ntfs_workaround, echo=False)
 
         # Note: Skip further prompts if any arguments are passed
-        if bool(sys.argv[1:]):
+        if actions():
             return
 
         # Remove unused versions of the software
@@ -560,7 +559,7 @@ class BrokenApp(ABC, BrokenAttrs):
                 target=run(python, class_name, code),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
-                panel=f"📦 Projects at [bold]({python})[reset]",
+                panel=f"📦 Projects at [bold]({python})[/]",
                 context=True,
                 help=False,
             )

@@ -6,7 +6,7 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generator, Iterable, List, Set, Union
+from typing import Any, Callable, Generator, Iterable, List, Self, Set, Union
 
 import click
 import typer
@@ -19,7 +19,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 import Broken
-from Broken import BrokenPlatform, apply, flatten, log, pydantic2typer
+from Broken import BrokenPlatform, actions, apply, flatten, log, pydantic2typer
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -55,8 +55,8 @@ class BrokenTyper:
     help: bool = True
 
     credits: str = (
-        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][reset] [yellow]{Broken.RUNTIME} v{Broken.VERSION}[reset]\n\n"
-        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[reset]"
+        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Broken.RUNTIME} v{Broken.VERSION}[/]\n\n"
+        "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[/]"
     )
 
     @staticmethod
@@ -151,30 +151,26 @@ class BrokenTyper:
         BYPASS = (os.getenv("REPL", "1") == "0")
         return (self.repl and not BYPASS)
 
-    def release_repl(self) -> None:
+    def release_repl(self) -> Self:
         self.repl = all((
-            Broken.RELEASE,
-            not bool(sys.argv[1:]),
-            not BrokenPlatform.OnLinux
+            (Broken.EXECUTABLE),
+            (not BrokenPlatform.OnLinux),
+            (not actions()),
         ))
+        return self
 
     @staticmethod
     def simple(*commands: Iterable[Callable]) -> None:
-        app = BrokenTyper()
-        app.release_repl()
-
-        for command in commands:
-            app.command(command)
-
+        app = BrokenTyper().release_repl()
+        apply(app.command, commands)
         return app(sys.argv[1:])
 
     @staticmethod
     def release(main: Callable, *others: Iterable[Callable]) -> None:
         app = BrokenTyper(description=(
-            "📦 [bold orange3]BrokenTyper's[reset] Multiple entry points handler for releases executables\n\n"
+            "📦 [bold orange3]BrokenTyper's[/] Multiple entry points handler for releases executables\n\n"
             "• Chose an option below for what parts of the software you want to run!\n"
-        ))
-        app.release_repl()
+        )).release_repl()
 
         # Redirects a ctx to sys.argv and calls the method
         def proxy(callable: Callable) -> None:
@@ -186,7 +182,7 @@ class BrokenTyper:
         for method in flatten(main, others):
 
             # Automatically select 'main' method on non-repl or with incoming args
-            default = ((method is main) and (not app.repl or bool(sys.argv[1:])))
+            default = ((method is main) and (not app.repl or actions()))
 
             app.command(
                 target=proxy(method),
@@ -201,19 +197,16 @@ class BrokenTyper:
 
     def repl_welcome(self) -> None:
         console.print(Panel(
-            title="( 🔴🟡🟢 ) Welcome to the Interactive Shell mode for Releases 🚀",
+            title="( 🔴🟡🟢 ) Basic prompt for releases",
             title_align="left",
             border_style="bold grey42",
             expand=False,
             renderable=Group(
                 Text.from_markup(
-                    "\nHere's your chance to [royal_blue1]run commands on a basic shell[reset], interactively\n\n"
-                    "> This mode is [royal_blue1]Experimental[reset] and projects might not work as expected\n\n"
-                    "• Preferably run the projects on a [royal_blue1]Terminal[reset] as [spring_green1]./program.exe (args)[reset]\n"
-                    "• You can skip this shell mode with [spring_green1]'REPL=0'[reset] environment variable\n"
+                    "\nSelect a [royal_blue1]command above[/], type and run it!\n"
                 ), Panel(
-                    "• Run any [spring_green1]'command --help'[reset] for a command list [bold bright_black](seen above)[reset]\n"
-                    "• Press [spring_green1]'CTRL+C'[reset] to exit this shell [bold bright_black](or close the Terminal)[reset]",
+                    "• Run [spring_green1]'{command} --help'[/] for usage [bold bright_black](seen above)[/]\n"
+                    "• Press [spring_green1]'Ctrl+C'[/] to exit [bold bright_black](or close this window)[/]",
                     title="Tips",
                     border_style="green"
                 )
@@ -256,13 +249,19 @@ class BrokenTyper:
                 log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:
                 log.success("BrokenTyper exit KeyboardInterrupt")
+            except Exception as error:
+                if (not self.repl):
+                    raise error
+                console.print_exception(); print() # noqa
+                log.error(f"BrokenTyper exited with error: {repr(error)}")
+                input("\nPress Enter to continue..")
 
             # Exit out non-repl mode
             if (not self._repl):
                 break
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
-            if (index == 0) and bool(sys.argv[1:]):
+            if (index == 0) and actions():
                 break
 
             # Pretty welcome message on the first 'empty' run

@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
 class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
     cache: Annotated[Path, typer.Option("--cache", "-c",
-        help="[bold green](🟢 Basic)[reset] Output directory for the stems, works as cache")] = \
+        help="[bold green](🟢 Basic)[/] Output directory for the stems, works as cache")] = \
         BROKEN.DIRECTORIES.SYSTEM_TEMP/"Spleeter"
 
     format: Annotated[str, typer.Option("--format", "-f",
-        help="[bold green](🟢 Basic)[reset] Output format for the stems")] = \
+        help="[bold green](🟢 Basic)[/] Output format for the stems")] = \
         Field(default="ogg")
 
     def _load_model(self) -> None:

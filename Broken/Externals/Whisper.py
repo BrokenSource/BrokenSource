@@ -46,11 +46,11 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         LargeDist3   = "distil-large-v3"
 
     model: Annotated[Model, typer.Option("--model", "-m",
-        help="[bold green](🟢 Basic)[reset] Model to use for Transcription [green](tiny, base, small, medium, large)[reset]")] = \
+        help="[bold green](🟢 Basic)[/] Model to use for Transcription [green](tiny, base, small, medium, large)[/]")] = \
         Field(default=Model.LargeV2)
 
     lowvram: Annotated[bool, typer.Option("--lowvram", "-l",
-        help="[bold green](🟢 Basic)[reset] Use INT8 instead of FP16 for low VRAM GPUs")] = \
+        help="[bold green](🟢 Basic)[/] Use INT8 instead of FP16 for low VRAM GPUs")] = \
         Field(default=False)
 
     def _load_model(self):

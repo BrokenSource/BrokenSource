@@ -362,6 +362,10 @@ def install(
 
     raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
 
+def actions() -> bool:
+    """Returns True if any arguments were passed"""
+    return bool(sys.argv[1:])
+
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
