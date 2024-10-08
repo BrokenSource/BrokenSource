@@ -397,7 +397,7 @@ class BrokenProject:
 
         import hashlib
         venv_path = Path(os.getenv("VIRTUAL_ENV"))
-        hash_file = venv_path.parent/f"{self.APP_NAME.lower()}-{Broken.VERSION}.sha256"
+        hash_file = (venv_path/"version.sha256")
         this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
         old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
@@ -438,8 +438,8 @@ class BrokenProject:
             return
 
         # Remove unused versions of the software
-        def manage_tracker(version: Path):
-            tracker = (version/"tracker.txt")
+        def manage_unused(version: Path):
+            tracker = (version/"last-run.txt")
             tracker.touch()
             retention = 7
             import arrow
@@ -474,22 +474,22 @@ class BrokenProject:
             ))
 
             try:
-                match Prompt.ask(
+                answer = Prompt.ask(
                     prompt="\n:: Choose an action:",
                     choices=("keep", "delete"),
                     default="delete",
-                ):
-                    case "delete":
-                        print()
-                        with Halo(f"Deleting unused version v{version.name}.."):
-                            shutil.rmtree(version, ignore_errors=True)
-                    case "keep":
-                        return update_tracker(shift=retention)
+                )
+                if (answer == "delete"):
+                    print()
+                    with Halo(f"Deleting unused version v{version.name}.."):
+                        shutil.rmtree(version, ignore_errors=True)
+                if (answer == "keep"):
+                    return update_tracker(shift=retention)
             except KeyboardInterrupt:
                 exit(0)
 
         for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
-            manage_tracker(version)
+            manage_unused(version)
 
 # ------------------------------------------------------------------------------------------------ #
 

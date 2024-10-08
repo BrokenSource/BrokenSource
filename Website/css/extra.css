@@ -65,7 +65,7 @@ table > thead > tr > th {
 }
 
 /* Elegant button */
-.md-button--elegant {
+.md-button--thin {
   border: 1px solid !important;
 }
 

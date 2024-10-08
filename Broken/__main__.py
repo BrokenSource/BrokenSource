@@ -271,7 +271,7 @@ class ProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Rename project binary according to the Broken naming convention
-            for version in ("latest", BROKEN.VERSION):
+            for version in (BROKEN.VERSION,): # "latest"):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}",
                     f"-{torch.name.lower()}".replace("-macos", "") if torch else "",
@@ -335,6 +335,7 @@ class BrokenManager(BrokenSingleton):
             self.broken_typer.command(self.rust)
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.tremeschin, hidden=True)
+            self.broken_typer.command(self.clean, hidden=True)
             self.broken_typer.command(self.ryeup, hidden=True)
 
         with self.broken_typer.panel("🚀 Core"):
@@ -508,6 +509,18 @@ class BrokenManager(BrokenSingleton):
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
         BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
+
+    def clean(self) -> None:
+        """🧹 Remove pycaches, common blob directories"""
+        root = BROKEN.DIRECTORIES.REPOSITORY
+
+        for path in root.rglob("__pycache__"):
+            BrokenPath.remove(path)
+
+        # Fixed known blob directories
+        BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
+        BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
+        BrokenPath.remove(root/".cache")
 
     def sync(self) -> None:
         """♻️  Synchronize common Resources Files across all Projects"""

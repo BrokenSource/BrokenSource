@@ -152,13 +152,16 @@ class BrokenTask:
             return None
 
         # The assumed instant the code below will run instantly
-        now = self.next_call if self.freewheel else time.absolute()
-        self.kwargs["dt"] = (now - self.last_call)
-        self.last_call = now
+        now = (self.next_call if self.freewheel else time.absolute())
 
-        # Frameskip limits maximum dt to period
-        if (not self.frameskip):
-            self.kwargs["dt"] = min(self.kwargs["dt"], self.period)
+        if (self._dt):
+            self.kwargs["dt"] = (now - self.last_call)
+
+            # Frameskip limits maximum dt to period
+            if (not self.frameskip):
+                self.kwargs["dt"] = min(self.kwargs["dt"], self.period)
+
+        self.last_call = now
 
         # Enter or not the given context, call task with args and kwargs
         with (self.lock or NULL_CONTEXT):

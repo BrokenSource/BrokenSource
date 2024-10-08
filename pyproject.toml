@@ -66,9 +66,9 @@ shaderflow = [
     "watchdog~=5.0.3",
     "pytimeparse2~=1.7.1",
     # Math
-    "numpy-quaternion~=2024.0.2",
+    "numpy-quaternion==2023.0.3",
     "opensimplex~=0.4.5.1",
-    "scipy~=1.14.1",
+    "scipy~=1.13.1",
     # Image Processing
     "opencv-contrib-python~=4.10.0.84",
     # Audio

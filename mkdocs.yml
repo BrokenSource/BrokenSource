@@ -56,8 +56,16 @@ nav:
     - Quick start:
       - ✅ Installation: shaderflow/easy/install.md
       - ⭐️ Examples: shaderflow/easy/examples.md
-    - Usage:
-      - Controls: shaderflow/controls.md
+
+    - Learn:
+      - Modules:
+        - Camera: shaderflow/modules/camera.md
+      - Core:
+        - Module: shaderflow/module.md
+        - Scene: shaderflow/scene.md
+        - Shader: shaderflow/shader.md
+        - Texture: shaderflow/texture.md
+
     - Code reference:
       - 📦 Package: code/shaderflow/
 
@@ -230,10 +238,13 @@ markdown_extensions:
         kwds:
           case: lower
   - pymdownx.highlight:
-      linenums: true
+      linenums: false
       use_pygments: true
       auto_title: true
       pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg

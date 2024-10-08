@@ -40,11 +40,13 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
     _format: str = PrivateAttr("png")
     """The format to save the depth map as"""
 
-    def normalize(self, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
+    @staticmethod
+    def normalize(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
-    def normalize_uint16(self, array: numpy.ndarray) -> numpy.ndarray:
-        return ((2**16 - 1) * self.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
+    @staticmethod
+    def normalize_uint16(array: numpy.ndarray) -> numpy.ndarray:
+        return ((2**16 - 1) * DepthEstimator.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
 
     def estimate(self,
         image: LoadableImage,
@@ -66,10 +68,10 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
             with self._lock, Halo(f"Estimating Depthmap (Torch: {self.device})"):
                 torch.set_num_threads(max(4, multiprocessing.cpu_count()//2))
                 depth = self._estimate(image)
-            depth = self.normalize_uint16(depth)
+            depth = DepthEstimator.normalize_uint16(depth)
             Image.fromarray(depth).save(cached_image)
 
-        return self.normalize(self._post_processing(depth))
+        return DepthEstimator.normalize(self._post_processing(depth))
 
     def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:
         """Estimates a normal map from a depth map using heuristics"""
@@ -79,7 +81,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         dx = numpy.arctan2(200*numpy.gradient(depth, axis=1), 1)
         dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
         normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
-        return self.normalize(normal).astype(numpy.float32)
+        return DepthEstimator.normalize(normal).astype(numpy.float32)
 
     def cleanup(self, days: int=2) -> None:
         import os
@@ -232,7 +234,7 @@ class ZoeDepth(DepthEstimator):
 
     # Downscale for the largest component to be 512 pixels (Zoe precision), invert for 0=infinity
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
-        depth = Image.fromarray(1 - self.normalize(self._model.infer_pil(image)))
+        depth = Image.fromarray(1 - DepthEstimator.normalize(self._model.infer_pil(image)))
         new = BrokenResolution.fit(old=depth.size, max=(512, 512), ar=depth.size[0]/depth.size[1])
         return numpy.array(depth.resize(new, resample=Image.LANCZOS)).astype(numpy.float32)
 

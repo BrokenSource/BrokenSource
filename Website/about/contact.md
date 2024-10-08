@@ -40,8 +40,6 @@ title: About/Contact
 
 </div>
 
-[^1]: Feel free to Direct Message me on [**Discord**](https://discord.com/users/183692720064299008){:target="_blank"} or [**Telegram**](https://t.me/Tremeschin){:target="_blank"} for Formal enquiries as well
-
 !!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
