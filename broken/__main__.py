@@ -44,7 +44,7 @@ class ProjectCLI:
     # # Main entry point
 
     def cli(self, ctx: Context) -> None:
-        self.typer = BrokenTerminal(help=False)
+        self.typer = BrokenTerminal()
         self.typer.command(self.update,  help=True)
         self.typer.command(self.release, help=True)
         self.typer.command(self.run,     help=False, context=True)
@@ -164,7 +164,7 @@ class ProjectCLI:
             BrokenSystem.clear_terminal() if clear else None
 
             if self.is_python:
-                log.info(f"Hey! Just type '{self.name.lower()}' to run the project with Rye, it's faster 😉")
+                log.info(f"Hey! Just type '{self.name.lower()}' to run the project, it's faster 😉")
                 return
 
             elif self.is_rust:
@@ -325,7 +325,6 @@ class BrokenManager(BrokenSingleton):
         self.broken_typer = BrokenTerminal(description=(
             "🚀 Broken Source Software Monorepo development manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️ Broken Source Software, AGPL-3.0 License"
         ))
 
         with self.broken_typer.panel("📦 Development"):

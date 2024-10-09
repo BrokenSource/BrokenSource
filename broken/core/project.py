@@ -43,7 +43,6 @@ def mkdir(path: Path, resolve: bool=True) -> Path:
 
 @define(slots=False)
 class _Directories:
-    """You shouldn't really use this class directly"""
     project: BrokenProject
     app_dirs: AppDirs = field(default=None)
 
@@ -69,7 +68,7 @@ class _Directories:
 
     def __set__(self, name: str, value: Path) -> Path:
         """Create a new directory property if Path is given, else set the value"""
-        self.__dict__[name] = value if not isinstance(value, Path) else mkdir(value)
+        self.__dict__[name] = (value if not isinstance(value, Path) else mkdir(value))
 
     def __setattr__(self, name: str, value: Path) -> Path:
         self.__set__(name, value)
@@ -165,7 +164,7 @@ class _Directories:
         if (os.name == "nt"):
             return mkdir(BrokenPath.Windows.Documents()/author_name)
 
-        return mkdir(Path(self.app_dirs.user_data_dir)/self.project.name)
+        return mkdir(Path(self.app_dirs.user_data_dir)/self.project.name.lower())
 
     @property
     def config(self) -> Path:
@@ -277,11 +276,11 @@ class _Resources:
 
     @property
     def icon_png(self) -> Path:
-        return mkdir(self.images)/f"{self.project.name.lower()}.png"
+        return mkdir(self.images)/"logo.png"
 
     @property
     def icon_ico(self) -> Path:
-        return mkdir(self.images)/f"{self.project.name.lower()}.ico"
+        return mkdir(self.images)/"logo.ico"
 
     # # Shaders section
 

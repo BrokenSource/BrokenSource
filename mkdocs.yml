@@ -99,8 +99,8 @@ watch:
 theme:
   name: material
   custom_dir: website/overrides
-  logo: resources/images/broken.png
-  favicon: resources/images/broken.png
+  logo: resources/images/logo.png
+  favicon: resources/images/logo.png
   font:
     text: Roboto Slab
     code: Cascadia Code
