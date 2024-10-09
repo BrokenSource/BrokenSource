@@ -1,13 +1,13 @@
 # Monorepo
 .cache
 .venv
-Build
-Insiders
-Meta
-Private
-Release
-Temp
-Workspace
+build
+insiders
+meta
+private
+release
+temp
+workspace
 
 # Python
 **__pycache__*

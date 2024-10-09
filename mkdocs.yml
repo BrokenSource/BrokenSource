@@ -2,12 +2,12 @@ site_name: Broken Source Software
 site_description: Unified Documentation and Resources
 site_url: https://brokensrc.dev/
 repo_url: https://github.com/BrokenSource/BrokenSource/
-edit_uri: edit/main/Website/
+edit_uri: edit/main/website/
 repo_name: GitHub
 site_author: Tremeschin
 copyright: © 2023-2024, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
-docs_dir: Website
-site_dir: Build/Website
+docs_dir: website
+site_dir: build/website
 nav:
   - Home:
     - index.md
@@ -91,14 +91,14 @@ exclude_docs: |
   make.py
 
 watch:
-  - Broken
-  - Projects
-  - Scripts
-  - Website
+  - broken
+  - projects
+  - scripts
+  - website
 
 theme:
   name: material
-  custom_dir: Website/overrides
+  custom_dir: website/overrides
   logo: resources/images/broken.png
   favicon: resources/images/broken.png
   font:
@@ -159,7 +159,7 @@ plugins:
   - literate-nav
   - gen-files:
       scripts:
-        - Website/make.py
+        - website/make.py
   - mkdocstrings:
       handlers:
         python:

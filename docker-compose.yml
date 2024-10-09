@@ -6,7 +6,7 @@ services:
     image: broken-base-local
     build:
       context: .
-      dockerfile: Docker/base.dockerfile
+      dockerfile: docker/base.dockerfile
 
     volumes:
       - /usr/lib/wsl:/usr/lib/wsl
@@ -27,7 +27,7 @@ services:
     image: glinfo-local
     build:
       context: .
-      dockerfile: Docker/glinfo.dockerfile
+      dockerfile: docker/glinfo.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -38,7 +38,7 @@ services:
     image: shaderflow-local
     build:
       context: .
-      dockerfile: Docker/shaderflow.dockerfile
+      dockerfile: docker/shaderflow.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -47,7 +47,7 @@ services:
     image: depthflow-local
     build:
       context: .
-      dockerfile: Docker/depthflow.dockerfile
+      dockerfile: docker/depthflow.dockerfile
     depends_on:
       - broken-base
     ports:

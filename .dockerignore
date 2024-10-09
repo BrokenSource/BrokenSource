@@ -2,13 +2,13 @@ ___*
 .cache
 .venv
 .vscode
-Build
-Meta
-Private
+build
+meta
+private
 *.env
 *.dockerfile
 
 # Common files across projects
-**/Workspace
-**/Website
+**/workspace
+**/website
 **/.github

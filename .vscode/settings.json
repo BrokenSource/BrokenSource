@@ -10,13 +10,13 @@
     "material-icon-theme.folders.associations": {
 
         // Common website directories
-        "Overrides": "other",
-        "Learn": "other",
-        "Easy": "other",
-        "Cloud": "aws",
+        "overrides": "other",
+        "learn": "other",
+        "easy": "other",
+        "cloud": "aws",
 
         // Rust
-        "Rust": "src",
+        "rust": "src",
         ".cargo": "config",
 
         // PlatformIO
@@ -24,25 +24,25 @@
 
         // Python
         ".venvs": "python",
-        "Wheels": "python",
+        "wheels": "python",
 
         // Project's Workspace
-        "Workspace":  "container",
-        "Externals":  "core",
-        "Scenes":     "core",
-        "User":       "home",
-        "Premium":    "admin",
-        "Default":    "examples",
-        "Community":  "shared",
-        "Prompts":    "log",
-        "Papers":     "log",
-        "Staging":    "temp",
-        "Midis":      "audio",
-        "Midi":       "audio",
-        "SoundFonts": "audio",
-        "Profile":    "admin",
-        "Fork":       "less",
-        "Vectron":    "core",
+        "workspace":  "container",
+        "externals":  "core",
+        "scenes":     "core",
+        "user":       "home",
+        "premium":    "admin",
+        "default":    "examples",
+        "community":  "shared",
+        "prompts":    "log",
+        "papers":     "log",
+        "staging":    "temp",
+        "midis":      "audio",
+        "midi":       "audio",
+        "soundfonts": "audio",
+        "profile":    "admin",
+        "fork":       "less",
+        "vectron":    "core",
 
         // Website
         "get":   "download",
@@ -51,34 +51,34 @@
         "about": "other",
 
         // Shaders
-        "Fragment": "shader",
-        "Vertex":   "shader",
+        "fragment": "shader",
+        "vertex":   "shader",
 
         // Projects
-        "Broken":      "src",
-        "Insiders":    "secure",
-        "Ardmin":      "tools",
-        "DepthFlow":   "tools",
-        "PhasorFlow":  "tools",
-        "QuadSnap":    "tools",
-        "ShaderFlow":  "tools",
-        "Archium":     "tools",
-        "Upscalin":    "tools",
-        "Pianola":     "tools",
-        "SpectroNote": "tools",
-        "FastCutter":  "tools",
-        "Modpanel":    "tools",
-        "TurboPipe":   "tools",
+        "broken":      "src",
+        "insiders":    "secure",
+        "ardmin":      "tools",
+        "depthflow":   "tools",
+        "phasorflow":  "tools",
+        "quadsnap":    "tools",
+        "shaderflow":  "tools",
+        "archium":     "tools",
+        "upscalin":    "tools",
+        "pianola":     "tools",
+        "spectronote": "tools",
+        "fastcutter":  "tools",
+        "modpanel":    "tools",
+        "turbopipe":   "tools",
 
         // Sub-packages of Broken
-        "Dotmap":   "core",
-        "FFmpeg":   "core",
-        "Loaders":  "core",
-        "Upscaler": "core",
-        "Optional": "include",
+        "dotmap":   "core",
+        "ffmpeg":   "core",
+        "loaders":  "core",
+        "upscaler": "core",
+        "optional": "include",
 
         // Personal
-        "Tremeschin": "home",
+        "tremeschin": "home",
     },
 
     // Better comments colors

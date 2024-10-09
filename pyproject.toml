@@ -8,14 +8,14 @@ Docs      = "https://brokensrc.dev/broken"
 Homepage  = "https://brokensrc.dev"
 
 [tool.hatch.version]
-path = "Broken/Version.py"
+path = "broken/version.py"
 
 [project]
 name         = "broken-source"
 dynamic      = ["version"]
 description  = "🚀 Broken Source Software Main Library"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
-readme       = "Readme.md"
+readme       = "readme.md"
 license      = "AGPL-3.0"
 requires-python = ">=3.9"
 dependencies = [
@@ -114,7 +114,7 @@ website = [
 ]
 
 [project.scripts]
-broken = "Broken.__main__:main"
+broken = "broken.__main__:main"
 
 [tool.rye]
 managed = true
@@ -135,9 +135,10 @@ dev-dependencies = [
 
 [tool.rye.workspace]
 members = [
-    "Private/Projects/*",
-    "Projects/*",
-    "Meta/*",
+    "private/projects/*",
+    "projects/*",
+    "insiders",
+    "meta/*",
 ]
 
 # # Hatchling
@@ -148,13 +149,13 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "Broken",
+    "broken",
     # On binary releases, include all projects
-    #<pyapp>"Projects/DepthFlow/DepthFlow",
-    #<pyapp>"Projects/Pianola/Pianola",
-    #<pyapp>"Projects/ShaderFlow/ShaderFlow",
-    #<pyapp>"Projects/SpectroNote/SpectroNote",
-    #<pyapp>"Projects/Upscalin/Upscalin",
+    #<pyapp>"projects/depthflow/depthflow",
+    #<pyapp>"projects/pianola/pianola",
+    #<pyapp>"projects/shaderflow/shaderflow",
+    #<pyapp>"projects/spectronote/spectronote",
+    #<pyapp>"projects/upscalin/upscalin",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -219,7 +220,7 @@ addopts = [
 ]
 python_classes = "_PyTest"
 python_files = [
-    "Core/Broken*.py",
+    "core/broken*.py",
 ]
 
 # Others

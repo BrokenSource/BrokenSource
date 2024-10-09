@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "Broken/Version.py"
+      - "broken/version.py"
 
 jobs:
   releases:
@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macos-14]
     steps:
       - uses: BrokenSource/BrokenSource@main
-        name: Broken Setup
+        name: Broken setup
 
       # DepthFlow
 
@@ -25,8 +25,8 @@ jobs:
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
         with:
-          name: DepthFlow
-          path: Release/depthflow*
+          name: depthflow
+          path: release/depthflow*
 
       # Pianola
 
@@ -37,8 +37,8 @@ jobs:
       - name: Upload Pianola releases
         uses: actions/upload-artifact@v3
         with:
-          name: Pianola
-          path: Release/pianola*
+          name: pianola
+          path: release/pianola*
 
       # ShaderFlow
 
@@ -49,8 +49,8 @@ jobs:
       - name: Upload ShaderFlow releases
         uses: actions/upload-artifact@v3
         with:
-          name: ShaderFlow
-          path: Release/shaderflow*
+          name: shaderflow
+          path: release/shaderflow*
 
       # SpectroNote
 
@@ -61,8 +61,8 @@ jobs:
       - name: Upload SpectroNote releases
         uses: actions/upload-artifact@v3
         with:
-          name: SpectroNote
-          path: Release/spectronote*
+          name: spectronote
+          path: release/spectronote*
 
   wheels:
     name: Release Wheels
@@ -70,7 +70,7 @@ jobs:
     needs: releases
     steps:
       - uses: BrokenSource/BrokenSource@main
-        name: Broken Setup
+        name: Broken setup
 
       - name: Build wheels
         if: ${{ env.BROKEN_PYPI == 'True' }}
@@ -81,8 +81,8 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
-          name: Wheels
-          path: Build/Wheels/*.whl
+          name: wheels
+          path: build/wheels/*.whl
 
       - name: Create Release Tag
         if: ${{ env.BROKEN_TAG == 'True' }}

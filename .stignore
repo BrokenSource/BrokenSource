@@ -3,8 +3,8 @@
 # Or un-stage .stignore removal as a repository
 
 # Recursive
-**/Workspace
-**/Build
+**/workspace
+**/build
 **/.venv
 **/.cache
 **/.pio
