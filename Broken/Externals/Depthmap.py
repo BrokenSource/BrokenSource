@@ -2,8 +2,9 @@
 
 import copy
 import functools
+import itertools
 import multiprocessing
-import sys
+import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
@@ -70,7 +71,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
                 depth = self._estimate(image)
             depth = DepthEstimator.normalize_uint16(depth)
             Image.fromarray(depth).save(cached_image)
-
+            self.cleanup()
         return DepthEstimator.normalize(self._post_processing(depth))
 
     def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:
@@ -83,15 +84,14 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
         return DepthEstimator.normalize(normal).astype(numpy.float32)
 
-    def cleanup(self, days: int=2) -> None:
-        import os
-        import time
+    def cleanup(self, maximum: int=20) -> None:
+        files = list(os.scandir(self._cache))
 
-        for file in os.scandir(self._cache):
-            sleeping = os.path.getmtime(file)
+        if (overflow := (len(files) - maximum)) > 0:
+            files = sorted(files, key=os.path.getmtime)
 
-            if (time.time() < sleeping + ((3600*24)*days)):
-                log.minor(f"Removing unused depthmap cache: {file.path}")
+            for file in itertools.islice(files, overflow):
+                log.minor(f"Removing old depthmap: {file.path}")
                 os.unlink(file.path)
 
     @functools.wraps(estimate)

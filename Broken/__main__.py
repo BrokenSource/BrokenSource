@@ -359,12 +359,12 @@ class BrokenManager(BrokenSingleton):
 
     def tremeschin(self):
         url, path = ("https://github.com/Tremeschin/Private", BROKEN.DIRECTORIES.BROKEN_PRIVATE)
-        shell("git", "clone", url, path, "--recurse-submodules")
+        shell("git", "clone", url, path, "--recurse-submodules", "-j4")
 
     def insiders(self):
         """💎 Clone the Insiders repository (WIP, Not Available)"""
         url, path = ("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.BROKEN_INSIDERS)
-        shell("git", "clone", url, path, "--recurse-submodules")
+        shell("git", "clone", url, path, "--recurse-submodules", "-j4")
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
