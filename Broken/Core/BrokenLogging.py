@@ -5,7 +5,7 @@ from typing import Callable, Dict
 import rich
 from loguru import logger as log
 
-import Broken
+from Broken import Runtime
 from Broken.Core import BrokenSingleton
 
 # Don't log contiguous long paths
@@ -31,7 +31,7 @@ class BrokenLogging(BrokenSingleton):
         data["project"] = self.project()
 
         # Simpler logging for non utf8
-        if Broken.GITHUB_CI:
+        if Runtime.Github:
             return ("[{project}][{time}][{level:7}] {message}").format(**data)
 
         return (
@@ -52,7 +52,7 @@ class BrokenLogging(BrokenSingleton):
 
     @property
     def sink(self) -> Callable:
-        if Broken.GITHUB_CI:
+        if Runtime.Github:
             return print
         return rich.print
 

@@ -9,7 +9,6 @@ from attr import Factory, define
 from dotmap import DotMap
 from typer import Argument, Context, Option, Typer
 
-import Broken
 from Broken import (
     BROKEN,
     BrokenEnum,
@@ -19,6 +18,7 @@ from Broken import (
     BrokenSingleton,
     BrokenTyper,
     Patch,
+    Runtime,
     Stack,
     TorchFlavor,
     denum,
@@ -460,7 +460,7 @@ class BrokenManager(BrokenSingleton):
         import requests
 
         # Skip if we're on a GitHub Action
-        if (Broken.GITHUB_CI):
+        if (Runtime.Github):
             return
 
         # Install rustup based on platform

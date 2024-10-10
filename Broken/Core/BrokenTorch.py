@@ -2,8 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-import Broken
-from Broken import BrokenEnum, BrokenPlatform, log, shell
+from Broken import BrokenEnum, BrokenPlatform, Runtime, log, shell
 
 
 class TorchFlavor(BrokenEnum):
@@ -36,7 +35,7 @@ class BrokenTorch:
                 break
 
         # Workaround (#pyapp): Until we can send envs to PyAapp, do this monsterous hack
-        if Broken.PYAPP:
+        if Runtime.PyApp:
             version_flavor = os.getenv("TORCH_FLAVOR", "")
             if ("+" not in version_flavor):
                 return None

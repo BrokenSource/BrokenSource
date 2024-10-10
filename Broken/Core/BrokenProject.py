@@ -23,6 +23,7 @@ from rich.panel import Panel
 from typer import Context
 
 import Broken
+from Broken import Runtime
 from Broken.Core import BrokenAttrs, actions, flatten, shell
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
@@ -60,7 +61,7 @@ class _Directories:
         When running from a Release:
             - Directory where the executable is located
         """
-        if Broken.EXECUTABLE:
+        if Runtime.Executable:
             return Path(sys.executable).parent.resolve()
         return Path(self.PROJECT.PACKAGE).parent.resolve()
 
@@ -337,14 +338,14 @@ class BrokenProject:
         self.DIRECTORIES = _Directories(PROJECT=self)
         self.RESOURCES = _Resources(PROJECT=self)
         self.PACKAGE = Path(self.PACKAGE)
-        self.VERSION = Broken.VERSION
+        self.VERSION = Runtime.Version
         BrokenLogging.set_project(self.APP_NAME)
 
         # Replace once Broken.PROJECT with the first project
         # initialized that is not the main project itself
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
-                if (BrokenPlatform.Administrator and not Broken.DOCKER):
+                if (BrokenPlatform.Administrator and not Runtime.Docker):
                     log.warning("Running as [bold blink red]Administrator/Root[/] is not required and discouraged")
                 self.pyapp_management()
                 Broken.PROJECT = self
@@ -356,7 +357,7 @@ class BrokenProject:
                 exit(0)
 
         # Convenience symlink the project's workspace
-        Broken.FROM_SOURCE and BrokenPath.symlink(
+        Runtime.Source and BrokenPath.symlink(
             virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
             real=self.DIRECTORIES.WORKSPACE,
             echo=False
@@ -364,7 +365,7 @@ class BrokenProject:
 
         # Load dotenv files in common directories
         for path in (x for x in flatten(
-            [self.RESOURCES.ROOT/"Release.env"]*Broken.RELEASE,
+            [self.RESOURCES.ROOT/"Release.env"]*Runtime.Executable,
             self.DIRECTORIES.REPOSITORY.glob("*.env"),
         ) if x.exists()):
             dotenv.load_dotenv(path, override=True)

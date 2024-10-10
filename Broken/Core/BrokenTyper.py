@@ -19,7 +19,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 import Broken
-from Broken import BrokenPlatform, actions, apply, flatten, log, pydantic2typer
+from Broken import BrokenPlatform, Runtime, actions, apply, flatten, log, pydantic2typer
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -55,7 +55,7 @@ class BrokenTyper:
     help: bool = True
 
     credits: str = (
-        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Broken.RUNTIME} v{Broken.VERSION}[/]\n\n"
+        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
         "→ [italic grey53]Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[/]"
     )
 
@@ -154,7 +154,7 @@ class BrokenTyper:
 
     def release_repl(self) -> Self:
         self.repl = all((
-            (Broken.EXECUTABLE),
+            (Runtime.Executable),
             (not BrokenPlatform.OnLinux),
             (not actions()),
         ))

@@ -51,59 +51,61 @@ import struct
 
 from Broken.Version import __version__
 
-VERSION: str = __version__
-"""The version of the Broken library, and subsequently all projects"""
 
-# # Bitness
+class Runtime:
+    Version: str = __version__
+    """The version of the Broken library, and subsequently all projects"""
 
-BITNESS: int = (struct.calcsize("P") * 8)
-"""The word size of the Python interpreter (32, 64 bits)"""
+    # # Bitness
 
-PYTHON32: bool = (BITNESS == 32)
-"""True if running on a 32-bit Python interpreter"""
+    Bitness: int = (struct.calcsize("P") * 8)
+    """The word size of the Python interpreter (32, 64 bits)"""
 
-PYTHON64: bool = (BITNESS == 64)
-"""True if running on a 64-bit Python interpreter"""
+    Python32: bool = (Bitness == 32)
+    """True if running on a 32-bit Python interpreter"""
 
-# # Runtime environments
+    Python64: bool = (Bitness == 64)
+    """True if running on a 64-bit Python interpreter"""
 
-PYINSTALLER: bool = bool(getattr(sys, "frozen", False))
-"""True if running from a PyInstaller binary build (https://github.com/pyinstaller/pyinstaller)"""
+    # # Runtime environments
 
-NUITKA: bool = ("__compiled__" in globals())
-"""True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
+    PyInstaller: bool = bool(getattr(sys, "frozen", False))
+    """True if running from a PyInstaller binary build (https://github.com/pyinstaller/pyinstaller)"""
 
-PYAPP: bool = bool(os.getenv("PYAPP", False))
-"""True if running as a PyApp release (https://github.com/ofek/pyapp)"""
+    Nuitka: bool = ("__compiled__" in globals())
+    """True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
 
-PYPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
-"""True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
+    PyApp: bool = bool(os.getenv("PYAPP", False))
+    """True if running as a PyApp release (https://github.com/ofek/pyapp)"""
 
-EXECUTABLE: bool = (PYINSTALLER or NUITKA or PYAPP)
-"""True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
+    PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
+    """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
-RELEASE: bool = (EXECUTABLE or PYPI)
-"""True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
+    Executable: bool = (PyInstaller or Nuitka or PyApp)
+    """True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
 
-FROM_SOURCE: bool = (not RELEASE)
-"""True if running directly from the source code (https://brokensrc.dev/get/source/)"""
+    Release: bool = (Executable or PyPI)
+    """True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
 
-RUNTIME: str = (FROM_SOURCE and "Source") or (EXECUTABLE and "Release") or (PYPI and "PyPI")
-"""The runtime environment of the current project release (Source, Release, PyPI)"""
+    Source: bool = (not Release)
+    """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-# # Special and Containers
+    Method: str = (Source and "Source") or (Executable and "Release") or (PyPI and "PyPI")
+    """The runtime environment of the current project release (Source, Release, PyPI)"""
 
-DOCKER: bool = bool(os.getenv("DOCKER_RUNTIME", False))
-"""True if running from a Docker container""" # Fixme: Detect without manual flag
+    # # Special and Containers
 
-GITHUB_CI: bool = bool(os.getenv("GITHUB_ACTIONS", False))
-"""True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
+    Docker: bool = bool(os.getenv("DOCKER_RUNTIME", False))
+    """True if running from a Docker container""" # Fixme: Detect without manual flag
 
-WSL: bool = Path("/usr/lib/wsl/lib").exists()
-"""True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
+    Github: bool = bool(os.getenv("GITHUB_ACTIONS", False))
+    """True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
 
-INTERACTIVE: bool = sys.stdout.isatty()
-"""True if running in an interactive terminal session (user can input)"""
+    WSL: bool = Path("/usr/lib/wsl/lib").exists()
+    """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
+
+    Interactive: bool = sys.stdout.isatty()
+    """True if running in an interactive terminal session (user can input)"""
 
 # ---------------------------------------- Module imports ---------------------------------------- #
 
