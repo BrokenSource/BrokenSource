@@ -24,7 +24,7 @@ from typer import Context
 
 import Broken
 from Broken import Runtime
-from Broken.Core import BrokenAttrs, actions, flatten, shell
+from Broken.Core import BrokenAttrs, arguments, flatten, shell
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
@@ -435,7 +435,7 @@ class BrokenProject:
         BrokenPath.remove(ntfs_workaround, echo=False)
 
         # Note: Skip further prompts if any arguments are passed
-        if actions():
+        if arguments():
             return
 
         # Remove unused versions of the software

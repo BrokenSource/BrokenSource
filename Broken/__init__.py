@@ -53,6 +53,8 @@ from Broken.Version import __version__
 
 
 class Runtime:
+    """Information about the current runtime environment"""
+
     Version: str = __version__
     """The version of the Broken library, and subsequently all projects"""
 
@@ -90,7 +92,7 @@ class Runtime:
     Source: bool = (not Release)
     """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-    Method: str = (Source and "Source") or (Executable and "Release") or (PyPI and "PyPI")
+    Method: str = (Source and "Source") or (Executable and "Executable") or (PyPI and "PyPI")
     """The runtime environment of the current project release (Source, Release, PyPI)"""
 
     # # Special and Containers
@@ -124,8 +126,8 @@ from Broken.Core import (
     SameTracker,
     SerdeBaseModel,
     Stack,
-    actions,
     apply,
+    arguments,
     clamp,
     denum,
     dunder,

@@ -6,7 +6,7 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generator, Iterable, Self, Set, Union
+from typing import Any, Callable, Generator, Iterable, Optional, Self, Set, Union
 
 import click
 import typer
@@ -18,8 +18,15 @@ from rich.console import Group
 from rich.panel import Panel
 from rich.text import Text
 
-import Broken
-from Broken import BrokenPlatform, Runtime, actions, apply, flatten, log, pydantic2typer
+from Broken import (
+    BrokenPlatform,
+    Runtime,
+    apply,
+    arguments,
+    flatten,
+    log,
+    pydantic2typer,
+)
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
@@ -156,7 +163,7 @@ class BrokenTyper:
         self.repl = all((
             (Runtime.Executable),
             (not BrokenPlatform.OnLinux),
-            (not actions()),
+            (not arguments()),
         ))
         return self
 
@@ -167,31 +174,54 @@ class BrokenTyper:
         return app(sys.argv[1:])
 
     @staticmethod
-    def release(main: Callable, *others: Iterable[Callable]) -> None:
+    def proxy(callable: Callable) -> Callable:
+        """Redirects a ctx to sys.argv and calls the method"""
+        def wrapper(ctx: typer.Context):
+            sys.argv[1:] = ctx.args
+            callable()
+        return wrapper
+
+    @staticmethod
+    def complex(
+        main: Callable,
+        nested: Optional[Iterable[Callable]]=None,
+        direct: Optional[Iterable[Callable]]=None,
+    ) -> None:
         app = BrokenTyper(description=(
-            "📦 [bold orange3]BrokenTyper's[/] Multiple entry points handler for releases executables\n\n"
-            "• Chose an option below for what parts of the software you want to run!\n"
+            "📦 [bold orange3]Note:[/] The default command is implicit when arguments are passed!"
         )).release_repl()
 
-        # Redirects a ctx to sys.argv and calls the method
-        def proxy(callable: Callable) -> None:
-            def wrapper(ctx: typer.Context) -> None:
-                sys.argv[1:] = ctx.args
-                callable()
-            return wrapper
+        # Preprocess arguments
+        nested = flatten(nested)
+        direct = flatten(direct)
 
-        for method in flatten(main, others):
+        for target in set(flatten(main, nested, direct)):
+            method:  bool = (target in direct)
+            default: bool = (target is main)
 
-            # Automatically select 'main' method on non-repl or with incoming args
-            default = ((method is main) and (not app.repl or actions()))
+            # Mark the default command
+            description = ' '.join((
+                (target.__doc__ or ""),
+                (default*"[bold dim](Default)[/]"),
+            ))
+
+            # Rename the default command to "cli" on non-repl
+            if (default and (not app.repl)):
+                target.__name__ = "cli"
+
+            # List entry points without incoming arguments
+            default = (default if arguments() else False)
+
+            # Nested typer apps must be used with sys.argv
+            _target = (target if method else BrokenTyper.proxy(target))
 
             app.command(
-                target=proxy(method),
-                name=method.__name__,
-                description=method.__doc__,
+                target=_target,
+                name=target.__name__,
+                description=description,
                 default=default,
                 context=True,
-                help=False,
+                help=method,
             )
 
         return app(sys.argv[1:])
@@ -262,7 +292,7 @@ class BrokenTyper:
                 return
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
-            if (index == 0) and actions():
+            if (index == 0) and arguments():
                 return
 
             # Pretty welcome message on the first 'empty' run
