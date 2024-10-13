@@ -34,7 +34,7 @@ class ExternalTorchBase(BaseModel):
 
     def load_torch(self) -> None:
         global torch
-        BrokenTorch.install()
+        BrokenTorch.install(exists_ok=True)
         with Halo(text="Importing PyTorch..."):
             import torch
 

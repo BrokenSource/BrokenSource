@@ -36,9 +36,6 @@ RUN python -m uv pip install \
 ENV WINDOW_BACKEND="headless"
 ENV DOCKER_RUNTIME="1"
 
-# Important: Cache Depth Estimator model
-RUN python -m DepthFlow load-model
-
 # Install development version of broken-source
 COPY . /App
 RUN python -m uv pip install --upgrade .[all] \
@@ -59,4 +56,13 @@ ENV NVIDIA_VISIBLE_DEVICES="all"
 ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
+# Install libEGL stuff (for non-nvidia glvnd base images)
+# RUN apt install -y libegl1-mesa libglvnd-dev libglvnd0
+# RUN mkdir -p /usr/share/glvnd/egl_vendor.d
+# RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' \
+#     > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
 # ------------------------------------------------------------------------------------------------ #
+
+# Cache Depth Estimator model
+RUN python -m DepthFlow load-model

@@ -48,6 +48,7 @@ if (os.getenv("RICH_TRACEBACK", "1") == "1"):
 # --------------------------- Information about the release and version -------------------------- #
 
 import struct
+from typing import List, Union
 
 from Broken.Version import __version__
 
@@ -108,6 +109,17 @@ class Runtime:
 
     Interactive: bool = sys.stdout.isatty()
     """True if running in an interactive terminal session (user can input)"""
+
+class Native:
+
+    python: Path = Path(sys.executable)
+    """The current Python interpreter executable"""
+
+    uv: List[Union[str, Path]] = [python, "-m", "uv"]
+    """Entry point for the uv package manager (https://github.com/astral-sh/uv)"""
+
+    pip: List[Union[str, Path]] = [python, "-m", "uv", "pip"]
+    """Entry point for pip"""
 
 # ---------------------------------------- Module imports ---------------------------------------- #
 

@@ -102,7 +102,9 @@ theme:
   logo: resources/images/broken.png
   favicon: resources/images/broken.png
   font:
-    text: Roboto Slab
+    # text: Roboto Slab
+    text: Rubik
+    # text: Noto
     code: Cascadia Code
   icon:
     annotation: material/plus-circle-outline

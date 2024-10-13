@@ -1,4 +1,5 @@
 import os
+import textwrap
 import time
 from typing import Callable, Dict
 
@@ -71,6 +72,7 @@ class BrokenLogging(BrokenSingleton):
         self._make_level("DEBUG", None, "turquoise4")
         self._make_level("INFO", None, "bright_white")
         self._make_level("NOTE", 25, "bright_blue")
+        self._make_level("SPECIAL", 25, "bright_blue")
         self._make_level("TIP", 25, "dark_cyan")
         self._make_level("SUCCESS", None, "green")
         self._make_level("MINOR", 25, "grey42")
@@ -83,8 +85,13 @@ class BrokenLogging(BrokenSingleton):
 
     def _make_level(self, level: str, loglevel: int=0, color: str=None) -> None:
         """Create or update a loglevel `.{name.lower()}` on the logger, optional 'echo' argument"""
-        def wraps_log(*args, echo=True) -> str:
+        def wrapper(*args,
+            dedent: bool=False,
+            echo: bool=True,
+        ) -> str:
             message = " ".join(map(str, args))
+            if dedent:
+                message = textwrap.dedent(message)
             if not echo:
                 return message
             for line in message.splitlines():
@@ -93,6 +100,6 @@ class BrokenLogging(BrokenSingleton):
 
         # Assign log function to logger. Workaround to set icon=color
         log.level(level, loglevel, icon=color)
-        setattr(log, level.lower(), wraps_log)
+        setattr(log, level.lower(), wrapper)
 
 BrokenLogging()

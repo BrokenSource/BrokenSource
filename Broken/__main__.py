@@ -20,8 +20,6 @@ from Broken import (
     Patch,
     Runtime,
     Stack,
-    TorchFlavor,
-    denum,
     flatten,
     log,
     shell,
@@ -197,8 +195,10 @@ class ProjectCLI:
     # # Python shenanigans
 
     def release(self,
-        target: Annotated[List[BrokenPlatform.Targets], Option("--target", help="Target platform to build for")]=[BrokenPlatform.CurrentTarget],
-        torch:  Annotated[bool, Option("--torch", help="Build for all allowed PyTorch flavors in the target platform")]=False,
+        target: Annotated[List[BrokenPlatform.Targets],
+            Option("--target", "-t",
+            help="Target platforms to build binaries for"
+        )] = [BrokenPlatform.CurrentTarget],
     ) -> None:
         """
         📦 Release the Project as a distributable binary
@@ -207,21 +207,11 @@ class ProjectCLI:
             - Requires mingw packages for Windows cross compilation from Linux
         """
 
-        # Recurse on all Torch flavors
-        if isinstance(torch, bool) and torch:
-            for torch in TorchFlavor:
-                ProjectCLI.release(**locals())
-            return None
-
         # Recurse on each target item
         if isinstance(target, list) and 1:
             for target in target:
                 ProjectCLI.release(**locals())
             return None
-
-        # Avoid bad pytorch combinations (Windows + ROCM) (Non macOS => macOS)
-        if (torch) and (torch == TorchFlavor.MACOS) != ("macos"     in target.name): return
-        if (torch) and (torch == TorchFlavor.ROCM) and ("linux" not in target.name): return
 
         if self.is_python:
             BrokenManager.rust()
@@ -235,7 +225,7 @@ class ProjectCLI:
             # Write a releases env config file
             (RELEASE_ENV := BROKEN.RESOURCES.ROOT/"Release.env").write_text('\n'.join(
                 f"{key}={value}" for key, value in dict(
-                    TORCH_FLAVOR=denum(TorchFlavor.get(torch)),
+                    # Placeholder
                 ).items()
             ))
 
@@ -274,7 +264,6 @@ class ProjectCLI:
             for version in (BROKEN.VERSION,): # "latest"):
                 release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                     f"{self.name.lower()}",
-                    f"-{torch.name.lower()}".replace("-macos", "") if torch else "",
                     f"-{target.name}",
                     f"-{target.architecture}",
                     f"-{version}",

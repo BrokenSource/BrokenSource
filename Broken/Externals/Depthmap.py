@@ -118,7 +118,7 @@ class DepthAnythingBase(DepthEstimator):
 
     model: Annotated[Model, typer.Option("--model", "-m",
         help="[bold red](🔴 Basic)[/] What model of DepthAnythingV2 to use")] = \
-        Field(default=Model.Base)
+        Field(default=Model.Small)
 
     _processor: Any = PrivateAttr(None)
 
@@ -248,6 +248,13 @@ class ZoeDepth(DepthEstimator):
 
 class Marigold(DepthEstimator):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
+    class Variant(str, BrokenEnum):
+        FP16 = "fp16"
+        FP32 = "fp32"
+
+    variant: Annotated[Variant, typer.Option("--variant", "-v",
+        help="What variant of Marigold to use")] = \
+        Field(default=Variant.FP16)
 
     def _load_model(self) -> None:
         install("accelerate", "diffusers", "matplotlib")
@@ -255,25 +262,29 @@ class Marigold(DepthEstimator):
         from diffusers import DiffusionPipeline
 
         log.info("Loading Depth Estimator model (Marigold)")
+        log.warning("Note: Use FP16 for CPU, but it's VERY SLOW")
         self._model = DiffusionPipeline.from_pretrained(
-            "prs-eth/marigold-v1-0",
+            "prs-eth/marigold-depth-lcm-v1-0",
             custom_pipeline="marigold_depth_estimation",
-            torch_dtype=torch.float16,
-            variant="fp16",
+            torch_dtype=dict(
+                fp16=torch.float16,
+                fp32=torch.float32,
+            )[self.variant.value],
+            variant=self.variant.value,
         ).to(self.device)
 
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
         return (1 - self._model(
             Image.fromarray(image),
-            denoising_steps=10,
-            ensemble_size=10,
             match_input_res=False,
             show_progress_bar=True,
             color_map=None,
-            processing_res=792,
         ).depth_np)
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+        from scipy.ndimage import gaussian_filter, maximum_filter
+        depth = gaussian_filter(input=depth, sigma=0.6)
+        depth = maximum_filter(input=depth, size=5)
         return depth
 
 # ------------------------------------------------------------------------------------------------ #

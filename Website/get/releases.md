@@ -21,29 +21,14 @@ title: Get/Releases
           </div>
         </div>
         <table>
-          <thead>
-            <tr>
-              <th>Project / PyTorch</th>
-              <th>:octicons-cpu-16: Any (CPU)</th>
-              <th>:simple-nvidia: NVIDIA (CUDA)</th>
-              <th>:simple-amd: Radeon (ROCm)</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td><a class="md-button md-button--stretch md-button--thin"
                 href="site:depthflow">🌊 DepthFlow
                 </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-windows-amd64-latest.exe">
-                :octicons-download-16: CPU
-                </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-windows-amd64-latest.exe">
-                :octicons-download-16: CUDA
-                </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch md-button--disabled">
-                :octicons-download-16: ROCm
+              <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-windows-amd64-latest.exe">
+                :octicons-download-16: Download
                 </a></td>
             </tr>
             <tr>
@@ -84,30 +69,14 @@ title: Get/Releases
           <div><sup></sup></div>
         </div>
         <table>
-          <thead>
-            <tr>
-              <th>Project / PyTorch</th>
-              <th>:octicons-cpu-16: Any (CPU)</th>
-              <th>:simple-nvidia: NVIDIA (CUDA)</th>
-              <th>:simple-amd: Radeon (ROCm)</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td><a class="md-button md-button--stretch md-button--thin"
                 href="site:depthflow">🌊 DepthFlow
                 </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cpu-linux-amd64-latest.bin">
-                :octicons-download-16: CPU
-                </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-cuda-linux-amd64-latest.bin">
-                :octicons-download-16: CUDA
-                </a></td>
-              <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-rocm-linux-amd64-latest.bin">
-                :octicons-download-16: ROCm
+              <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
+                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-linux-amd64-latest.bin">
+                :octicons-download-16: Download
                 </a></td>
             </tr>
             <tr>
@@ -148,19 +117,13 @@ title: Get/Releases
           <div><sup>The files below are **completely untested**. Use at your own risk!</sup></div>
         </div>
         <table>
-          <thead>
-            <tr>
-              <th>Project</th>
-              <th colspan="3">Apple Silicon (ARM64)</th>
-            </tr>
-          </thead>
           <tbody>
             <tr>
               <td><a class="md-button md-button--stretch md-button--thin"
                 href="site:depthflow">🌊 DepthFlow
                 </a></td>
               <td><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.app">
+                href="https://github.com/BrokenSource/DepthFlow/releases/latest/download/depthflow-macos-arm64-latest.bin">
                 :octicons-download-16: Download
                 </a></td>
             </tr>
@@ -169,7 +132,7 @@ title: Get/Releases
                 href="site:shaderflow">🔥 ShaderFlow
                 </a></td>
               <td colspan="3"><a class="md-button md-button--primary md-button--stretch"
-                href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-macos-arm64-latest.app">
+                href="https://github.com/BrokenSource/ShaderFlow/releases/latest/download/shaderflow-macos-arm64-latest.bin">
                 :octicons-download-16: Download
                 </a></td>
             </tr>
@@ -178,7 +141,7 @@ title: Get/Releases
                 href="site:pianola">🎹 Pianola
                 </a></td>
               <td colspan="3"><a class="md-button md-button--primary md-button--stretch md-button--disabled"
-                href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-macos-arm64-latest.app">
+                href="https://github.com/BrokenSource/Pianola/releases/latest/download/pianola-macos-arm64-latest.bin">
                 <!-- :octicons-download-16: Download -->
                 Incomplete experience
                 </a></td>
@@ -188,7 +151,7 @@ title: Get/Releases
                 href="site:spectronote">🎧 SpectroNote
                 </a></td>
               <td colspan="3"><a class="md-button md-button--primary md-button--stretch md-button--disabled"
-                href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-macos-arm64-latest.app">
+                href="https://github.com/BrokenSource/SpectroNote/releases/latest/download/spectronote-macos-arm64-latest.bin">
                 <!-- :octicons-download-16: Download -->
                 Incomplete experience
                 </a></td>

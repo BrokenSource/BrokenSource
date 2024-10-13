@@ -418,7 +418,7 @@ class BrokenPath:
         *,
         recurse: bool=False,
         persistent: bool=False,
-        preferential: bool=True,
+        prepend: bool=True,
         echo: bool=True
     ) -> Path:
         """
@@ -458,7 +458,7 @@ class BrokenPath:
                 import userpath
                 userpath.append(str(other))
             else:
-                if preferential:
+                if prepend:
                     log.debug(f"• Prepending: ({other})", echo=echo)
                     os.environ["PATH"] = (str(other) + os.pathsep + os.getenv("PATH"))
                     sys.path.insert(0, str(other))

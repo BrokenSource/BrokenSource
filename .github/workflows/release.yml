@@ -20,7 +20,7 @@ jobs:
 
       - name: Build DepthFlow
         if: ${{ env.BROKEN_PYAPP == 'True' }}
-        run: rye run broken depthflow release --torch
+        run: rye run broken depthflow release
 
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
