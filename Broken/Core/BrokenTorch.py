@@ -89,7 +89,7 @@ class BrokenTorch:
             log.special(f"Installing PyTorch version ({version})")
 
             # Pytorch releases different build under their own urls
-            index = ("https://download.pytorch.org/whl/" + flavor)
+            index = ("https://download.pytorch.org/whl/" + (flavor or ''))
 
             # Remove previous version, install new
             shell(Native.pip, "uninstall", "--quiet",
