@@ -1,4 +1,4 @@
-FROM nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /App
 
@@ -57,10 +57,9 @@ ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
 # Install libEGL stuff (for non-nvidia glvnd base images)
-# RUN apt install -y libegl1-mesa libglvnd-dev libglvnd0
-# RUN mkdir -p /usr/share/glvnd/egl_vendor.d
-# RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' \
-#     > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+RUN apt install -y libegl1-mesa libglvnd-dev libglvnd0
+RUN mkdir -p /usr/share/glvnd/egl_vendor.d
+RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # ------------------------------------------------------------------------------------------------ #
 

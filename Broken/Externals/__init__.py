@@ -2,6 +2,7 @@
 
 import functools
 import inspect
+import os
 from abc import ABC, abstractmethod
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Self
@@ -28,8 +29,12 @@ class ExternalTorchBase(BaseModel):
     @property
     def device(self) -> str:
         self.load_torch()
+        if (device := os.getenv("TORCH_DEVICE")):
+            return device
         if torch.cuda.is_available():
             return "cuda"
+        if torch.backends.mps.is_available():
+            return "mps"
         return "cpu"
 
     def load_torch(self) -> None:

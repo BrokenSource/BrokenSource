@@ -113,8 +113,8 @@ title: Get/Releases
     === ":simple-apple: MacOS"
         <div align="center">
           <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
-          <div><b>Help needed:</b> I don't have the Hardware to test or give support to Apple releases</div>
-          <div><sup>The files below are **completely untested**. Use at your own risk!</sup></div>
+          <div><b>Remember</b> to `chmod +x ./project-*.bin` to make it executable!</div>
+          <div><sup></sup></div>
         </div>
         <table>
           <tbody>
@@ -158,8 +158,6 @@ title: Get/Releases
             </tr>
           </tbody>
         </table>
-
-!!! warning "**Binaries are experimental**, feedback appreciated • self-installing executables made with [**PyAPP**](https://github.com/ofek/pyapp) ✨"
 
 ## ⭐️ Usage
 

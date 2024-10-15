@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import contextlib
 import copy
 import enum
@@ -49,12 +47,15 @@ def flatten(
 ) -> Iterable[Any]:
     """
     Flatten/unpack nested iterables (list, deque, tuple, map, Generator) to a plain 1D list
-    - Removes common falsy values by default, disable with `block={None, False, "", [], ...}`
+    - Removes common falsy values by default, modify with `block={None, False, "", [], ...}`
 
-    Usage:
+    Example:
         ```python
-        flatten([1, [2, 3], 4, [5, [6, 7]]]) # [1, 2, 3, 4, 5, 6, 7]
-        flatten(range(3), (True, False), None, "Hello") # [0, 1, 2, True, False, "Hello"]
+        # [1, 2, 3, 4, 5, 6, 7]
+        flatten([1, [2, 3], 4, [5, [6, 7]]])
+
+        # [0, 1, 2, True, False, "Hello"]
+        flatten(range(3), (True, False), None, "Hello")
         ```
 
     Returns:

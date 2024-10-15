@@ -3,7 +3,7 @@ title: Landing Page
 ---
 
 <div align="center">
-  <a href="https://brokensrc.dev"><img src="https://github.com/BrokenSource.png" width="200"></a>
+  <a href="https://brokensrc.dev"><img src="https://github.com/BrokenSource.png" width="200" height="200"></a>
   <h1 style="margin-top: 0">Broken Source Software</h1>
   I'm an <b>Open-Source Developer</b> dedicated on making <b>Useful Niched Software</b>
   <h6>My mission is simple: Give as much power to all my users as possible</h6>

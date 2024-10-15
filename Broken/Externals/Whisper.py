@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import site
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Optional, Union
 

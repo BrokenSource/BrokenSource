@@ -14,34 +14,30 @@ title: Get/Source
             <div><b>Open</b> a folder to download the code on <b>Windows Explorer</b>,</div>
             <div>Press ++ctrl+l++ , run `powershell` and execute:</div>
         </div>
-
         ```powershell
         # How it works: 'irm' downloads, 'iex' executes, '|' links the two
         irm https://brokensrc.dev/get.ps1 | iex
         ```
-
     === ":simple-linux: Linux"
         <div align="center">
             <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
+            <div><sup></sup></div>
         </div>
-
         ```shell title="Terminal"
         # Curl downloads the script, sends to bash for executing it
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
-
     === ":simple-apple: MacOS"
         <div align="center">
             <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
+            <div><sup></sup></div>
         </div>
-
         ```zsh title="Terminal"
         # Curl downloads the script, sends to bash for executing it
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
-
     === ":simple-git: Manual"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 

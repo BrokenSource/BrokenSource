@@ -16,11 +16,10 @@ nav:
       - 🧀 From PyPI: get/pypi.md
       - 🔥 From Source: get/source.md
       - 📦 From Releases: get/releases.md
+      - ☁️ Docker/Cloud: get/docker.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - ❓ FAQ: about/faq.md
-      - ☁️ Cloud: get/cloud.md
-      - 🐳 Docker: get/docker.md
       - 🔦 PyTorch: get/pytorch.md
       - ❤️ Sponsors: about/sponsors.md
     - About:
@@ -85,7 +84,7 @@ nav:
     - Code reference:
       - 📦 Package: code/spectronote/
 
-  # - Insiders: about/insiders.md
+  - Insiders: about/insiders.md
 
 exclude_docs: |
   make.py
@@ -145,14 +144,13 @@ theme:
         name: Switch to Dark Mode
 
 plugins:
-  # - meta
   - blog:
       blog_dir: "news"
       post_url_date_format: yyyy/MM
       draft: true
   - social:
       cards_layout_options:
-        font_family: Roboto Slab
+        font_family: Rubik
         background_color: "#3948a2"
   - search
   # - privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641

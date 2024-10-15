@@ -40,7 +40,7 @@ title: Get/PyPI
     **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits[^1]
 
     - ✅ Check your installation with: `python -c "import struct; print(struct.calcsize('P') * 8)"`
-    - This is specially important on **Windows** as [**python.org**](https://www.python.org/) front page links to 32 bit versions
+    - This is specially important on **Windows** as [**python.org**](https://www.python.org/) front page might link to 32 bit versions
 
     [^1]: Most notably `imgui`, and moderate chance of issues with `torch`, `numpy`, etc.
 
