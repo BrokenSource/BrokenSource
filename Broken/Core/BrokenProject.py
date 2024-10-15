@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import importlib.metadata
 import importlib.resources
 import os
@@ -24,7 +25,14 @@ from typer import Context
 
 import Broken
 from Broken import Runtime
-from Broken.Core import BrokenAttrs, arguments, flatten, shell
+from Broken.Core import (
+    BrokenAttrs,
+    EasyTracker,
+    arguments,
+    flatten,
+    recache,
+    shell,
+)
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
@@ -347,7 +355,7 @@ class BrokenProject:
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Administrator and not Runtime.Docker):
                     log.warning("Running as [bold blink red]Administrator/Root[/] is not required and discouraged")
-                self.pyapp_management()
+                self._pyapp_management()
                 Broken.PROJECT = self
 
         # Print version information and exit on "--version/-V"
@@ -390,11 +398,13 @@ class BrokenProject:
             )),
         ))
 
-    def pyapp_management(self) -> None:
-        """One might send rolling releases or development betas of the same major version; whenever
-        the current PyApp binary changes hash, we reinstall the virtual environment"""
+    def _pyapp_management(self) -> None:
+
+        # Skip if not executing within a binary release
         if not (executable := os.getenv("PYAPP", False)):
             return
+
+        # ---------------------------------------------------------------------------------------- #
 
         import hashlib
         venv_path = Path(os.getenv("VIRTUAL_ENV"))
@@ -410,9 +420,8 @@ class BrokenProject:
         # "If (not on the first run) and (hash differs)"
         if (old_hash is not None) and (old_hash != this_hash):
             print("-"*shutil.get_terminal_size().columns)
-            log.info(f"Detected different binary hash for this release version v{self.VERSION} of the Project {self.APP_NAME}")
-            log.info(f"• Path: ({venv_path})")
-            log.info("• Reinstalling the Virtual Environment alongside dependencies")
+            log.info(f"Detected different binary hash for this release version [bold blue]v{self.VERSION}[/] of the project [bold blue]{self.APP_NAME}[/], reinstalling..")
+            log.info(f"• Installed at: ({venv_path})")
 
             if BrokenPlatform.OnWindows:
                 BrokenPath.remove(ntfs_workaround)
@@ -427,51 +436,77 @@ class BrokenProject:
                 shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
                 print("-"*shutil.get_terminal_size().columns)
                 try:
-                    sys.exit(shell(executable, sys.argv[1:]).returncode)
+                    sys.exit(shell(executable, sys.argv[1:], echo=False).returncode)
                 except KeyboardInterrupt:
                     exit(0)
 
         # Note: Remove before unused version checking
         BrokenPath.remove(ntfs_workaround, echo=False)
 
-        # Note: Skip further prompts if any arguments are passed
-        if arguments():
-            return
+        # ---------------------------------------------------------------------------------------- #
 
-        # Remove unused versions of the software
+        def check_new_version():
+            from packaging.version import Version
+
+            current = latest = Version(self.VERSION)
+
+            # Skip development versions
+            if current.is_prerelease:
+                return None
+
+            with recache(
+                cache_name=(venv_path/"version.check"),
+                expire_after=(3600*2),
+            ) as requests:
+                import json
+
+                with contextlib.suppress(Exception):
+                    _api   = f"https://pypi.org/pypi/{self.APP_NAME.lower()}/json"
+                    latest = Version(json.loads(requests.get(_api).text)["info"]["version"])
+
+                # Newer version available
+                if (current < latest):
+                    log.minor((
+                        f"A newer version [bold blue]v{latest}[/] "
+                        f"than the current [bold blue]v{current}[/] is available! "
+                        "Get it at https://brokensrc.dev/get/releases/"
+                    ))
+
+                # Back to the future!
+                elif (current > latest):
+                    log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
+                    log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
+                    log.error("[bold indian_red]• Otherwise it was likely recalled for whatever reason, consider downgrading it![/]")
+
+        if (os.getenv("VERSION_CHECK", "1") == "1"):
+            with contextlib.suppress(Exception):
+                check_new_version()
+
+        # ---------------------------------------------------------------------------------------- #
+
         def manage_unused(version: Path):
-            tracker = (version/"last-run.txt")
-            tracker.touch()
-            retention = 7
-            import arrow
-
-            def update_tracker(shift: int=0):
-                tracker.write_text(str(arrow.utcnow().shift(days=shift)))
-
-            # Initialize old, empty or new trackers; this is also a "first run"
-            # condition, take advantage to clean previous packages cache
-            if (not tracker.read_text()):
-                shell(sys.executable, "-m", "uv", "cache", "clean", "--quiet")
-                return update_tracker()
-
-            last_run = arrow.get(tracker.read_text() or arrow.utcnow())
-            sleeping = last_run.humanize(only_distance=True, granularity=("day"))
-
-            # Skip in-use versions not older than the limit
-            if (arrow.utcnow() < last_run.shift(days=retention)):
+            if arguments():
                 return
+            tracker = EasyTracker(version/"version.tracker")
+            tracker.retention.days = 7
 
-            # Note: Only update current version tracker when it's over to avoid
-            # updating it every time, avoiding issues with multiple instances
+            if (tracker.first):
+                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet")
+
+            # Skip in-use versions
+            if (not tracker.trigger):
+                return None
+
+            # Late-update current tracker
             if (version == venv_path):
-                return update_tracker()
+                return tracker.update()
 
             from rich.prompt import Prompt
 
             log.warning((
                 f"The version [bold green]v{version.name}[/] of the projects "
-                f"hasn't been used for {sleeping}!"
-                f"\n• [bold blue]{version}[/]"
+                f"hasn't been used for {tracker.sleeping}, unninstall it to save space!"
+                f"\n[bold bright_black]• Data at: {version}[/]"
             ))
 
             try:
@@ -480,17 +515,21 @@ class BrokenProject:
                     choices=("keep", "delete"),
                     default="delete",
                 )
+                print()
                 if (answer == "delete"):
-                    print()
                     with Halo(f"Deleting unused version v{version.name}.."):
                         shutil.rmtree(version, ignore_errors=True)
                 if (answer == "keep"):
-                    return update_tracker(shift=retention)
+                    log.minor("Keeping the version for now, will check again later!")
+                    return tracker.update()
             except KeyboardInterrupt:
                 exit(0)
 
-        for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
-            manage_unused(version)
+        # Note: Avoid interactive prompts if running with arguments
+        if (os.getenv("UNUSED_CHECK", "1") == "1") and (not arguments()):
+            for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
+                with contextlib.suppress(Exception):
+                    manage_unused(version)
 
 # ------------------------------------------------------------------------------------------------ #
 

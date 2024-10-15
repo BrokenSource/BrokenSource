@@ -162,7 +162,7 @@ class ProjectCLI:
             BrokenPlatform.clear_terminal() if clear else None
 
             if self.is_python:
-                log.info(f"Hey! Just type '{self.name.lower()}' to run the project with Rye, it's faster 😉")
+                log.info(f"Hey! Just type '{self.name.lower()}' to run the project directly, it's faster 😉")
                 return
 
             elif self.is_rust:

@@ -18,6 +18,7 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Container,
@@ -35,9 +36,12 @@ from typing import (
 
 import click
 from attrs import Factory, define, field
+from dotmap import DotMap
 from loguru import logger as log
 from pydantic import BaseModel
 
+if TYPE_CHECKING:
+    import arrow
 
 def flatten(
     *items: Iterable[Any],
@@ -366,6 +370,61 @@ def install(
 def arguments() -> bool:
     """Returns True if any arguments are present on sys.argv"""
     return bool(sys.argv[1:])
+
+def recache(*args, patch: bool=False, **kwargs):
+    import requests
+    import requests_cache
+    session = requests_cache.CachedSession(*args, **kwargs)
+    if patch:
+        requests.Session = session
+    return session
+
+@define
+class EasyTracker:
+    path: Path = field(converter=Path)
+    retention: DotMap = Factory(lambda: DotMap(days=1, hours=0))
+
+    _first: bool = False
+
+    @property
+    def first(self) -> bool:
+        """True if initializing the tracker for the first time"""
+        return self._first
+
+    def __attrs_post_init__(self):
+        self.path.touch()
+
+        # Initialize old, empty or new trackers
+        if (not self.path.read_text("utf-8")):
+            self._first = True
+            self.update()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args) -> None:
+        return None
+
+    @property
+    def last(self) -> 'arrow.Arrow':
+        import arrow
+        return arrow.get(self.path.read_text("utf-8"))
+
+    @property
+    def sleeping(self, granularity: Tuple[str]=("day")) -> str:
+        """How long it's been since the last run"""
+        return self.last.humanize(only_distance=True, granularity=granularity)
+
+    @property
+    def trigger(self) -> bool:
+        """True if it's been more than 'self.retention' since the last run"""
+        import arrow
+        return (self.last.shift(**self.retention) < arrow.utcnow()) or self._first
+
+    def update(self, **shift: Dict) -> None:
+        import arrow
+        time = arrow.utcnow().shift(**(shift or {}))
+        self.path.write_text(str(time), "utf-8")
 
 # ------------------------------------------------------------------------------------------------ #
 # Classes
