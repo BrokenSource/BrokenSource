@@ -19,9 +19,9 @@ nav:
       - ☁️ Docker/Cloud: get/docker.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
-      - ❓ FAQ: about/faq.md
-      - 🔦 PyTorch: get/pytorch.md
       - ❤️ Sponsors: about/sponsors.md
+      - 🔦 PyTorch: get/pytorch.md
+      - ❓ FAQ: about/faq.md
     - About:
       - 🛠️ Contribuing: about/contributing.md
       - 👤 Developers: about/developers.md
@@ -34,7 +34,7 @@ nav:
     - news/index.md
     - news/authors.md
 
-  - Broken:
+  - Library:
     - broken/index.md
     - Code reference:
       - 📦 Package: code/broken/

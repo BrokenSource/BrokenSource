@@ -1,5 +1,6 @@
 # Monorepo
 .cache
+.nomedia
 .venv
 Build
 Insiders

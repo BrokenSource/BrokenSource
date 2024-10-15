@@ -261,17 +261,16 @@ class ProjectCLI:
             BrokenPath.make_executable(binary)
 
             # Rename project binary according to the Broken naming convention
-            for version in (BROKEN.VERSION,): # "latest"):
-                release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
-                    f"{self.name.lower()}",
-                    f"-{target.name}",
-                    f"-{target.architecture}",
-                    f"-{version}",
-                    f"{target.extension}",
-                ))
-                BrokenPath.copy(src=binary, dst=release_path)
-                BrokenPath.make_executable(release_path)
-                log.success(f"Built Project Release at ({release_path})")
+            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+                f"{self.name.lower()}",
+                f"-{target.name}",
+                f"-{target.architecture}",
+                f"-v{BROKEN.VERSION}",
+                f"{target.extension}",
+            ))
+            BrokenPath.copy(src=binary, dst=release_path)
+            BrokenPath.make_executable(release_path)
+            log.success(f"Built Project Release at ({release_path})")
 
 # ------------------------------------------------------------------------------------------------ #
 
