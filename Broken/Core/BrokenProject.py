@@ -360,7 +360,7 @@ class BrokenProject:
 
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
-            if (sys.argv[1] in ("--version", "-V")):
+            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")):
                 print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.CurrentTarget}")
                 exit(0)
 
@@ -475,7 +475,7 @@ class BrokenProject:
                     log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
                     log.error("[bold indian_red]• Otherwise it was likely recalled for whatever reason, consider downgrading it![/]")
 
-        if (os.getenv("VERSION_CHECK", "1") == "1"):
+        if (os.getenv("VERSION_CHECK", "1") == "1") and (not arguments()):
             with contextlib.suppress(Exception):
                 check_new_version()
 
@@ -568,7 +568,7 @@ class BrokenApp(ABC, BrokenAttrs):
             log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in:")
             log.warning('\n'.join(map(lambda file: f"• {file}", files)))
 
-    def regex(self, tag: str) -> re.Pattern:
+    def _regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
         inheritance substring, and its optional docstring on the next line"""
         return re.compile(
@@ -577,7 +577,7 @@ class BrokenApp(ABC, BrokenAttrs):
         )
 
     def add_project(self, python: Path, tag: str="Project") -> bool:
-        if not python.exists():
+        if (not python.exists()):
             return False
 
         def run(file: Path, name: str, code: str):
@@ -588,7 +588,10 @@ class BrokenApp(ABC, BrokenAttrs):
             return run
 
         # Match all scenes and their optional docstrings
-        for match in self.regex(tag).finditer(code := python.read_text("utf-8")):
+        matches = list(self._regex(tag).finditer(code := python.read_text("utf-8")))
+
+        # Add a command for each match
+        for match in matches:
             class_name, docstring = match.groups()
             self.typer.command(
                 target=run(python, class_name, code),
@@ -599,4 +602,4 @@ class BrokenApp(ABC, BrokenAttrs):
                 help=False,
             )
 
-        return bool(self.typer.commands)
+        return bool(matches)
