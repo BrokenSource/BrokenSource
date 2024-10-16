@@ -42,9 +42,9 @@ class BrokenTorch:
         """📦 Install or modify PyTorch versions"""
         installed = BrokenTorch.current()
 
-        # Only skip if any version and exists_ok, but not 'torch' in sys.argv
+        # Only skip if installed and exists_ok, but not 'torch' in sys.argv
         if (exists_ok and (installed or "torch" in sys.argv)):
-            return
+            return None
 
         log.special(f"Current PyTorch version: {installed}")
 

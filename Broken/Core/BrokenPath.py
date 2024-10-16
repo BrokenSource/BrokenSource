@@ -90,8 +90,13 @@ class BrokenPath:
             path.unlink()
             return path
 
+        from rich.prompt import Prompt
+
         # Confirm removal: directory contains data
-        if confirm and (not click.confirm(f"• Confirm removing path ({path})")):
+        if confirm and Prompt.ask(
+            prompt=f"• Confirm removing path ({path})",
+            choices=["y", "n"], default="n",
+        ) == "n":
             return path
 
         # Remove the path
