@@ -200,6 +200,24 @@ class BrokenPath:
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
+    def zstd(path: Path, output: Path=None, *, echo: bool=True) -> Path:
+        output = BrokenPath.get(output or path).with_suffix(".zst")
+        path   = BrokenPath.get(path)
+
+        import tarfile
+
+        import zstandard as zstd
+
+        with Halo(log.info(f"Compressing ({path}) → ({output})", echo=echo)):
+            with open(output, "wb") as compressed:
+                cctx = zstd.ZstdCompressor(level=3, threads=-1)
+
+                with cctx.stream_writer(compressed) as compressor:
+                    with tarfile.open(fileobj=compressor, mode="w|") as tar:
+                        for file in path.rglob('*'):
+                            tar.add(file, arcname=file.relative_to(path))
+        return output
+
     def merge_zips(*zips: List[Path], output: Path, echo: bool=True) -> Path:
         """Merge multiple ZIP files into a single one"""
         import zipfile

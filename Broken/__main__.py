@@ -199,6 +199,11 @@ class ProjectCLI:
             Option("--target", "-t",
             help="Target platforms to build binaries for"
         )] = [BrokenPlatform.CurrentTarget],
+
+        offline: Annotated[bool,
+            Option("--offline",
+            help="(Experimental) Create self-contained distributions without internet",
+        )] = False,
     ) -> None:
         """
         📦 Release the Project as a distributable binary
@@ -237,6 +242,24 @@ class ProjectCLI:
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
             ))
+
+            if offline:
+                _python = Path(sys.executable).relative_to(os.getenv("VIRTUAL_ENV"))
+                _distribution = BROKEN.DIRECTORIES.SYSTEM_TEMP/"distribution.tar.zst"
+
+                # Fixme: Solve shared libraries spaghetti
+                _distribution = BrokenPath.zstd(
+                    path=os.getenv("VIRTUAL_ENV"),
+                    output=_distribution,
+                )
+
+                os.environ.update(dict(
+                    PYAPP_DISTRIBUTION_PATH=str(_distribution),
+                    PYAPP_DISTRIBUTION_PYTHON_PATH=str(_python),
+                    PYAPP_PIP_EXTRA_ARGS="--no-deps",
+                    PYAPP_FULL_ISOLATION="1",
+                    PYAPP_UV_ENABLED="0",
+                ))
 
             # Cache Rust compilation across projects
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)

@@ -123,6 +123,7 @@ dev-dependencies = [
     # Development and Utilities
     "pytest-sugar~=1.0.0",
     "poethepoet~=0.29.0",
+    "zstandard>=0.23.0",
     # Profiling
     "snakeviz~=2.2.0",
     "tuna~=0.5.11",

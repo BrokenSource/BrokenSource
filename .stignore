@@ -5,6 +5,7 @@
 # Recursive
 **/Workspace
 **/Build
+**/Release
 **/.venv
 **/.cache
 **/.pio
