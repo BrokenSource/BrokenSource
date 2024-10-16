@@ -75,6 +75,7 @@ def flatten(
             yield item
     return cast(flatten(items))
 
+
 def every(
     *items: Iterable[Any],
     cast: Type = list,
@@ -95,6 +96,7 @@ def every(
     if any(item in block for item in items):
         return None
     return items
+
 
 def shell(
     *args: Iterable[Any],
@@ -183,13 +185,16 @@ def shell(
     else:
         return subprocess.run(args, **kwargs)
 
+
 def apply(callback: Callable, iterable: Iterable[Any], *, cast: Callable=list) -> List[Any]:
     """Applies a callback to all items of an iterable, returning a $cast of the results"""
     return cast(map(callback, iterable))
 
+
 def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: if it's an Enum, returns the value, else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
+
 
 def filter_dict(
     data: Dict[str, Any], *,
@@ -203,6 +208,7 @@ def filter_dict(
         data = {key: value for key, value in data.items() if (key in allow)}
     return data
 
+
 def iter_dict(data: Dict[str, Any]) -> Generator[Any, None, None]:
     """Recursively yields all values from a dictionary"""
     for value in data.values():
@@ -211,10 +217,12 @@ def iter_dict(data: Dict[str, Any]) -> Generator[Any, None, None]:
             continue
         yield value
 
+
 def selfless(data: Dict) -> Dict:
     """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
     # Note: It's also possible to call Class.method(**locals()) instead!
     return filter_dict(data, block=["self"])
+
 
 def border(name: str, substring: str) -> bool:
     """Returns True if 'substring' is the border [^1] of 'name'
@@ -223,17 +231,21 @@ def border(name: str, substring: str) -> bool:
     """
     return (name.startswith(substring) and name.endswith(reversed(substring)))
 
+
 def dunder(name: str) -> bool:
     """Checks if a string is a double underscore '__name__'"""
     return border(name, "__")
+
 
 def sunder(name: str) -> bool:
     """Checks if a string is a single underscore '_name_'"""
     return (border(name, "_") and not dunder(name))
 
+
 def private(name: str) -> bool:
     """Checks if a string is a private name"""
     return name.startswith("_")
+
 
 @contextlib.contextmanager
 def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
@@ -242,6 +254,7 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None,
         for context in flatten(contexts):
             stack.enter_context(context)
         yield
+
 
 @contextlib.contextmanager
 def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
@@ -253,6 +266,7 @@ def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
     finally:
         os.environ.clear()
         os.environ.update(old)
+
 
 def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
@@ -281,12 +295,15 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
 
     return wrapper
 
+
 def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))
+
 
 def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=round) -> Number:
     """Finds the nearest multiple of a base number, by default ints but works for floats too"""
     return cast(multiple * operator(number/multiple))
+
 
 def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
     """
@@ -310,6 +327,7 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
             continue
         yield int(part)
 
+
 def limited_ratio(
     number: Optional[float], *,
     limit: float = None
@@ -327,6 +345,7 @@ def limited_ratio(
 
     return (int(num), int(den))
 
+
 def overrides(
     old: Optional[Any],
     new: Optional[Any],
@@ -335,6 +354,7 @@ def overrides(
     if (new is None):
         return old
     return new
+
 
 def install(
     *packages: Union[str, Iterable[str]],
@@ -367,9 +387,11 @@ def install(
 
     raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
 
+
 def arguments() -> bool:
     """Returns True if any arguments are present on sys.argv"""
     return bool(sys.argv[1:])
+
 
 def recache(*args, patch: bool=False, **kwargs):
     import requests
@@ -378,6 +400,7 @@ def recache(*args, patch: bool=False, **kwargs):
     if patch:
         requests.Session = session
     return session
+
 
 @define
 class EasyTracker:
@@ -427,8 +450,10 @@ class EasyTracker:
         time = arrow.utcnow().shift(**(shift or {}))
         self.path.write_text(str(time), "utf-8")
 
+
 # ------------------------------------------------------------------------------------------------ #
 # Classes
+
 
 # # Common, useful
 
@@ -441,12 +466,14 @@ class Nothing:
     def __getattr__(self, _):
         return self.__nop__
 
+
 class BrokenSingleton(ABC):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
             self = super().__new__(cls)
             cls.__instance__ = self
         return cls.__instance__
+
 
 class BrokenFluent:
     """Fluent-like .copy(**update) and .(**update) setter for classes"""
@@ -464,6 +491,7 @@ class BrokenFluent:
             setattr(other, key, value)
         return other
 
+
 class BrokenAttrs:
     """
     Walk over an @attrs.defined class and call __post__ on all classes in the MRO
@@ -479,6 +507,7 @@ class BrokenAttrs:
     def __post__(self) -> None:
         ...
 
+
 class BrokenWatchdog(ABC):
 
     @abstractmethod
@@ -490,6 +519,7 @@ class BrokenWatchdog(ABC):
         """Calls __changed__ when a property changes"""
         super().__setattr__(key, value)
         self.__changed__(key, value)
+
 
 class SerdeBaseModel(BaseModel):
     def serialize(self, json: bool=True) -> Union[dict, str]:
@@ -519,6 +549,7 @@ class SameTracker:
             return False
         return True
 
+
 @define
 class OnceTracker:
     """Returns False the first time it's called, never nest style: `if once/already(): return`"""
@@ -539,6 +570,7 @@ class OnceTracker:
             return method(*args, **kwargs)
         return wrapper
 
+
 @define
 class PlainTracker:
     value: Any = None
@@ -548,6 +580,7 @@ class PlainTracker:
         if set is not None:
             self.value = set
         return self.value
+
 
 # # Specific, special
 
@@ -613,12 +646,15 @@ class Patch:
     def __exit__(self, *args):
         self.revert()
 
+
 # ------------------------------------------------------------------------------------------------ #
 # Stuff that needs a revisit
+
 
 def image_hash(image) -> str:
     """A Fast-ish method to get an object's hash that implements .tobytes()"""
     return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
+
 
 def transcends(method, base, generator: bool=False):
     """
@@ -648,6 +684,7 @@ def transcends(method, base, generator: bool=False):
 
         return (yields if generator else plain)
     return decorator
+
 
 class LazyImport:
     __import__ = copy.deepcopy(__import__)

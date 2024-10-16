@@ -1,4 +1,5 @@
 import site
+import sys
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -41,8 +42,8 @@ class BrokenTorch:
         """📦 Install or modify PyTorch versions"""
         installed = BrokenTorch.current()
 
-        # Skip if already installed
-        if (installed and exists_ok):
+        # Only skip if any version and exists_ok, but not 'torch' in sys.argv
+        if (exists_ok and (installed or "torch" in sys.argv)):
             return
 
         log.special(f"Current PyTorch version: {installed}")

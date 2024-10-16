@@ -188,8 +188,12 @@ class BrokenTyper:
         direct: Optional[Iterable[Callable]]=None,
     ) -> None:
         app = BrokenTyper(description=(
-            "📦 [bold orange3]Note:[/] The default command is implicit when arguments are passed!"
+            "📦 [bold orange3]Note:[/] The default command is implicit when arguments are passed!\n\n"
+            "[bold grey58]→ This means [deep_pink4]'main (default) (args)'[/] is the same as [deep_pink4]'main (args)'[/]\n"
         )).release_repl()
+
+        # The help only makes sense inside the repl
+        app.app.info.add_help_option = app.repl
 
         # Preprocess arguments
         nested = flatten(nested)
@@ -201,13 +205,9 @@ class BrokenTyper:
 
             # Mark the default command
             description = ' '.join((
-                (target.__doc__ or ""),
-                (default*"[bold dim](Default)[/]"),
+                (target.__doc__ or "No help provided"),
+                (default*"[bold indian_red](default)[/]"),
             ))
-
-            # Rename the default command to "cli" on non-repl
-            if (default and (not app.repl)):
-                target.__name__ = "cli"
 
             # List entry points without incoming arguments
             default = (default if arguments() else False)
