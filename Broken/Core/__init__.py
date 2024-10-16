@@ -407,12 +407,13 @@ class EasyTracker:
 
     @property
     def last(self) -> 'arrow.Arrow':
+        """How long it's been since the last run"""
         import arrow
         return arrow.get(self.path.read_text("utf-8"))
 
     @property
     def sleeping(self, granularity: Tuple[str]=("day")) -> str:
-        """How long it's been since the last run"""
+        """How long it's been since the last run, for printing purposes"""
         return self.last.humanize(only_distance=True, granularity=granularity)
 
     @property

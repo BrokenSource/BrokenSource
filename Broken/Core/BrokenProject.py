@@ -360,15 +360,14 @@ class BrokenProject:
 
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
-            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")) and (not sys.argv[2:]):
+            if (sys.argv[1] in ("--version", "-V")):
                 print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.CurrentTarget}")
                 exit(0)
 
         # Convenience symlink the project's workspace
         Runtime.Source and BrokenPath.symlink(
             virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
-            real=self.DIRECTORIES.WORKSPACE,
-            echo=False
+            real=self.DIRECTORIES.WORKSPACE, echo=False
         )
 
         # Load dotenv files in common directories
@@ -385,11 +384,9 @@ class BrokenProject:
     def welcome(self):
         import pyfiglet
 
-        # Build message
         ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
 
-        # Print panel center-justified lines
         rprint(Panel(
             Align.center(ascii + "\n"),
             subtitle=' '.join((
@@ -485,8 +482,6 @@ class BrokenProject:
         # ---------------------------------------------------------------------------------------- #
 
         def manage_unused(version: Path):
-            if arguments():
-                return
             tracker = EasyTracker(version/"version.tracker")
             tracker.retention.days = 7
 
