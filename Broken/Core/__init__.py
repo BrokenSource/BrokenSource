@@ -404,8 +404,16 @@ def recache(*args, patch: bool=False, **kwargs):
 
 @define
 class EasyTracker:
-    path: Path = field(converter=Path)
+    file: Path = field(converter=Path)
     retention: DotMap = Factory(lambda: DotMap(days=1, hours=0))
+
+    def __attrs_post_init__(self):
+        self.file.touch()
+
+        # Initialize new or empty trackers
+        if (not self.file.read_text("utf-8")):
+            self._first = True
+            self.update()
 
     _first: bool = False
 
@@ -413,14 +421,6 @@ class EasyTracker:
     def first(self) -> bool:
         """True if initializing the tracker for the first time"""
         return self._first
-
-    def __attrs_post_init__(self):
-        self.path.touch()
-
-        # Initialize old, empty or new trackers
-        if (not self.path.read_text("utf-8")):
-            self._first = True
-            self.update()
 
     def __enter__(self) -> Self:
         return self
@@ -431,24 +431,24 @@ class EasyTracker:
     @property
     def last(self) -> 'arrow.Arrow':
         """How long it's been since the last run"""
-        import arrow
-        return arrow.get(self.path.read_text("utf-8"))
+        return __import__("arrow").get(self.file.read_text("utf-8"))
 
     @property
     def sleeping(self, granularity: Tuple[str]=("day")) -> str:
         """How long it's been since the last run, for printing purposes"""
         return self.last.humanize(only_distance=True, granularity=granularity)
 
-    @property
-    def trigger(self) -> bool:
+    def trigger(self, update: bool=False) -> bool:
         """True if it's been more than 'self.retention' since the last run"""
-        import arrow
-        return (self.last.shift(**self.retention) < arrow.utcnow()) or self._first
+        trigger = (self.last.shift(**self.retention) < __import__("arrow").utcnow())
+        trigger = (trigger or self._first)
+        if (trigger and update):
+            self.update()
+        return trigger
 
     def update(self, **shift: Dict) -> None:
-        import arrow
-        time = arrow.utcnow().shift(**(shift or {}))
-        self.path.write_text(str(time), "utf-8")
+        time = __import__("arrow").utcnow().shift(**(shift or {}))
+        self.file.write_text(str(time), "utf-8")
 
 
 # ------------------------------------------------------------------------------------------------ #

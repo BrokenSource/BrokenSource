@@ -69,7 +69,7 @@ class _Directories:
         When running from a Release:
             - Directory where the executable is located
         """
-        if Runtime.Executable:
+        if Runtime.Binary:
             return Path(sys.executable).parent.resolve()
         return Path(self.PROJECT.PACKAGE).parent.resolve()
 
@@ -91,18 +91,6 @@ class _Directories:
     def REPOSITORY(self) -> Path:
         """Broken Source's Monorepo directory"""
         return self.PACKAGE.parent
-
-    @property
-    def HOME(self) -> Path:
-        """(Unix: /home/$USER), (Windows: C://Users//$USER)"""
-        return Path.home()
-
-    # # Common system directories
-
-    @property
-    def SYSTEM_ROOT(self) -> Path:
-        """(Unix: /), (Windows: C://)"""
-        return Path("/")
 
     @property
     def SYSTEM_TEMP(self) -> Path:
@@ -166,7 +154,7 @@ class _Directories:
     @property
     def WORKSPACE(self) -> Path:
         """Root for the current Project's Workspace"""
-        if (path := os.getenv("WORKSPACE", None)):
+        if (path := os.getenv("WORKSPACE")):
             return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
         if (os.name == "nt"):
             return mkdir(BrokenPath.Windows.Documents()/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
@@ -194,7 +182,6 @@ class _Directories:
 
     @property
     def OUTPUT(self) -> Path:
-        """Output directory if it makes more sense than .DATA or .PROJECTS"""
         return mkdir(self.WORKSPACE/"Output")
 
     @property
@@ -246,7 +233,6 @@ class _Directories:
 
 @define(slots=False)
 class _Resources:
-    """You shouldn't really use this class directly"""
     PROJECT: BrokenProject
 
     def __attrs_post_init__(self):
@@ -257,7 +243,7 @@ class _Resources:
                 spec = self.PROJECT.RESOURCES.__spec__
                 spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
 
-            # Note: Importlib bundles the resources with the package wheel :) !
+            # Note: Importlib bundles the resources with the package wheel!
             self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
 
     __RESOURCES__: Path = None
@@ -335,12 +321,12 @@ class BrokenProject:
     # App information
     APP_NAME: str
     APP_AUTHOR: str
+    VERSION: str = None
     ABOUT: str = "No description provided"
 
     # Standard Broken objects for a project
     DIRECTORIES: _Directories = None
     RESOURCES: _Resources = None
-    VERSION: str = None
 
     def __attrs_post_init__(self):
         self.DIRECTORIES = _Directories(PROJECT=self)
@@ -349,12 +335,11 @@ class BrokenProject:
         self.VERSION = Runtime.Version
         BrokenLogging.set_project(self.APP_NAME)
 
-        # Replace once Broken.PROJECT with the first project
-        # initialized that is not the main project itself
+        # Replace Broken.PROJECT with the first initialized project
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Administrator and not Runtime.Docker):
-                    log.warning("Running as [bold blink red]Administrator/Root[/] is not required and discouraged")
+                    log.warning("Running as [bold blink red]Administrator or Root[/] is not required and discouraged")
                 self._pyapp_management()
                 Broken.PROJECT = self
 
@@ -372,7 +357,7 @@ class BrokenProject:
 
         # Load dotenv files in common directories
         for path in (x for x in flatten(
-            [self.RESOURCES.ROOT/"Release.env"]*Runtime.Executable,
+            [self.RESOURCES.ROOT/"Release.env"]*Runtime.Binary,
             self.DIRECTORIES.REPOSITORY.glob("*.env"),
         ) if x.exists()):
             dotenv.load_dotenv(path, override=True)
@@ -445,15 +430,13 @@ class BrokenProject:
         def check_new_version():
             from packaging.version import Version
 
-            current = latest = Version(self.VERSION)
-
-            # Skip development versions
-            if current.is_prerelease:
+            # Skip development binaries, as they aren't on PyPI
+            if (current := Version(self.VERSION)).is_prerelease:
                 return None
 
             with recache(
                 cache_name=(venv_path/"version.check"),
-                expire_after=(3600*2),
+                expire_after=(3600),
             ) as requests:
                 import json
 
@@ -489,7 +472,7 @@ class BrokenProject:
                 shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet")
 
             # Skip in-use versions
-            if (not tracker.trigger):
+            if (not tracker.trigger()):
                 return None
 
             # Late-update current tracker
@@ -597,7 +580,7 @@ class BrokenApp(ABC, BrokenAttrs):
                 target=run(python, class_name, code),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
-                panel=f"📦 Projects at [bold]({python})[/]",
+                panel=f"📦 {tag}s at ({python})",
                 context=True,
                 help=False,
             )

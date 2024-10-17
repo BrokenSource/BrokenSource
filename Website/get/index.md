@@ -13,7 +13,7 @@ title: Get/Installation
 <a href="site:get/pypi">
 !!! success "**The most reliable** way to use the Projects."
     - {==Requires basic Python knowledge==} {>>(and lurking)<<}.
-    - Run the packaged command or as a python import.
+    - Run the package commands or as a python import.
 
     <sup><b>Recommended for:</b> Basic users, advanced users, developers</sup>
 </a>

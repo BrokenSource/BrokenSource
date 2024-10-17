@@ -5,6 +5,10 @@
   text-align: justify;
 }
 
+h1, h2, h3 {
+  font-family: 'Roboto Slab', serif;
+}
+
 /* Hide "Important" admonition, GitHub alerts workaround */
 .md-typeset .admonition.important,
 .md-typeset details.important {
@@ -38,6 +42,7 @@
 }
 
 /* ------------------------------------ Tables configuration ------------------------------------ */
+
 /* https://github.com/squidfunk/mkdocs-material/issues/3430#issuecomment-1005966126 */
 .md-typeset .md-typeset__table {
   display: block;
@@ -73,6 +78,16 @@ table > thead > tr > th {
 .tabbed-labels--linked label {
   text-align: center;
   flex: 1;
+}
+
+/* ----------------------------------------- Screenshots ---------------------------------------- */
+
+.screenshot {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: scale(1.1);
+  transform-origin: center center;
 }
 
 /* ----------------------------------- Code reference styling ----------------------------------- */

@@ -2,7 +2,7 @@
 title: Get/PyPI
 ---
 
-!!! success "{++The most reliable++} way to use the Projects • Run the packaged command or as a python import."
+!!! success "{++The most reliable++} way to use the Projects • Run the package commands or as a python import."
     **Recommended for**: Basic users, advanced users, developers.
 
 ## ⚡️ Installing

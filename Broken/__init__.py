@@ -1,4 +1,4 @@
-# -------------------------- General fixes, quality of life, and safety -------------------------- #
+# -------------------------------- General fixes, quality of life -------------------------------- #
 
 import time
 
@@ -84,16 +84,16 @@ class Runtime:
     PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
-    Executable: bool = (PyInstaller or Nuitka or PyApp)
+    Binary: bool = (PyInstaller or Nuitka or PyApp)
     """True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
 
-    Release: bool = (Executable or PyPI)
+    Release: bool = (Binary or PyPI)
     """True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
 
     Source: bool = (not Release)
     """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-    Method: str = (Source and "Source") or (Executable and "Executable") or (PyPI and "PyPI")
+    Method: str = (Source and "Source") or (Binary and "Binary") or (PyPI and "PyPI")
     """The runtime environment of the current project release (Source, Release, PyPI)"""
 
     # # Special and Containers

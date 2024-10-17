@@ -161,7 +161,7 @@ class BrokenTyper:
 
     def release_repl(self) -> Self:
         self.repl = all((
-            (Runtime.Executable),
+            (Runtime.Binary),
             (not BrokenPlatform.OnLinux),
             (not arguments()),
         ))
@@ -188,7 +188,7 @@ class BrokenTyper:
         direct: Optional[Iterable[Callable]]=None,
     ) -> None:
         app = BrokenTyper(description=(
-            "📦 [bold orange3]Note:[/] The default command is implicit when arguments are passed!\n\n"
+            "📦 [bold orange3]Note:[/] The default command is implicit when no other command is run!\n\n"
             "[bold grey58]→ This means [deep_pink4]'main (default) (args)'[/] is the same as [deep_pink4]'main (args)'[/]\n"
         )).release_repl()
 

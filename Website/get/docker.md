@@ -2,7 +2,101 @@
 title: Get/Docker
 ---
 
-[^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
+## ☁️ Cloud
+
+<b><span class="the">C</span>loud providers</b> are a great way to run the projects without the need of a powerful machine, to have a dedicated server for it, or scale up the usage. Naturally, there are a lot of providers to rent hardware from, with quirks and differences between them.
+
+Getting OpenGL GPU acceleration to work is the trickiest part; if it's not listed here, you could try following the [**Docker**](#docker) section's of what needs to happen. _Consider improving this!_
+
+- **Note**: The examples below are only for properly setting up the environment for the projects to run. Continue after with any project's installation or usage for more.
+
+- **Note**: When the GPU is not used in OpenGL, `llvmpipe` (CPU) device will be used. Rendering speeds will be abysmal, in the order of seconds per frame, {==**avoid at all costs**==}.
+
+{% include-markdown "include/love-short.md" %}
+
+
+### 🔘 Runpod
+
+#### Pods
+
+!!! example ""
+    > ✅ &nbsp; **\#notsponsored • [website](https://runpod.io/){:target="_blank"} • (⭐️⭐️⭐️⭐️⭐️ 4.8/5.0) • Minor fixes needed easily within user's reach**
+
+    - Rent any pod with Nvidia GPUs (L4/T4 or cheapest should be enough)
+    - Template: `runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04`
+
+    After having access to a terminal, run the following:
+
+    ```bash title=""
+    # Installs required packages, adds the NVIDIA as a EGL vendor device
+    apt update && apt install -y libegl1-mesa libglvnd-dev libglvnd0
+    mkdir -p /usr/share/glvnd/egl_vendor.d
+    echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+    ```
+
+    For more context, see [**this**](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} GitHub comment of mine.
+
+
+#### Serverless
+
+!!! example ""
+    > ❓ &nbsp; **\#notsponsored • [website](https://runpod.io/){:target="_blank"} • (?/5) • Unknown**
+
+    Unknown.
+
+
+### 🔘 Modal
+!!! example ""
+    > ✅ &nbsp; **\#notsponsored • [website](https://modal.com/){:target="_blank"} • (⭐️⭐️⭐️ 3.0/5.0) • Major changes needed + support ticket**
+
+    - **You must** ask their support team to move your workspace to an older runner of theirs, as the newer ones don't expose `graphics` capabilities to Docker containers, failing to use the GPU.
+
+    - **NVENC** is not available due _"security reasons"_; they can enable it if you're trustworthy, again, ask them.
+
+    See [**this script file**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/Cloud/Modal.py) for running the projects on Modal!
+
+
+### 🔘 Replicate
+!!! example ""
+    > ❌ &nbsp; **\#notsponsored • [website](https://beam.cloud/){:target="_blank"} • (0/5) • No OpenGL and Pydantic version conflict**
+
+    - I am using [Pydantic](https://docs.pydantic.dev/latest/) version 2 for at least a couple of months, but they're stuck on v1.0 in `cog` and injecting on the environment for a good while, making it a dependency conflict hard to solve at runtime.
+
+    - Not only that, when I tried plain `moderngl` for OpenGL, I couldn't get GPU acceleration to work.
+
+    It's been a while since I tried it, it's probably possible to get it to work with some effort.
+
+
+### 🔘 Google Colab
+!!! example ""
+    > ❌ &nbsp; **\#notsponsored • [website](https://colab.research.google.com/){:target="_blank"} • (0/5) • No GPU acceleration**
+
+    - Google Colab doesn't seem to provide GPU acceleration for OpenGL.
+
+    Here's my [**effort**](https://colab.research.google.com/drive/1C1mmq4GUrhBUeVoX04jAenE3Ex_IDqDB) on trying to get it working.
+
+
+### 🔘 Inferless
+!!! example ""
+    > ❓ &nbsp; **\#notsponsored • [website](https://inferless.com/){:target="_blank"} • (?/5.0) • Works out of the box?**
+
+    A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and it worked out of the box.
+
+    - I don't have any more information or if this is true.
+
+
+### 🔘 Beam Cloud
+!!! example ""
+    > ❓ &nbsp; **\#notsponsored • [website](https://beam.cloud/){:target="_blank"} • (?/5)**
+
+    It's been a while since I tried it, but don't remember getting it to work.
+
+
+<br>
+
+## 🐳 Docker
+
+**Note:** This section needs cleanup and simplification.
 
 !!! quote "[**Docker**](https://www.docker.com){:target="_blank"} is an platform for **containerization** of software, easy **deployment** and **scalability**"
 
@@ -11,9 +105,9 @@ title: Get/Docker
     - Serving and acessing a [**Gradio**](https://www.gradio.app){:target="_blank"} web page
     - Isolation, security or **Headless** usage
 
-<br>
-
 There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **intention** to use Docker
+
+[^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
 
 - As this isn't an _"recommended"_ method {>>unless you know what you're doing<<}, the instructions below are written for {==**Developers**==} and {==**Advanced Users**==}
 
@@ -23,7 +117,7 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 <!-- A _'recipe'_ is written to a file, and anyone can reproduce the result -->
 <!-- :simple-docker: -->
 
-## ⚡️ Installing
+### ⚡️ Installing
 
 - (Windows) Install [**WSL2**](https://learn.microsoft.com/en-us/windows/wsl/install){:target="_blank"}, default Ubuntu 22.04 distro is fine
     ```powershell title="PowerShell"
@@ -63,7 +157,7 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 
 - Clone the Monorepo following the [**🔥 From Source/Manual**](site:get/source/#installing-manual){:target="_blank"} page, until `rye sync`
 
-## 🚀 Context
+### 🚀 Context
 
 Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
 
@@ -166,7 +260,7 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 
 !!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} files"
 
-## ⭐️ Usage
+### ⭐️ Usage
 
 !!! heart "**Before you start**, now that I've got your attention"
     If you're making a _Software as a Service (SaaS)_ backend of any Project, consider [**getting in touch**](site:about/contact){:target="_blank"} with me, so we can make both sides **grow together** and **help each other** 👍

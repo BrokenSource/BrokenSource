@@ -109,7 +109,7 @@ theme:
     annotation: material/plus-circle-outline
     repo: fontawesome/brands/github
   features:
-    - navigation.tracking
+    # - navigation.tracking
     - navigation.tabs
     - navigation.sections
     - navigation.prune

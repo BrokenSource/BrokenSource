@@ -20,7 +20,7 @@ title: Get/Releases
             <div><sup>I am not destroying my reputation by distributing malware.</sup></div>
           </div>
         </div>
-        === ":octicons-cpu-16: x86-64"
+        === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
             <table id="windows-amd64"><tbody/></table>
     === ":simple-linux: Linux"
         <div align="center">
@@ -28,7 +28,7 @@ title: Get/Releases
           <div><b>Remember</b> to `chmod +x ./project-*.bin` to make it executable!</div>
           <div><sup></sup></div>
         </div>
-        === ":octicons-cpu-16: x86-64"
+        === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
             <table id="linux-amd64"><tbody/></table>
     === ":simple-apple: MacOS"
         <div align="center">
@@ -36,7 +36,7 @@ title: Get/Releases
           <div><b>Remember</b> to `chmod +x ./project-*.bin` to make it executable!</div>
           <div><sup></sup></div>
         </div>
-        === ":octicons-cpu-16: Apple Silicon"
+        === ":octicons-cpu-16: Apple Silicon :octicons-cpu-16:"
             <table id="macos-arm64"><tbody/></table>
 
 <script>
@@ -91,24 +91,6 @@ title: Get/Releases
   add_release("🎧", "SpectroNote", "windows", "amd64", "v0.8.0", false)
   add_release("🎧", "SpectroNote", "linux",   "amd64", "v0.8.0", false)
   add_release("🎧", "SpectroNote", "macos",   "arm64", "v0.8.0", false)
-
-  // Redirect the user's platform download section on load
-  document.addEventListener('DOMContentLoaded', function() {
-    const userAgent = navigator.userAgent.toLowerCase()
-    var option = ""
-
-    if (userAgent.includes("win"))
-      option = "#installing-windows"
-    else if (userAgent.includes("mac"))
-      option = "#installing-macos"
-    else if (userAgent.includes("linux"))
-      option = "#installing-linux"
-    else
-      option = "#installing-windows"
-
-    const base = window.location.href.split("#")[0]
-    window.location.href = base + option
-  })
 </script>
 
 ## ⭐️ Usage
