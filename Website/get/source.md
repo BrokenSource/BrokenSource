@@ -124,4 +124,4 @@ After that, just activate the venv and you're good to go!
 
 ## ♻️ Uninstalling
 
-See the <a href="site:get/uninstalling"><b>uninstalling</b></a> page
+See the <a href="site:/get/uninstalling"><b>uninstalling</b></a> page

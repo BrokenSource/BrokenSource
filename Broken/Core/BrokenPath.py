@@ -205,7 +205,7 @@ class BrokenPath:
         shutil.make_archive(output.with_suffix(""), format, path)
         return output
 
-    def zstd(path: Path, output: Path=None, *, echo: bool=True) -> Path:
+    def zstd(path: Path, output: Path=None, *, remove: bool=False, echo: bool=True) -> Path:
         output = BrokenPath.get(output or path).with_suffix(".zst")
         path   = BrokenPath.get(path)
 
@@ -216,11 +216,34 @@ class BrokenPath:
         with Halo(log.info(f"Compressing ({path}) → ({output})", echo=echo)):
             with open(output, "wb") as compressed:
                 cctx = zstd.ZstdCompressor(level=3, threads=-1)
-
                 with cctx.stream_writer(compressed) as compressor:
                     with tarfile.open(fileobj=compressor, mode="w|") as tar:
-                        for file in path.rglob('*'):
-                            tar.add(file, arcname=file.relative_to(path))
+                        if path.is_dir():
+                            for file in path.rglob("*"):
+                                tar.add(file, arcname=file.relative_to(path))
+                        else:
+                            tar.add(path, arcname=path.name)
+        if remove:
+            BrokenPath.remove(path, echo=echo)
+
+        return output
+
+    def gzip(path: Path, output: Path=None, *, remove: bool=False, echo: bool=True) -> Path:
+        output = BrokenPath.get(output or path).with_suffix(".tar.gz")
+        path   = BrokenPath.get(path)
+
+        import tarfile
+
+        with Halo(log.info(f"Compressing ({path}) → ({output})", echo=echo)):
+            with tarfile.open(output, "w:gz") as tar:
+                if path.is_dir():
+                    for file in path.rglob("*"):
+                        tar.add(file, arcname=file.relative_to(path))
+                else:
+                    tar.add(path, arcname=path.name)
+        if remove:
+            BrokenPath.remove(path, echo=echo)
+
         return output
 
     def merge_zips(*zips: List[Path], output: Path, echo: bool=True) -> Path:

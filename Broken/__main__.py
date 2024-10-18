@@ -234,28 +234,59 @@ class ProjectCLI:
                 ).items()
             ))
 
+            # Build the mono-repo's wheel.. got it?
+            UNICYCLE = next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))
+
             # Pyapp configuration
             os.environ.update(dict(
-                PYAPP_PROJECT_PATH=str(next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))),
+                PYAPP_PROJECT_PATH=str(UNICYCLE),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
                 PYAPP_PYTHON_VERSION="3.11",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
             ))
 
+            # Fixme: PyTorch, HuggingFace models, bandwidth, sizes, management, etc.
+            # Warn: Experimental offline installation
             if offline:
-                _python = Path(sys.executable).relative_to(os.getenv("VIRTUAL_ENV"))
-                _distribution = BROKEN.DIRECTORIES.SYSTEM_TEMP/"distribution.tar.zst"
+                _repo: str = "https://github.com/indygreg/python-build-standalone/releases/download"
+                _type: str = "install_only_stripped.tar.gz"
+                _cpython: str = "cpython-3.11.10"
+                _release: str = "20241008"
 
-                # Fixme: Solve shared libraries spaghetti
-                _distribution = BrokenPath.zstd(
-                    path=os.getenv("VIRTUAL_ENV"),
-                    output=_distribution,
-                )
+                def _get_release(target: str) -> str:
+                    return f"{_repo}/{_release}/{_cpython}%2B{_release}-{target}-{_type}"
+
+                # Find a static python distribution used by PyApp
+                if not (_download := {
+                    BrokenPlatform.Targets.WindowsAMD64: _get_release("x86_64-pc-windows-msvc"),
+                    BrokenPlatform.Targets.LinuxAMD64:   _get_release("x86_64_v3-unknown-linux-gnu"),
+                    BrokenPlatform.Targets.MacosARM:     _get_release("aarch64-apple-darwin"),
+                }.get(target)):
+                    raise RuntimeError(log.error(f"Unsupported target for offline mode {target}"))
+
+                # Remove any previous builds and find the build path
+                _distribution = BrokenPath.recreate(BROKEN.DIRECTORIES.SYSTEM_TEMP/f"{self.name.lower()}-offline-distribution")
+
+                # Download and unpack the Python distribution
+                _targz = _distribution.with_suffix(".tar.gz")
+                BrokenPath.download(url=_download, output=_targz)
+                shutil.unpack_archive(_targz, _distribution)
+
+                # The distribution is found in a "python" subdirectory
+                _distribution = (_distribution/"python")
+                _bindir = _distribution/BrokenPlatform.PyBinDir
+
+                # Install the monorepo's wheel into the distribution
+                shell(_bindir/"pip", "install", UNICYCLE)
+
+                # Compress the distribution for bundling
+                _bundle = BrokenPath.zstd(path=_distribution,
+                    output=_distribution.with_suffix(".tar.zst"))
 
                 os.environ.update(dict(
-                    PYAPP_DISTRIBUTION_PATH=str(_distribution),
-                    PYAPP_DISTRIBUTION_PYTHON_PATH=str(_python),
+                    PYAPP_DISTRIBUTION_PATH=str(_bundle),
+                    PYAPP_DISTRIBUTION_PYTHON_PATH=str(_bindir),
                     PYAPP_PIP_EXTRA_ARGS="--no-deps",
                     PYAPP_FULL_ISOLATION="1",
                     PYAPP_UV_ENABLED="0",
@@ -283,7 +314,7 @@ class ProjectCLI:
             log.info(f"Compiled Pyapp binary at ({binary})")
             BrokenPath.make_executable(binary)
 
-            # Rename project binary according to the Broken naming convention
+            # Rename the compiled binary to the final release name
             release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                 f"{self.name.lower()}",
                 f"-{target.name}",
@@ -293,6 +324,11 @@ class ProjectCLI:
             ))
             BrokenPath.copy(src=binary, dst=release_path)
             BrokenPath.make_executable(release_path)
+
+            # Release a tar.gz to keep chmod +x attributes
+            if BrokenPlatform.OnUnix:
+                release_path = BrokenPath.gzip(release_path, remove=True)
+
             log.success(f"Built Project Release at ({release_path})")
 
 # ------------------------------------------------------------------------------------------------ #

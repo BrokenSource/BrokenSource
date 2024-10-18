@@ -138,11 +138,14 @@ class BrokenWebsite:
                     self.write(Path("code", self.website, source), file.read_text())
 
                     # Note: Code reference takes a bit to generate
-                    if not eval(os.getenv("CODE_REFERENCE", "0")):
+                    reference = Path("code", self.website, markdown)
+
+                    if (os.getenv("CODE_REFERENCE", "0") != "1"):
+                        self.write(path=reference, content='!!! failure "**Missing**: Code reference generation disabled"')
                         continue
 
                     # Write code reference with mkdocstrings
-                    self.write(path=Path("code", self.website, markdown), content='\n'.join((
+                    self.write(path=reference, content='\n'.join((
                         "---",
                         f"title: '{module.stem}'",
                         f"description: 'Code reference for the {module} file of the {self.name} project'",

@@ -16,7 +16,7 @@ nav:
       - 🧀 From PyPI: get/pypi.md
       - 🔥 From Source: get/source.md
       - 📦 From Releases: get/releases.md
-      - ☁️ Docker/Cloud: get/docker.md
+      - ☁️ Cloud/Docker: get/docker.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - ❤️ Sponsors: about/sponsors.md
@@ -84,7 +84,8 @@ nav:
     - Code reference:
       - 📦 Package: code/spectronote/
 
-  - Insiders: about/insiders.md
+  - Insiders:
+    - insiders/index.md
 
 exclude_docs: |
   make.py
@@ -130,15 +131,16 @@ theme:
     - announce.dismiss
   palette:
     - media: "(prefers-color-scheme: dark)"
-      primary: black
       scheme: slate
-      accent: blue
+      primary: black
+      accent: light-blue
       toggle:
         icon: material/weather-sunny
         name: Switch to Light Mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      accent: blue
+      primary: indigo # white
+      accent: light-blue
       toggle:
         icon: material/weather-night
         name: Switch to Dark Mode

@@ -109,8 +109,7 @@ class BrokenPlatform:
 
     # Literally, why Windows/Python have different directory names for scripts? ...
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1
-    PyScripts         = ("Scripts" if OnWindows else "bin")
-    PyScriptExtension = (".cmd" if OnWindows else "")
+    PyBinDir = ("Scripts" if OnWindows else "bin")
 
     class DeveloperMode:
         # https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging

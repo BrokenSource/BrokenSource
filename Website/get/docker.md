@@ -1,5 +1,5 @@
 ---
-title: Get/Docker
+title: Get/Cloud & Docker
 ---
 
 ## ☁️ Cloud
@@ -8,9 +8,11 @@ title: Get/Docker
 
 Getting OpenGL GPU acceleration to work is the trickiest part; if it's not listed here, you could try following the [**Docker**](#docker) section's of what needs to happen. _Consider improving this!_
 
+- **Note**: When the GPU is not used in OpenGL, `llvmpipe` (CPU) device will be used. Rendering speeds will be abysmal, in the order of seconds per frame, {==**avoid at all costs**==}.
+
 - **Note**: The examples below are only for properly setting up the environment for the projects to run. Continue after with any project's installation or usage for more.
 
-- **Note**: When the GPU is not used in OpenGL, `llvmpipe` (CPU) device will be used. Rendering speeds will be abysmal, in the order of seconds per frame, {==**avoid at all costs**==}.
+- No conclusions, grading and guides are final, and can fail or be improved at any time.
 
 {% include-markdown "include/love-short.md" %}
 
@@ -20,7 +22,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 #### Pods
 
 !!! example ""
-    > ✅ &nbsp; **\#notsponsored • [website](https://runpod.io/){:target="_blank"} • (⭐️⭐️⭐️⭐️⭐️ 4.8/5.0) • Minor fixes needed easily within user's reach**
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (4.8/5.0)</span> • Minor fixes needed within user's reach</b></div>
 
     - Rent any pod with Nvidia GPUs (L4/T4 or cheapest should be enough)
     - Template: `runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04`
@@ -34,31 +36,44 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
     echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
     ```
 
-    For more context, see [**this**](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} GitHub comment of mine.
-
+    For more context, see this [GitHub comment](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} of mine.
 
 #### Serverless
 
 !!! example ""
-    > ❓ &nbsp; **\#notsponsored • [website](https://runpod.io/){:target="_blank"} • (?/5) • Unknown**
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">(?/5.0)</span> • Unknown</b></div>
 
     Unknown.
 
 
 ### 🔘 Modal
+
 !!! example ""
-    > ✅ &nbsp; **\#notsponsored • [website](https://modal.com/){:target="_blank"} • (⭐️⭐️⭐️ 3.0/5.0) • Major changes needed + support ticket**
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://modal.com/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️<span style="font-size: 15px;">☆☆</span> (3.0/5.0)</span> • Major changes needed + support ticket</b></div>
 
     - **You must** ask their support team to move your workspace to an older runner of theirs, as the newer ones don't expose `graphics` capabilities to Docker containers, failing to use the GPU.
 
     - **NVENC** is not available due _"security reasons"_; they can enable it if you're trustworthy, again, ask them.
 
-    See [**this script file**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/Cloud/Modal.py) for running the projects on Modal!
+    See [this script file](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/Cloud/Modal.py) for running the projects on Modal!
+
+
+### 🔘 Google Colab
+
+!!! example ""
+    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://colab.research.google.com/" target="_blank">Website</a><span style="float: right;">⭐️<span style="font-size: 15px;">☆☆☆☆</span> (1.0/5.0)</span> • No GPU acceleration</b></div>
+
+    - **⚠️ Important**: Colab [**disallows**](https://research.google.com/colaboratory/intl/en-GB/faq.html#disallowed-activities) WebUI usage in their free plan.
+
+    - Doesn't seem to provide GPU acceleration for OpenGL.
+
+    Here's my [**effort**](https://colab.research.google.com/drive/1C1mmq4GUrhBUeVoX04jAenE3Ex_IDqDB) on trying to get it working.
 
 
 ### 🔘 Replicate
+
 !!! example ""
-    > ❌ &nbsp; **\#notsponsored • [website](https://beam.cloud/){:target="_blank"} • (0/5) • No OpenGL and Pydantic version conflict**
+    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/" target="_blank">Website</a><span style="float: right;"><span style="font-size: 15px;">☆☆☆☆☆</span> (0.0/5.0)</span> • No OpenGL and Pydantic version conflict</b></div>
 
     - I am using [Pydantic](https://docs.pydantic.dev/latest/) version 2 for at least a couple of months, but they're stuck on v1.0 in `cog` and injecting on the environment for a good while, making it a dependency conflict hard to solve at runtime.
 
@@ -67,18 +82,10 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
     It's been a while since I tried it, it's probably possible to get it to work with some effort.
 
 
-### 🔘 Google Colab
-!!! example ""
-    > ❌ &nbsp; **\#notsponsored • [website](https://colab.research.google.com/){:target="_blank"} • (0/5) • No GPU acceleration**
-
-    - Google Colab doesn't seem to provide GPU acceleration for OpenGL.
-
-    Here's my [**effort**](https://colab.research.google.com/drive/1C1mmq4GUrhBUeVoX04jAenE3Ex_IDqDB) on trying to get it working.
-
-
 ### 🔘 Inferless
+
 !!! example ""
-    > ❓ &nbsp; **\#notsponsored • [website](https://inferless.com/){:target="_blank"} • (?/5.0) • Works out of the box?**
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/" target="_blank">Website</a><span style="float: right;">?/5.0</span> • Works out of the box?</b></div>
 
     A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and it worked out of the box.
 
@@ -86,8 +93,9 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 
 
 ### 🔘 Beam Cloud
+
 !!! example ""
-    > ❓ &nbsp; **\#notsponsored • [website](https://beam.cloud/){:target="_blank"} • (?/5)**
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/" target="_blank">Website</a><span style="float: right;">?/5.0</span></b></div>
 
     It's been a while since I tried it, but don't remember getting it to work.
 
@@ -96,26 +104,16 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 
 ## 🐳 Docker
 
-**Note:** This section needs cleanup and simplification.
+<a href="https://www.docker.com" target="_blank"><b><span class="the">D</span>ocker</b></a> is a platform for containerization of software, easy deployment and scalability. Basic usage is relatively simple, and most Linux knowledge can be applied to it. The main problem for running the projects on Docker is getting OpenGL acceleration to work, as the focus of it are compute workloads (CUDA, ML) or services (Jellyfin, NextCloud, APIs, etc).
 
-!!! quote "[**Docker**](https://www.docker.com){:target="_blank"} is an platform for **containerization** of software, easy **deployment** and **scalability**"
-
-!!! warning "**Docker can't open native GUIs** on the Host OS • The intended usage are:"
-    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com){:target="_blank"}
-    - Serving and acessing a [**Gradio**](https://www.gradio.app){:target="_blank"} web page
-    - Isolation, security or **Headless** usage
-
-There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **intention** to use Docker
+There are *quite a lot* of combinations in hardware[^1], platform and intention to use it, and guides like this can only go so far, and focuses on getting OpenGL working.
 
 [^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
 
-- As this isn't an _"recommended"_ method {>>unless you know what you're doing<<}, the instructions below are written for {==**Developers**==} and {==**Advanced Users**==}
-
-- I don't use and know Docker best practices. Consider improving anything here!
-
-
-<!-- A _'recipe'_ is written to a file, and anyone can reproduce the result -->
-<!-- :simple-docker: -->
+??? warning "**Docker can't open native GUIs** on the Host OS • The intended usage are:"
+    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com){:target="_blank"}
+    - Serving and acessing a [**Gradio**](https://www.gradio.app){:target="_blank"} web page
+    - Isolation, security or **Headless** usage
 
 ### ⚡️ Installing
 
@@ -155,7 +153,7 @@ There are _quite a lot_ of combinations in **hardware**[^1], **platform** and **
 
 <hr>
 
-- Clone the Monorepo following the [**🔥 From Source/Manual**](site:get/source/#installing-manual){:target="_blank"} page, until `rye sync`
+- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual){:target="_blank"} page, until `rye sync`
 
 ### 🚀 Context
 
@@ -263,10 +261,10 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 ### ⭐️ Usage
 
 !!! heart "**Before you start**, now that I've got your attention"
-    If you're making a _Software as a Service (SaaS)_ backend of any Project, consider [**getting in touch**](site:about/contact){:target="_blank"} with me, so we can make both sides **grow together** and **help each other** 👍
+    If you're making a _Software as a Service (SaaS)_ backend of any Project, consider [**getting in touch**](site:/about/contact){:target="_blank"} with me, so we can make both sides **grow together** and **help each other** 👍
 
 !!! heart "**This page helped you?**"
-    Consider [**Joining my Sponsors**](site:about/sponsors) and helping me continue everything !
+    Consider [**Joining my Sponsors**](site:/about/sponsors) and helping me continue everything !
 
 <h3>All of that..</h3>
 

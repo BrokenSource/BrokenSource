@@ -73,4 +73,4 @@ Go to the project tab of your interest above and see the quickstart!
 
 ## ♻️ Uninstalling
 
-See the <a href="site:get/uninstalling"><b>Uninstalling</b></a> page
+See the <a href="site:/get/uninstalling"><b>Uninstalling</b></a> page

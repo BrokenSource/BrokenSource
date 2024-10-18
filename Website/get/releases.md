@@ -25,16 +25,16 @@ title: Get/Releases
     === ":simple-linux: Linux"
         <div align="center">
           <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
-          <div><b>Remember</b> to `chmod +x ./project-*.bin` to make it executable!</div>
-          <div><sup></sup></div>
+          <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
+          <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
         === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
             <table id="linux-amd64"><tbody/></table>
     === ":simple-apple: MacOS"
         <div align="center">
           <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
-          <div><b>Remember</b> to `chmod +x ./project-*.bin` to make it executable!</div>
-          <div><sup></sup></div>
+          <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
+          <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
         === ":octicons-cpu-16: Apple Silicon :octicons-cpu-16:"
             <table id="macos-arm64"><tbody/></table>
@@ -58,7 +58,7 @@ title: Get/Releases
 
     if (enabled) {
       const icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`;
-      const extension = {windows: 'exe', linux: 'bin', macos: 'bin'}[platform];
+      const extension = {windows: 'exe', linux: 'tar.gz', macos: 'tar.gz'}[platform];
       download_link.innerHTML = `${icon} Download`;
       download_link.href = [
         `https://github.com/BrokenSource/${name}/releases/download/${version}/`,
@@ -105,4 +105,4 @@ Download a newer release from here, or your package manager[^1].
 
 ## ♻️ Uninstalling
 
-See the <a href="site:get/uninstalling"><b>uninstalling</b></a> page.
+See the <a href="site:/get/uninstalling"><b>uninstalling</b></a> page.

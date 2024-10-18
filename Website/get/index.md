@@ -10,7 +10,7 @@ title: Get/Installation
 
 ### [**🧀 From PyPI**](site:/get/pypi)
 
-<a href="site:get/pypi">
+<a href="site:/get/pypi">
 !!! success "**The most reliable** way to use the Projects."
     - {==Requires basic Python knowledge==} {>>(and lurking)<<}.
     - Run the package commands or as a python import.
@@ -22,7 +22,7 @@ title: Get/Installation
 
 ### [**🔥 From Source**](site:/get/source)
 
-<a href="site:get/source">
+<a href="site:/get/source">
 !!! success "**The most flexible** way to use the Projects."
     - {==**Automatic** install scripts==}, spend more time **using** the projects.
     - Latest features, bugs, fixes, {==highly configurable==}.
@@ -34,7 +34,7 @@ title: Get/Installation
 
 ### [**📦 From Releases**](site:/get/releases)
 
-<a href="site:get/releases">
+<a href="site:/get/releases">
 !!! example "**The most convenient** way to use the Projects."
     - Self-installing {==portable executable files==} made with **PyAPP**.
     - **Double click and run**, everything's managed for you.

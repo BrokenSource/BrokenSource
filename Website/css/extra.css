@@ -15,6 +15,10 @@ h1, h2, h3 {
   display: none;
 }
 
+/* .md-tabs__link {
+  font-weight: bold;
+} */
+
 /* ---------------------------------------------------------------------------------------------- */
 
 /* https://squidfunk.github.io/mkdocs-material/reference/admonitions/#classic-admonitions */
@@ -39,6 +43,14 @@ h1, h2, h3 {
 
 .md-typeset .tabbed-set {
   margin: 0;
+}
+
+/* https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#with-animations */
+@keyframes beat {
+  0%, 40%, 80%, 100% {transform: scale(1);}
+  20%, 60% {transform: scale(1.1);}
+} .beat {
+  animation: beat 1000ms infinite;
 }
 
 /* ------------------------------------ Tables configuration ------------------------------------ */
@@ -161,6 +173,12 @@ h2.doc.doc-heading {
   background-color: rgb(255, 55, 55);
   -webkit-mask-image: var(--md-admonition-icon--heart);
           mask-image: var(--md-admonition-icon--heart);
+}
+
+/* Apply beat animation to the heart icon */
+.md-typeset .heart > .admonition-title::before,
+.md-typeset .heart > summary::before {
+  animation: beat 1000ms infinite;
 }
 
 /* [data-md-color-scheme="slate"] {
