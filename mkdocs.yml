@@ -30,9 +30,9 @@ nav:
       - ⚖️ License: about/license.md
       - 🧾 Credits: about/credits.md
 
-  - News:
-    - news/index.md
-    - news/authors.md
+  # - News:
+  #   - news/index.md
+  #   - news/authors.md
 
   - Library:
     - broken/index.md
