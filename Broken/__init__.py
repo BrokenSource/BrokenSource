@@ -33,6 +33,13 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 if bool(os.getenv("PYAPP", None)):
     sys.argv[0] = sys.executable
 
+# Warn if running unsupported Python versions
+if sys.version_info <= (3, 9):
+    _current: str = f"{sys.version_info.major}.{sys.version_info.minor}"
+    sys.stderr.write(f"Warning: Python {_current} isn't officially supported and projects may break\n")
+    sys.stderr.write("→ Fix: Upgrade to at least Python 3.10 for guaranteed compatibility\n")
+    sys.stderr.write("→ See status of your version: https://devguide.python.org/versions/\n")
+
 # Python < 3.11 typing fixes
 if sys.version_info < (3, 11):
     import typing # noqa
