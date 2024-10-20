@@ -54,7 +54,7 @@ for attempt in $(seq 1 2); do
   fi
 
   printf "\n• Rye wasn't found, will attempt to install it\n\n"
-  export RYE_TOOLCHAIN_VERSION="cpython@3.11"
+  export RYE_TOOLCHAIN_VERSION="cpython@3.12"
   export RYE_INSTALL_OPTION="--yes"
   export RYE_VERSION="latest"
   /bin/bash -c "$(curl -sSf https://rye.astral.sh/get/)"

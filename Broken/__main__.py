@@ -241,7 +241,7 @@ class ProjectCLI:
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(UNICYCLE),
                 PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
-                PYAPP_PYTHON_VERSION="3.11",
+                PYAPP_PYTHON_VERSION="3.12",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
             ))
@@ -251,7 +251,7 @@ class ProjectCLI:
             if offline:
                 _repo: str = "https://github.com/indygreg/python-build-standalone/releases/download"
                 _type: str = "install_only_stripped.tar.gz"
-                _cpython: str = "cpython-3.11.10"
+                _cpython: str = "cpython-3.12.7"
                 _release: str = "20241008"
 
                 def _get_release(target: str) -> str:
@@ -326,7 +326,7 @@ class ProjectCLI:
             BrokenPath.make_executable(release_path)
 
             # Release a tar.gz to keep chmod +x attributes
-            if BrokenPlatform.OnUnix:
+            if ("windows" not in target.name):
                 release_path = BrokenPath.gzip(release_path, remove=True)
 
             log.success(f"Built Project Release at ({release_path})")
