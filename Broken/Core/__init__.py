@@ -317,7 +317,10 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
     """
     Yields the numbers in a hyphenated CSV range, just like when selecting what pages to print
     - Accepts any of ("-", "..", "...", "_", "->") as a hyphenated range
-    - Special values: "all", returns infinite range from 0
+    - Special values:
+        - "all", returns infinite range from 0
+        - "even", returns even numbers
+        - "odd", returns odd numbers
 
     Example:
         ```python
@@ -331,6 +334,10 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
 
     if (string == "all"):
         yield from itertools.count()
+    elif (string == "even"):
+        yield from itertools.count(0, 2)
+    elif (string == "odd"):
+        yield from itertools.count(1, 2)
 
     for part in string.split(","):
         if ("-" in part):
@@ -338,7 +345,6 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
             yield from range(start, end + int(inclusive))
             continue
         yield int(part)
-
 
 def limited_ratio(
     number: Optional[float], *,
