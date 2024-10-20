@@ -440,14 +440,15 @@ class BrokenManager(BrokenSingleton):
             (project.path/"pyproject.toml" for project in self.projects),
         )
 
-        # What to temporarily replace
-        replaces = {
-            "#<pyapp>": ("" if _pyapp else "#"),
-            '"Private/': '# "Private/', # Ignore private projects
-            '"0.0.0"': f'"{version}"',  # Write current version
-            '>=0.0.0': f"=={version}",  # Pin broken projects version
-            '~=': '==',                 # Pin dependencies version
-        }
+        # What to replace on pyproject
+        replaces = dict()
+        replaces['"Private/'] = '# "Private/'  # Ignore private projects
+        replaces['"0.0.0"'  ] = f'"{version}"' # Write current version
+        replaces['>=0.0.0'  ] = f"=={version}" # Link projects version
+
+        if _pyapp:
+            replaces["#<pyapp>"] = ""   # Bundle all projects
+            replaces["~="      ] = "==" # Pin all dependencies
 
         # We patch to include all projects on binary releases
         packages = (("--package", "broken-source") if _pyapp else "--all")
