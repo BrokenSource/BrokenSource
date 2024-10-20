@@ -158,6 +158,7 @@ from Broken.Core import (
     install,
     iter_dict,
     limited_ratio,
+    list_get,
     nearest,
     overrides,
     pydantic2typer,

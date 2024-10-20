@@ -4,6 +4,7 @@ import enum
 import functools
 import hashlib
 import inspect
+import itertools
 import os
 import re
 import shutil
@@ -305,10 +306,18 @@ def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=ro
     return cast(multiple * operator(number/multiple))
 
 
+def list_get(data: List, index: int, default: Any=None) -> Any:
+    """Returns the item at 'index' or 'default' if out of range"""
+    if (index >= len(data)):
+        return default
+    return data[index]
+
+
 def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
     """
     Yields the numbers in a hyphenated CSV range, just like when selecting what pages to print
     - Accepts any of ("-", "..", "...", "_", "->") as a hyphenated range
+    - Special values: "all", returns infinite range from 0
 
     Example:
         ```python
@@ -319,6 +328,9 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
     """
     if not bool(string):
         return None
+
+    if (string == "all"):
+        yield from itertools.count()
 
     for part in string.split(","):
         if ("-" in part):
