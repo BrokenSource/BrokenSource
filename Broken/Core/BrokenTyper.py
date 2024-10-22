@@ -24,6 +24,7 @@ from Broken import (
     apply,
     arguments,
     flatten,
+    list_get,
     log,
     pydantic2typer,
 )
@@ -63,7 +64,7 @@ class BrokenTyper:
 
     credits: str = (
         f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
-        "[italic grey53]→ Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [blink red]:heart:[/]"
+        "[italic grey53]→ Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[/]"
     )
 
     @staticmethod
@@ -169,7 +170,7 @@ class BrokenTyper:
 
     @staticmethod
     def simple(*commands: Iterable[Callable]) -> None:
-        app = BrokenTyper().release_repl()
+        app = BrokenTyper()
         apply(app.command, commands)
         return app(sys.argv[1:])
 
@@ -189,11 +190,8 @@ class BrokenTyper:
     ) -> None:
         app = BrokenTyper(description=(
             "📦 [bold orange3]Note:[/] The default command is implicit when no other command is run!\n\n"
-            "[bold grey58]→ This means [deep_pink4]'main (default) (args)'[/] is the same as [deep_pink4]'main (args)'[/]\n"
-        )).release_repl()
-
-        # The help only makes sense inside the repl
-        app.app.info.add_help_option = app.repl
+            "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
+        ), help=False).release_repl()
 
         # Preprocess arguments
         nested = flatten(nested)
@@ -208,9 +206,6 @@ class BrokenTyper:
                 (target.__doc__ or "No help provided"),
                 (default*"[bold indian_red](default)[/]"),
             ))
-
-            # List entry points without incoming arguments
-            default = (default if arguments() else False)
 
             # Nested typer apps must be used with sys.argv
             _target = (target if method else BrokenTyper.proxy(target))
@@ -235,6 +230,7 @@ class BrokenTyper:
             renderable=Group(
                 Text.from_markup(
                     "\nSelect a [royal_blue1]command above[/], type and run it!\n"
+                    "• Press [royal_blue1]Enter[/] for a command list\n"
                 ), Panel(
                     "• Run [spring_green1]'{command} --help'[/] for usage [bold bright_black](seen above)[/]\n"
                     "• Press [spring_green1]'Ctrl+C'[/] to exit [bold bright_black](or close this window)[/]",
@@ -270,8 +266,19 @@ class BrokenTyper:
                 if not self.repl_prompt():
                     return
 
-            # Insert default command if none
-            if self.default and not any((name in sys.argv for name in self.commands)):
+            # Allow repl users to use the same commands as python entry point scripts,
+            # like 'depthflow gradio' where 'depthflow' isn't the package __main__.py
+            if (list_get(sys.argv, 1, "") == self.default):
+                sys.argv.pop(1)
+
+            # Decide wheter or not to insert the default command on argv
+            if all((
+                # Defines a default and no known commands were provided
+                (self.default) and all((x not in sys.argv for x in self.commands)),
+
+                # Either on any arguments, or repl second run onwards
+                (index > 0) or (arguments()),
+            )):
                 sys.argv.insert(1, self.default)
 
             try:
