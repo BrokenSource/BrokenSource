@@ -6,12 +6,12 @@ title: Get/Installation
 
 # ✅ Installation
 
-- There are **three ways** to get started with the Projects:
+- There are **three ways** to get started with the projects:
 
 ### [**🧀 From PyPI**](site:/get/pypi)
 
 <a href="site:/get/pypi">
-!!! success "**The most reliable** way to use the Projects."
+!!! success "**The most reliable** way to use the projects."
     - {==Requires basic Python knowledge==} {>>(and lurking)<<}.
     - Run the package commands or as a python import.
 
@@ -23,7 +23,7 @@ title: Get/Installation
 ### [**🔥 From Source**](site:/get/source)
 
 <a href="site:/get/source">
-!!! success "**The most flexible** way to use the Projects."
+!!! success "**The most flexible** way to use the projects."
     - {==**Automatic** install scripts==}, spend more time **using** the projects.
     - Latest features, bugs, fixes, {==highly configurable==}.
 
@@ -35,7 +35,7 @@ title: Get/Installation
 ### [**📦 From Releases**](site:/get/releases)
 
 <a href="site:/get/releases">
-!!! example "**The most convenient** way to use the Projects."
+!!! example "**The most convenient** way to use the projects."
     - Self-installing {==portable executable files==} made with **PyAPP**.
     - **Double click and run**, everything's managed for you.
 

@@ -13,12 +13,17 @@ title: Get/PyPI
         python -m pip install {package}
         ```
 
+    === ":simple-uv: uv"
+        ```shell title="Command"
+        uv add {package} --pin equal
+        ```
+
     === ":simple-poetry: Poetry"
         ```shell title="Command"
         python -m poetry add {package}
         ```
 
-    === ":simple-rye: Rye"
+    === ":simple-uv: Rye"
         ```shell title="Command"
         rye add {package} --pin equal
         ```
@@ -36,13 +41,11 @@ title: Get/PyPI
 
     ✅ Preferably pin the package version `==x.y.z` on `pyproject.toml` for stability!
 
-??? warning "A **Python 64 bits** interpreter is required"
-    **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits[^1]
+??? warning "**Python 64 bits** interpreter is required"
+    **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits
 
     - ✅ Check your installation with: `python -c "import struct; print(struct.calcsize('P') * 8)"`
     - This is specially important on **Windows** as [**python.org**](https://www.python.org/) front page might link to 32 bit versions
-
-    [^1]: Most notably `imgui`, and moderate chance of issues with `torch`, `numpy`, etc.
 
 ## ⭐️ Usage
 
@@ -50,10 +53,17 @@ Go to the project tab of your interest above and see the quickstart!
 
 ## 🚀 Upgrading
 
-!!! abstract "Simply upgrade the python dependency"
+Simply upgrade the python dependency:
+
+!!! abstract ""
     === ":simple-python: Pip"
         ```shell title="Command"
         python -m pip install --upgrade {package}
+        ```
+
+    === ":simple-uv: uv"
+        ```shell title="Command"
+        uv add {package}
         ```
 
     === ":simple-poetry: Poetry"

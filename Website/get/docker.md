@@ -153,7 +153,7 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 
 <hr>
 
-- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual){:target="_blank"} page, until `rye sync`
+- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual){:target="_blank"} page, until `uv sync`
 
 ### 🚀 Context
 
@@ -259,9 +259,6 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 !!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} files"
 
 ### ⭐️ Usage
-
-!!! heart "**Before you start**, now that I've got your attention"
-    If you're making a _Software as a Service (SaaS)_ backend of any Project, consider [**getting in touch**](site:/about/contact){:target="_blank"} with me, so we can make both sides **grow together** and **help each other** 👍
 
 !!! heart "**This page helped you?**"
     Consider [**Joining my Sponsors**](site:/about/sponsors) and helping me continue everything !

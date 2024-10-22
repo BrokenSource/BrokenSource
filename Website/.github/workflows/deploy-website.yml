@@ -20,6 +20,6 @@ jobs:
           git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
 
       - name: Build and Deploy
-        run: rye run mkdocs gh-deploy --force
+        run: uv run mkdocs gh-deploy --force
         env:
           CODE_REFERENCE: "1"

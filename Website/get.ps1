@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.1
+# Script version: 2024.10.21
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution
@@ -79,31 +79,20 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     }
 }
 
-if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
-    Print-Step "Rye was not found, installing with Winget"
+if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
+    Print-Step "uv was not found, installing with Winget"
     Have-Winget
-    winget install --id=Rye.Rye -e
+    winget install --id=astral-sh.uv -e
     Reload-Path
-    if (-not (Get-Command rye -ErrorAction SilentlyContinue)) {
-        Print-Step "Rye was not found, and installation failed with Winget"
-        echo "Rye was installed but still not found. Probably a Path issue or installation failure"
-        echo "> Please get it at https://rye.astral.sh"
+    if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
+        Print-Step "uv was not found, and installation failed with Winget"
+        echo "uv was installed but still not found. Probably a Path issue or installation failure"
+        echo "> Please get it at https://docs.astral.sh/uv/"
         Ask-Continue
     } else {
-        echo "Rye was installed successfully"
+        echo "uv was installed successfully"
     }
 }
-
-# Add %USERPROFILE%\.rye\shims to PATH permanently if not already
-# This is where the main 'rye' tool is located, make it available
-$ryePath = $env:USERPROFILE + "\.rye\shims"
-if ($env:Path -notlike "*$ryePath*") {
-    Print-Step "Adding Rye Shims to PATH as it was not found"
-    [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $ryePath, "User")
-    Reload-Path
-}
-
-Reload-Path
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
 
@@ -120,11 +109,8 @@ if (-not (Test-Path -Path "Broken")) {
 }
 
 Print-Step "Creating Virtual Environment and Installing Dependencies"
-rye self update
-rye config --set-bool behavior.autosync=true
-rye config --set-bool behavior.use-uv=true
-rye config --set-bool global-python=false
-rye sync
+uv self update
+uv sync
 
 # The PowerShell execution policy must allow for the Python activation script to run
 if ((Get-ExecutionPolicy) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {

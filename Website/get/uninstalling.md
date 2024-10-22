@@ -29,7 +29,7 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
 ## 🐍 Python stuff
 
 !!! tip "Where Dependencies are installed"
-    Depending on what **Python Manager** you used, {==(⚠️ Rye is used on the **From Source** installation)==}, you'll find the Python **Virtual Environment** in a couple different places:
+    Depending on what **Python Manager** you used, {==(⚠️ uv is used on the **From Source** installation)==}, you'll find the Python **Virtual Environment** in a couple different places:
 
     === ":simple-python: Pip"
         Manual method, you either **created it yourself** with `python -m venv (path)` or it's located at the **System Site Packages** for your Platform. It's a **BAD IDEA** to remove the later, so do a `pip uninstall {packages}`
@@ -40,6 +40,9 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
         - **Linux**: `~/.cache/pypoetry/virtualenvs/*`
         - **Windows**: `%localappdata%\pypoetry\virtualenvs\*`
         - **MacOS**: `~/Library/Caches/pypoetry/virtualenvs/*`
+
+    === ":simple-uv: uv"
+        **uv** creates Virtual Environments on the `.venv` directory on the repository root
 
     === ":simple-rye: Rye"
         **Rye** creates Virtual Environments on the `.venv` directory on the repository root

@@ -1,6 +1,6 @@
 #!/bin/bash
 # (c) MIT License, Tremeschin
-# Script version: 2024.9.5
+# Script version: 2024.10.21
 
 { # Prevent execution if partially downloaded
 
@@ -36,28 +36,25 @@ else
   exit 1
 fi
 
-# Must have 'rye' installed
-rye=""
+# Must have 'uv' installed
+uv=""
 for attempt in $(seq 1 2); do
-  if [ -x "$(command -v rye)" ]; then
-    rye=$(readlink -f $(which rye))
-    printf "\n• Found Rye at ($rye)\n"
+  if [ -x "$(command -v uv)" ]; then
+    uv=$(readlink -f $(which uv))
+    printf "\n• Found uv at ($uv)\n"
     break
   fi
 
   if [ $attempt -eq 2 ]; then
-    printf "\n(Error) Rye wasn't found after an installation attempt\n"
+    printf "\n(Error) uv wasn't found after an installation attempt\n"
     printf "• Do you have the Shims directory on PATH?\n"
     printf "• Try restarting the Shell and retrying\n"
-    printf "• Get it at (https://rye.astral.sh/)\n"
+    printf "• Get it at (https://docs.astral.sh/uv/)\n"
     exit 1
   fi
 
-  printf "\n• Rye wasn't found, will attempt to install it\n\n"
-  export RYE_TOOLCHAIN_VERSION="cpython@3.12"
-  export RYE_INSTALL_OPTION="--yes"
-  export RYE_VERSION="latest"
-  /bin/bash -c "$(curl -sSf https://rye.astral.sh/get/)"
+  printf "\n• uv wasn't found, will attempt to install it\n\n"
+  /bin/bash -c "$(curl -sSf https://astral.sh/uv/install.sh)"
 done
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
@@ -98,11 +95,8 @@ chmod +x Website/get.sh
 chmod +x ./Scripts/activate.sh
 
 printf "\n• Creating Virtual Environment and Installing Dependencies\n\n"
-$rye config --set-bool behavior.autosync=true
-$rye config --set-bool behavior.use-uv=true
-$rye config --set-bool global-python=false
-$rye self update || printf "\n• Rye self update failed, ignoring..\n\n"
-$rye sync
+$uv self update || printf "\n• uv self update failed, ignoring..\n\n"
+$uv sync
 
 printf "\n• Spawning a new Shell in the Virtual Environment\n"
 printf "  - Source the Virtual Environment to get here again\n"

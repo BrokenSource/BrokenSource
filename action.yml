@@ -10,16 +10,16 @@ runs:
         repository: BrokenSource/BrokenSource
         submodules: recursive
 
-    - name: Install Rye
-      uses: eifinger/setup-rye@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
 
     - name: Setup Rust
       uses: actions-rust-lang/setup-rust-toolchain@v1
 
     - name: Sync dependencies
-      run: rye sync
+      run: uv sync
       shell: bash
 
     - name: Get workflow options
-      run: rye run python ./Broken/Version.py >> $GITHUB_ENV
+      run: uv run python ./Broken/Version.py >> $GITHUB_ENV
       shell: bash

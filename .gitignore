@@ -9,14 +9,12 @@ Private
 Release
 Temp
 Workspace
+*.lock
 
 # Python
 **__pycache__*
 *.pyc
 dist
-
-# Rye
-requirements*.lock
 
 # Syncthing
 .stfolder

@@ -17,7 +17,7 @@ description  = "🚀 Broken Source Software Main Library"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "Readme.md"
 license      = "AGPL-3.0"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     # Data Structures
     "attrs~=24.2.0",
@@ -116,25 +116,36 @@ website = [
 [project.scripts]
 broken = "Broken.__main__:main"
 
-[tool.rye]
-managed = true
-universal = true
+[tool.uv]
 dev-dependencies = [
     # Development and Utilities
     "pytest-sugar~=1.0.0",
     "poethepoet~=0.29.0",
     "zstandard~=0.23.0",
+
     # Profiling
     "snakeviz~=2.2.0",
     "tuna~=0.5.11",
+
     # Manager
     "userpath~=1.9.2",
     # "pyshortcuts~=1.9.1",
+
     # Self reference
     "broken-source[website]",
+    "depthflow",
+    "pianola",
+    "shaderflow",
+    "spectronote",
 ]
 
-[tool.rye.workspace]
+[tool.uv.sources]
+depthflow   = {workspace=true}
+pianola     = {workspace=true}
+shaderflow  = {workspace=true}
+spectronote = {workspace=true}
+
+[tool.uv.workspace]
 members = [
     "Private/Projects/*",
     "Projects/*",
@@ -164,12 +175,12 @@ exclude = ["*"]
 # # PyTorch
 
 [tool.poe.tasks]
-_transformers = "python -m pip install transformers"
-_torch_base   = "python -m pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu"
-_torch_cuda   = "python -m pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cu121"
-_torch_rocm   = "python -m pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/rocm6.1"
-_torch_cpu    = "python -m pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu"
-_del_torch    = "python -m pip uninstall -y torch"
+_transformers = "python -m uv pip install transformers"
+_torch_base   = "python -m uv pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu"
+_torch_cuda   = "python -m uv pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cu121"
+_torch_rocm   = "python -m uv pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/rocm6.1"
+_torch_cpu    = "python -m uv pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu"
+_del_torch    = "python -m uv pip uninstall -y torch"
 base          = ["_del_torch", "_torch_base", "_transformers"]
 cuda          = ["_del_torch", "_torch_cuda", "_transformers"]
 rocm          = ["_del_torch", "_torch_rocm", "_transformers"]
@@ -182,7 +193,7 @@ exclude = ["*"]
 
 [tool.ruff.lint]
 ignore = [
-    "F401", # Chill down when re-exporting stuff..
+    "F401", # Chill down when re-exporting 'unused' stuff..
     "E402", # Late/runtime imports are ok for torch
     "E701", # Rarely this looks better than new line
     "E741", # Don't tell the Electrical Engineers
@@ -190,21 +201,25 @@ ignore = [
 
 # # Sources
 
-# [[tool.rye.sources]]
-# name = "default"
-# url  = "https://pypi.org/simple"
+[[tool.uv.index]]
+explicit = true
+name = "default"
+url  = "https://pypi.org/simple"
 
-# [[tool.rye.sources]]
-# name = "torch-cpu"
-# url  = "https://download.pytorch.org/whl/cpu"
+[[tool.uv.index]]
+explicit = true
+name = "torch-cpu"
+url  = "https://download.pytorch.org/whl/cpu"
 
-# [[tool.rye.sources]]
-# name = "torch-cuda"
-# url  = "https://download.pytorch.org/whl/cu118"
+[[tool.uv.index]]
+explicit = true
+name = "torch-cuda"
+url  = "https://download.pytorch.org/whl/cu118"
 
-# [[tool.rye.sources]]
-# name = "torch-rocm"
-# url  = "https://download.pytorch.org/whl/rocm6.1"
+[[tool.uv.index]]
+explicit = true
+name = "torch-rocm"
+url  = "https://download.pytorch.org/whl/rocm6.1"
 
 # Tests
 

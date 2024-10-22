@@ -143,7 +143,7 @@ class ProjectCLI:
         if dependencies:
             if self.is_python:
                 raise NotImplementedError("Standalone Python projects are not supported yet")
-                shell("rye", "lock", "--update-all")
+                shell("uv", "lock", "--update-all")
             if self.is_nodejs:
                 shell("pnpm", "update")
             if self.is_rust:
@@ -383,7 +383,7 @@ class BrokenManager(BrokenSingleton):
             self.broken_typer.command(self.link)
             self.broken_typer.command(self.tremeschin, hidden=True)
             self.broken_typer.command(self.clean, hidden=True)
-            self.broken_typer.command(self.ryeup, hidden=True)
+            self.broken_typer.command(self.upgrade, hidden=True)
 
         with self.broken_typer.panel("🚀 Core"):
             self.broken_typer.command(self.insiders, hidden=True)
@@ -454,8 +454,8 @@ class BrokenManager(BrokenSingleton):
         packages = (("--package", "broken-source") if _pyapp else "--all")
 
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
-            shell("rye", "build", "--wheel", "--out", output, packages)
-            shell("rye", "publish", "--yes",
+            shell("uv", "build", "--wheel", "--out-dir", output, packages)
+            shell("uv", "publish", "--yes",
                 "--repository", ("testpypi" if test else "pypi"),
                 "--token", os.getenv("PYPI_TOKEN"),
                 "--username", "__token__",
@@ -465,8 +465,8 @@ class BrokenManager(BrokenSingleton):
 
         return Path(output)
 
-    def ryeup(self) -> None:
-        """📦 Rye doesn't have a command to bump versions, but (re)adding dependencies does it"""
+    def upgrade(self) -> None:
+        """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""
         import re
 
         def update(data: List[str], *, dev: bool=False, optional: str=None) -> None:
@@ -480,7 +480,7 @@ class BrokenManager(BrokenSingleton):
                     if (compare == "=="):
                         continue
 
-                    shell("rye", "add", "--no-sync", name, "--pin", "~=",
+                    shell("uv", "add", "--no-sync", name, "--pin", "~=",
                         "--dev"*dev, ("--optional", optional)*bool(optional))
                 except ValueError:
                     continue
@@ -489,7 +489,7 @@ class BrokenManager(BrokenSingleton):
             with BrokenPath.pushd(path):
                 pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
                 update(pyproject.project["dependencies"])
-                update(pyproject.tool.rye["dev-dependencies"], dev=True)
+                update(pyproject.tool.uv["dev-dependencies"], dev=True)
                 for (optional, items) in pyproject.project["optional-dependencies"].items():
                     update(items, optional=optional)
 
@@ -497,7 +497,7 @@ class BrokenManager(BrokenSingleton):
             manage(project.path)
 
         manage(BROKEN.DIRECTORIES.REPOSITORY)
-        shell("rye", "sync")
+        shell("uv", "sync")
 
     @staticmethod
     def rust(

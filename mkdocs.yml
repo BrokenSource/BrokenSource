@@ -57,13 +57,13 @@ nav:
       - ⭐️ Examples: shaderflow/easy/examples.md
 
     - Learn:
-      - Modules:
-        - Camera: shaderflow/modules/camera.md
       - Core:
         - Module: shaderflow/module.md
         - Scene: shaderflow/scene.md
         - Shader: shaderflow/shader.md
         - Texture: shaderflow/texture.md
+      - Modules:
+        - Camera: shaderflow/modules/camera.md
 
     - Code reference:
       - 📦 Package: code/shaderflow/
@@ -139,7 +139,7 @@ theme:
         name: Switch to Light Mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo # white
+      primary: white # white
       accent: light-blue
       toggle:
         icon: material/weather-night

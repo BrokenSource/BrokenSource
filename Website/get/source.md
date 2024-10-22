@@ -41,7 +41,7 @@ title: Get/Source
     === ":simple-git: Manual"
         <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
 
-        - **Install** [**Git**](https://git-scm.com/downloads) and [**Rye**](https://rye.astral.sh/) on your Platform
+        - **Install** [**Git**](https://git-scm.com/downloads) and [**uv**](https://docs.astral.sh/uv/) on your Platform
 
         ```bash title="Clone the Monorepo and all Submodules"
         git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
@@ -53,7 +53,7 @@ title: Get/Source
         git submodule foreach --recursive 'git checkout main || true'
         ```
         ```bash title="Create the main Virtual Environment and Install Dependencies"
-        rye sync
+        uv sync
         ```
         ```bash title="Activate the main Virtual Environment"
         # Windows:
@@ -113,11 +113,11 @@ git pull --recurse-submodules --jobs=4
 
 ### Packages
 
-The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**Rye**](https://rye.astral.sh/)
+The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**uv**](https://docs.astral.sh/uv/)
 
 - You'll probably **only** need to know of a **single command**:
 
-!!! note "Command: [`rye sync`](https://rye.astral.sh/guide/sync)"
+!!! note "Command: [`uv sync`](https://rye.astral.sh/guide/sync)"
     This will **update** the **Virtual Environment** and **install** any new **dependencies**
 
 After that, just activate the venv and you're good to go!

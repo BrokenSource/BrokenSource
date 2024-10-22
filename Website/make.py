@@ -8,6 +8,11 @@ from typing import Callable, Generator, Iterable, Union
 import mkdocs_gen_files
 from attr import define, field
 
+# Workaround: https://github.com/mondeja/mkdocs-include-markdown-plugin/pull/231
+from mkdocs_include_markdown_plugin import IncludeMarkdownPlugin
+
+IncludeMarkdownPlugin._update_watched_files = lambda self: None
+
 from Broken import BROKEN, BrokenEnum, BrokenPlatform
 from Broken.__main__ import BrokenManager
 
@@ -111,13 +116,13 @@ class BrokenWebsite:
             case Directory.Resources:
                 for file in files(path.rglob("*")):
                     script = parts(self.website/"resources"/file.relative_to(path), lower)
-                    self.write(script, file.read_bytes())
+                    self.write(path=script, content=file.read_bytes())
 
             # Raw copy examples
             case Directory.Examples:
                 for file in files(path.rglob("*")):
                     script = parts(self.website/"examples"/file.relative_to(path), lower)
-                    self.write(script, file.read_text())
+                    self.write(path=script, content=file.read_text())
 
             # Write the Code Reference
             case Directory.Package:
