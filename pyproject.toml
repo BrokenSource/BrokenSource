@@ -35,7 +35,6 @@ dependencies = [
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
     "setuptools~=75.2.0",
-    "uv~=0.4.24",
     # "yt-dlp~=2024.5.27",
     # Utils
     "arrow~=1.3.0",
@@ -198,28 +197,6 @@ ignore = [
     "E701", # Rarely this looks better than new line
     "E741", # Don't tell the Electrical Engineers
 ]
-
-# # Sources
-
-[[tool.uv.index]]
-explicit = true
-name = "default"
-url  = "https://pypi.org/simple"
-
-[[tool.uv.index]]
-explicit = true
-name = "torch-cpu"
-url  = "https://download.pytorch.org/whl/cpu"
-
-[[tool.uv.index]]
-explicit = true
-name = "torch-cuda"
-url  = "https://download.pytorch.org/whl/cu118"
-
-[[tool.uv.index]]
-explicit = true
-name = "torch-rocm"
-url  = "https://download.pytorch.org/whl/rocm6.1"
 
 # Tests
 

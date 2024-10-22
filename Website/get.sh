@@ -54,7 +54,7 @@ for attempt in $(seq 1 2); do
   fi
 
   printf "\n• uv wasn't found, will attempt to install it\n\n"
-  /bin/bash -c "$(curl -sSf https://astral.sh/uv/install.sh)"
+  /bin/bash -c "$(curl -sSfL https://astral.sh/uv/install.sh)"
 done
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
