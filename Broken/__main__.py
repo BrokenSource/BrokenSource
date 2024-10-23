@@ -200,6 +200,11 @@ class ProjectCLI:
             help="Target platforms to build binaries for"
         )] = [BrokenPlatform.CurrentTarget],
 
+        tarball: Annotated[bool,
+            Option("--tarball",
+            help="Create a compressed tarball archive for unix releases",
+        )] = False,
+
         offline: Annotated[bool,
             Option("--offline",
             help="(Experimental) Create self-contained distributions without internet",
@@ -326,7 +331,7 @@ class ProjectCLI:
             BrokenPath.make_executable(release_path)
 
             # Release a tar.gz to keep chmod +x attributes
-            if ("windows" not in target.name):
+            if tarball and ("windows" not in target.name):
                 release_path = BrokenPath.gzip(release_path, remove=True)
 
             log.success(f"Built Project Release at ({release_path})")

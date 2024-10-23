@@ -1376,9 +1376,9 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     @staticmethod
     def install() -> None:
         if all(map(BrokenPath.which, ("ffmpeg", "ffprobe"))):
-            return
+            return None
 
-        if not BrokenPlatform.OnMacOS:
+        if (not BrokenPlatform.OnMacOS):
             log.info("FFmpeg wasn't found on System Path, will download a BtbN's Build")
             BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
@@ -1389,8 +1389,8 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
             )))
         else:
             log.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")
-            BrokenPath.get_external("https://evermeet.cx/pub/ffmpeg/ffmpeg-7.0.2.zip")
-            BrokenPath.get_external("https://evermeet.cx/pub/ffprobe/ffprobe-7.0.2.zip")
+            BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip", redirect=True)
+            BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/zip", redirect=True)
 
     # # Video
 

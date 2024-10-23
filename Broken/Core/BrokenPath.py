@@ -410,7 +410,17 @@ class BrokenPath:
         log.success(f"Downloaded file ({output}) from ({url})", echo=echo)
         return output
 
-    def get_external(url: str, *, subdir: str="", echo: bool=True) -> Path:
+    def redirect(url: str) -> str:
+        import requests
+        return requests.head(url, allow_redirects=True).url
+
+    def get_external(
+        url: str, *,
+        subdir: str="",
+        redirect: bool=False,
+        echo: bool=True
+    ) -> Path:
+        url  = BrokenPath.redirect(url) if redirect else url
         file = BrokenPath.url_filename(denum(url))
 
         # Is this file a .zip, .tar, etc..?

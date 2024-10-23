@@ -1,6 +1,6 @@
 [project.urls]
 GitHub    = "https://github.com/BrokenSource/BrokenSource"
-Changelog = "https://brokensrc.dev/news/category/releases"
+Changelog = "https://brokensrc.dev/about/changelog"
 Funding   = "https://brokensrc.dev/about/sponsors"
 Contact   = "https://brokensrc.dev/about/contact"
 Download  = "https://brokensrc.dev/get/releases"
@@ -35,6 +35,7 @@ dependencies = [
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
     "setuptools~=75.2.0",
+    "uv>=0.4.25",
     # "yt-dlp~=2024.5.27",
     # Utils
     "arrow~=1.3.0",

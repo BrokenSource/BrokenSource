@@ -459,7 +459,6 @@ class EasyTracker:
     def trigger(self, update: bool=False) -> bool:
         """True if it's been more than 'self.retention' since the last run"""
         trigger = (self.last.shift(**self.retention) < __import__("arrow").utcnow())
-        trigger = (trigger or self._first)
         if (trigger and update):
             self.update()
         return trigger

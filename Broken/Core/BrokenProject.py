@@ -368,15 +368,13 @@ class BrokenProject:
 
     def welcome(self):
         import pyfiglet
-
         ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
-
         rprint(Panel(
             Align.center(ascii + "\n"),
-            subtitle=' '.join((
-                f"Made with ❤️ by {self.APP_AUTHOR},",
-                f"Python {sys.version.split()[0]}"
+            subtitle=''.join((
+                f"[bold dim]📦 Version {self.VERSION} • ",
+                f"Python {sys.version.split()[0]} 📦[/]"
             )),
         ))
 
@@ -384,7 +382,10 @@ class BrokenProject:
 
         # Skip if not executing within a binary release
         if not (executable := os.getenv("PYAPP", False)):
-            return
+            return None
+
+        if (not arguments()):
+            self.welcome()
 
         # ---------------------------------------------------------------------------------------- #
 
@@ -401,9 +402,9 @@ class BrokenProject:
 
         # "If (not on the first run) and (hash differs)"
         if (old_hash is not None) and (old_hash != this_hash):
-            print("-"*shutil.get_terminal_size().columns)
-            log.info(f"Detected different binary hash for this release version [bold blue]v{self.VERSION}[/] of the project [bold blue]{self.APP_NAME}[/], reinstalling..")
-            log.info(f"• Installed at: ({venv_path})")
+            print("-"*shutil.get_terminal_size().columns + "\n")
+            log.info(f"Detected different hash for this release version [bold blue]v{self.VERSION}[/], reinstalling..")
+            log.info(f"• {venv_path}")
 
             if BrokenPlatform.OnWindows:
                 BrokenPath.remove(ntfs_workaround)
@@ -416,7 +417,7 @@ class BrokenProject:
                 exit(0)
             else:
                 shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
-                print("-"*shutil.get_terminal_size().columns)
+                print("\n" + "-"*shutil.get_terminal_size().columns + "\n")
                 try:
                     sys.exit(shell(executable, sys.argv[1:], echo=False).returncode)
                 except KeyboardInterrupt:
@@ -469,7 +470,8 @@ class BrokenProject:
             tracker.retention.days = 7
 
             if (tracker.first):
-                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet")
+                shell(sys.executable, "-m", "uv", "cache",
+                    "prune", "--quiet", echo=False)
 
             # Skip in-use versions
             if (not tracker.trigger()):
