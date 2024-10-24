@@ -82,7 +82,7 @@ shaderflow = [
     "moderngl-window~=2.4.6",
     "imgui-bundle>=1.5.2",
     "pygame~=2.6.1",
-    "turbopipe~=1.2.1",
+    "turbopipe~=1.2.2",
     # MIDI
     "midi2audio~=0.1.1",
     "pretty-midi~=0.2.10",

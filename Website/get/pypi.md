@@ -9,26 +9,31 @@ title: Get/PyPI
 
 !!! abstract ""
     === ":simple-python: Pip"
+
         ```shell title="Command"
-        python -m pip install {package}
+        python3 -m pip install {package}
         ```
 
     === ":simple-astral: uv"
+
         ```shell title="Command"
         uv add {package} --pin equal
         ```
 
     === ":simple-poetry: Poetry"
+
         ```shell title="Command"
-        python -m poetry add {package}
+        poetry add {package}
         ```
 
-    === ":simple-astral: Rye"
+    === ":simple-rye: Rye"
+
         ```shell title="Command"
         rye add {package} --pin equal
         ```
 
     === ":simple-pdm: PDM"
+
         ```shell title="Command"
         pdm add {package}
         ```
@@ -44,7 +49,7 @@ title: Get/PyPI
 ??? warning "**Python 64 bits** interpreter is required"
     **Reason**: Some or many dependencies don't have precompiled wheels or will fail to compile for 32 bits
 
-    - ✅ Check your installation with: `python -c "import struct; print(struct.calcsize('P') * 8)"`
+    - ✅ Check your installation with: `python3 -c "import struct; print(struct.calcsize('P') * 8)"`
     - This is specially important on **Windows** as [**python.org**](https://www.python.org/) front page might link to 32 bit versions
 
 ## ⭐️ Usage
@@ -57,26 +62,31 @@ Simply upgrade the python dependency:
 
 !!! abstract ""
     === ":simple-python: Pip"
+
         ```shell title="Command"
-        python -m pip install --upgrade {package}
+        python3 -m pip install --upgrade {package}
         ```
 
     === ":simple-astral: uv"
+
         ```shell title="Command"
         uv add {package}
         ```
 
     === ":simple-poetry: Poetry"
+
         ```shell title="Command"
-        python -m poetry update {package}
+        poetry update {package}
         ```
 
     === ":simple-rye: Rye"
+
         ```shell title="Command"
         rye add {package}
         ```
 
     === ":simple-pdm: PDM"
+
         ```shell title="Command"
         pdm update {package}
         ```

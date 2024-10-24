@@ -22,7 +22,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 #### Pods
 
 !!! example ""
-    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (4.8/5.0)</span> • Minor fixes needed within user's reach</b></div>
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (4.8/5.0)</span> • Minor fixes within user's reach</b></div>
 
     - Rent any pod with Nvidia GPUs (L4/T4 or cheapest should be enough)
     - Template: `runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04`
@@ -85,9 +85,9 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### 🔘 Inferless
 
 !!! example ""
-    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/" target="_blank">Website</a><span style="float: right;">?/5.0</span> • Works out of the box?</b></div>
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/" target="_blank">Website</a><span style="float: right;">?/5.0</span> • No OpenGL acceleration?</b></div>
 
-    A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and it worked out of the box.
+    A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and it rendered at abysmal speeds.
 
     - I don't have any more information or if this is true.
 

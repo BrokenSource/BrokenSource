@@ -5,7 +5,7 @@ repo_url: https://github.com/BrokenSource/BrokenSource/
 edit_uri: edit/main/Website/
 repo_name: GitHub
 site_author: Tremeschin
-copyright: © 2023-2024, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
+copyright: © CC-BY-SA-4.0, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
 docs_dir: Website
 site_dir: Build/Website
 nav:
@@ -20,11 +20,10 @@ nav:
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
       - ❤️ Sponsors: about/sponsors.md
-      - 🔦 PyTorch: get/pytorch.md
-      - ❓ FAQ: about/faq.md
+      - ❓ Questions: about/faq.md
     - About:
       - 🛠️ Contribuing: about/contributing.md
-      - 👤 Developers: about/developers.md
+      # - 👤 Developers: about/developers.md
       - 🪵 Changelog: about/changelog.md
       - 🧭 Roadmap: about/roadmap.md
       - 💬 Contact: about/contact.md
@@ -243,11 +242,9 @@ markdown_extensions:
         kwds:
           case: lower
   - pymdownx.highlight:
-      linenums: true
-      use_pygments: true
       auto_title: true
-      pygments_lang_class: true
-      linenums_style: table
+      linenums: false
+      linenums_style: span
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences

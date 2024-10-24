@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "main.html" %}
 
 {% block content %}
   {{ super() }}
@@ -73,7 +73,7 @@
       window.addEventListener('scroll', function() {
         const scrolled = window.pageYOffset || document.documentElement.scrollTop;
         const particles = document.getElementById('tsparticles');
-        particles.style.transform = `translateY(${-0.3*scrolled}px)`;
+        particles.style.transform = `translateY(${-0.1*scrolled}px)`;
       });
     });
   </script>

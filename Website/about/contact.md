@@ -30,7 +30,7 @@ title: About/Contact
 
     [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource){:target="_blank"}
 
--   :fontawesome-solid-envelope:{.lg .middle} **Email** [^1]
+-   :fontawesome-solid-envelope:{.lg .middle} **Email**
 
     Get in touch directly and privately
 
@@ -43,5 +43,5 @@ title: About/Contact
 !!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:
 
-    - 🇧🇷 **Brazilian Portuguese**, my native language
-    - 🇺🇸 **English**: I should practice speaking 😅
+    - 🇧🇷 **Portuguese**: My native language
+    - 🇺🇸 **English**: Too much internet..

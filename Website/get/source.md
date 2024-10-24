@@ -85,6 +85,8 @@ title: Get/Source
 
 Go to the project tab of your interest above and see the quickstart!
 
+- You can also run the projects with: `uv run 'project'` directly
+
 !!! tip "Next time, to use the projects"
     You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> directory and [**source the virtual environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
