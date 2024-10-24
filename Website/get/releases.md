@@ -40,7 +40,7 @@ title: Get/Releases
             <table id="macos-arm64"><tbody/></table>
 
 <script>
-  function add_release(emoji, name, platform, architecture, version, enabled, temp) {
+  function add_release(emoji, name, platform, architecture, version, enabled) {
 
     // Create the project name left button
     const project_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
@@ -64,8 +64,6 @@ title: Get/Releases
         `https://github.com/BrokenSource/${name}/releases/download/${version}/`,
         `${name.toLowerCase()}-${platform}-${architecture}-${version}.${extension}`
       ].join('');
-      if (temp)
-        download_link.href = temp;
     } else {
       download_link.classList.add('md-button--disabled');
       download_link.innerHTML = 'Eventually';
@@ -81,12 +79,12 @@ title: Get/Releases
     document.querySelector(`#${platform}-${architecture} tbody`).appendChild(row);
   }
 
-  add_release("🌊", "DepthFlow",   "windows", "amd64", "v0.8.0", true, "https://github.com/BrokenSource/DepthFlow/releases")
-  add_release("🌊", "DepthFlow",   "linux",   "amd64", "v0.8.0", true, "https://github.com/BrokenSource/DepthFlow/releases")
-  add_release("🌊", "DepthFlow",   "macos",   "arm64", "v0.8.0", true, "https://github.com/BrokenSource/DepthFlow/releases")
-  add_release("🔥", "ShaderFlow",  "windows", "amd64", "v0.8.0", true, "https://github.com/BrokenSource/ShaderFlow/releases")
-  add_release("🔥", "ShaderFlow",  "linux",   "amd64", "v0.8.0", true, "https://github.com/BrokenSource/ShaderFlow/releases")
-  add_release("🔥", "ShaderFlow",  "macos",   "arm64", "v0.8.0", true, "https://github.com/BrokenSource/ShaderFlow/releases")
+  add_release("🌊", "DepthFlow",   "windows", "amd64", "v0.8.0", true)
+  add_release("🌊", "DepthFlow",   "linux",   "amd64", "v0.8.0", true)
+  add_release("🌊", "DepthFlow",   "macos",   "arm64", "v0.8.0", true)
+  add_release("🔥", "ShaderFlow",  "windows", "amd64", "v0.8.0", true)
+  add_release("🔥", "ShaderFlow",  "linux",   "amd64", "v0.8.0", true)
+  add_release("🔥", "ShaderFlow",  "macos",   "arm64", "v0.8.0", true)
   add_release("🎹", "Pianola",     "windows", "amd64", "v0.8.0", false)
   add_release("🎹", "Pianola",     "linux",   "amd64", "v0.8.0", false)
   add_release("🎹", "Pianola",     "macos",   "arm64", "v0.8.0", false)
