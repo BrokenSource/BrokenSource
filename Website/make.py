@@ -99,7 +99,8 @@ class BrokenWebsite:
                 self.write(path=self.website/"index.md",
                     content='\n'.join((
                         "---",
-                        f"title: '{self.name} Project'",
+                        f"title: '{self.name}'",
+                        "template: home.html",
                         "---\n",
                         ((path/"Readme.md").read_text().split("<!-- Website end -->")[0])
                 )))

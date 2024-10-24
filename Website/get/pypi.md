@@ -13,7 +13,7 @@ title: Get/PyPI
         python -m pip install {package}
         ```
 
-    === ":simple-uv: uv"
+    === ":simple-astral: uv"
         ```shell title="Command"
         uv add {package} --pin equal
         ```
@@ -23,7 +23,7 @@ title: Get/PyPI
         python -m poetry add {package}
         ```
 
-    === ":simple-uv: Rye"
+    === ":simple-astral: Rye"
         ```shell title="Command"
         rye add {package} --pin equal
         ```
@@ -61,7 +61,7 @@ Simply upgrade the python dependency:
         python -m pip install --upgrade {package}
         ```
 
-    === ":simple-uv: uv"
+    === ":simple-astral: uv"
         ```shell title="Command"
         uv add {package}
         ```

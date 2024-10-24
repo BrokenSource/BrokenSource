@@ -10,7 +10,7 @@ title: Get/Releases
 !!! abstract ""
     === ":material-microsoft: Windows"
         <div align="center">
-          <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
+          <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg">
           <div>
             <b>Note:</b> Executables are <b><a target="_blank" href="https://github.com/ofek/pyapp">safe</a></b> and <b><a target="_blank" href="https://github.com/BrokenSource/BrokenSource/actions">auditable</a></b>, but might trigger a false antivirus alert
             <code>
@@ -24,7 +24,7 @@ title: Get/Releases
             <table id="windows-amd64"><tbody/></table>
     === ":simple-linux: Linux"
         <div align="center">
-          <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
+          <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg">
           <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
@@ -32,7 +32,7 @@ title: Get/Releases
             <table id="linux-amd64"><tbody/></table>
     === ":simple-apple: MacOS"
         <div align="center">
-          <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
+          <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
           <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>

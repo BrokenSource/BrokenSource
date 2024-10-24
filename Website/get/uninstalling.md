@@ -41,7 +41,7 @@ Thanks for using **Broken Source Software**, I hope you found it useful ❤️
         - **Windows**: `%localappdata%\pypoetry\virtualenvs\*`
         - **MacOS**: `~/Library/Caches/pypoetry/virtualenvs/*`
 
-    === ":simple-uv: uv"
+    === ":simple-astral: uv"
         **uv** creates Virtual Environments on the `.venv` directory on the repository root
 
     === ":simple-rye: Rye"

@@ -384,9 +384,6 @@ class BrokenProject:
         if not (executable := os.getenv("PYAPP", False)):
             return None
 
-        if (not arguments()):
-            self.welcome()
-
         # ---------------------------------------------------------------------------------------- #
 
         import hashlib
@@ -427,6 +424,9 @@ class BrokenProject:
         BrokenPath.remove(ntfs_workaround, echo=False)
 
         # ---------------------------------------------------------------------------------------- #
+
+        if (not arguments()):
+            self.welcome()
 
         def check_new_version():
             from packaging.version import Version

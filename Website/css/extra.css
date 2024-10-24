@@ -19,9 +19,77 @@ h1, h2, h3 {
   font-weight: bold;
 } */
 
-/* Round borders for quotes */
-.md-typeset blockquote {
-  border-radius: 4px;
+/* Remove underline, striketrough inside critics { } */
+ins.critic, del.critic {
+  text-decoration: none;
+}
+
+/* Operating system logos */
+.os-logo {
+  vertical-align: middle;
+  border-radius: 20%;
+  width: 80px;
+}
+
+/* More material-dark looking footer on slate */
+[data-md-color-scheme=slate] {
+  --md-footer-bg-color--dark: hsla(var(--md-hue), 0%, 10%, 1);
+  --md-footer-bg-color:       hsla(var(--md-hue), 0%, 10%, 1);
+  --md-default-bg-color:      hsla(var(--md-hue), 0%, 15%, 1);
+}
+
+/* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
+
+.md-main__inner {
+  min-height: calc(100vh - 150px);
+}
+
+@media screen and (min-width: 992px) {
+  .md-main__inner {
+    min-height: calc(100vh - 115px);
+  }
+}
+
+@media screen and (max-width: 991.98px) {
+  .md-main__inner {
+    min-height: calc(100vh - 115px);
+  }
+}
+
+/* --------------- Shiny metallic headers, rip material but I promise it's subtle --------------- */
+
+@keyframes MetallicSweep {
+  0%   {background-position: -1000px 0px;}
+  100% {background-position: 1000px 0px;}
+}
+
+.md-tabs, .md-header {
+  background-size: 2000px 100px;
+  background-image: linear-gradient(
+    45deg,
+    hsl(0, 0%, 100%) 0%,
+    hsl(0, 0%, 95%) 20%,
+    hsl(0, 0%, 90%) 40%,
+    hsl(0, 0%, 90%) 60%,
+    hsl(0, 0%, 95%) 80%,
+    hsl(0, 0%, 100%) 100%
+  );
+}
+
+.md-header {
+  animation: MetallicSweep 8s linear infinite;
+}
+
+.md-tabs {
+  animation: MetallicSweep 8s linear infinite -0.1s;
+}
+
+[data-md-color-scheme=slate] {
+  .md-tabs, .md-header {
+    /* We don't have HDR to use metallic sweep 🙁 */
+    background-color: hsl(0, 0%, 20%);
+    background-image: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -31,7 +99,15 @@ h1, h2, h3 {
 .md-typeset details {
   border-width: 0;
   border-left-width: 4px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Pop-out admonitions on dark mode */
+[data-md-color-scheme=slate] {
+  .md-typeset .admonition,
+  .md-typeset details {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+  }
 }
 
 /* Un-bold Admonition titles */
@@ -186,13 +262,6 @@ h2.doc.doc-heading {
   animation: beat 1000ms infinite;
 }
 
-/* [data-md-color-scheme="slate"] {
---md-default-bg-color: hsla(0, 0%, 10%, 1);
---md-default-bg-color--light: hsla(0, 0%, 25%, 0.54);
---md-default-bg-color--lighter: hsla(0, 0%, 27.5%, 0.26);
---md-default-bg-color--lightest: hsla(0, 0%, 30%, 0.07);
-} */
-
 /* ------------------------------------------- Videos ------------------------------------------- */
 
 video {
@@ -210,4 +279,85 @@ video {
   height: 2px;
   background: var(--md-typeset-table-color);
   margin: 1em 0;
+}
+
+/* ----------------------------- Round most stuff for a modern look ----------------------------- */
+
+:root {
+  --roundness: 0.4rem;
+}
+
+/* {++ ++}, {== ==}, ... */
+.md-typeset .critic, .md-typeset mark {
+  border-radius: 0.2rem;
+}
+
+/* Round borders for quotes '>' */
+.md-typeset blockquote {
+  border-radius: 4px;
+}
+
+/* Grid cargs */
+.md-typeset .grid.cards > ul > li {
+  border-radius: var(--roundness);
+}
+
+/* Buttons */
+.md-typeset .md-button {
+  border-radius: var(--roundness);
+}
+
+/* Search button */
+.md-search__form {
+  border-radius: var(--roundness);
+}
+
+/* Code blocks */
+.md-typeset pre > code {
+  border-radius: var(--roundness);
+}
+
+/* Thanks! https://github.com/squidfunk/mkdocs-material/discussions/6974 */
+.highlight span.filename {
+  border-bottom: none;
+  border-radius: var(--roundness);
+  display: inline;
+  font-family: var(--md-code-font-family);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.highlight span.filename + pre > code {
+  border-radius: var(--roundness);
+  border-top-left-radius: 0;
+}
+
+/* Cricit thickening */
+.md-typeset mark {
+  box-shadow: 0 0 0 0.1rem var(--md-typeset-mark-color);}
+.md-typeset ins.critic {
+  box-shadow: 0 0 0 0.1rem var(--md-typeset-ins-color);}
+.md-typeset del.critic {
+  box-shadow: 0 0 0 0.1rem var(--md-typeset-del-color);}
+
+/* ---------------------------------------------------------------------------------------------- */
+
+@keyframes fadeIn {
+    0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+#tsparticles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  z-index: -1;
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
+  mask-position: center;
+  mask-size: cover;
+  animation: fadeIn 4s forwards;
 }

@@ -1,5 +1,3 @@
-
-
 ## DepthFlow / ShaderFlow
 
 ### **Q:** Rendered videos are black

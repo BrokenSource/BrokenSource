@@ -10,7 +10,7 @@ title: Get/Source
 !!! abstract ""
     === ":material-microsoft: Windows"
         <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg" style="vertical-align: middle; border-radius: 20%" width="80">
+            <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg">
             <div><b>Open</b> a folder to download the code on <b>Windows Explorer</b>,</div>
             <div>Press ++ctrl+l++ , run `powershell` and execute:</div>
         </div>
@@ -20,7 +20,7 @@ title: Get/Source
         ```
     === ":simple-linux: Linux"
         <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg" style="vertical-align: middle; border-radius: 20%" width="80">
+            <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
             <div><sup></sup></div>
         </div>
@@ -30,7 +30,7 @@ title: Get/Source
         ```
     === ":simple-apple: MacOS"
         <div align="center">
-            <img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg" style="vertical-align: middle; border-radius: 20%;" width="80">
+            <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
             <div><sup></sup></div>
         </div>
@@ -39,7 +39,7 @@ title: Get/Source
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
     === ":simple-git: Manual"
-        <div align="center"><img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg" style="vertical-align: middle; border-radius: 20%" width="80"></div>
+        <div align="center"><img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg"></div>
 
         - **Install** [**Git**](https://git-scm.com/downloads) and [**uv**](https://docs.astral.sh/uv/) on your Platform
 

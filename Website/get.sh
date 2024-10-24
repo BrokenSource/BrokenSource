@@ -13,11 +13,11 @@ MACOS=false
 
 # macOS: Must have 'Xcode Command Line Tools' installed
 if $MACOS; then
-  if ! xcode-select -p &> /dev/null; then
+  if [ ! xcode-select -p &> /dev/null ]; then
     printf "(Error) Xcode Command Line Tools are not installed\n"
     printf "• Install them with 'xcode-select --install'\n"
     printf "• Run again this script after installation\n"
-    exit 0
+    exit 1
   fi
 fi
 

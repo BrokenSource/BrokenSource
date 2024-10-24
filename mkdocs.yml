@@ -25,6 +25,7 @@ nav:
     - About:
       - 🛠️ Contribuing: about/contributing.md
       - 👤 Developers: about/developers.md
+      - 🪵 Changelog: about/changelog.md
       - 🧭 Roadmap: about/roadmap.md
       - 💬 Contact: about/contact.md
       - ⚖️ License: about/license.md
@@ -42,8 +43,9 @@ nav:
   - DepthFlow:
     - depthflow/index.md
     - Quick start:
-      - ✅ Installation: depthflow/easy/install.md
-      - ⭐️ Examples: depthflow/easy/examples.md
+      - depthflow/quick/index.md
+      - ✅ Installation: depthflow/quick/install.md
+      - ⭐️ Examples: depthflow/quick/examples.md
     - Learn:
       - 📜 Foundations: depthflow/learn/foundations.md
       - 🔧 Parameters: depthflow/learn/parameters.md
@@ -53,8 +55,9 @@ nav:
   - ShaderFlow:
     - shaderflow/index.md
     - Quick start:
-      - ✅ Installation: shaderflow/easy/install.md
-      - ⭐️ Examples: shaderflow/easy/examples.md
+      - shaderflow/quick/index.md
+      - ✅ Installation: shaderflow/quick/install.md
+      - ⭐️ Examples: shaderflow/quick/examples.md
 
     - Learn:
       - Core:
@@ -71,16 +74,16 @@ nav:
   - Pianola:
     - pianola/index.md
     - Quick start:
-      - ✅ Installation: pianola/easy/install.md
-      - ⭐️ Examples: pianola/easy/examples.md
+      - ✅ Installation: pianola/quick/install.md
+      - ⭐️ Examples: pianola/quick/examples.md
     - Code reference:
       - 📦 Package: code/pianola/
 
   - SpectroNote:
     - spectronote/index.md
     - Quick start:
-      - ✅ Installation: spectronote/easy/install.md
-      - ⭐️ Examples: spectronote/easy/examples.md
+      - ✅ Installation: spectronote/quick/install.md
+      - ⭐️ Examples: spectronote/quick/examples.md
     - Code reference:
       - 📦 Package: code/spectronote/
 
@@ -240,10 +243,11 @@ markdown_extensions:
         kwds:
           case: lower
   - pymdownx.highlight:
-      linenums: false
+      linenums: true
       use_pygments: true
       auto_title: true
       pygments_lang_class: true
+      linenums_style: table
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
@@ -271,6 +275,7 @@ extra_javascript:
   - javascript/video.js
   - javascript/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js
 
 extra:
   social:
