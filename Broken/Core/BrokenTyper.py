@@ -271,14 +271,8 @@ class BrokenTyper:
             if (list_get(sys.argv, 1, "") == self.default):
                 sys.argv.pop(1)
 
-            # Decide wheter or not to insert the default command on argv
-            if all((
-                # Defines a default and no known commands were provided
-                (self.default) and all((x not in sys.argv for x in self.commands)),
-
-                # Either on any arguments, or repl second run onwards
-                (index > 0) or (arguments()),
-            )):
+            # Defines a default, arguments are present, and no known commands were provided
+            if (self.default and arguments()) and all((x not in sys.argv for x in self.commands)):
                 sys.argv.insert(1, self.default)
 
             try:
