@@ -3,12 +3,13 @@
 ⭐️ Here you can find all the most significant changes made or ongoing to the software!
 
 - Keep in mind this list isn't exhaustive, for the full thing, see commit history itself
+- Unlisted projects might have received indirect changes from others or the main lib
 
 <hr>
 
 <!------------------------------------------------------------------------------------------------->
 
-### 🔘 0.8.0 <small>October 24, 2024</small> {#0.8.0}
+### 🔘 0.8.0 <small>October 25, 2024</small> {#0.8.0}
 
 ##### General {#0.8.0-general}
 

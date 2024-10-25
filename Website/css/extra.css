@@ -48,6 +48,12 @@ ins.critic, del.critic {
   --md-code-bg-color: hsla(var(--md-hue), 0%, 97%, 1);
 }
 
+/* Better nested unordered lists */
+article ul ul {
+  list-style-type: circle !important;}
+article ul ul ul {
+  list-style-type: square !important;}
+
 /* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
 
 .md-main__inner {
