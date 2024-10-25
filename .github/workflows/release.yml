@@ -73,6 +73,9 @@ jobs:
         name: Broken Setup
 
       - name: Build wheels
+        run: uv run broken pypi
+
+      - name: Publish wheels
         if: ${{ env.GHA_PYPI == 'True' }}
         run: uv run broken pypi --publish
         env:
