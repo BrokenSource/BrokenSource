@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.21
+# Script version: 2024.10.25
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution
@@ -77,6 +77,9 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     } else {
         echo "Git was installed successfully"
     }
+} else {
+    Print-Step "Updating Git"
+    winget upgrade --id Git.Git
 }
 
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
@@ -92,6 +95,9 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     } else {
         echo "uv was installed successfully"
     }
+} else {
+    Print-Step "Updating uv"
+    winget upgrade --id astral-sh.uv
 }
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
