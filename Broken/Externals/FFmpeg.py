@@ -8,7 +8,7 @@ import subprocess
 from abc import ABC, abstractmethod
 from collections import deque
 from pathlib import Path
-from subprocess import PIPE, Popen
+from subprocess import DEVNULL, PIPE, Popen
 from typing import (
     Annotated,
     Generator,
@@ -1429,6 +1429,18 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
         # Keep reading frames until we run out, each pixel is 3 bytes !
         while (raw := ffmpeg.stdout.read(width * height * 3)):
             yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
+
+    @staticmethod
+    def is_valid_video(path: Path, *, echo: bool=True) -> bool:
+        if not (path := BrokenPath.get(path, exists=True)):
+            return False
+        BrokenFFmpeg.install()
+        return (shell(
+            shutil.which("ffmpeg"),
+            "-hide_banner", "-loglevel", "error",
+            "-i", path, "-f", "null", "-", echo=echo,
+            stderr=DEVNULL, stdout=DEVNULL
+        ).returncode == 0)
 
     @staticmethod
     @functools.lru_cache

@@ -71,7 +71,7 @@ class _Directories:
         """
         if Runtime.Binary:
             return Path(sys.executable).parent.resolve()
-        return Path(self.PROJECT.PACKAGE).parent.resolve()
+        return Path(self.PROJECT.PACKAGE).resolve()
 
     # # Unknown / new project directories
 
@@ -315,7 +315,7 @@ class _Resources:
 
 @define(slots=False)
 class BrokenProject:
-    PACKAGE: str
+    PACKAGE: Path = field(converter=lambda x: Path(x).parent)
     """Send the importer's __init__.py's __file__ variable"""
 
     # App information
@@ -331,7 +331,6 @@ class BrokenProject:
     def __attrs_post_init__(self):
         self.DIRECTORIES = _Directories(PROJECT=self)
         self.RESOURCES = _Resources(PROJECT=self)
-        self.PACKAGE = Path(self.PACKAGE)
         self.VERSION = Runtime.Version
         BrokenLogging.set_project(self.APP_NAME)
 
