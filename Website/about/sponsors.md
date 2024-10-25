@@ -9,7 +9,7 @@ While my major is **electrical engineering** - as I always loved applied maths, 
 
 > :material-arrow-right: **I'm still early in life**. This work is what's left of me that didn't get lost in the way; I don't plan on stopping anytime, truly I'm overwhelmed with ideas and new projects to work on!
 
-You might have noticed the incompatibility of _"free software"_ and _"career"_. Companies often promote *"open source [loss leader](https://en.wikipedia.org/wiki/Loss_leader){:target="_blank"}"* projects that doesn't hurt their main revenue and gain customers, while community projects are funded by the community itself, whis is my case.
+You might have noticed the incompatibility of _"free software"_ and _"career"_. Companies often promote *"open source [loss leader](https://en.wikipedia.org/wiki/Loss_leader){:target="_blank"}"* projects that doesn't hurt their main revenue and gain customers, while community projects are funded by the community itself, which is my case.
 
 > ⭐️ I would 100% heartwarmingly do all of this for free, but your support lets me keep going!
 
@@ -45,7 +45,7 @@ _**You** are the society deciding if I can do this for a living!_
 - ♻️ I have spend an **uncountable** number of hours on the Projects as a whole, in a year's journey of learning, improving on self-taught programming skills, math knowledge, and problem solving. You already get all that for {++free++}, and help on keeping it going, improving, maintaining, offering technical support, and more by supporting my work!
 > Think how much a full team would cost to develop and maintain such a software..
 
-- ✨ It allows me to **improve** the software in many **platforms**[^platforms], by buying hardware and gadgets to test and implement new features, as well as paying for self-hosting services {>>(eventually)<<}, domain names, work tools (keyboard, electricity), and other expenses.
+- ✨ It allows me to **improve** the software in many **platforms**[^platforms], by buying hardware and gadgets to test and implement new features, as well as paying for self-hosting services {>>(eventually)<<}, domain names, workstation environment, and other expenses.
 
 [^platforms]: Most notably supporting **Apple Silicon** without having the hardware to test on isn't ideal, as well as **Hybrid GPUs** systems often found in laptops, which could receive some upstream improvements.
 
@@ -61,7 +61,6 @@ Apart from the already existing exclusive features of the [**Insiders**](site:/i
 [^features]: This isn't a guarantee, and I might not approve or put a bounty in your request; but I'll certainly consider it!
 
 - 💬 _**Discord** roles:_ Get access to many members-only channels where I commit to participate at a greater general availability. I can help from simple to complex stuff
-
 
 <small>:material-arrow-right: **Insiders** only:</small>
 

@@ -183,10 +183,14 @@ table > thead > tr > th {
 }
 
 /* No rows and columns grid lines */
-[data-md-color-scheme=default] {
-  --md-typeset-table-color: hsla(0, 0%, 0%, 0)}
-[data-md-color-scheme=slate] {
-  --md-typeset-table-color: hsla(0, 0%, 100%, 0)}
+.md-typeset__table table:not([class]) {
+  border-collapse: collapse;
+  border: none;
+}
+.md-typeset__table table:not([class]) th,
+.md-typeset__table table:not([class]) td {
+  border: none;
+}
 
 /* ----------------------------------------- Screenshots ---------------------------------------- */
 

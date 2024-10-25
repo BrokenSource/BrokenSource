@@ -212,7 +212,7 @@ plugins:
       minify_js: true
       minify_css: true
       htmlmin_opts:
-          remove_comments: true
+        remove_comments: true
       cache_safe: true
 
   - include-markdown:

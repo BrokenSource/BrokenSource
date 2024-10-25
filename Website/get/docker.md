@@ -34,6 +34,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
     apt update && apt install -y libegl1-mesa libglvnd-dev libglvnd0
     mkdir -p /usr/share/glvnd/egl_vendor.d
     echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+    export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
     ```
 
     For more context, see this [GitHub comment](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} of mine.
