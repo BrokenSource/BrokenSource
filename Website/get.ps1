@@ -85,7 +85,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     Print-Step "uv was not found, installing with Winget"
     Have-Winget
-    winget install --id=astral-sh.uv -e
+    winget install -e --id=astral-sh.uv
     Reload-Path
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
         Print-Step "uv was not found, and installation failed with Winget"
@@ -115,7 +115,6 @@ if (-not (Test-Path -Path "Broken")) {
 }
 
 Print-Step "Creating Virtual Environment and Installing Dependencies"
-uv self update
 uv sync
 
 # The PowerShell execution policy must allow for the Python activation script to run
@@ -133,4 +132,4 @@ if ((Get-ExecutionPolicy) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
 }
 
 Print-Step "Spawning a new Shell in the Virtual Environment"
-powershell -NoLogo -NoExit -File .\.venv\Scripts\Activate.ps1
+powershell -ExecutionPolicy Bypass -NoLogo -NoExit -File .\.venv\Scripts\Activate.ps1
