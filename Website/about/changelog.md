@@ -9,7 +9,7 @@
 
 <!------------------------------------------------------------------------------------------------->
 
-### 🔘 0.8.0 <small>October 25, 2024</small> {#0.8.0}
+### 🔘 0.8.0 <small>October 27, 2024</small> {#0.8.0}
 
 ##### General {#0.8.0-general}
 
@@ -26,6 +26,7 @@
 - Lots of releases management improvements. When running binaries **without args**:
     - A `version.tracker` text file is initialized or updated on all **PyApp** installed versions's root, which contains the last time the binary was run. If this is older than a week by default, a prompt will appear to delete the old installed version to save disk space.
     - Similarly, a `version.check` SQLite from `requests-cache` is created, which verifies the latest version of the software using PyPI endpoints each hour. A warning will be shown if a newer version is available; and a error will be shown if the current version is newer than the latest, which can indicate a yanked release or a time-traveller.
+- Potential fix on macOS automatic downloads of a FFmpeg binary
 
 ##### DepthFlow {#0.8.0-depthflow}
 

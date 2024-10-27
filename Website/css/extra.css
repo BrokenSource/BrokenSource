@@ -1,8 +1,8 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 /* Justify all text */
-.md-typeset p {
-  text-align: justify;
+.md-typeset p, ul {
+  text-align: justify
 }
 
 /* Slightly more compact lines, shouldn't hurt readability */
@@ -31,10 +31,17 @@ ins.critic, del.critic {
 
 /* Operating system logos */
 .os-logo {
+  margin-bottom: 0.5rem;
   vertical-align: middle;
   border-radius: 20%;
   width: 80px;
 }
+
+/* Better nested unordered lists */
+article ul ul {
+  list-style-type: circle !important;}
+article ul ul ul {
+  list-style-type: square !important;}
 
 /* More material-dark looking colors than slate */
 [data-md-color-scheme=slate] {
@@ -44,15 +51,16 @@ ins.critic, del.critic {
   --md-code-bg-color:         hsla(var(--md-hue), 0%, 12%, 1);
 }
 
+/* Better code background color */
 [data-md-color-scheme=default] {
   --md-code-bg-color: hsla(var(--md-hue), 0%, 97%, 1);
 }
 
-/* Better nested unordered lists */
-article ul ul {
-  list-style-type: circle !important;}
-article ul ul ul {
-  list-style-type: square !important;}
+/* Dark gray 'currently selected' tab bar */
+[data-md-color-scheme=default] .tabbed-labels::before {
+  background: #AAA !important}
+[data-md-color-scheme=slate] .tabbed-labels::before {
+  background: #555 !important}
 
 /* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
 
@@ -339,10 +347,17 @@ video {
 
 /* Code blocks */
 .md-typeset pre > code {
-  /* border-radius: var(--roundness); */
+  border-radius: var(--roundness);
 } .highlight span.filename {
-  /* border-radius: var(--roundness); */
+  border-bottom: none;
+  border-radius: var(--roundness);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   text-align: center;
+  display: inline;
+} .linenos {
+  border-top-left-radius: var(--roundness) !important;
+  border-bottom-left-radius: var(--roundness) !important;
 }
 
 /* Cricit thickening */
@@ -355,6 +370,7 @@ video {
 
 /* ---------------------------------------------------------------------------------------------- */
 
+/* Particles configuration */
 @keyframes fadeIn {
     0% {opacity: 0;}
   100% {opacity: 1;}

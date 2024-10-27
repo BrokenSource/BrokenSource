@@ -351,6 +351,7 @@ class BrokenManager(BrokenSingleton):
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_INSIDERS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
+        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 1:

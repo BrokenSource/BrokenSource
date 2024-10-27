@@ -9,38 +9,44 @@ title: Get/PyPI
 
 !!! abstract ""
     === ":simple-python: Pip"
+        Follow their [quick start](https://pip.pypa.io/en/stable/getting-started/){:target='_blank'}, install packages with:
 
-        ```shell title="Command"
+        ```console title=""
         python3 -m pip install {package}
         ```
 
     === ":simple-astral: uv"
+        Follow their [quick start](https://docs.astral.sh/uv/getting-started/){:target='_blank'}, install packages with:
 
-        ```shell title="Command"
-        uv add {package} --pin equal
+        ```console title=""
+        uv add {package}
         ```
 
     === ":simple-poetry: Poetry"
+        Follow their [quick start](https://python-poetry.org/docs/){:target='_blank'}, install packages with:
 
-        ```shell title="Command"
+        ```console title=""
         poetry add {package}
         ```
 
     === ":simple-rye: Rye"
+        Follow their [quick start](https://rye.astral.sh/){:target='_blank'}, install packages with:
 
-        ```shell title="Command"
+        ```console title=""
         rye add {package} --pin equal
         ```
 
     === ":simple-pdm: PDM"
+        Follow their [quick start](https://pdm-project.org/en/latest/){:target='_blank'}, install packages with:
 
-        ```shell title="Command"
+        ```console title=""
         pdm add {package}
         ```
 
+!!! quote ""
     ...where **`{package}`** is the **name of the project** you want to install:
 
-    - [`depthflow`](https://pypi.org/project/depthflow/), [`shaderflow`](https://pypi.org/project/shaderflow/), [`broken-source`](https://pypi.org/project/broken-source/), [`pianola`](https://pypi.org/project/pianola/), [`spectronote`](https://pypi.org/project/spectronote/), [`turbopipe`](https://pypi.org/project/turbopipe/)
+    [`depthflow`](https://pypi.org/project/depthflow/), [`shaderflow`](https://pypi.org/project/shaderflow/), [`broken-source`](https://pypi.org/project/broken-source/), [`pianola`](https://pypi.org/project/pianola/), [`spectronote`](https://pypi.org/project/spectronote/), [`turbopipe`](https://pypi.org/project/turbopipe/)
 
     <hr>
 
@@ -62,32 +68,37 @@ Simply upgrade the python dependency:
 
 !!! abstract ""
     === ":simple-python: Pip"
+        <span/>
 
-        ```shell title="Command"
+        ```console title=""
         python3 -m pip install --upgrade {package}
         ```
 
     === ":simple-astral: uv"
+        <span/>
 
-        ```shell title="Command"
+        ```console title=""
         uv add {package}
         ```
 
     === ":simple-poetry: Poetry"
+        <span/>
 
-        ```shell title="Command"
+        ```console title=""
         poetry update {package}
         ```
 
     === ":simple-rye: Rye"
+        <span/>
 
-        ```shell title="Command"
+        ```console title=""
         rye add {package}
         ```
 
     === ":simple-pdm: PDM"
+        <span/>
 
-        ```shell title="Command"
+        ```console title=""
         pdm update {package}
         ```
 

@@ -259,7 +259,7 @@ class BrokenTyper:
         self.app.info.help = (self.description or "No help provided for this CLI")
         sys.argv[1:] = apply(str, flatten(args))
 
-        for index in itertools.count():
+        for index in itertools.count(0):
 
             # On subsequent runs, prompt for command
             if (self._repl) and (index > 0):
@@ -301,4 +301,4 @@ class BrokenTyper:
                 self.repl_welcome()
 
             # The args were "consumed"
-            sys.argv = sys.argv[:1]
+            sys.argv = [sys.argv[0]]

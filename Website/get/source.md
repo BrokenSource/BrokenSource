@@ -11,11 +11,11 @@ title: Get/Source
     === ":material-microsoft: Windows"
         <div align="center">
             <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg">
-            <div><b>Open</b> a folder to download the code on <b>Windows Explorer</b>,</div>
+            <div><b>Open</b> a folder to download the code on <b>Windows Explorer</b></div>
             <div>Press ++ctrl+l++ , run `powershell` and execute:</div>
         </div>
-        ```powershell
-        # How it works: 'irm' downloads, 'iex' executes, '|' links the two
+        ```powershell title="PowerShell"
+        # What it does: 'irm' downloads, 'iex' executes, '|' links the two
         irm https://brokensrc.dev/get.ps1 | iex
         ```
     === ":simple-linux: Linux"
@@ -25,7 +25,7 @@ title: Get/Source
             <div><sup></sup></div>
         </div>
         ```shell title="Terminal"
-        # Curl downloads the script, sends to bash for executing it
+        # Curl downloads the script, bash executes as if you typed it
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
     === ":simple-apple: MacOS"
@@ -35,7 +35,7 @@ title: Get/Source
             <div><sup></sup></div>
         </div>
         ```zsh title="Terminal"
-        # Curl downloads the script, sends to bash for executing it
+        # Curl downloads the script, bash executes as if you typed it
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
     === ":simple-git: Manual"
@@ -43,41 +43,54 @@ title: Get/Source
 
         - **Install** [**Git**](https://git-scm.com/downloads) and [**uv**](https://docs.astral.sh/uv/) on your Platform
 
-        ```bash title="Clone the Monorepo and all Submodules"
+        ```bash title="Download the code"
         git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
         ```
-        ```bash title="Enter the Monorepo directory"
+        ```bash title="Enter the directory"
         cd BrokenSource
         ```
-        ```bash title="Checkout all Submodules to the main branch"
+        ```bash title="Ensure submodules are on main"
         git submodule foreach --recursive 'git checkout main || true'
         ```
-        ```bash title="Create the main Virtual Environment and Install Dependencies"
-        uv sync
-        ```
-        ```bash title="Activate the main Virtual Environment"
-        # Windows:
-        .venv\Scripts\Activate.ps1 # PowerShell
-        .venv\Scripts\Activate.bat # CMD
+        === "Directly with uv"
+            <span/>
 
-        # Linux and MacOS:
-        source .venv/bin/activate # Bash
-        source .venv/bin/activate.fish # Fish
-        ```
-        ```bash title="Start using any Project"
-        broken
-        shaderflow
-        depthflow
-        ```
+            ```bash title="Start using any Project"
+            uv run shaderflow
+            uv run depthflow
+            uv run broken
+            ```
+        === "Traditional method"
+            <span/>
+
+            ```bash title="Create venv and install dependencies"
+            uv sync
+            ```
+            ```bash title="Activate the venv"
+            # Windows:
+            .venv\Scripts\Activate.ps1 # PowerShell
+            .venv\Scripts\Activate.bat # CMD
+
+            # Linux and MacOS:
+            source .venv/bin/activate # Bash
+            source .venv/bin/activate.fish # Fish
+            ```
+            ```bash title="Start using any Project"
+            broken
+            shaderflow
+            depthflow
+            ```
 
 ??? success "Read what the install scripts does [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh), [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1)"
     The content below is a **verbatim copy** of the current live script on this website
     === "(Windows) • get.ps1"
-        ```powershell title=""
+        <span/>
+        ```powershell title="PowerShell script"
         {% include-markdown "get.ps1" %}
         ```
     === "(Linux and macOS) • get.sh"
-        ```powershell title=""
+        <span/>
+        ```powershell title="Bash script"
         {% include-markdown "get.sh" %}
         ```
 
@@ -120,7 +133,7 @@ The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.co
 - You'll probably **only** need to know of a **single command**:
 
 !!! note "Command: [`uv sync`](https://rye.astral.sh/guide/sync)"
-    This will **update** the **Virtual Environment** and **install** any new **dependencies**
+    This will update the venv and install any new dependencies
 
 After that, just activate the venv and you're good to go!
 
