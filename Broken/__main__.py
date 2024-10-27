@@ -462,8 +462,10 @@ class BrokenManager(BrokenSingleton):
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("uv", "build", "--wheel", "--out-dir", output, packages)
             shell("uv", "publish",
-                "--username", "__token__",
-                "--password", os.getenv("PYPI_TOKEN"),
+                (not Runtime.Github)*(
+                    "--username", "__token__",
+                    "--password", os.getenv("PYPI_TOKEN")
+                ),
                 f"{output}/*.whl", echo=False,
                 skip=(not bool(publish)),
             )
