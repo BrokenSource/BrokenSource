@@ -11,7 +11,7 @@ import typer
 from PIL.Image import Image
 from pydantic import Field, field_validator
 
-from Broken import BrokenEnum, BrokenPath, BrokenPlatform, every, shell
+from Broken import BrokenEnum, BrokenPath, BrokenPlatform, denum, every, shell
 from Broken.Externals.Upscaler import BrokenUpscaler
 
 
@@ -71,7 +71,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 
     @staticmethod
     @abstractmethod
-    def _base_download() -> str:
+    def _download_url() -> str:
         """https://.../stuff-{platform}.zip"""
         ...
 
@@ -84,9 +84,8 @@ class UpscalerNCNN_Base(BrokenUpscaler):
         BrokenPath.update_externals_path()
         if (binary := shutil.which(self._binary_name())):
             return BrokenPath.get(binary)
-        DOWNLOAD = self._base_download().format(BrokenPlatform.Name.replace("linux", "ubuntu"))
         EXECUTABLE = self._binary_name() + (".exe"*BrokenPlatform.OnWindows)
-        return BrokenPath.make_executable(next(BrokenPath.get_external(DOWNLOAD).rglob(EXECUTABLE)))
+        return BrokenPath.make_executable(next(BrokenPath.get_external(self._download_url()).rglob(EXECUTABLE)))
 
     def _load_model(self):
         self.download()
@@ -106,8 +105,9 @@ class Waifu2x(UpscalerNCNN_Base):
         Field(default=Model.models_cunet)
 
     @staticmethod
-    def _base_download() -> str:
-        return "https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download/20220728/waifu2x-ncnn-vulkan-20220728-{}.zip"
+    def _download_url() -> str:
+        release, tag = ("https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download", "20220728")
+        return f"{release}/{tag}/waifu2x-ncnn-vulkan-{tag}-{BrokenPlatform.Name.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -139,9 +139,9 @@ class Waifu2x(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     # "-m", self.model.value, # Fixme: Doko?
-                    stderr=DEVNULL,
                     preexec_fn=(self.preexec_fn if single_core else None),
                     cwd=self.download().parent,
+                    stderr=DEVNULL,
                     echo=echo,
                 )
                 return PIL.Image.open(io.BytesIO(output.read_bytes()))
@@ -162,8 +162,9 @@ class Realesr(UpscalerNCNN_Base):
         Field(default=Model.realesr_animevideov3)
 
     @staticmethod
-    def _base_download() -> str:
-        return "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-{}.zip"
+    def _download_url() -> str:
+        release, tag, version = ("https://github.com/xinntao/Real-ESRGAN/releases/download", "v0.2.5.0", "20220424")
+        return f"{release}/{tag}/realesrgan-ncnn-vulkan-{version}-{BrokenPlatform.Name.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -191,6 +192,72 @@ class Realesr(UpscalerNCNN_Base):
                     stderr=DEVNULL,
                     preexec_fn=(self.preexec_fn if single_core else None),
                     cwd=self.download().parent,
+                    echo=echo,
+                )
+                return PIL.Image.open(io.BytesIO(output.read_bytes()))
+
+# ------------------------------------------------------------------------------------------------ #
+
+class Upscayl(UpscalerNCNN_Base):
+    """Configure and use Upscayl    [dim](by https://github.com/upscayl/upscayl)[/]"""
+
+    class Model(str, BrokenEnum):
+        realesrgan_x4plus       = "realesrgan-x4plus"
+        realesrgan_x4fast       = "realesrgan-x4fast"
+        realesrgan_x4plus_anime = "realesrgan-x4plus-anime"
+        remacri                 = "remacri"
+        ultramix_balanced       = "ultramix_balanced"
+        ultrasharp              = "ultrasharp"
+
+    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
+        help="(🔵 Special ) Model to use for Upscayl")] = \
+        Field(default=Model.realesrgan_x4plus_anime)
+
+    @staticmethod
+    def _download_url() -> str:
+        release, tag = ("https://github.com/upscayl/upscayl/releases/download", "2.11.5")
+        platform = BrokenPlatform.Name.replace("windows", "win").replace("macos", "mac")
+        return f"{release}/v{tag}/upscayl-{tag}-{platform}.zip"
+
+    @staticmethod
+    def _binary_name() -> str:
+        return "upscayl-bin"
+
+    def download(self) -> Path:
+        if BrokenPlatform.OnLinux:
+            BrokenPath.add_to_path("/opt/upscayl/bin")
+        return UpscalerNCNN_Base.download(self)
+
+    @field_validator("scale", mode="plain")
+    def _validate_scale(cls, value):
+        if value not in (allowed := {2, 3, 4}):
+            raise ValueError(f"Scale must be one of {allowed} for Upscayl")
+        return value
+
+    @field_validator("denoise", mode="plain")
+    def _validate_denoise(cls, value):
+        if value not in (allowed := {-1, 0, 1, 2, 3}):
+            raise ValueError(f"Denoise must be one of {allowed} for Upscayl")
+        return value
+
+    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
+        with self.path_image() as output:
+            with self.path_image(input) as input:
+                binary = self.download()
+                shell(
+                    binary,
+                    "-i", input,
+                    "-o", output,
+                    "-m", "../models",
+                    every("-z", self.scale),
+                    every("-s", self.scale),
+                    every("-t", self.tile_size),
+                    "-g", (self.gpu if not self.cpu else -1),
+                    "-j", self._lpc,
+                    "-x"*self.tta,
+                    "-n", denum(self.model),
+                    preexec_fn=(self.preexec_fn if single_core else None),
+                    stderr=DEVNULL,
                     echo=echo,
                 )
                 return PIL.Image.open(io.BytesIO(output.read_bytes()))

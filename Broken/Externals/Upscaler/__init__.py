@@ -35,24 +35,24 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
         help="[bold red](🔴 Basic   )[/] Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
         Field(default=1, gt=0)
 
-    class Format(BrokenEnum):
+    class Format(str, BrokenEnum):
         PNG = "png"
         JPG = "jpg"
 
     format: Annotated[Format, typer.Option("--format", "-f",
         help="[bold red](🔴 Basic   )[/] Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
-        Field(default="jpg")
+        Field(default=Format.JPG)
 
     quality: Annotated[int, typer.Option("--quality", "-q", min=0, max=100,
         help="[bold red](🔴 Basic   )[/] Temporary image processing 'PIL.Image.save' quality used on --format")] = \
-        Field(default=95, gt=0)
+        Field(default=95, ge=0, le=100)
 
     def output_size(self, width: int, height: int) -> Tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""
         return BrokenResolution.fit(
             old=(width, height),
             new=(self.width or None, self.height or None),
-            scale=self.scale**self.passes,
+            scale=(self.scale**self.passes),
             ar=(width/height)
         )
 
@@ -96,13 +96,13 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
             if hasattr(self, key):
                 setattr(self, key, val)
 
-        # Only valid output for str is Path
-        if isinstance(output, str):
-            output = Path(output)
-
         # Input image must be a valid image
         if not (image := LoaderImage(image)):
             raise ValueError("Invalid input Image for upscaling")
+
+        # Only valid output for str is Path
+        if isinstance(output, str):
+            output = Path(output)
 
         # Calculate expected output size
         target = self.output_size(*image.size)
@@ -174,6 +174,6 @@ class NoUpscaler(BrokenUpscaler):
 
 # ------------------------------------------------------------------------------------------------ #
 
-from Broken.Externals.Upscaler.ncnn import Realesr, Waifu2x
+from Broken.Externals.Upscaler.ncnn import Realesr, Upscayl, Waifu2x
 
 # ------------------------------------------------------------------------------------------------ #

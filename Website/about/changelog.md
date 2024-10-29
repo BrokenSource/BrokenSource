@@ -9,6 +9,19 @@
 
 <!------------------------------------------------------------------------------------------------->
 
+### 🔘 0.8.0 <small>Ongoing</small> {#0.8.1}
+
+##### General {#0.8.1-general}
+
+##### DepthFlow {#0.8.1-depthflow}
+- Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option
+- Fixed drag and drop of files due new lazy loading logic
+
+##### ShaderFlow {#0.8.1-shaderflow}
+- Enforce `#!py weakref.proxy()` on every module's `.scene` to allow for explicit `gc.collect()` to find circular references and clean up resources properly
+
+<!------------------------------------------------------------------------------------------------->
+
 ### 🔘 0.8.0 <small>October 27, 2024</small> {#0.8.0}
 
 ##### General {#0.8.0-general}

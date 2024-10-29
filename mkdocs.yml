@@ -141,7 +141,7 @@ theme:
         name: Switch to Light Mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white # white
+      primary: white
       accent: light-blue
       toggle:
         icon: material/weather-night

@@ -53,7 +53,7 @@ article ul ul ul {
 
 /* Better code background color */
 [data-md-color-scheme=default] {
-  --md-code-bg-color: hsla(var(--md-hue), 0%, 97%, 1);
+  --md-code-bg-color: hsla(var(--md-hue), 0%, 96%, 1);
 }
 
 /* Dark gray 'currently selected' tab bar */
