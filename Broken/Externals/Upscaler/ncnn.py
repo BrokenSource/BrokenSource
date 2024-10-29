@@ -52,7 +52,7 @@ class UpscalerNCNN_Base(BrokenUpscaler):
     def _lpc(self) -> str:
         return f"{self.load_threads}:{self.proc_threads}:{self.save_threads}"
 
-    def preexec_fn(self):
+    def _single_core(self):
         """Make the process only use one random core"""
         import os
         import random
@@ -139,7 +139,7 @@ class Waifu2x(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     # "-m", self.model.value, # Fixme: Doko?
-                    preexec_fn=(self.preexec_fn if single_core else None),
+                    preexec_fn=(self._single_core if single_core else None),
                     cwd=self.download().parent,
                     stderr=DEVNULL,
                     echo=echo,
@@ -190,7 +190,7 @@ class Realesr(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,
-                    preexec_fn=(self.preexec_fn if single_core else None),
+                    preexec_fn=(self._single_core if single_core else None),
                     cwd=self.download().parent,
                     echo=echo,
                 )
@@ -256,7 +256,7 @@ class Upscayl(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     "-n", denum(self.model),
-                    preexec_fn=(self.preexec_fn if single_core else None),
+                    preexec_fn=(self._single_core if single_core else None),
                     stderr=DEVNULL,
                     echo=echo,
                 )
