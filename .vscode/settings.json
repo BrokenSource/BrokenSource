@@ -1,109 +1,11 @@
 {
     "files.exclude": {
+        "Broken/__pycache__": true,
         ".stfolder": true,
         ".nomedia": true,
     },
 
-    "material-icon-theme.files.associations": {
-        ".stignore": "credits",
-    },
-
-    "material-icon-theme.folders.associations": {
-
-        // Common website directories
-        "Overrides": "other",
-        "Learn": "other",
-        "Quick": "other",
-        "Cloud": "aws",
-
-        // Rust
-        "Rust": "src",
-        ".cargo": "config",
-
-        // PlatformIO
-        ".pio": "other",
-
-        // Python
-        ".venvs": "python",
-        "Wheels": "python",
-
-        // Project's Workspace
-        "Workspace":  "container",
-        "Externals":  "core",
-        "Scenes":     "core",
-        "User":       "home",
-        "Premium":    "admin",
-        "Default":    "examples",
-        "Community":  "shared",
-        "Prompts":    "log",
-        "Papers":     "log",
-        "Staging":    "temp",
-        "Midis":      "audio",
-        "Midi":       "audio",
-        "SoundFonts": "audio",
-        "Profile":    "admin",
-        "Fork":       "less",
-        "Vectron":    "core",
-
-        // Website
-        "get":   "download",
-        "blog":  "log",
-        "news":  "log",
-        "about": "other",
-
-        // Shaders
-        "Fragment": "shader",
-        "Vertex":   "shader",
-
-        // Projects
-        "Broken":      "src",
-        "Meta":        "context",
-        "Insiders":    "secure",
-        "Ardmin":      "tools",
-        "DepthFlow":   "tools",
-        "PhasorFlow":  "tools",
-        "QuadSnap":    "tools",
-        "ShaderFlow":  "tools",
-        "Archium":     "tools",
-        "Upscalin":    "tools",
-        "Pianola":     "tools",
-        "SpectroNote": "tools",
-        "FastCutter":  "tools",
-        "Modpanel":    "tools",
-        "TurboPipe":   "tools",
-
-        // Sub-packages of Broken
-        "Dotmap":   "core",
-        "FFmpeg":   "core",
-        "Loaders":  "core",
-        "Upscaler": "core",
-        "Optional": "include",
-
-        // Personal
-        "Tremeschin": "home",
-    },
-
-    // Better comments colors
-    "better-comments.tags": [
-        {"tag": "error",        "color": "#FF2D00"},
-        {"tag": "fixme",        "color": "#3498DB"},
-        {"tag": "warn",         "color": "#FCC203"},
-        {"tag": "todo",         "color": "#FF8C00"},
-        {"tag": "note",         "color": "#584576"},
-        {"tag": "//",           "color": "#98C379"},
-        {"tag": "nice",         "color": "#00FF00"},
-        {"tag": "idea",         "color": "#B10DC9"},
-        {"tag": "hack",         "color": "#FF2D00"},
-        {"tag": "info",         "color": "#3498DB"},
-        {"tag": "debug",        "color": "#FCC203"},
-        {"tag": "workaround",   "color": "#3498DB"},
-        {"tag": "optimization", "color": "#3498DB"}
-    ],
-
     // Better minimap
     "editor.minimap.renderCharacters": false,
     "editor.minimap.maxColumn": 100,
-
-    // It's not like screens are small anymore
-    "comment-divider.length": 100,
 }

@@ -2,24 +2,48 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "release-depthflow",
+            "label": "get-insiders",
             "type": "shell",
-            "command": "broken depthflow release --target linux-amd64 --target windows-amd64 --torch",
+            "command": ["uv", "run", "broken", "insiders"]
         },
         {
-            "label": "release-quadsnap",
+            "label": "mkdocs-serve",
             "type": "shell",
-            "command": "broken quadsnap release",
+            "command": ["uv", "run", "mkdocs", "serve"]
+        },
+
+        // Releases
+        {
+            "label": "release-depthflow",
+            "type": "shell",
+            "command": [
+                "uv", "run", "broken", "depthflow", "release", "--tarball",
+                "--target", "linux-amd64", "--target", "windows-amd64",
+            ]
+        },
+        {
+            "label": "release-pianola",
+            "type": "shell",
+            "command": [
+                "uv", "run", "broken", "pianola", "release", "--tarball",
+                "--target", "linux-amd64", "--target", "windows-amd64",
+            ]
         },
         {
             "label": "release-shaderflow",
             "type": "shell",
-            "command": "broken shaderflow release --target linux-amd64 --target windows-amd64",
+            "command": [
+                "uv", "run", "broken", "shaderflow", "release", "--tarball",
+                "--target", "linux-amd64", "--target", "windows-amd64",
+            ]
         },
         {
-            "label": "release-upscalin",
+            "label": "release-spectronote",
             "type": "shell",
-            "command": "broken upscalin release  --target linux-amd64 --target windows-amd64 ",
-        },
+            "command": [
+                "uv", "run", "broken", "spectronote", "release", "--tarball",
+                "--target", "linux-amd64", "--target", "windows-amd64",
+            ]
+        }
     ]
 }

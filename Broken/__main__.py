@@ -409,9 +409,10 @@ class BrokenManager(BrokenSingleton):
     # Meta Repositories
 
     def git_clone(self, url: str, path: Path, *, recurse: bool=True):
-        """🔗 Clone a Git Repository with Submodules"""
+        """Clone a Git Repository with Submodules"""
         with BrokenPath.pushd(Path(path).parent):
             shell("git", "clone", ("--recurse-submodules"*recurse), "-j4", url, path)
+        with BrokenPath.pushd(Path(path)):
             shell("git", "submodule", "foreach", "--recursive", "git checkout main || true")
 
     def tremeschin(self):

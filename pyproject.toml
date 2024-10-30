@@ -12,8 +12,8 @@ path = "Broken/Version.py"
 
 [project]
 name         = "broken-source"
-dynamic      = ["version"]
 description  = "🚀 Broken Source Software Main Library"
+dynamic      = ["version"]
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
 readme       = "readme.md"
 license      = "AGPL-3.0"
@@ -131,16 +131,20 @@ dev-dependencies = [
     # Self reference
     "broken-source[website]",
     "depthflow",
+    "insiders",
     "pianola",
     "shaderflow",
     "spectronote",
+    "tremeschin",
 ]
 
 [tool.uv.sources]
 depthflow   = {workspace=true}
+insiders    = {workspace=true}
 pianola     = {workspace=true}
 shaderflow  = {workspace=true}
 spectronote = {workspace=true}
+tremeschin  = {workspace=true}
 
 [tool.uv.workspace]
 members = [
