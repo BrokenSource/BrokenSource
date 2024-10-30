@@ -348,13 +348,11 @@ class BrokenManager(BrokenSingleton):
         return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_INSIDERS)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PRIVATE)
         self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
-        if _depth > 1:
+        if _depth > 2:
             return
         if not path.exists():
             return
@@ -408,16 +406,22 @@ class BrokenManager(BrokenSingleton):
         self.broken_typer(sys.argv[1:])
 
     # ---------------------------------------------------------------------------------------------|
-    # Repositories
+    # Meta Repositories
+
+    def git_clone(self, url: str, path: Path, *, recurse: bool=True):
+        """🔗 Clone a Git Repository with Submodules"""
+        with BrokenPath.pushd(Path(path).parent):
+            shell("git", "clone", ("--recurse-submodules"*recurse), "-j4", url, path)
+            shell("git", "submodule", "foreach", "--recursive", "git checkout main || true")
 
     def tremeschin(self):
-        url, path = ("https://github.com/Tremeschin/Private", BROKEN.DIRECTORIES.BROKEN_PRIVATE)
-        shell("git", "clone", url, path, "--recurse-submodules", "-j4")
+        tremeschin = (BROKEN.DIRECTORIES.BROKEN_META/"Tremeschin")
+        self.git_clone("https://github.com/Tremeschin/Personal", tremeschin)
+        self.git_clone("https://github.com/Tremeschin/Private", tremeschin/"Private")
 
     def insiders(self):
         """💎 Clone the Insiders repository (WIP, Not Available)"""
-        url, path = ("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.BROKEN_INSIDERS)
-        shell("git", "clone", url, path, "--recurse-submodules", "-j4")
+        self.git_clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.BROKEN_INSIDERS)
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
@@ -563,7 +567,7 @@ class BrokenManager(BrokenSingleton):
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_HOOK/path.name, real=path)
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_PROJECTS/path.name, real=path)
 
     def clean(self) -> None:
         """🧹 Remove pycaches, common blob directories"""

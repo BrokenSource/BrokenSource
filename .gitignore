@@ -3,11 +3,8 @@
 .nomedia
 .venv
 Build
-Insiders
-Meta
-Private
 Release
-Temp
+Meta/*
 Workspace
 *.lock
 

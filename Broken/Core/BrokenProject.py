@@ -105,11 +105,11 @@ class _Directories:
 
     @property
     def BROKEN_BUILD(self) -> Path:
-        return mkdir(self.REPOSITORY/"Build")
+        return (self.REPOSITORY/"Build")
 
     @property
     def BROKEN_WINEPREFIX(self) -> Path:
-        return mkdir(self.BROKEN_BUILD/"Wineprefix")
+        return (self.BROKEN_BUILD/"Wineprefix")
 
     @property
     def BROKEN_WHEELS(self) -> Path:
@@ -120,24 +120,12 @@ class _Directories:
         return mkdir(self.REPOSITORY/"Projects")
 
     @property
-    def BROKEN_HOOK(self) -> Path:
-        return mkdir(self.PROJECTS/"Hook")
-
-    @property
     def BROKEN_META(self) -> Path:
         return mkdir(self.REPOSITORY/"Meta")
 
     @property
-    def BROKEN_FORK(self) -> Path:
-        return mkdir(self.BROKEN_META/"Fork")
-
-    @property
-    def BROKEN_PRIVATE(self) -> Path:
-        return (self.REPOSITORY/"Private")
-
-    @property
     def BROKEN_INSIDERS(self) -> Path:
-        return (self.REPOSITORY/"Insiders")
+        return (self.BROKEN_META/"Insiders")
 
     # # Meta directories
 
@@ -349,10 +337,11 @@ class BrokenProject:
                 exit(0)
 
         # Convenience symlink the project's workspace
-        Runtime.Source and BrokenPath.symlink(
-            virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
-            real=self.DIRECTORIES.WORKSPACE, echo=False
-        )
+        if Runtime.Source and (os.getenv("WORKSPACE_SYMLINK", "0") == "1"):
+            BrokenPath.symlink(
+                virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
+                real=self.DIRECTORIES.WORKSPACE, echo=False
+            )
 
         # Load dotenv files in common directories
         for path in (x for x in flatten(

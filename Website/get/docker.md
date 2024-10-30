@@ -47,6 +47,14 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
     Unknown.
 
 
+### 🔘 Google Cloud
+
+!!! example ""
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://cloud.google.com/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️<span style="font-size: 15px;">☆</span> (4.5/5.0)</span> • Minor changes needed</b></div>
+
+    Goes mostly smooth by following the base dockerfiles, reportedly works with GPU Acceleration.
+
+
 ### 🔘 Modal
 
 !!! example ""

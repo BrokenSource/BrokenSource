@@ -93,7 +93,7 @@ class BrokenWebsite:
 
         match type:
             case Directory.Root:
-                for license in files(path.glob("License*")):
+                for license in files(path.glob("license*")):
                     self.write(self.website/license.name, license.read_text())
 
                 self.write(path=self.website/"index.md",

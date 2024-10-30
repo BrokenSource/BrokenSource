@@ -1,6 +1,7 @@
 {
     "files.exclude": {
         ".stfolder": true,
+        ".nomedia": true,
     },
 
     "material-icon-theme.files.associations": {
@@ -56,6 +57,7 @@
 
         // Projects
         "Broken":      "src",
+        "Meta":        "context",
         "Insiders":    "secure",
         "Ardmin":      "tools",
         "DepthFlow":   "tools",

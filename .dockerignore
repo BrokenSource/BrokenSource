@@ -3,12 +3,12 @@ ___*
 .venv
 .vscode
 Build
-Meta
-Private
+Release
 *.env
 *.dockerfile
 
 # Common files across projects
 **/Workspace
 **/Website
+**/Private
 **/.github

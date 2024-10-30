@@ -15,7 +15,7 @@ name         = "broken-source"
 dynamic      = ["version"]
 description  = "🚀 Broken Source Software Main Library"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
-readme       = "Readme.md"
+readme       = "readme.md"
 license      = "AGPL-3.0"
 requires-python = ">=3.10"
 dependencies = [
@@ -35,7 +35,7 @@ dependencies = [
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
     "setuptools~=75.2.0",
-    "uv>=0.4.25",
+    "uv~=0.4.25",
     # "yt-dlp~=2024.5.27",
     # Utils
     "arrow~=1.3.0",
@@ -80,7 +80,7 @@ shaderflow = [
     "glcontext~=3.0.0",
     "moderngl~=5.12.0",
     "moderngl-window~=2.4.6",
-    "imgui-bundle>=1.5.2",
+    "imgui-bundle~=1.5.2",
     "pygame~=2.6.1",
     "turbopipe~=1.2.2",
     # MIDI
@@ -122,15 +122,12 @@ dev-dependencies = [
     "pytest-sugar~=1.0.0",
     "poethepoet~=0.29.0",
     "zstandard~=0.23.0",
-
     # Profiling
     "snakeviz~=2.2.0",
     "tuna~=0.5.11",
-
     # Manager
     "userpath~=1.9.2",
     # "pyshortcuts~=1.9.1",
-
     # Self reference
     "broken-source[website]",
     "depthflow",
@@ -147,7 +144,7 @@ spectronote = {workspace=true}
 
 [tool.uv.workspace]
 members = [
-    "Private/Projects/*",
+    "Meta/*/Projects/*",
     "Projects/*",
     "Meta/*",
 ]
