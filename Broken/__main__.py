@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self, Set
+from typing import Annotated, List, Literal, Self, Set, Union
 
 import toml
 from attr import Factory, define
@@ -195,7 +195,7 @@ class ProjectCLI:
     # # Python shenanigans
 
     def release(self,
-        target: Annotated[List[BrokenPlatform.Targets],
+        target: Annotated[List[BrokenPlatform.Target],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
         )] = [BrokenPlatform.CurrentTarget],
@@ -218,10 +218,14 @@ class ProjectCLI:
         """
 
         # Recurse on each target item
-        if isinstance(target, list) and 1:
+        if isinstance(target, list):
+            if (target[0] == BrokenPlatform.Target.All):
+                target = BrokenPlatform.Target.all()
             for target in target:
                 ProjectCLI.release(**locals())
             return None
+
+        # Todo: Filter invalid host -> target combinations of "all" targets
 
         if self.is_python:
             BrokenManager.rust()
@@ -264,9 +268,9 @@ class ProjectCLI:
 
                 # Find a static python distribution used by PyApp
                 if not (_download := {
-                    BrokenPlatform.Targets.WindowsAMD64: _get_release("x86_64-pc-windows-msvc"),
-                    BrokenPlatform.Targets.LinuxAMD64:   _get_release("x86_64_v3-unknown-linux-gnu"),
-                    BrokenPlatform.Targets.MacosARM:     _get_release("aarch64-apple-darwin"),
+                    BrokenPlatform.Target.WindowsAMD64: _get_release("x86_64-pc-windows-msvc"),
+                    BrokenPlatform.Target.LinuxAMD64:   _get_release("x86_64_v3-unknown-linux-gnu"),
+                    BrokenPlatform.Target.MacosARM:     _get_release("aarch64-apple-darwin"),
                 }.get(target)):
                     raise RuntimeError(log.error(f"Unsupported target for offline mode {target}"))
 

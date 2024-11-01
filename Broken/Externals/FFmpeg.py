@@ -1383,8 +1383,8 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
             BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
                 "ffmpeg-master-latest-",
-                BrokenPlatform.Name.replace("windows", "win"),
-                BrokenPlatform.Architecture.replace("amd64", "64"),
+                BrokenPlatform.System.value.replace("windows", "win"),
+                BrokenPlatform.Arch.replace("amd64", "64"),
                 "-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz"
             )))
         else:

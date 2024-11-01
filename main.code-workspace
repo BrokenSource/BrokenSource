@@ -3,22 +3,46 @@
 		{
 			"name": "Monorepo",
 			"path": "."
-		},
-		{
+		}, {
 			"name": "Insiders",
 			"path": "Meta/Insiders"
-		},
-		{
+		}, {
 			"name": "Tremeschin",
-			"path": "Meta/Tremeschin"
+			"path": "Meta/Tremeschin",
 		}
 	],
 
+	"extensions": {
+		"recommendations": [
+			// "ms-vscode.cpptools-extension-pack"
+			"aaron-bond.better-comments",
+			"usernamehw.errorlens",
+			"tamasfe.even-better-toml",
+			"geforcelegend.vscode-glsl",
+			"pkief.material-icon-theme",
+			"ms-python.vscode-pylance",
+			"ms-python.python",
+			"charliermarsh.ruff",
+			"slevesque.shader",
+			"shardulm94.trailing-spaces",
+		]
+	},
+
 	"settings": {
-		"material-icon-theme.files.associations": {
-			".stignore": "credits",
+		// Hidden files on explorer
+		"files.exclude": {
+			"Broken/__pycache__": true,
+			".stfolder": true,
+			".nomedia": true,
 		},
 
+		// Better minimap
+		"editor.minimap.renderCharacters": false,
+		"editor.minimap.maxColumn": 100,
+
+		// Custom icons assossiations
+		"material-icon-theme.files.associations": {
+			".stignore": "credits"},
 		"material-icon-theme.folders.associations": {
 
 			// Common website directories
@@ -30,9 +54,6 @@
 			// Rust
 			"Rust": "src",
 			".cargo": "config",
-
-			// PlatformIO
-			".pio": "other",
 
 			// Python
 			".venvs": "python",
@@ -84,7 +105,6 @@
 			"TurboPipe":   "tools",
 
 			// Sub-packages of Broken
-			"Dotmap":   "core",
 			"FFmpeg":   "core",
 			"Loaders":  "core",
 			"Upscaler": "core",
@@ -113,5 +133,47 @@
 
 		// It's not like screens are small anymore
 		"comment-divider.length": 100,
+	},
+
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "get-insiders",
+				"command": ["uv", "run", "broken", "insiders"],
+				"type": "shell",
+			},
+			{
+				"label": "mkdocs-serve",
+				"command": ["uv", "run", "mkdocs", "serve"],
+				"type": "shell",
+			},
+
+			// Releases
+			{
+				"label": "release-depthflow",
+				"command": ["uv", "run", "broken", "depthflow",
+					"release", "--tarball", "--target", "all"],
+				"type": "shell",
+			},
+			{
+				"label": "release-pianola",
+				"type": "shell",
+				"command": ["uv", "run", "broken", "pianola",
+					"release","--target", "all", "--tarball"]
+			},
+			{
+				"label": "release-shaderflow",
+				"command": ["uv", "run", "broken", "shaderflow",
+					"release", "--tarball", "--target", "all"],
+				"type": "shell",
+			},
+			{
+				"label": "release-spectronote",
+				"command": ["uv", "run", "broken", "spectronote",
+					"release", "--tarball", "--target", "all"],
+				"type": "shell",
+			}
+		]
 	}
 }

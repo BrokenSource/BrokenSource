@@ -326,7 +326,7 @@ class BrokenProject:
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Administrator and not Runtime.Docker):
-                    log.warning("Running as [bold blink red]Administrator or Root[/] is not required and discouraged")
+                    log.warning("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
                 self._pyapp_management()
                 Broken.PROJECT = self
 
