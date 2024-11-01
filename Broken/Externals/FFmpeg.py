@@ -898,13 +898,12 @@ class FFmpegPCM(BrokenEnum):
     @property
     @functools.lru_cache
     def endian(self) -> str:
-        return "<" if ("le" in self.value) else ">"
+        return ("<" if ("le" in self.value) else ">")
 
     @property
     @functools.lru_cache
     def dtype(self) -> numpy.dtype:
-        type = self.value.split("_")[1][0]
-        return numpy.dtype(f"{self.endian}{type}{self.size}")
+        return numpy.dtype(f"{self.endian}{self.value[4]}{self.size}")
 
 
 class FFmpegAudioCodecPCM(FFmpegModuleBase):
@@ -1598,7 +1597,6 @@ class BrokenAudioReader:
         self._dtype = self.format.dtype
         self._size = self.format.size
         self._read = 0
-
 
         # Note: Stderr to null as we might not read all the audio, won't log errors
         self._ffmpeg = (

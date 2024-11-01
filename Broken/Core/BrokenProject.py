@@ -182,6 +182,10 @@ class _Directories:
         return mkdir(self.WORKSPACE/"Externals")
 
     @property
+    def EXTERNAL_MODELS(self) -> Path:
+        return mkdir(self.EXTERNALS/"Models")
+
+    @property
     def EXTERNAL_ARCHIVES(self) -> Path:
         return mkdir(self.EXTERNALS/"Archives")
 

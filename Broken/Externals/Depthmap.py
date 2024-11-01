@@ -8,7 +8,7 @@ import multiprocessing
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, List
 
 import numpy
 import typer
@@ -31,6 +31,15 @@ from Broken.Loaders import LoadableImage, LoaderImage
 if TYPE_CHECKING:
     import diffusers
     import torch
+
+# ------------------------------------------------------------------------------------------------ #
+
+MODELS_CACHE = (Broken.BROKEN.DIRECTORIES.EXTERNAL_MODELS)
+
+os.environ.update(dict(
+    TORCH_HOME=str(MODELS_CACHE),
+    HF_HOME=str(MODELS_CACHE),
+))
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -288,3 +297,11 @@ class Marigold(DepthEstimator):
         return depth
 
 # ------------------------------------------------------------------------------------------------ #
+
+DepthEstimators: List[DepthEstimator] = [
+    DepthAnythingV1,
+    DepthAnythingV2,
+    DepthPro,
+    ZoeDepth,
+    Marigold,
+]
