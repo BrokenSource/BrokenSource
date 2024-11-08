@@ -108,7 +108,7 @@ class Runtime:
     Docker: bool = bool(os.getenv("DOCKER_RUNTIME", False))
     """True if running from a Docker container""" # Fixme: Detect without manual flag
 
-    Github: bool = bool(os.getenv("GITHUB_ACTIONS", False))
+    GitHub: bool = bool(os.getenv("GITHUB_ACTIONS", False))
     """True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
 
     WSL: bool = Path("/usr/lib/wsl/lib").exists()
@@ -170,7 +170,12 @@ from Broken.Core import (
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
-from Broken.Core.BrokenPlatform import BrokenPlatform
+from Broken.Core.BrokenPlatform import (
+    ArchEnum,
+    BrokenPlatform,
+    Platform,
+    SystemEnum,
+)
 from Broken.Core.BrokenProfiler import BrokenProfiler, BrokenProfilerEnum
 from Broken.Core.BrokenProject import BrokenApp, BrokenProject
 from Broken.Core.BrokenResolution import BrokenResolution

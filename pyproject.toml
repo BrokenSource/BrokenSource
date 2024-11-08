@@ -53,8 +53,7 @@ dependencies = [
     "halo~=0.0.31",
     # (LLM/ML/NN)
     "ollama~=0.3.3",
-    # Enable all extra on pyapp binaries
-    #<pyapp>"broken-source[all]",
+    "aenum>=3.1.15",
 ]
 
 [project.optional-dependencies]
@@ -160,15 +159,7 @@ requires = ["hatchling", "cmake"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "Broken",
-    # On binary releases, include all projects
-    #<pyapp>"Projects/DepthFlow/DepthFlow",
-    #<pyapp>"Projects/Pianola/Pianola",
-    #<pyapp>"Projects/ShaderFlow/ShaderFlow",
-    #<pyapp>"Projects/SpectroNote/SpectroNote",
-    #<pyapp>"Projects/Upscalin/Upscalin",
-]
+packages = ["Broken"]
 
 [tool.hatch.build.targets.sdist]
 exclude = ["*"]

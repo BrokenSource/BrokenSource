@@ -1,31 +1,127 @@
 import ctypes
 import os
 import platform
-from typing import Generator, Self
+from typing import Generator, List, Self
+from aenum import MultiValueEnum
 
 import distro
 
-from Broken import BrokenEnum, log
+from Broken.Core.BrokenLogging import log
+from Broken.Core.BrokenEnum import MultiEnum, BrokenEnum
 
 
-class BrokenPlatform:
-    """
-    Host Platform information, Cross Compilation targets and some utilities
-    """
+class SystemEnum(str, MultiEnum):
+    def __str__(self) -> str:
+        return str(self.value)
 
-    class SystemEnum(str, BrokenEnum):
-        Linux:   str = "linux"
-        Windows: str = "windows"
-        MacOS:   str = "macos"
-        BSD:     str = "bsd"
-
-    System: SystemEnum = SystemEnum.get(platform.system().lower().replace("darwin", "macos"))
-    """Current operating system"""
+    Linux:   str = "linux"
+    Windows: str = "windows"
+    MacOS:   str = ("macos", "darwin")
+    BSD:     str = "bsd"
 
     @property
-    def Name(self) -> str:
-        """Name of the current platform - (linux, windows, macos, bsd)"""
-        return self.System.value
+    def extension(self) -> str:
+        if (self == self.Windows):
+            return ".exe"
+        return ".bin"
+
+    def is_linux(self) -> bool:
+        return (self == self.Linux)
+
+    def is_windows(self) -> bool:
+        return (self == self.Windows)
+
+    def is_macos(self) -> bool:
+        return (self == self.MacOS)
+
+    def is_bsd(self) -> bool:
+        return (self == self.BSD)
+
+
+class ArchEnum(str, MultiEnum):
+    def __str__(self) -> str:
+        return str(self.value)
+
+    AMD32: str = ("amd32", "x86", "i686")
+    AMD64: str = ("amd64", "x86_64")
+    ARM32: str = "arm32"
+    ARM64: str = "arm64"
+
+    def is_arm(self) -> bool:
+        return ("arm" in self.value)
+
+    def is_amd(self) -> bool:
+        return ("amd" in self.value)
+
+    def is_32_bits(self) -> bool:
+        return ("32" in self.value)
+
+    def is_64_bits(self) -> bool:
+        return ("64" in self.value)
+
+
+class Platform(str, BrokenEnum):
+    """List of common platforms targets for releases"""
+    WindowsAMD64: str = "windows-amd64"
+    WindowsARM64: str = "windows-arm64"
+    LinuxAMD64:   str = "linux-amd64"
+    LinuxARM64:   str = "linux-arm64"
+    MacosAMD64:   str = "macos-amd64"
+    MacosARM64:   str = "macos-arm64"
+
+    @property
+    def system(self) -> SystemEnum:
+        return SystemEnum(self.value.split("-")[0])
+
+    @property
+    def arch(self) -> ArchEnum:
+        return ArchEnum(self.value.split("-")[1])
+
+    @property
+    def extension(self) -> str:
+        return self.system.extension
+
+    @property
+    def triple(self) -> str:
+        """Get the Rust target triple"""
+        return {
+            self.WindowsAMD64: "x86_64-pc-windows-" + ("msvc" if BrokenPlatform.OnWindows else "gnu"),
+            self.WindowsARM64: "aarch64-pc-windows-" + ("msvc" if BrokenPlatform.OnWindows else "gnullvm"),
+            self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
+            self.LinuxARM64:   "aarch64-unknown-linux-gnu",
+            self.MacosAMD64:   "x86_64-apple-darwin",
+            self.MacosARM64:   "aarch64-apple-darwin",
+        }[self]
+
+    _AllAMD64: str = "all-amd64"
+    _AllARM64: str = "all-arm64"
+    _All:      str = "all"
+
+    def get_all(self) -> Generator[Self, None, None]:
+        if ("all" in self.value):
+            for option in Platform.options():
+                if ("all" in option.value):
+                    continue
+                elif (self == self._All):
+                    yield option
+                elif (self == self._AllAMD64):
+                    if (option.arch == ArchEnum.AMD64):
+                        yield option
+                elif (self == self._AllARM64):
+                    if (option.arch == ArchEnum.ARM64):
+                        yield option
+        else:
+            yield self
+
+class BrokenPlatform:
+    Arch: ArchEnum = ArchEnum.get(
+        platform.machine().lower())
+
+    System: SystemEnum = SystemEnum.get(
+        platform.system().lower())
+
+    Host: Platform = Platform.get(
+        f"{System}-{Arch}")
 
     # Booleans if the current platform is the following
     OnLinux:   bool = (System == SystemEnum.Linux)
@@ -33,13 +129,11 @@ class BrokenPlatform:
     OnMacOS:   bool = (System == SystemEnum.MacOS)
     OnBSD:     bool = (System == SystemEnum.BSD)
 
-    # Family of platforms
-    OnUnix: bool = (OnLinux or OnMacOS or OnBSD)
-
     # Distro IDs: https://distro.readthedocs.io/en/latest/
     LinuxDistro: str = distro.id()
 
-    # # Booleans if the current platform is the following
+    # Family of platforms
+    OnUnix: bool = (OnLinux or OnMacOS or OnBSD)
 
     # Ubuntu-like
     OnUbuntu:    bool = (LinuxDistro == "ubuntu")
@@ -66,61 +160,6 @@ class BrokenPlatform:
     OnFreeBSD: bool = (LinuxDistro == "freebsd")
     OnOpenBSD: bool = (LinuxDistro == "openbsd")
     OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)
-
-    # Platform release binaries extension and CPU architecture
-    class ArchEnum(str, BrokenEnum):
-        AMD64: str = "amd64"
-        ARM64: str = "arm64"
-
-    Arch: ArchEnum = ArchEnum.get(platform.machine().lower().replace("x86_64", "amd64"))
-    Extension: str = (".exe" if OnWindows else ".bin")
-
-    class Target(BrokenEnum):
-        """List of common platforms targets for releases"""
-        LinuxAMD64:   str = "linux-amd64"
-        LinuxARM:     str = "linux-arm64"
-        WindowsAMD64: str = "windows-amd64"
-        WindowsARM:   str = "windows-arm64"
-        MacosAMD64:   str = "macos-amd64"
-        MacosARM:     str = "macos-arm64"
-        All:          str = "all"
-
-        @staticmethod
-        def all() -> Generator[Self, None, None]:
-            for target in BrokenPlatform.Target.options():
-                if target != BrokenPlatform.Target.All:
-                    yield target
-
-        @property
-        def rust(self) -> str:
-            windows_compiler = ("msvc" if BrokenPlatform.OnWindows else "gnu")
-            return {
-                self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
-                self.LinuxARM:     "aarch64-unknown-linux-gnu",
-                self.WindowsAMD64: "x86_64-pc-windows-" + windows_compiler,
-                self.WindowsARM:   "aarch64-pc-windows-" + windows_compiler,
-                self.MacosAMD64:   "x86_64-apple-darwin",
-                self.MacosARM:     "aarch64-apple-darwin",
-            }[self]
-
-        @property
-        def extension(self) -> str:
-            """Same as BrokenPlatform.Extension"""
-            if ("windows" in self.value):
-                return ".exe"
-            return ".bin"
-
-        @property
-        def name(self) -> str:
-            """Same as BrokenPlatform.Name"""
-            return self.value.split("-")[0]
-
-        @property
-        def architecture(self) -> str:
-            """Same as BrokenPlatform.Architecture"""
-            return self.value.split("-")[1]
-
-    CurrentTarget: Target = Target.get(f"{System}-{Arch}")
 
     @staticmethod
     def log_system_info():

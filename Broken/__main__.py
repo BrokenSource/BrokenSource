@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Literal, Self, Set, Union
+from typing import Annotated, List, Self, Set
 
 import toml
 from attr import Factory, define
@@ -11,6 +11,7 @@ from typer import Argument, Context, Option, Typer
 
 from Broken import (
     BROKEN,
+    ArchEnum,
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
@@ -18,8 +19,10 @@ from Broken import (
     BrokenSingleton,
     BrokenTyper,
     Patch,
+    Platform,
     Runtime,
     Stack,
+    SystemEnum,
     flatten,
     log,
     shell,
@@ -33,8 +36,9 @@ class ProjectLanguage(BrokenEnum):
     Rust    = "rust"
     CPP     = "cpp"
 
+
 @define
-class ProjectCLI:
+class ProjectManager:
     path: Path
     name: str = "Unknown"
     typer: Typer = None
@@ -195,10 +199,10 @@ class ProjectCLI:
     # # Python shenanigans
 
     def release(self,
-        target: Annotated[List[BrokenPlatform.Target],
+        target: Annotated[List[Platform],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
-        )] = [BrokenPlatform.CurrentTarget],
+        )] = [BrokenPlatform.Host],
 
         tarball: Annotated[bool,
             Option("--tarball",
@@ -219,13 +223,27 @@ class ProjectCLI:
 
         # Recurse on each target item
         if isinstance(target, list):
-            if (target[0] == BrokenPlatform.Target.All):
-                target = BrokenPlatform.Target.all()
-            for target in target:
-                ProjectCLI.release(**locals())
+            for target in flatten(map(Platform.get_all, target)):
+                ProjectManager.release(**locals())
             return None
 
-        # Todo: Filter invalid host -> target combinations of "all" targets
+        # Filter invalid host -> target combinations of all targets
+        if BrokenPlatform.OnLinux and (target.system == SystemEnum.MacOS):
+            return log.skip(f"Linux can't cross-compile for {target.system}")
+        elif BrokenPlatform.OnMacOS and (target.system != SystemEnum.MacOS):
+            return log.skip("macOS can only compile for itself")
+        elif BrokenPlatform.OnWindows and (target.system != SystemEnum.Windows):
+            return log.skip("Windows can only [italic]easily[/] compile for itself")
+        elif (target == Platform.WindowsARM64):
+            return log.skip("Windows on ARM is not supported yet")
+
+        # Non-macOS ARM builds can be unstable/not tested, disable on CI
+        if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
+            if (Runtime.GitHub):
+                return log.skip("non-macOS ARM builds are disabled on GHA")
+            log.warning("ARM builds are only tested in macOS and might fail")
+
+        log.note("Building Project Release for", target)
 
         if self.is_python:
             BrokenManager.rust()
@@ -243,78 +261,55 @@ class ProjectCLI:
                 ).items()
             ))
 
-            # Build the mono-repo's wheel.. got it?
-            UNICYCLE = next(BrokenManager().pypi(_pyapp=True).glob("*.whl"))
+            MAIN  = next(BrokenManager().pypi().glob("*.whl"))
+            EXTRA = set(BrokenManager().pypi(all=True).glob("*.whl")) - {MAIN}
 
             # Pyapp configuration
             os.environ.update(dict(
-                PYAPP_PROJECT_PATH=str(UNICYCLE),
-                PYAPP_EXEC_SPEC=f"{self.name}.__main__:main",
+                PYAPP_PROJECT_PATH=str(MAIN),
+                PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
+                PYAPP_EXEC_MODULE=self.name,
                 PYAPP_PYTHON_VERSION="3.12",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
             ))
 
-            # Fixme: PyTorch, HuggingFace models, bandwidth, sizes, management, etc.
-            # Warn: Experimental offline installation
-            if offline:
-                _repo: str = "https://github.com/indygreg/python-build-standalone/releases/download"
-                _type: str = "install_only_stripped.tar.gz"
-                _cpython: str = "cpython-3.12.7"
-                _release: str = "20241008"
-
-                def _get_release(target: str) -> str:
-                    return f"{_repo}/{_release}/{_cpython}%2B{_release}-{target}-{_type}"
-
-                # Find a static python distribution used by PyApp
-                if not (_download := {
-                    BrokenPlatform.Target.WindowsAMD64: _get_release("x86_64-pc-windows-msvc"),
-                    BrokenPlatform.Target.LinuxAMD64:   _get_release("x86_64_v3-unknown-linux-gnu"),
-                    BrokenPlatform.Target.MacosARM:     _get_release("aarch64-apple-darwin"),
-                }.get(target)):
-                    raise RuntimeError(log.error(f"Unsupported target for offline mode {target}"))
-
-                # Remove any previous builds and find the build path
-                _distribution = BrokenPath.recreate(BROKEN.DIRECTORIES.SYSTEM_TEMP/f"{self.name.lower()}-offline-distribution")
-
-                # Download and unpack the Python distribution
-                _targz = _distribution.with_suffix(".tar.gz")
-                BrokenPath.download(url=_download, output=_targz)
-                shutil.unpack_archive(_targz, _distribution)
-
-                # The distribution is found in a "python" subdirectory
-                _distribution = (_distribution/"python")
-                _bindir = _distribution/BrokenPlatform.PyBinDir
-
-                # Install the monorepo's wheel into the distribution
-                shell(_bindir/"pip", "install", UNICYCLE)
-
-                # Compress the distribution for bundling
-                _bundle = BrokenPath.zstd(path=_distribution,
-                    output=_distribution.with_suffix(".tar.zst"))
-
-                os.environ.update(dict(
-                    PYAPP_DISTRIBUTION_PATH=str(_bundle),
-                    PYAPP_DISTRIBUTION_PYTHON_PATH=str(_bindir),
-                    PYAPP_PIP_EXTRA_ARGS="--no-deps",
-                    PYAPP_FULL_ISOLATION="1",
-                    PYAPP_UV_ENABLED="0",
-                ))
+            # Rust configuration and fixes
+            os.environ.update(dict(
+                CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=str(shutil.which("aarch64-linux-gnu-gcc"))
+            ))
 
             # Cache Rust compilation across projects
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
-            shell("rustup", "target", "add", target.rust)
+            shell("rustup", "target", "add", target.triple)
 
             # Cargo warning: We're not 'installing' a utility
             BrokenPath.add_to_path(BUILD_DIR/"bin")
 
-            if shell("cargo", "install",
-                "pyapp", "--force",
-                "--root", BUILD_DIR,
-                "--target", target.rust
-            ).returncode != 0:
-                log.error("Failed to compile PyAPP")
-                exit(1)
+            if (_PYAPP_FORK := True):
+                if not (fork := BROKEN.DIRECTORIES.BROKEN_BUILD/"PyApp").exists():
+                    shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork)
+
+                # Remove previous embeddings if any
+                for file in (fork/"src"/"embed").glob("*"):
+                    file.unlink()
+
+                # Actually compile it
+                if shell("cargo", "install",
+                    "--path", fork, "--force",
+                    "--root", BUILD_DIR,
+                    "--target", target.triple
+                ).returncode != 0:
+                    log.error("Failed to compile PyAPP")
+                    exit(1)
+            else:
+                if shell("cargo", "install",
+                    "pyapp", "--force",
+                    "--root", BUILD_DIR,
+                    "--target", target.triple
+                ).returncode != 0:
+                    log.error("Failed to compile PyAPP")
+                    exit(1)
 
             RELEASE_ENV.unlink()
 
@@ -326,8 +321,8 @@ class ProjectCLI:
             # Rename the compiled binary to the final release name
             release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                 f"{self.name.lower()}",
-                f"-{target.name}",
-                f"-{target.architecture}",
+                f"-{target.system}",
+                f"-{target.arch}",
                 f"-v{BROKEN.VERSION}",
                 f"{target.extension}",
             ))
@@ -344,11 +339,11 @@ class ProjectCLI:
 
 @define
 class BrokenManager(BrokenSingleton):
-    projects: list[ProjectCLI] = Factory(list)
+    projects: list[ProjectManager] = Factory(list)
     broken_typer: BrokenTyper = None
 
     @property
-    def python_projects(self) -> list[ProjectCLI]:
+    def python_projects(self) -> list[ProjectManager]:
         return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
@@ -373,7 +368,7 @@ class BrokenManager(BrokenSingleton):
                 continue
             if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
                 continue
-            if (project := ProjectCLI(directory)).is_known:
+            if (project := ProjectManager(directory)).is_known:
                 self.projects.append(project)
 
     def cli(self) -> None:
@@ -443,7 +438,7 @@ class BrokenManager(BrokenSingleton):
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
-        _pyapp: bool=False,
+        all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=False,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
         from Broken.Version import __version__ as version
@@ -461,17 +456,10 @@ class BrokenManager(BrokenSingleton):
         replaces['"0.0.0"'  ] = f'"{version}"' # Write current version
         replaces['>=0.0.0'  ] = f"=={version}" # Link projects version
 
-        if _pyapp:
-            replaces["#<pyapp>"] = ""   # Bundle all projects
-            replaces["~="      ] = "==" # Pin all dependencies
-
-        # We patch to include all projects on binary releases
-        packages = (("--package", "broken-source") if _pyapp else "--all")
-
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
-            shell("uv", "build", "--wheel", "--out-dir", output, packages)
+            shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
             shell("uv", "publish",
-                (not Runtime.Github)*(
+                (not Runtime.GitHub)*(
                     "--username", "__token__",
                     "--password", os.getenv("PYPI_TOKEN")
                 ),
@@ -524,7 +512,7 @@ class BrokenManager(BrokenSingleton):
         import requests
 
         # Skip if we're on a GitHub Action
-        if (Runtime.Github):
+        if (Runtime.GitHub):
             return
 
         # Install rustup based on platform
@@ -602,8 +590,7 @@ class BrokenManager(BrokenSingleton):
 
 def main():
     with BrokenProfiler("BROKEN"):
-        broken = BrokenManager()
-        broken.cli()
+        BrokenManager().cli()
 
 if __name__ == "__main__":
     main()

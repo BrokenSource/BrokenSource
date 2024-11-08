@@ -3,13 +3,13 @@
 # Or un-stage .stignore removal as a repository
 
 # Recursive
+**/node_modules
 **/Workspace
 **/Build
 **/Release
 **/.venv
 **/.cache
 **/.pio
-**/node_modules
 
 # Targeted
 **/android

@@ -337,7 +337,7 @@ class BrokenProject:
         # Print version information and exit on "--version/-V"
         if (self.APP_NAME != "Broken"):
             if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")):
-                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.CurrentTarget}")
+                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host}")
                 exit(0)
 
         # Convenience symlink the project's workspace

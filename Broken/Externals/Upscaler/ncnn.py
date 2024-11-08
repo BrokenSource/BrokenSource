@@ -107,7 +107,7 @@ class Waifu2x(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag = ("https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download", "20220728")
-        return f"{release}/{tag}/waifu2x-ncnn-vulkan-{tag}-{BrokenPlatform.Name.replace('linux', 'ubuntu')}.zip"
+        return f"{release}/{tag}/waifu2x-ncnn-vulkan-{tag}-{BrokenPlatform.System.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -164,7 +164,7 @@ class Realesr(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag, version = ("https://github.com/xinntao/Real-ESRGAN/releases/download", "v0.2.5.0", "20220424")
-        return f"{release}/{tag}/realesrgan-ncnn-vulkan-{version}-{BrokenPlatform.Name.replace('linux', 'ubuntu')}.zip"
+        return f"{release}/{tag}/realesrgan-ncnn-vulkan-{version}-{BrokenPlatform.System.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -216,7 +216,7 @@ class Upscayl(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag = ("https://github.com/upscayl/upscayl/releases/download", "2.11.5")
-        platform = BrokenPlatform.Name.replace("windows", "win").replace("macos", "mac")
+        platform = BrokenPlatform.System.replace("windows", "win").replace("macos", "mac")
         return f"{release}/v{tag}/upscayl-{tag}-{platform}.zip"
 
     @staticmethod

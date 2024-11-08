@@ -3,12 +3,18 @@
 		{
 			"name": "Monorepo",
 			"path": "."
-		}, {
+		},
+		{
 			"name": "Insiders",
 			"path": "Meta/Insiders"
-		}, {
+		},
+		{
+			"name": "PyApp",
+			"path": "Build/PyApp"
+		},
+		{
 			"name": "Tremeschin",
-			"path": "Meta/Tremeschin",
+			"path": "Meta/Tremeschin"
 		}
 	],
 
