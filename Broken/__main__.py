@@ -229,19 +229,19 @@ class ProjectManager:
 
         # Filter invalid host -> target combinations of all targets
         if BrokenPlatform.OnLinux and (target.system == SystemEnum.MacOS):
-            return log.skip(f"Linux can't cross-compile for {target.system}")
+            return log.skip(f"Linux can't [italic]easily[/] compile for {target.system}")
         elif BrokenPlatform.OnMacOS and (target.system != SystemEnum.MacOS):
-            return log.skip("macOS can only compile for itself")
+            return log.skip("macOS can only [italic]easily[/] compile for itself")
         elif BrokenPlatform.OnWindows and (target.system != SystemEnum.Windows):
             return log.skip("Windows can only [italic]easily[/] compile for itself")
         elif (target == Platform.WindowsARM64):
-            return log.skip("Windows on ARM is not supported yet")
+            return log.skip("Windows on ARM is not widely supported")
 
         # Non-macOS ARM builds can be unstable/not tested, disable on CI
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
-            if (Runtime.GitHub):
-                return log.skip("non-macOS ARM builds are disabled on GHA")
-            log.warning("ARM builds are only tested in macOS and might fail")
+            log.warning("ARM general support is only present in macOS")
+            # if (Runtime.GitHub):
+            #     return log.skip("non-macOS ARM builds are disabled on GHA")
 
         log.note("Building Project Release for", target)
 
@@ -249,10 +249,9 @@ class ProjectManager:
             BrokenManager.rust()
             BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
 
-            # Remove previous build cache for pyapp but no other crate
-            for path in BUILD_DIR.rglob("*"):
-                if ("pyapp" in path.name):
-                    BrokenPath.remove(path)
+            # Remove previous build cache for pyapp
+            for path in BUILD_DIR.rglob("pyapp*"):
+                BrokenPath.remove(path)
 
             # Write a releases env config file
             (RELEASE_ENV := BROKEN.RESOURCES.ROOT/"Release.env").write_text('\n'.join(
@@ -262,7 +261,7 @@ class ProjectManager:
             ))
 
             MAIN  = next(BrokenManager().pypi().glob("*.whl"))
-            EXTRA = set(BrokenManager().pypi(all=True).glob("*.whl")) - {MAIN}
+            EXTRA =  set(BrokenManager().pypi(all=True).glob("*.whl")) - {MAIN}
 
             # Pyapp configuration
             os.environ.update(dict(
@@ -275,9 +274,9 @@ class ProjectManager:
             ))
 
             # Rust configuration and fixes
-            os.environ.update(dict(
-                CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=str(shutil.which("aarch64-linux-gnu-gcc"))
-            ))
+            os.environ.update({key: str(val) for key, val in dict(
+                CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=shutil.which("aarch64-linux-gnu-gcc"),
+            ).items() if val})
 
             # Cache Rust compilation across projects
             os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
@@ -288,28 +287,28 @@ class ProjectManager:
 
             if (_PYAPP_FORK := True):
                 if not (fork := BROKEN.DIRECTORIES.BROKEN_BUILD/"PyApp").exists():
-                    shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork)
+                    shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork, "-b", "custom")
 
                 # Remove previous embeddings if any
                 for file in (fork/"src"/"embed").glob("*"):
                     file.unlink()
 
                 # Actually compile it
-                if shell("cargo", "install",
+                if shell(
+                    "cargo", "install",
                     "--path", fork, "--force",
                     "--root", BUILD_DIR,
-                    "--target", target.triple
+                    "--target", target.triple,
                 ).returncode != 0:
-                    log.error("Failed to compile PyAPP")
-                    exit(1)
+                    return log.error("Failed to compile PyAPP")
             else:
-                if shell("cargo", "install",
+                if shell(
+                    "cargo", "install",
                     "pyapp", "--force",
                     "--root", BUILD_DIR,
-                    "--target", target.triple
+                    "--target", target.triple,
                 ).returncode != 0:
-                    log.error("Failed to compile PyAPP")
-                    exit(1)
+                    return log.error("Failed to compile PyAPP")
 
             RELEASE_ENV.unlink()
 
@@ -321,8 +320,7 @@ class ProjectManager:
             # Rename the compiled binary to the final release name
             release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
                 f"{self.name.lower()}",
-                f"-{target.system}",
-                f"-{target.arch}",
+                f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
                 f"{target.extension}",
             ))

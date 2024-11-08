@@ -59,6 +59,8 @@
 
 			// Rust
 			"Rust": "src",
+			"Cargo": "tools",
+			"PyApp": "tools",
 			".cargo": "config",
 
 			// Python

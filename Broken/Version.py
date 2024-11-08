@@ -9,7 +9,7 @@ def export(**options) -> None:
 if (__name__ == "__main__"):
     export(
         GHA_VERSION=__version__,
-        GHA_PYAPP=False,
+        GHA_PYAPP=True,
         GHA_PYPI=False,
         GHA_TAG=False,
     )

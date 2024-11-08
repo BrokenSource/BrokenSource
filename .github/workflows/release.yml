@@ -20,7 +20,7 @@ jobs:
 
       - name: Build DepthFlow
         if: ${{ env.GHA_PYAPP == 'True' }}
-        run: uv run broken depthflow release --tarball
+        run: uv run broken depthflow release --tarball --target all-host
 
       - name: Upload DepthFlow releases
         uses: actions/upload-artifact@v3
@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Pianola
         if: ${{ env.GHA_PYAPP == 'True' }}
-        run: uv run broken pianola release --tarball
+        run: uv run broken pianola release --tarball --target all-host
 
       - name: Upload Pianola releases
         uses: actions/upload-artifact@v3
@@ -44,7 +44,7 @@ jobs:
 
       - name: Build ShaderFlow
         if: ${{ env.GHA_PYAPP == 'True' }}
-        run: uv run broken shaderflow release --tarball
+        run: uv run broken shaderflow release --tarball --target all-host
 
       - name: Upload ShaderFlow releases
         uses: actions/upload-artifact@v3
@@ -56,7 +56,7 @@ jobs:
 
       - name: Build SpectroNote
         if: ${{ env.GHA_PYAPP == 'True' }}
-        run: uv run broken spectronote release --tarball
+        run: uv run broken spectronote release --tarball --target all-host
 
       - name: Upload SpectroNote releases
         uses: actions/upload-artifact@v3
@@ -78,8 +78,6 @@ jobs:
       - name: Publish wheels
         if: ${{ env.GHA_PYPI == 'True' }}
         run: uv run broken pypi --publish
-        env:
-          PYPI_TOKEN: ${{secrets.PYPI_TOKEN}}
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3

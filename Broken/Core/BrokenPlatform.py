@@ -11,9 +11,6 @@ from Broken.Core.BrokenEnum import MultiEnum, BrokenEnum
 
 
 class SystemEnum(str, MultiEnum):
-    def __str__(self) -> str:
-        return str(self.value)
-
     Linux:   str = "linux"
     Windows: str = "windows"
     MacOS:   str = ("macos", "darwin")
@@ -39,9 +36,6 @@ class SystemEnum(str, MultiEnum):
 
 
 class ArchEnum(str, MultiEnum):
-    def __str__(self) -> str:
-        return str(self.value)
-
     AMD32: str = ("amd32", "x86", "i686")
     AMD64: str = ("amd64", "x86_64")
     ARM32: str = "arm32"
@@ -95,6 +89,7 @@ class Platform(str, BrokenEnum):
 
     _AllAMD64: str = "all-amd64"
     _AllARM64: str = "all-arm64"
+    _AllHost:  str = "all-host"
     _All:      str = "all"
 
     def get_all(self) -> Generator[Self, None, None]:
@@ -110,6 +105,9 @@ class Platform(str, BrokenEnum):
                 elif (self == self._AllARM64):
                     if (option.arch == ArchEnum.ARM64):
                         yield option
+                elif (self == self._AllHost):
+                    if (option.system == BrokenPlatform.System):
+                        yield option
         else:
             yield self
 
@@ -121,7 +119,7 @@ class BrokenPlatform:
         platform.system().lower())
 
     Host: Platform = Platform.get(
-        f"{System}-{Arch}")
+        f"{System.value}-{Arch.value}")
 
     # Booleans if the current platform is the following
     OnLinux:   bool = (System == SystemEnum.Linux)
