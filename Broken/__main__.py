@@ -300,7 +300,7 @@ class ProjectManager:
                     "--root", BUILD_DIR,
                     "--target", target.triple,
                 ).returncode != 0:
-                    return log.error("Failed to compile PyAPP")
+                    raise RuntimeError(log.error("Failed to compile PyAPP"))
             else:
                 if shell(
                     "cargo", "install",
@@ -308,7 +308,7 @@ class ProjectManager:
                     "--root", BUILD_DIR,
                     "--target", target.triple,
                 ).returncode != 0:
-                    return log.error("Failed to compile PyAPP")
+                    raise RuntimeError(log.error("Failed to compile PyAPP"))
 
             RELEASE_ENV.unlink()
 

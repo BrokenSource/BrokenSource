@@ -13,5 +13,5 @@ if (__name__ == "__main__"):
         GHA_VERSION=__version__,
         GHA_PYAPP=True,
         GHA_PYPI=False,
-        GHA_TAG=True,
+        GHA_TAG=False,
     )
