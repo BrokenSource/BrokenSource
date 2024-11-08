@@ -9,9 +9,11 @@
 
 <!------------------------------------------------------------------------------------------------->
 
-### 🔘 0.8.0 <small>Ongoing</small> {#0.8.1}
+### 🔘 0.8.1 <small>Ongoing</small> {#0.8.1}
 
 ##### General {#0.8.1-general}
+- Added support for Intel Macs and Linux Arm builds to the releases
+- Actually fix FFmpeg automatic downloads on macOS
 
 ##### DepthFlow {#0.8.1-depthflow}
 - Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option

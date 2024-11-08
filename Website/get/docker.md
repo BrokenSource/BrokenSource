@@ -46,6 +46,8 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
     export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
     ```
 
+    - Install the projects and continue as usual
+
     For more context, see this [GitHub comment](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} of mine.
 
 #### Serverless
@@ -105,7 +107,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 !!! example ""
     > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/" target="_blank">Website</a><span style="float: right;">?/5.0</span> • No OpenGL acceleration?</b></div>
 
-    A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and it rendered at abysmal speeds.
+    A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and OpenGL acceleration didn't work.
 
     - I don't have any more information or if this is true.
 

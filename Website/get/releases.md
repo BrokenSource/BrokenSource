@@ -44,14 +44,14 @@ title: Get/Releases
             <table id="macos-amd64"><tbody/></table>
 
 <script>
-  function add_release(emoji, name, platform, architecture, version, enabled) {
+  function add_release(emoji, project, platform, architecture, version, enabled) {
 
     // Create the project name left button
     const project_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
     const name_link = Object.assign(document.createElement('a'), {
       className: 'md-button md-button--stretch md-button--thin',
-      href: `https://brokensrc.dev/${name.toLowerCase()}`,
-      innerHTML: `${emoji} ${name}`,
+      href: `https://brokensrc.dev/${project.toLowerCase()}`,
+      innerHTML: `${emoji} ${project}`,
     });
 
     // Create the big clickable download button users love
@@ -65,8 +65,8 @@ title: Get/Releases
       const extension = {windows: 'exe', linux: 'tar.gz', macos: 'tar.gz'}[platform];
       download_link.innerHTML = `${icon} Download`;
       download_link.href = [
-        `https://github.com/BrokenSource/${name}/releases/download/${version}/`,
-        `${name.toLowerCase()}-${platform}-${architecture}-${version}.${extension}`
+        `https://github.com/BrokenSource/${project}/releases/download/${version}/`,
+        `${project.toLowerCase()}-${platform}-${architecture}-${version}.${extension}`
       ].join('');
     } else {
       download_link.classList.add('md-button--disabled');
