@@ -11,8 +11,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
-        #, windows-latest, macos-14]
+        os: [ubuntu-20.04, windows-latest, macos-14]
     steps:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
@@ -21,7 +20,7 @@ jobs:
 
       - name: Install gcc aarch64
         if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: sudo apt-get install -y gcc-aarch64-linux-gnu
+        run: sudo apt install -y gcc-aarch64-linux-gnu
 
       # DepthFlow
 

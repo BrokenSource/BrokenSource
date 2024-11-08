@@ -28,16 +28,20 @@ title: Get/Releases
           <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
-        === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
+        === ":octicons-cpu-16: x86-64"
             <table id="linux-amd64"><tbody/></table>
+        === ":octicons-cpu-16: ARM64"
+            <table id="linux-arm64"><tbody/></table>
     === ":simple-apple: MacOS"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
           <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
-        === ":octicons-cpu-16: Apple Silicon :octicons-cpu-16:"
+        === ":octicons-cpu-16: Apple Silicon"
             <table id="macos-arm64"><tbody/></table>
+        === ":octicons-cpu-16: Intel Macs"
+            <table id="macos-amd64"><tbody/></table>
 
 <script>
   function add_release(emoji, name, platform, architecture, version, enabled) {
@@ -80,16 +84,28 @@ title: Get/Releases
   }
 
   add_release("🌊", "DepthFlow",   "windows", "amd64", "v0.8.0", true)
+//add_release("🌊", "DepthFlow",   "windows", "arm64", "v0.8.0", true)
   add_release("🌊", "DepthFlow",   "linux",   "amd64", "v0.8.0", true)
+  add_release("🌊", "DepthFlow",   "linux",   "arm64", "v0.8.0", false)
+  add_release("🌊", "DepthFlow",   "macos",   "amd64", "v0.8.0", false)
   add_release("🌊", "DepthFlow",   "macos",   "arm64", "v0.8.0", true)
   add_release("🔥", "ShaderFlow",  "windows", "amd64", "v0.8.0", true)
+//add_release("🔥", "ShaderFlow",  "windows", "arm64", "v0.8.0", true)
   add_release("🔥", "ShaderFlow",  "linux",   "amd64", "v0.8.0", true)
+  add_release("🔥", "ShaderFlow",  "linux",   "arm64", "v0.8.0", false)
+  add_release("🔥", "ShaderFlow",  "macos",   "amd64", "v0.8.0", false)
   add_release("🔥", "ShaderFlow",  "macos",   "arm64", "v0.8.0", true)
   add_release("🎹", "Pianola",     "windows", "amd64", "v0.8.0", false)
+//add_release("🎹", "Pianola",     "windows", "arm64", "v0.8.0", false)
   add_release("🎹", "Pianola",     "linux",   "amd64", "v0.8.0", false)
+  add_release("🎹", "Pianola",     "linux",   "arm64", "v0.8.0", false)
+  add_release("🎹", "Pianola",     "macos",   "amd64", "v0.8.0", false)
   add_release("🎹", "Pianola",     "macos",   "arm64", "v0.8.0", false)
   add_release("🎧", "SpectroNote", "windows", "amd64", "v0.8.0", false)
+//add_release("🎧", "SpectroNote", "windows", "arm64", "v0.8.0", false)
   add_release("🎧", "SpectroNote", "linux",   "amd64", "v0.8.0", false)
+  add_release("🎧", "SpectroNote", "linux",   "arm64", "v0.8.0", false)
+  add_release("🎧", "SpectroNote", "macos",   "amd64", "v0.8.0", false)
   add_release("🎧", "SpectroNote", "macos",   "arm64", "v0.8.0", false)
 </script>
 
