@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-__version__ = "0.8.1"
+__version__ = "0.8.1.dev0"
 __all__ = ["__version__"]
+
+# Manual trigger count: 1
 
 def export(**options) -> None:
     for key, value in options.items():
@@ -11,5 +13,5 @@ if (__name__ == "__main__"):
         GHA_VERSION=__version__,
         GHA_PYAPP=True,
         GHA_PYPI=False,
-        GHA_TAG=False,
+        GHA_TAG=True,
     )

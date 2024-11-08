@@ -130,11 +130,12 @@ dev-dependencies = [
     # Self reference
     "broken-source[website]",
     "depthflow",
-    "insiders",
     "pianola",
     "shaderflow",
     "spectronote",
-    "tremeschin",
+    # Fixme: UV to automatically install workspace members
+    # "insiders",
+    # "tremeschin",
 ]
 
 [tool.uv.sources]
