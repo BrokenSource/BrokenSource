@@ -1373,7 +1373,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     # High level functions
 
     @staticmethod
-    def install() -> None:
+    def install(raises: bool=True) -> None:
         if all(map(BrokenPath.which, ("ffmpeg", "ffprobe"))):
             return None
 
@@ -1384,12 +1384,22 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
                 "ffmpeg-master-latest-",
                 BrokenPlatform.System.value.replace("windows", "win"),
                 BrokenPlatform.Arch.replace("amd64", "64"),
-                "-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz"
+                ("-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz")
             )))
         else:
             log.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")
-            BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip", redirect=True)
-            BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/zip", redirect=True)
+            ffprobe = BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip", redirect=True)
+            ffmpeg  = BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/zip", redirect=True)
+
+            # Shutil doesn't preserve executable attributes
+            for file in ffprobe.rglob("ffprobe*"):
+                BrokenPath.make_executable(file)
+            for file in ffmpeg.rglob("ffmpeg*"):
+                BrokenPath.make_executable(file)
+
+        # Ensure the binaries are available
+        if raises and (not all(map(BrokenPath.which, ("ffmpeg", "ffprobe")))):
+            raise FileNotFoundError("FFmpeg wasn't found on the system after an attempt to download it")
 
     # # Video
 

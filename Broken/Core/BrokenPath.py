@@ -188,7 +188,7 @@ class BrokenPath:
 
         return virtual
 
-    def make_executable(path: Path, *, echo=False) -> Path:
+    def make_executable(path: Path, *, echo=True) -> Path:
         """Make a file executable"""
         if BrokenPlatform.OnUnix:
             shell("chmod", "+x", path, echo=echo)
