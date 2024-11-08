@@ -17,6 +17,15 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 {% include-markdown "include/love-short.md" %}
 
 
+### 🔘 Amazon EC2
+
+!!! example ""
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://aws.amazon.com/ec2/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (5.0/5.0)</span> • Works out of the box™</b></div>
+
+    - Simply chose [`AWS Deep Learning AMI GPU PyTorch 2.4 (Ubuntu 22.04)`](https://aws.amazon.com/releasenotes/aws-deep-learning-ami-gpu-pytorch-2-4-ubuntu-22-04/) or similar!
+    - No extra configuration needed, install the projects and continue
+
+
 ### 🔘 Runpod
 
 #### Pods
