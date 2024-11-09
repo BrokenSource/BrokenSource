@@ -1,3 +1,4 @@
+import contextlib
 import enum
 import functools
 from typing import Any, Dict, Optional, Self, Tuple, Union
@@ -44,10 +45,15 @@ class BrokenEnumBase:
         if isinstance(value, cls):
             return value
 
-        try:
+        # Attempt to get by value
+        with contextlib.suppress(ValueError):
             return cls(value)
-        except (AttributeError, ValueError):
-            return default
+
+        # Attempt to get by key
+        with contextlib.suppress(KeyError):
+            return cls[value]
+
+        return default
 
     # Values
 

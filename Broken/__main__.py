@@ -240,8 +240,6 @@ class ProjectManager:
         # Non-macOS ARM builds can be unstable/not tested, disable on CI
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
             log.warning("ARM general support is only present in macOS")
-            # if (Runtime.GitHub):
-            #     return log.skip("non-macOS ARM builds are disabled on GHA")
 
         log.note("Building Project Release for", target)
 

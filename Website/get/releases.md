@@ -35,7 +35,7 @@ title: Get/Releases
     === ":simple-apple: MacOS"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
-          <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
+          <div><b>Note:</b> [Open a terminal](https://apple.stackexchange.com/a/438999) in the download path, extract it with `tar -xzvf *.tar.gz`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
         === ":octicons-cpu-16: Apple Silicon"

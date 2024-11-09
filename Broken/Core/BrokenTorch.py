@@ -9,9 +9,12 @@ from Broken import BrokenEnum, BrokenPlatform, Native, log, shell
 
 
 class TorchFlavor(str, BrokenEnum):
-    CPU  = "cpu"
-    CUDA = "cu121"
-    ROCM = "rocm6.1"
+    CPU     = "cpu"
+    CUDA118 = "cu118"
+    CUDA121 = "cu121"
+    CUDA124 = "cu124"
+    ROCM61  = "rocm6.1"
+    ROCM62  = "rocm6.2"
 
 class BrokenTorch:
 
@@ -76,8 +79,8 @@ class BrokenTorch:
                     flavor = TorchFlavor.get(Prompt.ask(
                         prompt="\n:: What PyTorch flavor do you want to install?\n\n",
                         choices=list(x.lower() for x in TorchFlavor.keys() if x != "MACOS"),
-                        default="cuda"
-                    ))
+                        default="cuda121"
+                    ).upper())
                     print()
                 except KeyboardInterrupt:
                     exit(0)
