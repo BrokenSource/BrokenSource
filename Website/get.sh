@@ -1,6 +1,6 @@
 #!/bin/bash
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.21
+# Script version: 2024.11.10
 
 { # Prevent execution if partially downloaded
 
@@ -96,7 +96,7 @@ chmod +x ./Scripts/activate.sh
 
 printf "\n• Creating Virtual Environment and Installing Dependencies\n\n"
 $uv self update || printf "\n• uv self update failed, ignoring..\n\n"
-$uv sync
+$uv sync --all-packages || printf "\n• uv sync failed, could cause issues..\n\n"
 
 printf "\n• Spawning a new Shell in the Virtual Environment\n"
 printf "  - Source the Virtual Environment to get here again\n"

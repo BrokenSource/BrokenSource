@@ -17,7 +17,7 @@ runs:
       uses: actions-rust-lang/setup-rust-toolchain@v1
 
     - name: Sync dependencies
-      run: uv sync
+      run: uv sync --all-packages
       shell: bash
 
     - name: Get workflow options

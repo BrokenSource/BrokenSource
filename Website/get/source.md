@@ -132,7 +132,7 @@ The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.co
 
 - You'll probably **only** need to know of a **single command**:
 
-!!! note "Command: [`uv sync`](https://rye.astral.sh/guide/sync)"
+!!! note "Command: [`uv sync --all-packages`](https://docs.astral.sh/uv/)"
     This will update the venv and install any new dependencies
 
 After that, just activate the venv and you're good to go!

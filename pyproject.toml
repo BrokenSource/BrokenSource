@@ -60,6 +60,7 @@ dependencies = [
 all = [
     "broken-source[shaderflow]",
     "broken-source[gradio]",
+    "broken-source[website]",
 ]
 shaderflow = [
     "watchdog~=5.0.3",
@@ -109,7 +110,6 @@ website = [
     "mkdocs-include-markdown-plugin~=6.2.2",
     "mkdocs-site-urls~=0.2.0",
     "markdown-callouts~=0.4.0",
-    "mkdocs-redirects>=1.2.2",
     "black~=24.10.0",
 ]
 
@@ -118,6 +118,7 @@ broken = "Broken.__main__:main"
 
 [tool.uv]
 dev-dependencies = [
+    "broken-source[all]",
     # Development and Utilities
     "pytest-sugar~=1.0.0",
     "poethepoet~=0.29.0",
@@ -128,24 +129,7 @@ dev-dependencies = [
     # Manager
     "userpath~=1.9.2",
     # "pyshortcuts~=1.9.1",
-    # Self reference
-    "broken-source[website]",
-    "depthflow",
-    "pianola",
-    "shaderflow",
-    "spectronote",
-    # Fixme: UV to automatically install workspace members
-    # "insiders",
-    # "tremeschin",
 ]
-
-[tool.uv.sources]
-depthflow   = {workspace=true}
-insiders    = {workspace=true}
-pianola     = {workspace=true}
-shaderflow  = {workspace=true}
-spectronote = {workspace=true}
-tremeschin  = {workspace=true}
 
 [tool.uv.workspace]
 members = [
@@ -189,7 +173,7 @@ exclude = ["*"]
 ignore = [
     "F401", # Chill down when re-exporting 'unused' stuff..
     "E402", # Late/runtime imports are ok for torch
-    "E701", # Rarely this looks better than new line
+    "E701", # Rarely, this looks better than new line
     "E741", # Don't tell the Electrical Engineers
 ]
 

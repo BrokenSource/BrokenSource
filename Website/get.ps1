@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2024.10.25
+# Script version: 2024.11.10
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications on the same script execution
@@ -114,9 +114,6 @@ if (-not (Test-Path -Path "Broken")) {
     Print-Step "Already in a Cloned Directory, Skipping Cloning"
 }
 
-Print-Step "Creating Virtual Environment and Installing Dependencies"
-uv sync
-
 # The PowerShell execution policy must allow for the Python activation script to run
 if ((Get-ExecutionPolicy) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
     echo "`n(Warning) The current PowerShell ExecutionPolicy disallows activating the Python venv"
@@ -130,6 +127,9 @@ if ((Get-ExecutionPolicy) -notin @("Unrestricted", "RemoteSigned", "Bypass")) {
 
     Start-Process powershell -Verb RunAs -ArgumentList "-Command Set-ExecutionPolicy RemoteSigned"
 }
+
+Print-Step "Creating Virtual Environment and Installing Dependencies"
+uv sync --all-packages
 
 Print-Step "Spawning a new Shell in the Virtual Environment"
 powershell -ExecutionPolicy Bypass -NoLogo -NoExit -File .\.venv\Scripts\Activate.ps1
