@@ -11,7 +11,6 @@ from typer import Argument, Context, Option, Typer
 
 from Broken import (
     BROKEN,
-    ArchEnum,
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
@@ -180,7 +179,7 @@ class ProjectManager:
                 )
 
             elif self.is_cpp:
-                BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/self.name
+                BUILD_DIR = BROKEN.DIRECTORIES.REPO_BUILD/self.name
                 if shell("meson", BUILD_DIR, "--reconfigure", "--buildtype", "release").returncode != 0:
                     exit(log.error(f"Could not build project ({self.name})") or 1)
                 if shell("ninja", "-C", BUILD_DIR).returncode != 0:
@@ -245,7 +244,7 @@ class ProjectManager:
 
         if self.is_python:
             BrokenManager.rust()
-            BUILD_DIR = BROKEN.DIRECTORIES.BROKEN_BUILD/"Cargo"
+            BUILD_DIR = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
@@ -284,7 +283,7 @@ class ProjectManager:
             BrokenPath.add_to_path(BUILD_DIR/"bin")
 
             if (_PYAPP_FORK := True):
-                if not (fork := BROKEN.DIRECTORIES.BROKEN_BUILD/"PyApp").exists():
+                if not (fork := BROKEN.DIRECTORIES.REPO_BUILD/"PyApp").exists():
                     shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork, "-b", "custom")
 
                 # Remove previous embeddings if any
@@ -316,7 +315,7 @@ class ProjectManager:
             BrokenPath.make_executable(binary)
 
             # Rename the compiled binary to the final release name
-            release_path = BROKEN.DIRECTORIES.BROKEN_RELEASES / ''.join((
+            release_path = BROKEN.DIRECTORIES.REPO_RELEASES / ''.join((
                 f"{self.name.lower()}",
                 f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
@@ -343,8 +342,8 @@ class BrokenManager(BrokenSingleton):
         return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_PROJECTS)
-        self.find_projects(BROKEN.DIRECTORIES.BROKEN_META)
+        self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
+        self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 2:
@@ -411,13 +410,13 @@ class BrokenManager(BrokenSingleton):
             shell("git", "submodule", "foreach", "--recursive", "git checkout main || true")
 
     def tremeschin(self):
-        tremeschin = (BROKEN.DIRECTORIES.BROKEN_META/"Tremeschin")
+        tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")
         self.git_clone("https://github.com/Tremeschin/Personal", tremeschin)
         self.git_clone("https://github.com/Tremeschin/Private", tremeschin/"Private")
 
     def insiders(self):
         """💎 Clone the Insiders repository (WIP, Not Available)"""
-        self.git_clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.BROKEN_INSIDERS)
+        self.git_clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
@@ -433,7 +432,7 @@ class BrokenManager(BrokenSingleton):
     def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
-        output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BROKEN_WHEELS,
+        output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BUILD_WHEELS,
         all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=False,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
@@ -556,7 +555,7 @@ class BrokenManager(BrokenSingleton):
 
     def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
         """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.BROKEN_PROJECTS/path.name, real=path)
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.REPO_PROJECTS/path.name, real=path)
 
     def clean(self) -> None:
         """🧹 Remove pycaches, common blob directories"""
@@ -566,8 +565,8 @@ class BrokenManager(BrokenSingleton):
             BrokenPath.remove(path)
 
         # Fixed known blob directories
-        BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_RELEASES)
-        BrokenPath.remove(BROKEN.DIRECTORIES.BROKEN_BUILD)
+        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_RELEASES)
+        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_BUILD)
         BrokenPath.remove(root/".cache")
 
     def sync(self) -> None:

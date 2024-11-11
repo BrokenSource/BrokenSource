@@ -51,9 +51,8 @@ def mkdir(path: Path, resolve: bool=True) -> Path:
 
 @define(slots=False)
 class _Directories:
-    """You shouldn't really use this class directly"""
     PROJECT: BrokenProject
-    APP_DIRS: AppDirs = field(default=None)
+    APP_DIRS: AppDirs = None
 
     def __attrs_post_init__(self):
         args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
@@ -77,7 +76,7 @@ class _Directories:
 
     def __set__(self, name: str, value: Path) -> Path:
         """Create a new directory property if Path is given, else set the value"""
-        self.__dict__[name] = value if not isinstance(value, Path) else mkdir(value)
+        self.__dict__[name] = (value if not isinstance(value, Path) else mkdir(value))
 
     def __setattr__(self, name: str, value: Path) -> Path:
         self.__set__(name, value)
@@ -89,59 +88,58 @@ class _Directories:
 
     @property
     def REPOSITORY(self) -> Path:
-        """Broken Source's Monorepo directory"""
+        """The current project repository's root"""
         return self.PACKAGE.parent
 
     @property
     def SYSTEM_TEMP(self) -> Path:
-        """(Unix: /tmp), (Windows: %TEMP%)"""
         return Path(tempfile.gettempdir())
 
-    # # Broken monorepo specific, potentially useful
+    # # Repository specific
 
     @property
-    def BROKEN_RELEASES(self) -> Path:
-        return mkdir(self.REPOSITORY/"Release")
+    def REPO_RELEASES(self) -> Path:
+        return (self.REPOSITORY/"Release")
 
     @property
-    def BROKEN_BUILD(self) -> Path:
+    def REPO_BUILD(self) -> Path:
         return (self.REPOSITORY/"Build")
 
     @property
-    def BROKEN_WINEPREFIX(self) -> Path:
-        return (self.BROKEN_BUILD/"Wineprefix")
+    def BUILD_WINEPREFIX(self) -> Path:
+        return (self.REPO_BUILD/"Wineprefix")
 
     @property
-    def BROKEN_WHEELS(self) -> Path:
-        return (self.BROKEN_BUILD/"Wheels")
+    def BUILD_WHEELS(self) -> Path:
+        return (self.REPO_BUILD/"Wheels")
 
     @property
-    def BROKEN_PROJECTS(self) -> Path:
-        return mkdir(self.REPOSITORY/"Projects")
+    def REPO_PROJECTS(self) -> Path:
+        return (self.REPOSITORY/"Projects")
 
     @property
-    def BROKEN_META(self) -> Path:
-        return mkdir(self.REPOSITORY/"Meta")
+    def REPO_META(self) -> Path:
+        return (self.REPOSITORY/"Meta")
 
     @property
-    def BROKEN_INSIDERS(self) -> Path:
-        return (self.BROKEN_META/"Insiders")
+    def INSIDERS(self) -> Path:
+        return (self.REPO_META/"Insiders")
 
     # # Meta directories
 
     @property
     def WEBSITE(self) -> Path:
-        return mkdir(self.REPOSITORY/"Website")
+        return (self.REPOSITORY/"Website")
 
     @property
     def EXAMPLES(self) -> Path:
-        return mkdir(self.REPOSITORY/"Examples")
+        return (self.REPOSITORY/"Examples")
 
     # # Workspace directories
 
     @property
     def WORKSPACE(self) -> Path:
-        """Root for the current Project's Workspace"""
+        """Workspace root of the current project"""
         if (path := os.getenv("WORKSPACE")):
             return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
         if (os.name == "nt"):
@@ -177,8 +175,21 @@ class _Directories:
         return mkdir(self.WORKSPACE/"Downloads")
 
     @property
+    def TEMP(self) -> Path:
+        return mkdir(self.WORKSPACE/"Temp")
+
+    @property
+    def DUMP(self) -> Path:
+        return mkdir(self.WORKSPACE/"Dump")
+
+    @property
+    def SCREENSHOTS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Screenshots")
+
+    # # Third party dependencies
+
+    @property
     def EXTERNALS(self) -> Path:
-        """Third party dependencies"""
         return mkdir(self.WORKSPACE/"Externals")
 
     @property
@@ -208,18 +219,6 @@ class _Directories:
     @property
     def EXTERNAL_MIDIS(self) -> Path:
         return mkdir(self.EXTERNALS/"Midis")
-
-    @property
-    def TEMP(self) -> Path:
-        return mkdir(self.WORKSPACE/"Temp")
-
-    @property
-    def DUMP(self) -> Path:
-        return mkdir(self.WORKSPACE/"Dump")
-
-    @property
-    def SCREENSHOTS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Screenshots")
 
 # ------------------------------------------------------------------------------------------------ #
 

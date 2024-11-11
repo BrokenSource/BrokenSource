@@ -7,7 +7,7 @@ import shutil
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Generator, List, Optional, Union
+from typing import Generator, Iterable, List, Optional, Union
 
 import click
 import tqdm
@@ -15,7 +15,7 @@ import validators
 from halo import Halo
 
 import Broken
-from Broken import apply, denum, flatten, log, shell
+from Broken import denum, flatten, log, shell
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Types import FileExtensions
@@ -196,8 +196,8 @@ class BrokenPath:
             shell("attrib", "+x", path, echo=echo)
         return path
 
-    def zip(path: Path, output: Path=None, *, format: ShutilFormat="auto", echo: bool=True) -> Path:
-        format = ShutilFormat.get(format)
+    def zip(path: Path, output: Path=None, *, format: ShutilFormat="zip", echo: bool=True) -> Path:
+        format = ShutilFormat.get(format).value
         output = BrokenPath.get(output or path).with_suffix(f".{format}")
         path   = BrokenPath.get(path)
         log.info(f"Zipping ({path})\n→ ({output})", echo=echo)
@@ -524,6 +524,22 @@ class BrokenPath:
                     sys.path.append(str(other))
 
         return original
+
+    @staticmethod
+    def directories(path: Union[Path, Iterable]) -> Generator[Path, None, None]:
+        if isinstance(path, Path):
+            path = Path(path).glob("*")
+        for item in map(Path, path):
+            if item.is_dir():
+                yield item
+
+    @staticmethod
+    def files(path: Union[Path, Iterable]) -> Generator[Path, None, None]:
+        if isinstance(path, Path):
+            path = Path(path).glob("*")
+        for item in map(Path, path):
+            if item.is_file():
+                yield item
 
     # # Specific / "Utils"
 

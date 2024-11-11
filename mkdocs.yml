@@ -19,8 +19,8 @@ nav:
       - ☁️ Cloud/Docker: get/docker.md
       - ♻️ Uninstalling: get/uninstalling.md
     - Special:
+      - ❓ Common Issues: about/faq.md
       - ❤️ Sponsors: about/sponsors.md
-      - ❓ Questions: about/faq.md
     - About:
       - 🛠️ Contribuing: about/contributing.md
       # - 👤 Developers: about/developers.md
