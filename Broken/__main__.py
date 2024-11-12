@@ -335,7 +335,11 @@ class ProjectManager:
 @define
 class BrokenManager(BrokenSingleton):
     projects: list[ProjectManager] = Factory(list)
-    broken_typer: BrokenTyper = None
+
+    typer: BrokenTyper = Factory(lambda: BrokenTyper(description=(
+        "🚀 Broken Source Software Monorepo development manager script\n\n"
+        "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
+    )))
 
     @property
     def python_projects(self) -> list[ProjectManager]:
@@ -344,6 +348,33 @@ class BrokenManager(BrokenSingleton):
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
+
+        with self.typer.panel("📦 Development"):
+            self.typer.command(self.website)
+            self.typer.command(self.pypi)
+            self.typer.command(self.sync)
+            self.typer.command(self.rust)
+            self.typer.command(self.link)
+            self.typer.command(self.tremeschin, hidden=True)
+            self.typer.command(self.clean, hidden=True)
+            self.typer.command(self.upgrade, hidden=True)
+
+        with self.typer.panel("🚀 Core"):
+            self.typer.command(self.insiders, hidden=True)
+
+        for project in self.projects:
+            self.typer.command(
+                target=project.cli,
+                name=project.name.lower(),
+                description=project.description_pretty_language,
+                panel=f"🔥 Projects at [bold]({project.path.parent})[/]",
+                hidden=("Projects/Others" in str(project.path)),
+                context=True,
+                help=False,
+            )
+
+    def cli(self, *args: List[str]) -> None:
+        self.typer(*args)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 2:
@@ -365,39 +396,6 @@ class BrokenManager(BrokenSingleton):
                 continue
             if (project := ProjectManager(directory)).is_known:
                 self.projects.append(project)
-
-    def cli(self) -> None:
-        self.broken_typer = BrokenTyper(description=(
-            "🚀 Broken Source Software Monorepo development manager script\n\n"
-            "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-            "©️ Broken Source Software, AGPL-3.0 License"
-        ))
-
-        with self.broken_typer.panel("📦 Development"):
-            self.broken_typer.command(self.website)
-            self.broken_typer.command(self.pypi)
-            self.broken_typer.command(self.sync)
-            self.broken_typer.command(self.rust)
-            self.broken_typer.command(self.link)
-            self.broken_typer.command(self.tremeschin, hidden=True)
-            self.broken_typer.command(self.clean, hidden=True)
-            self.broken_typer.command(self.upgrade, hidden=True)
-
-        with self.broken_typer.panel("🚀 Core"):
-            self.broken_typer.command(self.insiders, hidden=True)
-
-        for project in self.projects:
-            self.broken_typer.command(
-                target=project.cli,
-                name=project.name.lower(),
-                description=project.description_pretty_language,
-                panel=f"🔥 Projects at [bold]({project.path.parent})[/]",
-                hidden=("Projects/Others" in str(project.path)),
-                context=True,
-                help=False,
-            )
-
-        self.broken_typer(sys.argv[1:])
 
     # ---------------------------------------------------------------------------------------------|
     # Meta Repositories
@@ -585,7 +583,7 @@ class BrokenManager(BrokenSingleton):
 
 def main():
     with BrokenProfiler("BROKEN"):
-        BrokenManager().cli()
+        BrokenManager().cli(*sys.argv[1:])
 
 if __name__ == "__main__":
     main()
