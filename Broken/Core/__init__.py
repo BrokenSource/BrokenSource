@@ -187,7 +187,11 @@ def shell(
         return subprocess.run(args, **kwargs)
 
 
-def apply(callback: Callable, iterable: Iterable[Any], *, cast: Callable=list) -> List[Any]:
+def apply(
+    callback: Callable,
+    iterable: Iterable[Any], *,
+    cast: Callable = list
+) -> List[Any]:
     """Applies a callback to all items of an iterable, returning a $cast of the results"""
     return cast(map(callback, iterable))
 
@@ -225,12 +229,9 @@ def selfless(data: Dict) -> Dict:
     return filter_dict(data, block=["self"])
 
 
-def border(name: str, substring: str) -> bool:
-    """Returns True if 'substring' is the border [^1] of 'name'
-
-    [^1]: https://en.wikipedia.org/wiki/Substring#Border
-    """
-    return (name.startswith(substring) and name.endswith(reversed(substring)))
+def border(string: str, border: str) -> bool:
+    """Returns True if 'border' is both a prefix and suffix of 'string'"""
+    return (string.startswith(border) and string.endswith(reversed(border)))
 
 
 def dunder(name: str) -> bool:
@@ -274,8 +275,8 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
     will send all default ones overriden by the user commands. The 'post' method is called afterwards,
     for example `post = self.set_object` for back-communication between the caller and the instance"""
-    import typer
     from pydantic import BaseModel
+    from typer.models import OptionInfo
 
     if not issubclass(this := type(instance), BaseModel):
         raise TypeError(f"Object {this} is not a Pydantic BaseModel")
@@ -291,7 +292,7 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     # Inject docstring into typer.Option's help
     for value in instance.model_fields.values():
         for metadata in value.metadata:
-            if isinstance(metadata, type(typer.Option())):
+            if isinstance(metadata, OptionInfo):
                 metadata.help = (metadata.help or value.description)
 
     return wrapper
@@ -346,6 +347,7 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
             continue
         yield int(part)
 
+
 def limited_ratio(
     number: Optional[float], *,
     limit: float = None
@@ -367,8 +369,12 @@ def limited_ratio(
 def overrides(
     old: Optional[Any],
     new: Optional[Any],
+    default: Optional[Any]=None,
+    resets: Any=-1
 ) -> Optional[Any]:
     """Returns 'new' if is not None, else keeps 'old' value"""
+    if (new == resets):
+        return default
     if (new is None):
         return old
     return new
@@ -419,6 +425,150 @@ def recache(*args, patch: bool=False, **kwargs):
         requests.Session = session
     return session
 
+# ------------------------------------------------------------------------------------------------ #
+# Classes
+
+
+class Nothing:
+    """No-operation faster than Mock - A class that does nothing"""
+    def __nop__(self, *args, **kwargs) -> Self:
+        return self
+    def __call__(self, *args, **kwargs) -> Self:
+        return self
+    def __getattr__(self, _):
+        return self.__nop__
+
+
+class BrokenSingleton(ABC):
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "__instance__"):
+            self = super().__new__(cls)
+            cls.__instance__ = self
+        return cls.__instance__
+
+
+class BrokenFluent:
+    """Fluent-like .copy(**update) and .(**update) setter for classes"""
+
+    def __call__(self, **update) -> Self:
+        """Updates the instance with the provided kwargs"""
+        for key, value in update.items():
+            setattr(self, key, value)
+        return self
+
+    def copy(self, **update) -> Self:
+        """Returns an updated copy of this instance"""
+        return copy.deepcopy(self)(**update)
+
+
+class BrokenAttrs:
+    """
+    Walk over an @attrs.defined class and call __post__ on all classes in the MRO
+    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
+    # Fixme: Can improve by starting on BrokenAttrs itself
+    """
+    def __attrs_post_init__(self):
+        for cls in reversed(type(self).mro()):
+            if method := cls.__dict__.get("__post__"):
+                method(self)
+
+    @abstractmethod
+    def __post__(self) -> None:
+        ...
+
+
+class SerdeBaseModel(BaseModel):
+    def serialize(self, json: bool=True) -> Union[dict, str]:
+        if json: return self.model_dump_json()
+        return self.model_dump()
+
+    @classmethod
+    def deserialize(cls, value: Union[dict, str]) -> Self:
+        if isinstance(value, dict):
+            return cls.model_validate(value)
+        elif isinstance(value, str):
+            return cls.model_validate_json(value)
+        else:
+            raise ValueError(f"Can't deserialize value of type {type(value)}")
+
+
+class BrokenWatchdog(ABC):
+
+    @abstractmethod
+    def __changed__(self, key, value) -> None:
+        """Called when a property changes"""
+        ...
+
+    def __setattr__(self, key, value):
+        """Calls __changed__ when a property changes"""
+        super().__setattr__(key, value)
+        self.__changed__(key, value)
+
+
+@define
+class BrokenRelay:
+    """
+    A utility class for sharing one-to-many callbacks in a 'observer' pattern style. Multiple
+    callabacks can be subscribed to receive the same args and kwargs when an instance of this class
+    is called. Useful cases are to avoid inheritance when sharing callbacks.
+
+    Example:
+        ```python
+        relay = BrokenRelay()
+
+        # Basic usage
+        relay.subscribe(callback1, callback2)
+        relay(*args, **kwargs) # Calls callback1 and callback2
+
+        # Can also 'inject' us to bound callables
+        window = moderngl_window(...)
+        window.key_event_func = relay
+        window.key_event_func = relay @ (camera.walk, camera.rotate)
+        ```
+    """
+    callbacks: Deque[Callable] = Factory(deque)
+
+    def __bind__(self, *callbacks: Iterable[Callable]) -> Self:
+        self.callbacks.extend(flatten(callbacks))
+        return self
+
+    def subscribe(self, *callbacks: Iterable[Callable]) -> Self:
+        """Adds callbacks to be called with same arguments as self.__call__"""
+        return self.__bind__(callbacks)
+
+    def __matmul__(self, *callbacks: Iterable[Callable]) -> Self:
+        """Convenience syntax for subscribing with `relay @ (A, B)`"""
+        return self.__bind__(callbacks)
+
+    def __call__(self, *args, **kwargs):
+        for callback in self.callbacks:
+            callback(*args, **kwargs)
+
+
+@define
+class Patch:
+    file: Path = field(converter=Path)
+    replaces: dict[str, str] = field(factory=dict)
+    _original: str = None
+
+    def __attrs_post_init__(self):
+        self._original = self.file.read_text("utf-8")
+
+    def apply(self):
+        content = self._original
+        for key, value in self.replaces.items():
+            content = content.replace(key, value)
+        self.file.write_text(content, "utf-8")
+
+    def revert(self):
+        self.file.write_text(self._original, "utf-8")
+
+    def __enter__(self):
+        self.apply()
+    def __exit__(self, *args):
+        self.revert()
+
+# # Trackers
 
 @define
 class EasyTracker:
@@ -468,92 +618,6 @@ class EasyTracker:
         self.file.write_text(str(time), "utf-8")
 
 
-# ------------------------------------------------------------------------------------------------ #
-# Classes
-
-
-# # Common, useful
-
-class Nothing:
-    """No-operation faster than Mock - A class that does nothing"""
-    def __nop__(self, *args, **kwargs) -> Self:
-        return self
-    def __call__(self, *args, **kwargs) -> Self:
-        return self
-    def __getattr__(self, _):
-        return self.__nop__
-
-
-class BrokenSingleton(ABC):
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "__instance__"):
-            self = super().__new__(cls)
-            cls.__instance__ = self
-        return cls.__instance__
-
-
-class BrokenFluent:
-    """Fluent-like .copy(**update) and .(**update) setter for classes"""
-
-    def __call__(self, **update) -> Self:
-        """Updates the instance with the provided kwargs"""
-        for key, value in update.items():
-            setattr(self, key, value)
-        return self
-
-    def copy(self, **update) -> Self:
-        """Returns a copy of this instance"""
-        other = copy.deepcopy(self)
-        for key, value in update.items():
-            setattr(other, key, value)
-        return other
-
-
-class BrokenAttrs:
-    """
-    Walk over an @attrs.defined class and call __post__ on all classes in the MRO
-    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
-    # Fixme: Can improve by starting on BrokenAttrs itself
-    """
-    def __attrs_post_init__(self):
-        for cls in reversed(type(self).mro()):
-            if method := cls.__dict__.get("__post__"):
-                method(self)
-
-    @abstractmethod
-    def __post__(self) -> None:
-        ...
-
-
-class BrokenWatchdog(ABC):
-
-    @abstractmethod
-    def __changed__(self, key, value) -> None:
-        """Called when a property changes"""
-        ...
-
-    def __setattr__(self, key, value):
-        """Calls __changed__ when a property changes"""
-        super().__setattr__(key, value)
-        self.__changed__(key, value)
-
-
-class SerdeBaseModel(BaseModel):
-    def serialize(self, json: bool=True) -> Union[dict, str]:
-        if json: return self.model_dump_json()
-        return self.model_dump()
-
-    @classmethod
-    def deserialize(cls, value: Union[dict, str]) -> Self:
-        if isinstance(value, dict):
-            return cls.model_validate(value)
-        elif isinstance(value, str):
-            return cls.model_validate_json(value)
-        else:
-            raise ValueError(f"Can't deserialize value of type {type(value)}")
-
-# # Trackers
-
 @define
 class SameTracker:
     """Doumo same desu. If a value is the same, returns True, else updates it and returns False
@@ -597,71 +661,6 @@ class PlainTracker:
         if set is not None:
             self.value = set
         return self.value
-
-
-# # Specific, special
-
-@define
-class BrokenRelay:
-    """
-    A utility class for sharing one-to-many callbacks in a 'observer' pattern style. Multiple
-    callabacks can be subscribed to receive the same args and kwargs when an instance of this class
-    is called. Useful cases are to avoid inheritance when sharing callbacks.
-
-    Example:
-        ```python
-        relay = BrokenRelay()
-
-        # Basic usage
-        relay.subscribe(callback1, callback2)
-        relay(*args, **kwargs) # Calls callback1 and callback2
-
-        # Can also 'inject' us to bound callables
-        window = moderngl_window(...)
-        window.key_event_func = relay
-        window.key_event_func = relay @ (camera.walk, camera.rotate)
-        ```
-    """
-    callbacks: Deque[Callable] = Factory(deque)
-
-    def __bind__(self, *callbacks: Iterable[Callable]) -> Self:
-        self.callbacks.extend(flatten(callbacks))
-        return self
-
-    def subscribe(self, *callbacks: Iterable[Callable]) -> Self:
-        """Adds callbacks to be called with same arguments as self.__call__"""
-        return self.__bind__(callbacks)
-
-    def __matmul__(self, *callbacks: Iterable[Callable]) -> Self:
-        """Convenience syntax for subscribing with `relay @ (A, B)`"""
-        return self.__bind__(callbacks)
-
-    def __call__(self, *args, **kwargs):
-        for callback in self.callbacks:
-            callback(*args, **kwargs)
-
-@define
-class Patch:
-    file: Path = field(converter=Path)
-    replaces: dict[str, str] = field(factory=dict)
-    _original: str = None
-
-    def __attrs_post_init__(self):
-        self._original = self.file.read_text("utf-8")
-
-    def apply(self):
-        content = self._original
-        for key, value in self.replaces.items():
-            content = content.replace(key, value)
-        self.file.write_text(content, "utf-8")
-
-    def revert(self):
-        self.file.write_text(self._original, "utf-8")
-
-    def __enter__(self):
-        self.apply()
-    def __exit__(self, *args):
-        self.revert()
 
 
 # ------------------------------------------------------------------------------------------------ #
