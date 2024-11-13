@@ -249,6 +249,15 @@ def private(name: str) -> bool:
     return name.startswith("_")
 
 
+def pop_fill(data: Container, fill: Type[Any], length: int) -> Container[Any]:
+    """Pop or fill until a data's length is met"""
+    while len(data) > length:
+        data.pop()
+    while len(data) < length:
+        data.append(fill())
+    return data
+
+
 @contextlib.contextmanager
 def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
     """Enter multiple contexts at once as `with Stack(open() as f1, open() as f2): ...`"""
@@ -298,6 +307,15 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     return wrapper
 
 
+def smartproxy(object: Any) -> Any:
+    from weakref import CallableProxyType, ProxyType, proxy
+
+    if not isinstance(object, (CallableProxyType, ProxyType)):
+        object = proxy(object)
+
+    return object
+
+
 def clamp(value: float, low: float=0, high: float=1) -> float:
     return max(low, min(value, high))
 
@@ -307,7 +325,7 @@ def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=ro
     return cast(multiple * operator(number/multiple))
 
 
-def list_get(data: List, index: int, default: Any=None) -> Any:
+def list_get(data: List, index: int, default: Any=None) -> Optional[Any]:
     """Returns the item at 'index' or 'default' if out of range"""
     if (index >= len(data)):
         return default

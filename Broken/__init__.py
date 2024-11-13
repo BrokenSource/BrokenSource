@@ -161,10 +161,12 @@ from Broken.Core import (
     list_get,
     nearest,
     overrides,
+    pop_fill,
     pydantic2typer,
     recache,
     selfless,
     shell,
+    smartproxy,
     temp_env,
 )
 from Broken.Core.BrokenEnum import BrokenEnum

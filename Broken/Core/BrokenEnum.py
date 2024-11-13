@@ -2,9 +2,10 @@ import contextlib
 import enum
 import functools
 from typing import Any, Dict, Optional, Self, Tuple, Union
-from aenum import MultiValueEnum, Flag
 
 import attrs
+from aenum import Flag, MultiValueEnum
+
 
 class BrokenEnumBase:
 
