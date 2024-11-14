@@ -279,6 +279,26 @@ def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
         os.environ.update(old)
 
 
+class block_modules:
+    """Pretend a module isn't installed"""
+    def __init__(self, *modules: List[str]):
+        self.modules = flatten(modules)
+        self.state = sys.modules.copy()
+
+        for module in self.modules:
+            sys.modules[module] = None
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *args) -> None:
+        for module in self.modules:
+            if (module in self.state):
+                sys.modules[module] = self.state[module]
+                continue
+            del sys.modules[module]
+
+
 def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
     to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
@@ -442,6 +462,7 @@ def recache(*args, patch: bool=False, **kwargs):
     if patch:
         requests.Session = session
     return session
+
 
 # ------------------------------------------------------------------------------------------------ #
 # Classes

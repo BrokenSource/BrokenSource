@@ -54,6 +54,12 @@ class BrokenTyper:
     default: str = None
     """Default command to run if none is provided"""
 
+    prehook: Callable = lambda: None
+    """Function to run before any command"""
+
+    posthook: Callable = lambda: None
+    """Function to run after any command"""
+
     repl: bool = False
     """If True, will run a REPL when no arguments are provided"""
 
@@ -276,7 +282,9 @@ class BrokenTyper:
                 sys.argv.insert(1, self.default)
 
             try:
+                self.prehook()
                 self.app(sys.argv[1:])
+                self.posthook()
             except SystemExit:
                 log.trace("Skipping SystemExit on BrokenTyper")
             except KeyboardInterrupt:

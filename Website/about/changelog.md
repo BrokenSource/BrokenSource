@@ -11,6 +11,8 @@
 
 ### 🔘 0.8.1 <small>Ongoing</small> {#0.8.1}
 
+:material-arrow-right: You can run this version right now [from source](site:/get/source)!
+
 ##### General {#0.8.1-general}
 - Added support for Intel Macs and Linux Arm builds to the releases
 - Actually fix FFmpeg automatic downloads on macOS
@@ -18,9 +20,21 @@
 ##### DepthFlow {#0.8.1-depthflow}
 - Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option
 - Fixed drag and drop of files due new lazy loading logic
+- Improve dolly preset phase start to be more accurate
+- Add stretch detection math on the shader for potential fill-in with gen ai
+    - Options are `--inpaint`, `--inpaint-black`, `--inpaint-limit`
 
 ##### ShaderFlow {#0.8.1-shaderflow}
 - Enforce `#!py weakref.proxy()` on every module's `.scene` to allow for explicit `gc.collect()` to find circular references and clean up resources properly
+- Assign all module scenes with a `weakref.proxy` for better gc collection
+- Add an heuristic to use the headless context when exporting videos (TODO)
+- Fix progress bar creation before ffmpeg command log causing a bad line
+- Fix frametimer first frame being `dt=0`
+- Rename `ShaderObject` to `ShaderProgram`
+- Initial ground work on better metaprogramming and include system
+- Partial overhaul and heavily simplify `ShaderTexture` class
+- `ShaderTexture.track` is now a float ratio of the scene's resolution
+- Improve import times by a significant margin
 
 <!------------------------------------------------------------------------------------------------->
 

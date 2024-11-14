@@ -147,6 +147,7 @@ from Broken.Core import (
     Stack,
     apply,
     arguments,
+    block_modules,
     clamp,
     denum,
     dunder,
