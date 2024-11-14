@@ -66,6 +66,7 @@
 			// Python
 			".venvs": "python",
 			"Wheels": "python",
+			"Imgui":  "tools",
 
 			// Project's Workspace
 			"Workspace":  "container",
