@@ -34,7 +34,8 @@
 - Initial ground work on better metaprogramming and include system
 - Partial overhaul and heavily simplify `ShaderTexture` class
 - `ShaderTexture.track` is now a float ratio of the scene's resolution
-- Improve import times by a significant margin
+- Drastically improve import times and consequently CLI startup times
+- Speed improvements moving to float64 on dynamic number + partial rewrite
 
 <!------------------------------------------------------------------------------------------------->
 
