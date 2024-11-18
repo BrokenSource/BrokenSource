@@ -196,13 +196,18 @@ class BrokenPath:
             shell("attrib", "+x", path, echo=echo)
         return path
 
-    def zip(path: Path, output: Path=None, *, format: ShutilFormat="zip", echo: bool=True) -> Path:
+    def zip(path: Path, output: Path=None, *, format: ShutilFormat="zip", echo: bool=True, **options) -> Path:
         format = ShutilFormat.get(format).value
         output = BrokenPath.get(output or path).with_suffix(f".{format}")
         path   = BrokenPath.get(path)
         log.info(f"Zipping ({path})\n→ ({output})", echo=echo)
         BrokenPath.remove(output, echo=echo)
-        shutil.make_archive(output.with_suffix(""), format, path)
+        shutil.make_archive(
+            base_name=output.with_suffix(""),
+            format=format,
+            root_dir=path,
+            **options
+        )
         return output
 
     def zstd(path: Path, output: Path=None, *, remove: bool=False, echo: bool=True) -> Path:
