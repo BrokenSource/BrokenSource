@@ -112,6 +112,7 @@
 			"FastCutter":  "tools",
 			"Modpanel":    "tools",
 			"TurboPipe":   "tools",
+			"Factorium":   "tools",
 
 			// Sub-packages of Broken
 			"FFmpeg":   "core",
@@ -121,6 +122,7 @@
 
 			// Personal
 			"Tremeschin": "home",
+			"Blueprints": "tools",
 		},
 
 		// Better comments colors
