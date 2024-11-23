@@ -260,7 +260,10 @@ class BrokenTyper:
 
     def __call__(self, *args: Iterable[Any]) -> None:
         """
-        Warn: Send sys.argv[1:] if running directly from user input
+        Run the Typer app with the provided arguments
+
+        Warn:
+            Send sys.argv[1:] if running directly from user input
         """
         self.app.info.help = (self.description or "No help provided for this CLI")
         sys.argv[1:] = apply(str, flatten(args))

@@ -336,7 +336,7 @@ class ProjectManager:
 class BrokenManager(BrokenSingleton):
     projects: list[ProjectManager] = Factory(list)
 
-    typer: BrokenTyper = Factory(lambda: BrokenTyper(description=(
+    cli: BrokenTyper = Factory(lambda: BrokenTyper(description=(
         "🚀 Broken Source Software Monorepo development manager script\n\n"
         "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
     )))
@@ -349,21 +349,21 @@ class BrokenManager(BrokenSingleton):
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
-        with self.typer.panel("📦 Development"):
-            self.typer.command(self.website)
-            self.typer.command(self.pypi)
-            self.typer.command(self.sync)
-            self.typer.command(self.rust)
-            self.typer.command(self.link)
-            self.typer.command(self.tremeschin, hidden=True)
-            self.typer.command(self.clean, hidden=True)
-            self.typer.command(self.upgrade, hidden=True)
+        with self.cli.panel("📦 Development"):
+            self.cli.command(self.website)
+            self.cli.command(self.pypi)
+            self.cli.command(self.sync)
+            self.cli.command(self.rust)
+            self.cli.command(self.link)
+            self.cli.command(self.tremeschin, hidden=True)
+            self.cli.command(self.clean, hidden=True)
+            self.cli.command(self.upgrade, hidden=True)
 
-        with self.typer.panel("🚀 Core"):
-            self.typer.command(self.insiders, hidden=True)
+        with self.cli.panel("🚀 Core"):
+            self.cli.command(self.insiders, hidden=True)
 
         for project in self.projects:
-            self.typer.command(
+            self.cli.command(
                 target=project.cli,
                 name=project.name.lower(),
                 description=project.description_pretty_language,
@@ -372,9 +372,6 @@ class BrokenManager(BrokenSingleton):
                 context=True,
                 help=False,
             )
-
-    def cli(self, *args: List[str]) -> None:
-        self.typer(*args)
 
     def find_projects(self, path: Path, *, _depth: int=0) -> None:
         if _depth > 2:

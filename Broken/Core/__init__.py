@@ -517,18 +517,44 @@ class BrokenAttrs:
 
 
 class SerdeBaseModel(BaseModel):
-    def serialize(self, json: bool=True) -> Union[dict, str]:
-        if json: return self.model_dump_json()
+
+    # Serialization
+
+    def json(self) -> str:
+        return self.model_dump_json()
+
+    def dict(self) -> dict:
         return self.model_dump()
 
+    # Deserialization
+
     @classmethod
-    def deserialize(cls, value: Union[dict, str]) -> Self:
-        if isinstance(value, dict):
-            return cls.model_validate(value)
-        elif isinstance(value, str):
-            return cls.model_validate_json(value)
+    def load(cls, data: Union[dict, str]) -> Self:
+        if isinstance(data, dict):
+            return cls.model_validate(data)
+        elif isinstance(data, str):
+            return cls.model_validate_json(data)
         else:
-            raise ValueError(f"Can't deserialize value of type {type(value)}")
+            raise ValueError(f"Can't load from value of type {type(data)}")
+
+    def update(self, data: Union[dict, str]) -> Self:
+        for (key, value) in self.load(data).items():
+            setattr(self, key, value)
+        return self
+
+    # Dict-like utilities
+
+    def keys(self) -> Generator[str, None, None]:
+        for key in self.dict().keys():
+            yield key
+
+    def values(self) -> Generator[Any, None, None]:
+        for value in self.dict().values():
+            yield value
+
+    def items(self) -> Generator[Tuple[str, Any], None, None]:
+        for (key, value) in self.dict().items():
+            yield (key, value)
 
 
 class BrokenWatchdog(ABC):

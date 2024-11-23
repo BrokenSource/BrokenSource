@@ -91,6 +91,7 @@ shaderflow = [
     "ordered-set~=4.1.0",
 ]
 gradio = [
+    "fastapi~=0.115.4",
     "gradio==4.44.0",
 ]
 staging = [
