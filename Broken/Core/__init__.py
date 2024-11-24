@@ -534,6 +534,8 @@ class SerdeBaseModel(BaseModel):
             return cls.model_validate(data)
         elif isinstance(data, str):
             return cls.model_validate_json(data)
+        elif isinstance(data, cls):
+            return data
         else:
             raise ValueError(f"Can't load from value of type {type(data)}")
 

@@ -3,48 +3,47 @@ import shutil
 from abc import abstractmethod
 from pathlib import Path
 from subprocess import DEVNULL
-from typing import Annotated
+from typing import Annotated, Literal
 
-import PIL
-import PIL.Image
-import typer
+from click import Choice
 from PIL.Image import Image
 from pydantic import Field, field_validator
+from typer import Option
 
 from Broken import BrokenEnum, BrokenPath, BrokenPlatform, denum, every, shell
-from Broken.Externals.Upscaler import BrokenUpscaler
+from Broken.Externals.Upscaler import UpscalerBase
 
 
-class UpscalerNCNN_Base(BrokenUpscaler):
-    denoise: Annotated[int, typer.Option("--denoise", "-n", min=0, max=3,
+class UpscalerNCNN_Base(UpscalerBase):
+    denoise: Annotated[int, Option("--denoise", "-n", min=0, max=3,
         help="[bold yellow](🟡 Specific)[/] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
         Field(default=3, gt=-1)
 
-    tile_size: Annotated[int, typer.Option("--tile-size", "-t", min=0,
+    tile_size: Annotated[int, Option("--tile-size", "-t", min=0,
         help="[bold yellow](🟡 Specific)[/] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
         Field(default=0, gt=-1)
 
-    tta: Annotated[bool, typer.Option("--tta", "-x",
+    tta: Annotated[bool, Option("--tta", "-x",
         help="[bold yellow](🟡 Specific)[/] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/]")] = \
         Field(default=False)
 
-    cpu: Annotated[bool, typer.Option("--cpu", "-c",
+    cpu: Annotated[bool, Option("--cpu", "-c",
         help="[bold yellow](🟡 Specific)[/] Use CPU for processing instead of the GPU [yellow](SLOW)[/]")] = \
         Field(default=False)
 
-    gpu: Annotated[int, typer.Option("--gpu", "-g", min=0,
+    gpu: Annotated[int, Option("--gpu", "-g", min=0,
         help="[bold yellow](🟡 Specific)[/] Use the Nth GPU for processing")] = \
         Field(default=0, gt=-1)
 
-    load_threads: Annotated[int, typer.Option("--load-threads", "-lt", min=1,
+    load_threads: Annotated[int, Option("--load-threads", "-lt", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Load Threads")] \
         = Field(default=1, gt=0)
 
-    proc_threads: Annotated[int, typer.Option("--proc-threads", "-pt", min=1,
+    proc_threads: Annotated[int, Option("--proc-threads", "-pt", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Process Threads")] \
         = Field(default=2, gt=0)
 
-    save_threads: Annotated[int, typer.Option("--save-threads", "-st", min=1,
+    save_threads: Annotated[int, Option("--save-threads", "-st", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Saving Threads")] \
         = Field(default=2, gt=0)
 
@@ -94,13 +93,16 @@ class UpscalerNCNN_Base(BrokenUpscaler):
 
 class Waifu2x(UpscalerNCNN_Base):
     """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/]"""
+    type: Annotated[Literal["waifu2x"],
+        Option(click_type=Choice(["waifu2x"]))] = \
+        Field("waifu2x")
 
     class Model(str, BrokenEnum):
         models_cunet = "models_cunet"
         models_upconv_7_anime_style_art_rgb = "models_upconv_7_anime_style_art_rgb"
         models_upconv_7_photo = "models_upconv_7_photo"
 
-    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Waifu2x")] = \
         Field(default=Model.models_cunet)
 
@@ -144,12 +146,15 @@ class Waifu2x(UpscalerNCNN_Base):
                     stderr=DEVNULL,
                     echo=echo,
                 )
-                return PIL.Image.open(io.BytesIO(output.read_bytes()))
+                return Image.open(io.BytesIO(output.read_bytes()))
 
 # ------------------------------------------------------------------------------------------------ #
 
 class Realesr(UpscalerNCNN_Base):
     """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[/]"""
+    type: Annotated[Literal["realesr"],
+        Option(click_type=Choice(["realesr"]))] = \
+        Field("realesr")
 
     class Model(str, BrokenEnum):
         realesr_animevideov3    = "realesr_animevideov3"
@@ -157,7 +162,7 @@ class Realesr(UpscalerNCNN_Base):
         realesrgan_x4plus_anime = "realesrgan_x4plus_anime"
         realesrnet_x4plus       = "realesrnet_x4plus"
 
-    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for RealESRGAN")] = \
         Field(default=Model.realesr_animevideov3)
 
@@ -194,12 +199,15 @@ class Realesr(UpscalerNCNN_Base):
                     cwd=self.download().parent,
                     echo=echo,
                 )
-                return PIL.Image.open(io.BytesIO(output.read_bytes()))
+                return Image.open(io.BytesIO(output.read_bytes()))
 
 # ------------------------------------------------------------------------------------------------ #
 
 class Upscayl(UpscalerNCNN_Base):
     """Configure and use Upscayl    [dim](by https://github.com/upscayl/upscayl)[/]"""
+    type: Annotated[Literal["upscayl"],
+        Option(click_type=Choice(["upscayl"]))] = \
+        Field("upscayl")
 
     class Model(str, BrokenEnum):
         realesrgan_x4plus       = "realesrgan-x4plus"
@@ -209,7 +217,7 @@ class Upscayl(UpscalerNCNN_Base):
         ultramix_balanced       = "ultramix_balanced"
         ultrasharp              = "ultrasharp"
 
-    model: Annotated[Model, typer.Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Upscayl")] = \
         Field(default=Model.realesrgan_x4plus_anime)
 
@@ -260,6 +268,6 @@ class Upscayl(UpscalerNCNN_Base):
                     stderr=DEVNULL,
                     echo=echo,
                 )
-                return PIL.Image.open(io.BytesIO(output.read_bytes()))
+                return Image.open(io.BytesIO(output.read_bytes()))
 
 # ------------------------------------------------------------------------------------------------ #

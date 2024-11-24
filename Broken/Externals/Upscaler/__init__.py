@@ -3,35 +3,43 @@ import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Annotated, Generator, Optional, Tuple, Type, Union
+from typing import (
+    Annotated,
+    Generator,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    TypeAlias,
+    Union,
+)
 
-import PIL
-import PIL.Image
-import typer
+from click import Choice
 from PIL.Image import Image
 from pydantic import ConfigDict, Field
+from typer import Option
 
 from Broken import BrokenEnum, BrokenResolution, denum
 from Broken.Externals import ExternalModelsBase
 from Broken.Loaders import LoadableImage, LoaderImage
 
 
-class BrokenUpscaler(ExternalModelsBase, ABC):
+class UpscalerBase(ExternalModelsBase, ABC):
     model_config = ConfigDict(validate_assignment=True)
 
-    width: Annotated[int, typer.Option("--width", "-w", min=0,
+    width: Annotated[int, Option("--width", "-w", min=0,
         help="[bold red](🔴 Basic   )[/] Upscaled image width, automatic on height aspect ratio if 0, forced if both are set")] = \
         Field(default=0, gt=-1)
 
-    height: Annotated[int, typer.Option("--height", "-h", min=0,
+    height: Annotated[int, Option("--height", "-h", min=0,
         help="[bold red](🔴 Basic   )[/] Upscaled image height, automatic on width aspect ratio if 0, forced if both are set")] = \
         Field(default=0, gt=-1)
 
-    scale: Annotated[int, typer.Option("--scale", "-s", min=1,
+    scale: Annotated[int, Option("--scale", "-s", min=1,
         help="[bold red](🔴 Basic   )[/] Single pass upscale factor. For precision, over-scale and force width and/or height")] = \
         Field(default=2, gt=0)
 
-    passes: Annotated[int, typer.Option("--passes", "-p", min=1,
+    passes: Annotated[int, Option("--passes", "-p", min=1,
         help="[bold red](🔴 Basic   )[/] Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
         Field(default=1, gt=0)
 
@@ -39,11 +47,11 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
         PNG = "png"
         JPG = "jpg"
 
-    format: Annotated[Format, typer.Option("--format", "-f",
+    format: Annotated[Format, Option("--format", "-f",
         help="[bold red](🔴 Basic   )[/] Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
         Field(default=Format.JPG)
 
-    quality: Annotated[int, typer.Option("--quality", "-q", min=0, max=100,
+    quality: Annotated[int, Option("--quality", "-q", min=0, max=100,
         help="[bold red](🔴 Basic   )[/] Temporary image processing 'PIL.Image.save' quality used on --format")] = \
         Field(default=95, ge=0, le=100)
 
@@ -109,7 +117,7 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
 
         # Optimization: Return if output matches target
         if isinstance(output, Path) and output.exists():
-            if (PIL.Image.open(output).size == target):
+            if (Image.open(output).size == target):
                 return output
 
         # Optimization: Return if input matches target
@@ -135,7 +143,7 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
                 image = self._upscale(image, **config)
 
             # Resize to match the expected final size
-            image = image.resize(target, PIL.Image.LANCZOS)
+            image = image.resize(target, Image.LANCZOS)
 
             # Merge the alpha layer
             if transparent:
@@ -155,14 +163,22 @@ class BrokenUpscaler(ExternalModelsBase, ABC):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class PillowUpscaler(BrokenUpscaler):
+class PillowUpscaler(UpscalerBase):
+    type: Annotated[Literal["pillow"],
+        Option(click_type=Choice(["pillow"]))] = \
+        Field("pillow")
+
     def _load_model(self):
         pass
 
     def _upscale(self, image: Image) -> Image:
-        return image.resize(self.output_size(*image.size), PIL.Image.LANCZOS)
+        return image.resize(self.output_size(*image.size), Image.LANCZOS)
 
-class NoUpscaler(BrokenUpscaler):
+class NoUpscaler(UpscalerBase):
+    type: Annotated[Literal["none"],
+        Option(click_type=Choice(["none"]))] = \
+        Field("none")
+
     def _load_model(self):
         pass
 
@@ -175,5 +191,13 @@ class NoUpscaler(BrokenUpscaler):
 # ------------------------------------------------------------------------------------------------ #
 
 from Broken.Externals.Upscaler.ncnn import Realesr, Upscayl, Waifu2x
+
+BrokenUpscaler: TypeAlias = Union[
+    NoUpscaler,
+    PillowUpscaler,
+    Realesr,
+    Upscayl,
+    Waifu2x,
+]
 
 # ------------------------------------------------------------------------------------------------ #

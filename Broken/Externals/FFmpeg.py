@@ -1165,7 +1165,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     outputs: List[FFmpegOutputType] = Field(default_factory=list)
     """A list of outputs. Yes, FFmpeg natively supports multi-encoding targets"""
 
-    video_codec: Optional[FFmpegVideoCodecType] = Field(default=None)
+    video_codec: Optional[FFmpegVideoCodecType] = Field(default_factory=FFmpegVideoCodecH264)
     """The video codec to use and its configuration"""
 
     audio_codec: Optional[FFmpegAudioCodecType] = Field(default=None)

@@ -8,13 +8,14 @@ import multiprocessing
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any, List
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
 
 import numpy
-import typer
+from click import Choice
 from halo import Halo
 from PIL import Image
 from pydantic import Field, PrivateAttr
+from typer import Option
 
 import Broken
 from Broken import (
@@ -43,7 +44,7 @@ os.environ.update(dict(
 
 # ------------------------------------------------------------------------------------------------ #
 
-class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
+class BaseEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
     _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
     """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
@@ -57,7 +58,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
     @staticmethod
     def normalize_uint16(array: numpy.ndarray) -> numpy.ndarray:
-        return ((2**16 - 1) * DepthEstimator.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
+        return ((2**16 - 1) * BaseEstimator.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
 
     def estimate(self,
         image: LoadableImage,
@@ -79,12 +80,12 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
             with self._lock, Halo(f"Estimating Depthmap (Torch: {self.device})"):
                 torch.set_num_threads(max(4, multiprocessing.cpu_count()//2))
                 depth = self._estimate(image)
-            depth = DepthEstimator.normalize_uint16(depth)
+            depth = BaseEstimator.normalize_uint16(depth)
             Image.fromarray(depth).save(cached_image)
             with contextlib.suppress(Exception):
                 self.cleanup()
 
-        return DepthEstimator.normalize(self._post_processing(depth))
+        return BaseEstimator.normalize(self._post_processing(depth))
 
     def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:
         """Estimates a normal map from a depth map using heuristics"""
@@ -94,7 +95,7 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
         dx = numpy.arctan2(200*numpy.gradient(depth, axis=1), 1)
         dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
         normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
-        return DepthEstimator.normalize(normal).astype(numpy.float32)
+        return BaseEstimator.normalize(normal).astype(numpy.float32)
 
     def cleanup(self, maximum: int=20) -> None:
         files = list(os.scandir(self._cache))
@@ -119,13 +120,13 @@ class DepthEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class DepthAnythingBase(DepthEstimator):
+class DepthAnythingBase(BaseEstimator):
     class Model(str, BrokenEnum):
         Small = "small"
         Base  = "base"
         Large = "large"
 
-    model: Annotated[Model, typer.Option("--model", "-m",
+    model: Annotated[Model, Option("--model", "-m",
         help="[bold red](🔴 Basic)[/] What model of DepthAnythingV2 to use")] = \
         Field(default=Model.Small)
 
@@ -152,6 +153,10 @@ class DepthAnythingBase(DepthEstimator):
 
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
+    type: Annotated[Literal["depthanything"],
+        Option(click_type=Choice(["depthanything"]))] = \
+        Field("depthanything")
+
     def _model_prefix(self) -> str:
         return "LiheYoung/depth-anything-"
 
@@ -163,6 +168,10 @@ class DepthAnythingV1(DepthAnythingBase):
 
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
+    type: Annotated[Literal["depthanything2"],
+        Option(click_type=Choice(["depthanything2"]))] = \
+        Field("depthanything2")
+
     def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
 
@@ -174,8 +183,12 @@ class DepthAnythingV2(DepthAnythingBase):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class DepthPro(DepthEstimator):
+class DepthPro(BaseEstimator):
     """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[/]"""
+    type: Annotated[Literal["depthpro"],
+        Option(click_type=Choice(["depthpro"]))] = \
+        Field("depthpro")
+
     _model: Any = PrivateAttr(None)
     _transform: Any = PrivateAttr(None)
 
@@ -224,14 +237,18 @@ class DepthPro(DepthEstimator):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ZoeDepth(DepthEstimator):
+class ZoeDepth(BaseEstimator):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/]"""
+    type: Annotated[Literal["zoedepth"],
+        Option(click_type=Choice(["zoedepth"]))] = \
+        Field("zoedepth")
+
     class Model(str, BrokenEnum):
         N  = "n"
         K  = "k"
         NK = "nk"
 
-    model: Annotated[Model, typer.Option("--model", "-m",
+    model: Annotated[Model, Option("--model", "-m",
         help="[bold red](🔴 Basic)[/] What model of ZoeDepth to use")] = \
         Field(default=Model.N)
 
@@ -246,7 +263,7 @@ class ZoeDepth(DepthEstimator):
 
     # Downscale for the largest component to be 512 pixels (Zoe precision), invert for 0=infinity
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
-        depth = Image.fromarray(1 - DepthEstimator.normalize(self._model.infer_pil(image)))
+        depth = Image.fromarray(1 - BaseEstimator.normalize(self._model.infer_pil(image)))
         new = BrokenResolution.fit(old=depth.size, max=(512, 512), ar=depth.size[0]/depth.size[1])
         return numpy.array(depth.resize(new, resample=Image.LANCZOS)).astype(numpy.float32)
 
@@ -255,13 +272,17 @@ class ZoeDepth(DepthEstimator):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class Marigold(DepthEstimator):
+class Marigold(BaseEstimator):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
+    type: Annotated[Literal["marigold"],
+        Option(click_type=Choice(["marigold"]))] = \
+        Field("marigold")
+
     class Variant(str, BrokenEnum):
         FP16 = "fp16"
         FP32 = "fp32"
 
-    variant: Annotated[Variant, typer.Option("--variant", "-v",
+    variant: Annotated[Variant, Option("--variant", "-v",
         help="What variant of Marigold to use")] = \
         Field(default=Variant.FP16)
 
@@ -298,7 +319,7 @@ class Marigold(DepthEstimator):
 
 # ------------------------------------------------------------------------------------------------ #
 
-DepthEstimators: List[DepthEstimator] = [
+DepthEstimator: TypeAlias = Union[
     DepthAnythingV1,
     DepthAnythingV2,
     DepthPro,
