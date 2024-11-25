@@ -7,9 +7,10 @@ from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
 
 from attrs import Factory, define, field
 
+# ------------------------------------------------------------------------------------------------ #
 
 def precise(sleep: float, *, error: float=0.001) -> None:
-    """A precise alternative of time.sleep(), low cpu near-end thread spin"""
+    """A precise alternative of time.sleep(), low cpu near-end thread spin. Increases CPU usage."""
     start = time.perf_counter()
 
     # Sleep close to the due time
@@ -30,7 +31,6 @@ NULL_CONTEXT = contextlib.nullcontext()
 
 @define
 class BrokenTask:
-    """A BrokenScheduler's client dataclass"""
 
     # # Basic
 
@@ -108,7 +108,7 @@ class BrokenTask:
 
     @property
     def period(self) -> float:
-        return (1 / self.frequency)
+        return (1.0 / self.frequency)
 
     @period.setter
     def period(self, value: float):
@@ -116,23 +116,23 @@ class BrokenTask:
 
     @property
     def should_delete(self) -> bool:
-        return self.once and (not self.enabled)
+        return (self.once and (not self.enabled))
 
     @property
     def should_live(self) -> bool:
         return (not self.should_delete)
 
-    # # Sorting
+    # # Sorting (prioritizes 'once' clients)
 
     def __lt__(self, other: Self) -> bool:
         if (self.once and not other.once):
             return True
-        return self.next_call < other.next_call
+        return (self.next_call < other.next_call)
 
     def __gt__(self, other: Self) -> bool:
         if (not self.once and other.once):
             return True
-        return self.next_call > other.next_call
+        return (self.next_call > other.next_call)
 
     # # Implementation
 
@@ -141,13 +141,18 @@ class BrokenTask:
         # Time to wait for next call if block
         wait = max(0, (self.next_call - time.absolute()))
 
+        # Rendering is instant
         if self.freewheel:
             pass
+
+        # Block until due
         elif block:
             if self.precise:
                 time.precise(wait)
             else:
                 time.sleep(wait)
+
+        # Non-blocking not due yet
         elif wait > 0:
             return None
 
@@ -163,13 +168,13 @@ class BrokenTask:
 
         self.last_call = now
 
-        # Enter or not the given context, call task with args and kwargs
+        # Enter contexts, call task with args and kwargs
         with (self.lock or NULL_CONTEXT):
             with (self.context or NULL_CONTEXT):
                 self.output = self.task(*self.args, **self.kwargs)
 
         # Find a future multiple of period
-        while self.next_call <= now:
+        while (self.next_call <= now):
             self.next_call += self.period
 
         # (Disabled && Once) clients gets deleted
@@ -219,7 +224,7 @@ class BrokenScheduler:
 
     def next(self, block=True) -> Optional[BrokenTask]:
         if (task := self.next_task) is None:
-            return
+            return None
         try:
             return task.next(block=block)
         finally:

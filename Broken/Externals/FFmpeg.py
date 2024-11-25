@@ -87,8 +87,10 @@ class FFmpegInputPipe(FFmpegModuleBase):
         Field(default=Format.Rawvideo)
 
     class PixelFormat(str, BrokenEnum):
-        RGB24 = "rgb24"
-        RGBA  = "rgba"
+        YUV420P = "yuv420p"
+        YUV444P = "yuv444p"
+        RGB24   = "rgb24"
+        RGBA    = "rgba"
 
     pixel_format: Annotated[PixelFormat,
         Option("--pixel-format", "-p")] = \

@@ -170,7 +170,7 @@ from Broken.Core import (
     smartproxy,
     temp_env,
 )
-from Broken.Core.BrokenEnum import BrokenEnum
+from Broken.Core.BrokenEnum import BrokenEnum, FlagEnum, MultiEnum
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import (
