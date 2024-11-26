@@ -5,12 +5,19 @@ from pathlib import Path
 from subprocess import DEVNULL
 from typing import Annotated, Literal
 
-from click import Choice
 from PIL.Image import Image
 from pydantic import Field, field_validator
 from typer import Option
 
-from Broken import BrokenEnum, BrokenPath, BrokenPlatform, denum, every, shell
+from Broken import (
+    BrokenEnum,
+    BrokenPath,
+    BrokenPlatform,
+    BrokenTyper,
+    denum,
+    every,
+    shell,
+)
 from Broken.Externals.Upscaler import UpscalerBase
 
 
@@ -93,9 +100,7 @@ class UpscalerNCNN_Base(UpscalerBase):
 
 class Waifu2x(UpscalerNCNN_Base):
     """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/]"""
-    type: Annotated[Literal["waifu2x"],
-        Option(click_type=Choice(["waifu2x"]))] = \
-        Field("waifu2x")
+    type: Annotated[Literal["waifu2x"], BrokenTyper.exclude()] = "waifu2x"
 
     class Model(str, BrokenEnum):
         models_cunet = "models_cunet"
@@ -152,9 +157,7 @@ class Waifu2x(UpscalerNCNN_Base):
 
 class Realesr(UpscalerNCNN_Base):
     """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[/]"""
-    type: Annotated[Literal["realesr"],
-        Option(click_type=Choice(["realesr"]))] = \
-        Field("realesr")
+    type: Annotated[Literal["realesr"], BrokenTyper.exclude()] = "realesr"
 
     class Model(str, BrokenEnum):
         realesr_animevideov3    = "realesr_animevideov3"
@@ -205,9 +208,7 @@ class Realesr(UpscalerNCNN_Base):
 
 class Upscayl(UpscalerNCNN_Base):
     """Configure and use Upscayl    [dim](by https://github.com/upscayl/upscayl)[/]"""
-    type: Annotated[Literal["upscayl"],
-        Option(click_type=Choice(["upscayl"]))] = \
-        Field("upscayl")
+    type: Annotated[Literal["upscayl"], BrokenTyper.exclude()] = "upscayl"
 
     class Model(str, BrokenEnum):
         realesrgan_x4plus       = "realesrgan-x4plus"

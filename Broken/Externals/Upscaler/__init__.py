@@ -14,12 +14,11 @@ from typing import (
     Union,
 )
 
-from click import Choice
 from PIL.Image import Image
 from pydantic import ConfigDict, Field
 from typer import Option
 
-from Broken import BrokenEnum, BrokenResolution, denum
+from Broken import BrokenEnum, BrokenResolution, BrokenTyper, denum
 from Broken.Externals import ExternalModelsBase
 from Broken.Loaders import LoadableImage, LoaderImage
 
@@ -164,9 +163,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
 # ------------------------------------------------------------------------------------------------ #
 
 class PillowUpscaler(UpscalerBase):
-    type: Annotated[Literal["pillow"],
-        Option(click_type=Choice(["pillow"]))] = \
-        Field("pillow")
+    type: Annotated[Literal["pillow"], BrokenTyper.exclude()] = "pillow"
 
     def _load_model(self):
         pass
@@ -175,9 +172,7 @@ class PillowUpscaler(UpscalerBase):
         return image.resize(self.output_size(*image.size), Image.LANCZOS)
 
 class NoUpscaler(UpscalerBase):
-    type: Annotated[Literal["none"],
-        Option(click_type=Choice(["none"]))] = \
-        Field("none")
+    type: Annotated[Literal["none"], BrokenTyper.exclude()] = "none"
 
     def _load_model(self):
         pass

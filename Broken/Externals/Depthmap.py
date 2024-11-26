@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
 
 import numpy
-from click import Choice
 from halo import Halo
 from PIL import Image
 from pydantic import Field, PrivateAttr
@@ -22,6 +21,7 @@ from Broken import (
     BrokenEnum,
     BrokenPath,
     BrokenResolution,
+    BrokenTyper,
     image_hash,
     install,
     log,
@@ -153,9 +153,7 @@ class DepthAnythingBase(BaseEstimator):
 
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
-    type: Annotated[Literal["depthanything"],
-        Option(click_type=Choice(["depthanything"]))] = \
-        Field("depthanything")
+    type: Annotated[Literal["depthanything"], BrokenTyper.exclude()] = "depthanything"
 
     def _model_prefix(self) -> str:
         return "LiheYoung/depth-anything-"
@@ -168,9 +166,7 @@ class DepthAnythingV1(DepthAnythingBase):
 
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
-    type: Annotated[Literal["depthanything2"],
-        Option(click_type=Choice(["depthanything2"]))] = \
-        Field("depthanything2")
+    type: Annotated[Literal["depthanything2"], BrokenTyper.exclude()] = "depthanything2"
 
     def _model_prefix(self) -> str:
         return "depth-anything/Depth-Anything-V2-"
@@ -185,9 +181,7 @@ class DepthAnythingV2(DepthAnythingBase):
 
 class DepthPro(BaseEstimator):
     """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[/]"""
-    type: Annotated[Literal["depthpro"],
-        Option(click_type=Choice(["depthpro"]))] = \
-        Field("depthpro")
+    type: Annotated[Literal["depthpro"], BrokenTyper.exclude()] = "depthpro"
 
     _model: Any = PrivateAttr(None)
     _transform: Any = PrivateAttr(None)
@@ -239,9 +233,7 @@ class DepthPro(BaseEstimator):
 
 class ZoeDepth(BaseEstimator):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/]"""
-    type: Annotated[Literal["zoedepth"],
-        Option(click_type=Choice(["zoedepth"]))] = \
-        Field("zoedepth")
+    type: Annotated[Literal["zoedepth"], BrokenTyper.exclude()] = "zoedepth"
 
     class Model(str, BrokenEnum):
         N  = "n"
@@ -274,9 +266,7 @@ class ZoeDepth(BaseEstimator):
 
 class Marigold(BaseEstimator):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
-    type: Annotated[Literal["marigold"],
-        Option(click_type=Choice(["marigold"]))] = \
-        Field("marigold")
+    type: Annotated[Literal["marigold"], BrokenTyper.exclude()] = "marigold"
 
     class Variant(str, BrokenEnum):
         FP16 = "fp16"

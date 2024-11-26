@@ -6,7 +6,16 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generator, Iterable, Optional, Self, Set, Union
+from typing import (
+    Any,
+    Callable,
+    Generator,
+    Iterable,
+    Optional,
+    Self,
+    Set,
+    Union,
+)
 
 import click
 import typer

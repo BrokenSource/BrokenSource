@@ -20,6 +20,7 @@ from queue import Queue
 from threading import Thread
 from typing import (
     TYPE_CHECKING,
+    Annotated,
     Any,
     Callable,
     Container,
@@ -28,6 +29,7 @@ from typing import (
     Generator,
     Iterable,
     List,
+    Literal,
     Optional,
     Self,
     Tuple,
@@ -315,6 +317,7 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
             setattr(instance, name, value)
         if post: post(instance)
 
+    # Copy the signatures to the wrapper function (the new initializer)
     wrapper.__signature__ = inspect.signature(instance.__class__)
     wrapper.__doc__ = instance.__doc__
 
@@ -520,11 +523,17 @@ class SerdeBaseModel(BaseModel):
 
     # Serialization
 
-    def json(self) -> str:
-        return self.model_dump_json()
+    def json(self, full: bool=False) -> str:
+        return self.model_dump_json(
+            exclude_defaults=(not full),
+            exclude_none=False
+        )
 
-    def dict(self) -> dict:
-        return self.model_dump()
+    def dict(self, full: bool=False) -> dict:
+        return self.model_dump(
+            exclude_defaults=(not full),
+            exclude_none=False
+        )
 
     # Deserialization
 
@@ -539,8 +548,8 @@ class SerdeBaseModel(BaseModel):
         else:
             raise ValueError(f"Can't load from value of type {type(data)}")
 
-    def update(self, data: Union[dict, str]) -> Self:
-        for (key, value) in self.load(data).items():
+    def update(self, **data: Union[dict, str]) -> Self:
+        for (key, value) in data.items():
             setattr(self, key, value)
         return self
 
@@ -557,6 +566,12 @@ class SerdeBaseModel(BaseModel):
     def items(self) -> Generator[Tuple[str, Any], None, None]:
         for (key, value) in self.dict().items():
             yield (key, value)
+
+    # Special
+
+    def reset(self) -> None:
+        for key, value in self.model_fields.items():
+            setattr(self, key, value.default)
 
 
 class BrokenWatchdog(ABC):

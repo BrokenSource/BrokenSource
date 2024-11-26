@@ -25,15 +25,16 @@ from typing import (
 import numpy
 import typer
 from attrs import define
-from click import Choice
 from halo import Halo
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
+from pydantic import ConfigDict, Field, field_validator
 from typer import Option
 
 from Broken import (
     BrokenEnum,
+    BrokenFluent,
     BrokenPath,
     BrokenPlatform,
+    BrokenTyper,
     SerdeBaseModel,
     denum,
     every,
@@ -42,7 +43,6 @@ from Broken import (
     nearest,
     shell,
 )
-from Broken.Core import BrokenFluent, BrokenTyper
 from Broken.Types import Bytes, Hertz, Seconds
 
 # ------------------------------------------------------------------------------------------------ #
@@ -63,9 +63,7 @@ class FFmpegModuleBase(SerdeBaseModel, ABC):
 # everywhere until PR https://github.com/fastapi/typer/pull/429 is merged
 
 class FFmpegInputPath(FFmpegModuleBase):
-    type: Annotated[Literal["path"],
-        Option(click_type=Choice(["path"]))] = \
-        Field("path")
+    type: Annotated[Literal["path"], BrokenTyper.exclude()] = "path"
     path: Path
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -73,9 +71,7 @@ class FFmpegInputPath(FFmpegModuleBase):
 
 
 class FFmpegInputPipe(FFmpegModuleBase):
-    type: Annotated[Literal["pipe"],
-        Option(click_type=Choice(["pipe"]))] = \
-        Field("pipe")
+    type: Annotated[Literal["pipe"], BrokenTyper.exclude()] = "pipe"
 
     class Format(str, BrokenEnum):
         Rawvideo   = "rawvideo"
@@ -120,9 +116,7 @@ FFmpegInputType: TypeAlias = Union[
 # ------------------------------------------------------------------------------------------------ #
 
 class FFmpegOutputPath(FFmpegModuleBase):
-    type: Annotated[Literal["path"],
-        Option(click_type=Choice(["path"]))] = \
-        Field("path")
+    type: Annotated[Literal["path"], BrokenTyper.exclude()] = "path"
 
     overwrite: Annotated[bool,
         Option("--overwrite", "-y", " /--no-overwrite", " /-n")] = \
@@ -146,9 +140,7 @@ class FFmpegOutputPath(FFmpegModuleBase):
 
 
 class FFmpegOutputPipe(FFmpegModuleBase):
-    type: Annotated[Literal["pipe"],
-        Option(click_type=Choice(["pipe"]))] = \
-        Field("pipe")
+    type: Annotated[Literal["pipe"], BrokenTyper.exclude()] = "pipe"
 
     class Format(str, BrokenEnum):
         Rawvideo   = "rawvideo"
@@ -183,9 +175,7 @@ FFmpegOutputType = Union[
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
     """Use [bold orange3][link=https://www.videolan.org/developers/x264.html]VideoLAN's[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/Encode/H.264]libx264[/link][/]"""
-    type: Annotated[Literal["h264"],
-        Option(click_type=Choice(["h264"]))] = \
-        Field("h264")
+    type: Annotated[Literal["h264"], BrokenTyper.exclude()] = "h264"
 
     class Preset(str, BrokenEnum):
         None_     = None
@@ -279,9 +269,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=h264_nvenc`
 class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.264[/link][/]"""
-    type: Annotated[Literal["h264-nvenc"],
-        Option(click_type=Choice(["h264-nvenc"]))] = \
-        Field("h264-nvenc")
+    type: Annotated[Literal["h264-nvenc"], BrokenTyper.exclude()] = "h264-nvenc"
 
     class Preset(str, BrokenEnum):
         None_                     = None
@@ -390,9 +378,7 @@ class FFmpegVideoCodecH264_AMF(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=libx265`
 class FFmpegVideoCodecH265(FFmpegModuleBase):
     """Use [bold orange3][link=https://www.videolan.org/developers/x265.html]VideoLAN's[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/link][/]"""
-    type: Annotated[Literal["h265"],
-        Option(click_type=Choice(["h265"]))] = \
-        Field("h265")
+    type: Annotated[Literal["h265"], BrokenTyper.exclude()] = "h265"
 
     crf: Annotated[int,
         Option("--crf", "-c", min=0, max=51)] = \
@@ -431,9 +417,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=hevc_nvenc`
 class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/HWAccelIntro]NVENC H.265[/link][/]"""
-    type: Annotated[Literal["h265-nvenc"],
-        Option(click_type=Choice(["h265-nvenc"]))] = \
-        Field("h265-nvenc")
+    type: Annotated[Literal["h265-nvenc"], BrokenTyper.exclude()] = "h265-nvenc"
 
     class Preset(str, BrokenEnum):
         HighQuality2Passes        = "slow"
@@ -544,9 +528,7 @@ class FFmpegVideoCodecH265_AMF(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
 class FFmpegVideoCodecVP9(FFmpegModuleBase):
     """Use [blue][link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/link][/] for VP9 encoding"""
-    type: Annotated[Literal["vp9"],
-        Option(click_type=Choice(["vp9"]))] = \
-        Field("vp9")
+    type: Annotated[Literal["vp9"], BrokenTyper.exclude()] = "vp9"
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
@@ -591,7 +573,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
     """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
     • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
     """
-    _type: Literal["libaom-av1"] = PrivateAttr("libaom-av1")
+    type: Annotated[Literal["libaom-av1"], BrokenTyper.exclude()] = "libaom-av1"
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
@@ -616,9 +598,7 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
     """Use [bold orange3][link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/link][/] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/link][/]"""
-    type: Annotated[Literal["libsvtav1"],
-        Option(click_type=Choice(["libsvtav1"]))] = \
-        Field("libsvtav1")
+    type: Annotated[Literal["libsvtav1"], BrokenTyper.exclude()] = "libsvtav1"
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
@@ -642,9 +622,7 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=librav1e`
 class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
     """Use [bold orange3][link=https://github.com/xiph/rav1e]Xiph's[/link][/] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#librav1e]RAV1E AV1[/link][/]"""
-    type: Annotated[Literal["librav1e"],
-        Option(click_type=Choice(["librav1e"]))] = \
-        Field("librav1e")
+    type: Annotated[Literal["librav1e"], BrokenTyper.exclude()] = "librav1e"
 
     qp: Annotated[int,
         Option("--qp", "-q", min=-1)] = \
@@ -677,9 +655,7 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 # Note: See full help with `ffmpeg -h encoder=av1_nvenc`
 class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """Use [bold green][link=https://en.wikipedia.org/wiki/Nvidia_NVENC]NVIDIA[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/Encode/AV1]NVENC AV1[/link][/] [dim light_coral](RTX 4000+ GPU)[/]"""
-    type: Annotated[Literal["av1-nvenc"],
-        Option(click_type=Choice(["av1-nvenc"]))] = \
-        Field("av1-nvenc")
+    type: Annotated[Literal["av1-nvenc"], BrokenTyper.exclude()] = "av1-nvenc"
 
     class Preset(str, BrokenEnum):
         Default              = "default"
@@ -777,27 +753,21 @@ class FFmpegVideoCodecAV1_AMF(FFmpegModuleBase):
 
 
 class FFmpegVideoCodecRawvideo(FFmpegModuleBase):
-    type: Annotated[Literal["rawvideo"],
-        Option(click_type=Choice(["rawvideo"]))] = \
-        Field("rawvideo")
+    type: Annotated[Literal["rawvideo"], BrokenTyper.exclude()] = "rawvideo"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "rawvideo")
 
 
 class FFmpegVideoCodecNoVideo(FFmpegModuleBase):
-    type: Annotated[Literal["null"],
-        Option(click_type=Choice(["null"]))] = \
-        Field("null")
+    type: Annotated[Literal["null"], BrokenTyper.exclude()] = "null"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "null")
 
 
 class FFmpegVideoCodecCopy(FFmpegModuleBase):
-    type: Annotated[Literal["copy"],
-        Option(click_type=Choice(["copy"]))] = \
-        Field("copy")
+    type: Annotated[Literal["copy"], BrokenTyper.exclude()] = "copy"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:v", "copy")
@@ -822,9 +792,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
     """Use the [blue][link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/link][/]"""
-    type: Annotated[Literal["aac"],
-        Option(click_type=Choice(["aac"]))] = \
-        Field("aac")
+    type: Annotated[Literal["aac"], BrokenTyper.exclude()] = "aac"
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
@@ -838,9 +806,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
 class FFmpegAudioCodecMP3(FFmpegModuleBase):
     """Use the [blue][link=https://trac.ffmpeg.org/wiki/Encode/MP3]MPEG Audio Layer 3 (MP3)[/link][/]"""
-    type: Annotated[Literal["mp3"],
-        Option(click_type=Choice(["mp3"]))] = \
-        Field("mp3")
+    type: Annotated[Literal["mp3"], BrokenTyper.exclude()] = "mp3"
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
@@ -860,9 +826,7 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
 class FFmpegAudioCodecOpus(FFmpegModuleBase):
     """Use the [blue][link=https://en.wikipedia.org/wiki/Opus_(audio_format)]Opus[/link][/] audio codec"""
-    type: Annotated[Literal["opus"],
-        Option(click_type=Choice(["opus"]))] = \
-        Field("opus")
+    type: Annotated[Literal["opus"], BrokenTyper.exclude()] = "opus"
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
@@ -876,9 +840,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
 class FFmpegAudioCodecFLAC(FFmpegModuleBase):
     """Use the [blue][link=https://xiph.org/flac/]Free Lossless Audio Codec (FLAC)[/link][/]"""
-    type: Annotated[Literal["flac"],
-        Option(click_type=Choice(["flac"]))] = \
-        Field("flac")
+    type: Annotated[Literal["flac"], BrokenTyper.exclude()] = "flac"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-c:a", "flac")
@@ -886,9 +848,7 @@ class FFmpegAudioCodecFLAC(FFmpegModuleBase):
 
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
     """Copy the inputs' audio streams"""
-    type: Annotated[Literal["copy"],
-        Option(click_type=Choice(["copy"]))] = \
-        Field("copy")
+    type: Annotated[Literal["copy"], BrokenTyper.exclude()] = "copy"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:a", "copy")
@@ -896,9 +856,7 @@ class FFmpegAudioCodecCopy(FFmpegModuleBase):
 
 class FFmpegAudioCodecNone(FFmpegModuleBase):
     """Remove all audio tracks from the output"""
-    type: Annotated[Literal["none"],
-        Option(click_type=Choice(["none"]))] = \
-        Field("none")
+    type: Annotated[Literal["none"], BrokenTyper.exclude()] = "none"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-an")
@@ -906,9 +864,7 @@ class FFmpegAudioCodecNone(FFmpegModuleBase):
 
 class FFmpegAudioCodecEmpty(FFmpegModuleBase):
     """Adds a silent stereo audio track"""
-    type: Annotated[Literal["anullsrc"],
-        Option(click_type=Choice(["anullsrc"]))] = \
-        Field("anullsrc")
+    type: Annotated[Literal["empty"], BrokenTyper.exclude()] = "empty"
 
     samplerate: Annotated[float,
         Option("--samplerate", "-r", min=1)] = \
@@ -959,9 +915,7 @@ class FFmpegPCM(BrokenEnum):
 
 class FFmpegAudioCodecPCM(FFmpegModuleBase):
     """Raw pcm formats `ffmpeg -formats | grep PCM`"""
-    type: Annotated[Literal["pcm"],
-        Option(click_type=Choice(["pcm"]))] = \
-        Field("pcm")
+    type: Annotated[Literal["pcm"], BrokenTyper.exclude()] = "pcm"
 
     format: Annotated[FFmpegPCM,
         Option("--format", "-f")] = \
@@ -994,9 +948,7 @@ class FFmpegFilterBase(SerdeBaseModel, ABC):
         return self.string()
 
 class FFmpegFilterScale(FFmpegFilterBase):
-    type: Annotated[Literal["scale"],
-        Option(click_type=Choice(["scale"]))] = \
-        Field("scale")
+    type: Annotated[Literal["scale"], BrokenTyper.exclude()] = "scale"
 
     width: int = Field(gt=0)
     height: int = Field(gt=0)
@@ -1019,17 +971,13 @@ class FFmpegFilterScale(FFmpegFilterBase):
         return f"scale={self.width}:{self.height}:flags={denum(self.resample)}"
 
 class FFmpegFilterVerticalFlip(FFmpegFilterBase):
-    type: Annotated[Literal["vflip"],
-        Option(click_type=Choice(["vflip"]))] = \
-        Field("vflip")
+    type: Annotated[Literal["vflip"], BrokenTyper.exclude()] = "vflip"
 
     def string(self) -> str:
         return "vflip"
 
 class FFmpegFilterCustom(FFmpegFilterBase):
-    type: Annotated[Literal["custom"],
-        Option(click_type=Choice(["custom"]))] = \
-        Field("custom")
+    type: Annotated[Literal["custom"], BrokenTyper.exclude()] = "custom"
 
     content: str
 
