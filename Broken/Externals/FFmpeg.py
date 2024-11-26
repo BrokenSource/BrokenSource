@@ -80,7 +80,7 @@ class FFmpegInputPipe(FFmpegModuleBase):
 
     format: Annotated[Optional[Format],
         Option("--format", "-f")] = \
-        Field(default=Format.Rawvideo)
+        Field(Format.Rawvideo)
 
     class PixelFormat(str, BrokenEnum):
         YUV420P = "yuv420p"
@@ -90,11 +90,11 @@ class FFmpegInputPipe(FFmpegModuleBase):
 
     pixel_format: Annotated[PixelFormat,
         Option("--pixel-format", "-p")] = \
-        Field(default=PixelFormat.RGB24)
+        Field(PixelFormat.RGB24)
 
-    width: int = Field(default=1920, gt=0)
-    height: int = Field(default=1080, gt=0)
-    framerate: float = Field(default=60.0, ge=1.0)
+    width: int = Field(1920, gt=0)
+    height: int = Field(1080, gt=0)
+    framerate: float = Field(60.0, ge=1.0)
 
     @field_validator("framerate", mode="plain")
     def validate_framerate(cls, value: Union[float, str]) -> float:
@@ -120,7 +120,7 @@ class FFmpegOutputPath(FFmpegModuleBase):
 
     overwrite: Annotated[bool,
         Option("--overwrite", "-y", " /--no-overwrite", " /-n")] = \
-        Field(default=True)
+        Field(True)
 
     path: Annotated[Path,
         typer.Argument(help="The output file path")] = \
@@ -132,7 +132,7 @@ class FFmpegOutputPath(FFmpegModuleBase):
 
     pixel_format: Annotated[Optional[PixelFormat],
         Option("--pixel-format", "-p")] = \
-        Field(default=PixelFormat.YUV420P)
+        Field(PixelFormat.YUV420P)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-pix_fmt", denum(self.pixel_format))
@@ -149,7 +149,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     format: Annotated[Optional[Format],
         Option("--format", "-f")] = \
-        Field(default=None)
+        Field(None)
 
     class PixelFormat(str, BrokenEnum):
         RGB24 = "rgb24"
@@ -157,7 +157,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     pixel_format: Annotated[Optional[PixelFormat],
         Option("--pixel-format", "-p")] = \
-        Field(default=PixelFormat.RGB24)
+        Field(PixelFormat.RGB24)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-f", denum(self.format))
@@ -191,7 +191,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
     preset: Annotated[Optional[Preset],
         Option("--preset", "-p")] = \
-        Field(default=Preset.Slow)
+        Field(Preset.Slow)
     """How much time to spend on encoding. Slower options gives better compression
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Preset]→ Documentation[/]"""
 
@@ -206,7 +206,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
     tune: Annotated[Optional[Tune],
         Option("--tune", "-t")] = \
-        Field(default=None)
+        Field(None)
     """Tune x264 to keep and optimize for certain aspects of the input media
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Tune]→ Documentation[/]"""
 
@@ -221,33 +221,33 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
     profile: Annotated[Optional[Profile],
         Option("--profile", "-p")] = \
-        Field(default=None)
+        Field(None)
     """How many features the encoder can use, the playback device must support them
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Profile]→ Documentation[/]"""
 
     faststart: Annotated[bool,
         Option("--faststart", " /--no-faststart", hidden=True)] = \
-        Field(default=True)
+        Field(True)
     """Move the index (moov atom) to the beginning of the file for faster initial playback"""
 
     rgb: Annotated[bool,
         Option("--rgb", " /--yuv")] = \
-        Field(default=False)
+        Field(False)
     """Use RGB colorspace instead of YUV"""
 
-    crf: int = Field(default=20, ge=0, le=51)
+    crf: int = Field(20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/]"""
 
     crf: Annotated[int,
         Option("--crf", "-c", min=0, max=51)] = \
-        Field(default=20, ge=0, le=51)
+        Field(20, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#a1.ChooseaCRFvalue]→ Documentation[/]"""
 
     bitrate: Annotated[Optional[int],
         Option("--bitrate", "-b", min=0)] = \
-        Field(default=None, ge=0)
+        Field(None, ge=0)
     """Bitrate in kilobits per second, the higher the better quality and file size"""
 
     x264params: Annotated[Optional[List[str]],
@@ -294,7 +294,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     preset: Annotated[Optional[Preset],
         Option("--preset", "-p")] = \
-        Field(default=Preset.Medium)
+        Field(Preset.Medium)
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
@@ -306,7 +306,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     tune: Annotated[Optional[Tune],
         Option("--tune", "-t")] = \
-        Field(default=Tune.HighQuality)
+        Field(Tune.HighQuality)
     """Tune the encoder for a specific tier of performance"""
 
     class Profile(str, BrokenEnum):
@@ -318,7 +318,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     profile: Annotated[Optional[Profile],
         Option("--profile", "-p")] = \
-        Field(default=Profile.High)
+        Field(Profile.High)
     """How many features the encoder can use, the playback device must support them"""
 
     class RateControl(str, BrokenEnum):
@@ -331,27 +331,27 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     rate_control: Annotated[Optional[RateControl],
         Option("--rc", "-r", hidden=True)] = \
-        Field(default=RateControl.VariableBitrateHighQuality)
+        Field(RateControl.VariableBitrateHighQuality)
     """Rate control mode of the bitrate"""
 
     rc_lookahead: Annotated[Optional[int],
         Option("--rc-lookahead", "-l", hidden=True, min=0)] = \
-        Field(default=32, ge=0)
+        Field(32, ge=0)
     """Number of frames to look ahead for the rate control"""
 
     cbr: Annotated[bool,
         Option("--cbr", "-c", " /--no-cbr", " /-nc", hidden=True)] = \
-        Field(default=False)
+        Field(False)
     """Enable Constant Bitrate mode"""
 
     gpu: Annotated[Optional[int],
         Option("--gpu", "-g", min=0)] = \
-        Field(default=0, ge=0)
+        Field(0, ge=0)
     """Use the Nth NVENC capable GPU for encoding, 0 for first available"""
 
     cq: Annotated[Optional[int],
         Option("--cq", "-q", min=0)] = \
-        Field(default=25, ge=0)
+        Field(25, ge=0)
     """(VBR) Similar to CRF, 0 is automatic, 1 is 'lossless', 51 is the worst quality"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -382,12 +382,12 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 
     crf: Annotated[int,
         Option("--crf", "-c", min=0, max=51)] = \
-        Field(default=25, ge=0, le=51)
+        Field(25, ge=0, le=51)
     """Constant Rate Factor. 0 is lossless, 51 is the worst quality"""
 
     bitrate: Annotated[Optional[int],
         Option("--bitrate", "-b", min=0)] = \
-        Field(default=None, ge=1)
+        Field(None, ge=1)
     """Bitrate in kilobits per second, the higher the better quality and file size"""
 
     class Preset(str, BrokenEnum):
@@ -404,7 +404,7 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
 
     preset: Annotated[Optional[Preset],
         Option("--preset", "-p")] = \
-        Field(default=Preset.Slow)
+        Field(Preset.Slow)
     """How much time to spend on encoding. Slower options gives better compression"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -441,7 +441,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
     preset: Annotated[Preset,
         Option("--preset", "-p")] = \
-        Field(default=Preset.Medium)
+        Field(Preset.Medium)
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
@@ -453,7 +453,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
     tune: Annotated[Optional[Tune],
         Option("--tune", "-t")] = \
-        Field(default=Tune.HighQuality)
+        Field(Tune.HighQuality)
 
     class Profile(str, BrokenEnum):
         None_  = None
@@ -463,7 +463,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
     profile: Annotated[Optional[Profile],
         Option("--profile", "-p")] = \
-        Field(default=Profile.Main)
+        Field(Profile.Main)
 
     class Tier(str, BrokenEnum):
         None_ = None
@@ -472,7 +472,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
     tier: Annotated[Optional[Tier],
         Option("--tier", "-t")] = \
-        Field(default=Tier.High)
+        Field(Tier.High)
 
     class RateControl(str, BrokenEnum):
         None_           = None
@@ -482,26 +482,26 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
 
     rate_control: Annotated[Optional[RateControl],
         Option("--rc", "-r", hidden=True)] = \
-        Field(default=RateControl.VariableBitrate)
+        Field(RateControl.VariableBitrate)
 
     rc_lookahead: Annotated[Optional[int],
         Option("--rc-lookahead", "-l", hidden=True)] = \
-        Field(default=10, ge=1)
+        Field(10, ge=1)
     """Number of frames to look ahead for the rate control"""
 
     cbr: Annotated[bool,
         Option("--cbr", "-c", " /--vbr", " /-v", hidden=True)] = \
-        Field(default=False)
+        Field(False)
     """Use Constant Bitrate mode"""
 
     gpu: Annotated[int,
         Option("--gpu", "-g", min=0)] = \
-        Field(default=0, ge=0)
+        Field(0, ge=0)
     """Use the Nth NVENC capable GPU for encoding"""
 
     cq: Annotated[int,
         Option("--cq", "-q", min=0)] = \
-        Field(default=25, ge=0)
+        Field(25, ge=0)
     """(VBR) Similar to CRF, 0 is automatic, 1 is 'lossless', 51 is the worst quality"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -532,13 +532,13 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
-        Field(default=30, ge=1, le=64)
+        Field(30, ge=1, le=64)
     """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
     [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#constantq]→ Documentation[/]"""
 
     speed: Annotated[int,
         Option("--speed", "-s", min=1, max=6)] = \
-        Field(default=4, ge=1, le=6)
+        Field(4, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
     [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed]→ Documentation[/]"""
 
@@ -549,13 +549,13 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
 
     deadline: Annotated[Deadline,
         Option("--deadline", "-d")] = \
-        Field(default=Deadline.Good)
+        Field(Deadline.Good)
     """Tweak the encoding time philosophy for better quality or faster encoding
     [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality]→ Documentation[/]"""
 
     row_multithreading: Annotated[bool,
         Option("--row-multithreading", "-rmt", " /--no-row-multithreading", " /-rmt")] = \
-        Field(default=True)
+        Field(True)
     """Faster encodes by splitting rows into multiple threads
     [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt]→ Documentation[/]"""
 
@@ -577,13 +577,13 @@ class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
-        Field(default=23, ge=1, le=63)
+        Field(23, ge=1, le=63)
     """Constant Rate Factor (0-63). Lower values mean better quality, AV1 CRF 23 == x264 CRF 19
     [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality]→ Documentation[/]"""
 
     speed: Annotated[int,
         Option("--speed", "-s", min=1, max=6)] = \
-        Field(default=3, ge=1, le=6)
+        Field(3, ge=1, le=6)
     """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
     [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality]→ Documentation[/]"""
 
@@ -602,13 +602,13 @@ class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
 
     crf: Annotated[int,
         Option("--crf", "-c", min=1, max=63)] = \
-        Field(default=25, ge=1, le=63)
+        Field(25, ge=1, le=63)
     """Constant Rate Factor (0-63). Lower values mean better quality
     [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#CRF]→ Documentation[/]"""
 
     preset: Annotated[int,
         Option("--preset", "-p", min=1, max=8)] = \
-        Field(default=3, ge=1, le=8)
+        Field(3, ge=1, le=8)
     """The speed of the encoding, 0 is slowest, 8 is fastest. Decreases compression efficiency.
     [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#Presetsandtunes]→ Documentation[/]"""
 
@@ -626,22 +626,22 @@ class FFmpegVideoCodecAV1_RAV1E(FFmpegModuleBase):
 
     qp: Annotated[int,
         Option("--qp", "-q", min=-1)] = \
-        Field(default=80, ge=-1)
+        Field(80, ge=-1)
     """Constant quantizer mode (from -1 to 255). Smaller values are higher quality"""
 
     speed: Annotated[int,
         Option("--speed", "-s", min=1, max=10)] = \
-        Field(default=4, ge=1, le=10)
+        Field(4, ge=1, le=10)
     """What speed preset to use (from -1 to 10) (default -1)"""
 
     tile_rows: Annotated[int,
         Option("--tile-rows", "-tr", min=-1)] = \
-        Field(default=4, ge=-1)
+        Field(4, ge=-1)
     """Number of tile rows to encode with (from -1 to I64_MAX) (default 0)"""
 
     tile_columns: Annotated[int,
         Option("--tile-columns", "-tc", min=-1)] = \
-        Field(default=4, ge=-1)
+        Field(4, ge=-1)
     """Number of tile columns to encode with (from -1 to I64_MAX) (default 0)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -672,7 +672,7 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
 
     preset: Annotated[Preset,
         Option("--preset", "-p")] = \
-        Field(default=Preset.Slow)
+        Field(Preset.Slow)
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
@@ -683,7 +683,7 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
 
     tune: Annotated[Optional[Tune],
         Option("--tune", "-t")] = \
-        Field(default=Tune.HighQuality)
+        Field(Tune.HighQuality)
     """Tune the encoder for a specific tier of performance"""
 
     class RateControl(str, BrokenEnum):
@@ -694,7 +694,7 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
 
     rate_control: Annotated[Optional[RateControl],
         Option("--rc", "-r", hidden=True)] = \
-        Field(default=RateControl.VariableBitrate)
+        Field(RateControl.VariableBitrate)
 
     class Multipass(str, BrokenEnum):
         None_    = None
@@ -704,34 +704,34 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
 
     multipass: Annotated[Optional[Multipass],
         Option("--multipass", "-m", hidden=True)] = \
-        Field(default=Multipass.Full)
+        Field(Multipass.Full)
 
     tile_rows: Annotated[Optional[int],
         Option("--tile-rows", "-tr", min=1, max=64)] = \
-        Field(default=2, ge=1, le=64)
+        Field(2, ge=1, le=64)
     """Number of encoding tile rows, similar to -row-mt"""
 
     tile_columns: Annotated[Optional[int],
         Option("--tile-columns", "-tc", min=1, max=64)] = \
-        Field(default=2, ge=1, le=64)
+        Field(2, ge=1, le=64)
     """Number of encoding tile columns, similar to -col-mt"""
 
     rc_lookahead: Annotated[Optional[int],
         Option("--rc-lookahead", "-l", hidden=True)] = \
-        Field(default=10, ge=1)
+        Field(10, ge=1)
     """Number of frames to look ahead for the rate control"""
 
     gpu: Annotated[int,
         Option("--gpu", "-g", min=0)] = \
-        Field(default=0, ge=0)
+        Field(0, ge=0)
     """Use the Nth NVENC capable GPU for encoding"""
 
-    cq: int = Field(default=25, ge=1)
+    cq: int = Field(25, ge=1)
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     cq: Annotated[Optional[int],
         Option("--cq", "-q", min=0)] = \
-        Field(default=25, ge=0)
+        Field(25, ge=0)
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -796,7 +796,7 @@ class FFmpegAudioCodecAAC(FFmpegModuleBase):
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
-        Field(default=192, ge=1)
+        Field(192, ge=1)
     """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -810,12 +810,12 @@ class FFmpegAudioCodecMP3(FFmpegModuleBase):
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
-        Field(default=192, ge=1)
+        Field(192, ge=1)
     """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     qscale: Annotated[int,
         Option("--qscale", "-q", min=1)] = \
-        Field(default=2, ge=1)
+        Field(2, ge=1)
     """Quality scale, 0-9, Variable Bitrate"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -830,7 +830,7 @@ class FFmpegAudioCodecOpus(FFmpegModuleBase):
 
     bitrate: Annotated[int,
         Option("--bitrate", "-b", min=1)] = \
-        Field(default=192, ge=1)
+        Field(192, ge=1)
     """Bitrate in kilobits per second. This value is shared between all audio channels"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
@@ -868,7 +868,7 @@ class FFmpegAudioCodecEmpty(FFmpegModuleBase):
 
     samplerate: Annotated[float,
         Option("--samplerate", "-r", min=1)] = \
-        Field(default=44100, ge=1)
+        Field(44100, ge=1)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-f", "lavfi")
@@ -919,7 +919,7 @@ class FFmpegAudioCodecPCM(FFmpegModuleBase):
 
     format: Annotated[FFmpegPCM,
         Option("--format", "-f")] = \
-        Field(default=FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN)
+        Field(FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield ("-c:a", self.format.value, "-f", self.format.value.removeprefix("pcm_"))
@@ -965,7 +965,7 @@ class FFmpegFilterScale(FFmpegFilterBase):
 
     resample: Annotated[Resample,
         Option("--resample", "-r")] = \
-        Field(default=Resample.Lanczos)
+        Field(Resample.Lanczos)
 
     def string(self) -> str:
         return f"scale={self.width}:{self.height}:flags={denum(self.resample)}"
@@ -1048,13 +1048,13 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#toc-Advanced-options)
     """
 
-    stream_loop: int = Field(default=0)
+    stream_loop: int = Field(0)
     """Loops the input stream N times to the right. Zero '0' is no loop, one '1' doubles the length"""
 
-    time: float = Field(default=0.0)
+    time: float = Field(0.0)
     """If greater than zero, stops encoding at the specified time. `-t` option of FFmpeg"""
 
-    vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field(default="cfr")
+    vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field("cfr")
     """
     The video's framerate mode, applied to all subsequent output targets. `-vsync` option of FFmpeg
 
@@ -1077,7 +1077,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     loglevel: Annotated[LogLevel,
         Option("--loglevel", "-log")] = \
-        Field(default=LogLevel.Info)
+        Field(LogLevel.Info)
 
     class HardwareAcceleration(str, BrokenEnum):
         Auto   = "auto"
@@ -1087,7 +1087,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
 
     hwaccel: Annotated[Optional[HardwareAcceleration],
         Option("--hwaccel", "-hw")] = \
-        Field(default=None)
+        Field(None)
     """
     What device to bootstrap, for decoding with hardware acceleration. In practice, it's only useful
     when decoding from a source video file, might cause overhead on pipe input mode
@@ -1099,7 +1099,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     [**FFmpeg docs**](https://trac.ffmpeg.org/wiki/HWAccelIntro)
     """
 
-    threads: int = Field(default=0, ge=0)
+    threads: int = Field(0, ge=0)
     """
     The number of threads the codecs should use (). Generally speaking, more threads drastically
     improves performance, at the cost of worse quality and compression ratios. It's not that bad though. Some
@@ -1118,7 +1118,7 @@ class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
     video_codec: Optional[FFmpegVideoCodecType] = Field(default_factory=FFmpegVideoCodecH264)
     """The video codec to use and its configuration"""
 
-    audio_codec: Optional[FFmpegAudioCodecType] = Field(default=None)
+    audio_codec: Optional[FFmpegAudioCodecType] = Field(None)
     """The audio codec to use and its configuration"""
 
     def quiet(self) -> Self:

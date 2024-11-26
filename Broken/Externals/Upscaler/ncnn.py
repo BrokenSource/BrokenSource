@@ -24,35 +24,35 @@ from Broken.Externals.Upscaler import UpscalerBase
 class UpscalerNCNN_Base(UpscalerBase):
     denoise: Annotated[int, Option("--denoise", "-n", min=0, max=3,
         help="[bold yellow](🟡 Specific)[/] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
-        Field(default=3, gt=-1)
+        Field(3, gt=-1)
 
     tile_size: Annotated[int, Option("--tile-size", "-t", min=0,
         help="[bold yellow](🟡 Specific)[/] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
-        Field(default=0, gt=-1)
+        Field(0, gt=-1)
 
     tta: Annotated[bool, Option("--tta", "-x",
         help="[bold yellow](🟡 Specific)[/] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/]")] = \
-        Field(default=False)
+        Field(False)
 
     cpu: Annotated[bool, Option("--cpu", "-c",
         help="[bold yellow](🟡 Specific)[/] Use CPU for processing instead of the GPU [yellow](SLOW)[/]")] = \
-        Field(default=False)
+        Field(False)
 
     gpu: Annotated[int, Option("--gpu", "-g", min=0,
         help="[bold yellow](🟡 Specific)[/] Use the Nth GPU for processing")] = \
-        Field(default=0, gt=-1)
+        Field(0, gt=-1)
 
     load_threads: Annotated[int, Option("--load-threads", "-lt", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Load Threads")] \
-        = Field(default=1, gt=0)
+        = Field(1, gt=0)
 
     proc_threads: Annotated[int, Option("--proc-threads", "-pt", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Process Threads")] \
-        = Field(default=2, gt=0)
+        = Field(2, gt=0)
 
     save_threads: Annotated[int, Option("--save-threads", "-st", min=1,
         help="[bold green](🟢 Advanced)[bold yellow] Number of Saving Threads")] \
-        = Field(default=2, gt=0)
+        = Field(2, gt=0)
 
     @property
     def _lpc(self) -> str:
@@ -109,7 +109,7 @@ class Waifu2x(UpscalerNCNN_Base):
 
     model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Waifu2x")] = \
-        Field(default=Model.models_cunet)
+        Field(Model.models_cunet)
 
     @staticmethod
     def _download_url() -> str:
@@ -167,7 +167,7 @@ class Realesr(UpscalerNCNN_Base):
 
     model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for RealESRGAN")] = \
-        Field(default=Model.realesr_animevideov3)
+        Field(Model.realesr_animevideov3)
 
     @staticmethod
     def _download_url() -> str:
@@ -220,7 +220,7 @@ class Upscayl(UpscalerNCNN_Base):
 
     model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Upscayl")] = \
-        Field(default=Model.realesrgan_x4plus_anime)
+        Field(Model.realesrgan_x4plus_anime)
 
     @staticmethod
     def _download_url() -> str:

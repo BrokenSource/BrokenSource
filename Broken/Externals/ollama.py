@@ -3,18 +3,18 @@ import subprocess
 from typing import Annotated
 
 import ollama
-import typer
 from halo import Halo
 from pydantic import Field
+from typer import Option
 
 from Broken import BrokenPath, BrokenPlatform, log, shell
 from Broken.Externals import ExternalModelsBase
 
 
 class BrokenOllama(ExternalModelsBase):
-    model: Annotated[str, typer.Option("--model", "-m",
+    model: Annotated[str, Option("--model", "-m",
         help="[bold green](🟢 Basic)[/] Any valid model name from https://ollama.com/library")] = \
-        Field(default="qwen2")
+        Field("qwen2")
 
     def install(self):
         if bool(shutil.which("ollama")):

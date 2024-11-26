@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Optional, Union
 
 import numpy
-import typer
 from halo import Halo
 from intervaltree import IntervalTree
 from pydantic import BaseModel, ConfigDict, Field
+from typer import Option
 
 from Broken import (
     BROKEN,
@@ -44,13 +44,13 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         LargeDist2   = "distil-large-v2"
         LargeDist3   = "distil-large-v3"
 
-    model: Annotated[Model, typer.Option("--model", "-m",
+    model: Annotated[Model, Option("--model", "-m",
         help="[bold green](🟢 Basic)[/] Model to use for Transcription [green](tiny, base, small, medium, large)[/]")] = \
-        Field(default=Model.LargeV2)
+        Field(Model.LargeV2)
 
-    lowvram: Annotated[bool, typer.Option("--lowvram", "-l",
+    lowvram: Annotated[bool, Option("--lowvram", "-l",
         help="[bold green](🟢 Basic)[/] Use INT8 instead of FP16 for low VRAM GPUs")] = \
-        Field(default=False)
+        Field(False)
 
     def _load_model(self):
         self.load_torch()

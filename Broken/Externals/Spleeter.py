@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Tuple
 
-import typer
 from pydantic import Field
+from typer import Option
 
 from Broken import BROKEN, install
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
@@ -16,13 +16,13 @@ if TYPE_CHECKING:
     import torch
 
 class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
-    cache: Annotated[Path, typer.Option("--cache", "-c",
+    cache: Annotated[Path, Option("--cache", "-c",
         help="[bold green](🟢 Basic)[/] Output directory for the stems, works as cache")] = \
         BROKEN.DIRECTORIES.SYSTEM_TEMP/"Spleeter"
 
-    format: Annotated[str, typer.Option("--format", "-f",
+    format: Annotated[str, Option("--format", "-f",
         help="[bold green](🟢 Basic)[/] Output format for the stems")] = \
-        Field(default="ogg")
+        Field("ogg")
 
     def _load_model(self) -> None:
         self.load_torch()

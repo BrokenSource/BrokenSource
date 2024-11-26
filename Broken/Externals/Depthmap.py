@@ -128,7 +128,7 @@ class DepthAnythingBase(BaseEstimator):
 
     model: Annotated[Model, Option("--model", "-m",
         help="[bold red](🔴 Basic)[/] What model of DepthAnythingV2 to use")] = \
-        Field(default=Model.Small)
+        Field(Model.Small)
 
     _processor: Any = PrivateAttr(None)
 
@@ -242,7 +242,7 @@ class ZoeDepth(BaseEstimator):
 
     model: Annotated[Model, Option("--model", "-m",
         help="[bold red](🔴 Basic)[/] What model of ZoeDepth to use")] = \
-        Field(default=Model.N)
+        Field(Model.N)
 
     def _load_model(self) -> None:
         install(packages="timm", pypi="timm==0.6.7", args="--no-deps")
@@ -274,7 +274,7 @@ class Marigold(BaseEstimator):
 
     variant: Annotated[Variant, Option("--variant", "-v",
         help="What variant of Marigold to use")] = \
-        Field(default=Variant.FP16)
+        Field(Variant.FP16)
 
     def _load_model(self) -> None:
         install("accelerate", "diffusers", "matplotlib")

@@ -54,7 +54,7 @@ class ExternalModelsBase(BaseModel, ABC):
         validate_assignment=True
     )
 
-    model: str = Field(default="any")
+    model: str = Field("any")
 
     _model: Any = PrivateAttr(None)
     """The true loaded model object"""

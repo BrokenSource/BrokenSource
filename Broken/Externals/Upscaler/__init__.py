@@ -28,19 +28,19 @@ class UpscalerBase(ExternalModelsBase, ABC):
 
     width: Annotated[int, Option("--width", "-w", min=0,
         help="[bold red](🔴 Basic   )[/] Upscaled image width, automatic on height aspect ratio if 0, forced if both are set")] = \
-        Field(default=0, gt=-1)
+        Field(0, gt=-1)
 
     height: Annotated[int, Option("--height", "-h", min=0,
         help="[bold red](🔴 Basic   )[/] Upscaled image height, automatic on width aspect ratio if 0, forced if both are set")] = \
-        Field(default=0, gt=-1)
+        Field(0, gt=-1)
 
     scale: Annotated[int, Option("--scale", "-s", min=1,
         help="[bold red](🔴 Basic   )[/] Single pass upscale factor. For precision, over-scale and force width and/or height")] = \
-        Field(default=2, gt=0)
+        Field(2, gt=0)
 
     passes: Annotated[int, Option("--passes", "-p", min=1,
         help="[bold red](🔴 Basic   )[/] Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
-        Field(default=1, gt=0)
+        Field(1, gt=0)
 
     class Format(str, BrokenEnum):
         PNG = "png"
@@ -48,11 +48,11 @@ class UpscalerBase(ExternalModelsBase, ABC):
 
     format: Annotated[Format, Option("--format", "-f",
         help="[bold red](🔴 Basic   )[/] Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
-        Field(default=Format.JPG)
+        Field(Format.JPG)
 
     quality: Annotated[int, Option("--quality", "-q", min=0, max=100,
         help="[bold red](🔴 Basic   )[/] Temporary image processing 'PIL.Image.save' quality used on --format")] = \
-        Field(default=95, ge=0, le=100)
+        Field(95, ge=0, le=100)
 
     def output_size(self, width: int, height: int) -> Tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""

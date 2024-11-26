@@ -321,7 +321,7 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
     wrapper.__signature__ = inspect.signature(instance.__class__)
     wrapper.__doc__ = instance.__doc__
 
-    # Inject docstring into typer.Option's help
+    # Inject docstring into typer's help
     for value in instance.model_fields.values():
         for metadata in value.metadata:
             if isinstance(metadata, OptionInfo):
@@ -523,13 +523,13 @@ class SerdeBaseModel(BaseModel):
 
     # Serialization
 
-    def json(self, full: bool=False) -> str:
+    def json(self, full: bool=True) -> str:
         return self.model_dump_json(
             exclude_defaults=(not full),
             exclude_none=False
         )
 
-    def dict(self, full: bool=False) -> dict:
+    def dict(self, full: bool=True) -> dict:
         return self.model_dump(
             exclude_defaults=(not full),
             exclude_none=False
