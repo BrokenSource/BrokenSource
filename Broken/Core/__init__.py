@@ -41,7 +41,7 @@ import click
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger as log
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import arrow
@@ -520,6 +520,9 @@ class BrokenAttrs:
 
 
 class SerdeBaseModel(BaseModel):
+    model_config = ConfigDict(
+        use_attribute_docstrings=True,
+    )
 
     # Serialization
 
