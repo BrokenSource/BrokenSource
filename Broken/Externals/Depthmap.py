@@ -44,8 +44,11 @@ os.environ.update(dict(
 
 # ------------------------------------------------------------------------------------------------ #
 
-class BaseEstimator(ExternalTorchBase, ExternalModelsBase, ABC):
-
+class BaseEstimator(
+    ExternalTorchBase,
+    ExternalModelsBase,
+    ABC
+):
     _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
     """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
 

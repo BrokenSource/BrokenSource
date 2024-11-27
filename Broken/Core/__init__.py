@@ -524,6 +524,11 @@ class SerdeBaseModel(BaseModel):
         use_attribute_docstrings=True,
     )
 
+    # Deterministic hash heuristic
+
+    def __hash__(self) -> int:
+        return hash(int(hashlib.sha256(self.json().encode()).hexdigest(), 16))
+
     # Serialization
 
     def json(self, full: bool=True) -> str:
