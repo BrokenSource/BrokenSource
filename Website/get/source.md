@@ -52,6 +52,9 @@ title: Get/Source
         ```bash title="Ensure submodules are on main"
         git submodule foreach --recursive 'git checkout main || true'
         ```
+        ```bash title="Create venv and install dependencies"
+        uv sync --all-packages
+        ```
         === "Directly with uv"
             <span/>
 
@@ -63,9 +66,6 @@ title: Get/Source
         === "Traditional method"
             <span/>
 
-            ```bash title="Create venv and install dependencies"
-            uv sync
-            ```
             ```bash title="Activate the venv"
             # Windows:
             .venv\Scripts\Activate.ps1 # PowerShell
