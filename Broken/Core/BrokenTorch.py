@@ -5,7 +5,7 @@ from typing import Annotated, Any, Optional
 
 from typer import Option
 
-from Broken import BrokenEnum, BrokenPlatform, Native, easy_lock, log, shell
+from Broken import BrokenEnum, BrokenPlatform, Native, Runtime, easy_lock, log, shell
 
 
 class TorchFlavor(str, BrokenEnum):
@@ -54,7 +54,13 @@ class BrokenTorch:
 
         # Ask interactively if no flavor was provided
         if not (flavor := TorchFlavor.get(flavor)):
-            if (not BrokenPlatform.OnMacOS):
+
+            # Assume it's a Linux server on NVIDIA
+            if (not Runtime.Interactive):
+                flavor = TorchFlavor.CUDA121
+
+            # Pick your GPU on non-macos
+            elif (not BrokenPlatform.OnMacOS):
                 if installed:
                     log.special("""
                     PyTorch is installed, now managing package versions!
