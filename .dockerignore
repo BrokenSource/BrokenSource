@@ -3,6 +3,7 @@ ___*
 .venv
 .vscode
 Build
+Meta
 Release
 *.env
 *.dockerfile

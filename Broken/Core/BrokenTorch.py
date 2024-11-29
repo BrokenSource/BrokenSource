@@ -1,11 +1,11 @@
 import site
 import sys
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from typer import Option
 
-from Broken import BrokenEnum, BrokenPlatform, Native, log, shell
+from Broken import BrokenEnum, BrokenPlatform, Native, easy_lock, log, shell
 
 
 class TorchFlavor(str, BrokenEnum):
@@ -28,17 +28,18 @@ class BrokenTorch:
                 exec(torch_version.read_text(), namespace := {})
                 return namespace["__version__"]
 
+    @easy_lock
     @staticmethod
     def install(
         version: Annotated[str,
             Option("--version", "-v",
             help="Torch version to install (found in https://pypi.org/project/torch/#history)"
-        )] = "2.4.1",
+        )]="2.5.1",
 
         flavor: Annotated[Optional[TorchFlavor],
             Option("--flavor", "-f",
             help="Torch flavor to install. 'None' to ask interactively"
-        )] = None,
+        )]=None,
 
         exists_ok: bool=False
     ) -> None:

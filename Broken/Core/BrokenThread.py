@@ -3,17 +3,17 @@ import time
 from threading import Thread
 from typing import Any, Callable, Dict, List
 
-from attrs import define
+from attrs import Factory, define
 
 
 @define
 class BrokenThreadPool:
-    threads: List[Thread] = []
+    threads: List[Thread] = Factory(list)
     max: int = 1
 
     @property
     def alive(self) -> List[Thread]:
-        return [thread for thread in self.threads if thread.is_alive()]
+        return [x for x in self.threads if x.is_alive()]
 
     @property
     def n_alive(self) -> int:

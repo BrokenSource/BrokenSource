@@ -5,7 +5,8 @@ from pathlib import Path
 from subprocess import DEVNULL
 from typing import Annotated, Literal
 
-from PIL.Image import Image
+from PIL import Image
+from PIL.Image import Image as ImageType
 from pydantic import Field, field_validator
 from typer import Option
 
@@ -132,7 +133,11 @@ class Waifu2x(UpscalerNCNN_Base):
             raise ValueError(f"Denoise must be one of {allowed} for Waifu2x")
         return value
 
-    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
+    def _upscale(self,
+        input: ImageType, *,
+        echo: bool=True,
+        single_core: bool=False
+    ) -> ImageType:
         with self.path_image() as output:
             with self.path_image(input) as input:
                 shell(
@@ -184,7 +189,11 @@ class Realesr(UpscalerNCNN_Base):
             raise ValueError(f"Scale must be one of {allowed} for RealESRGAN")
         return value
 
-    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
+    def _upscale(self,
+        input: ImageType, *,
+        echo: bool=True,
+        single_core: bool=False
+    ) -> ImageType:
         with self.path_image() as output:
             with self.path_image(input) as input:
                 shell(
@@ -249,7 +258,11 @@ class Upscayl(UpscalerNCNN_Base):
             raise ValueError(f"Denoise must be one of {allowed} for Upscayl")
         return value
 
-    def _upscale(self, input: Image, *, echo: bool=True, single_core: bool=False) -> Image:
+    def _upscale(self,
+        input: ImageType, *,
+        echo: bool=True,
+        single_core: bool=False
+    ) -> ImageType:
         with self.path_image() as output:
             with self.path_image(input) as input:
                 binary = self.download()

@@ -26,6 +26,7 @@ class LoaderImage(BrokenLoader):
             if not LoaderImage._cache:
                 LoaderImage._cache = requests_cache.CachedSession(
                     Broken.BROKEN.DIRECTORIES.CACHE/"LoaderImage.sqlite",
+                    expire_after=1800
                 )
         except ImportError:
             return None

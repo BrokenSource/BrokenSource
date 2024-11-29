@@ -14,7 +14,8 @@ from typing import (
     Union,
 )
 
-from PIL.Image import Image
+from PIL import Image
+from PIL.Image import Image as ImageType
 from pydantic import ConfigDict, Field
 from typer import Option
 
@@ -72,9 +73,9 @@ class UpscalerBase(ExternalModelsBase, ABC):
                 suffix=f".{denum(self.format)}").name,
                 delete=(image is None),
             )
-            if image is Image:
+            if image is ImageType:
                 pass
-            elif isinstance(image, Image):
+            elif isinstance(image, ImageType):
                 image.save(file, quality=self.quality)
             elif isinstance(image, Path) and Path(image).exists():
                 shutil.copy(image, file)
@@ -84,9 +85,9 @@ class UpscalerBase(ExternalModelsBase, ABC):
 
     def upscale(self,
         image: LoadableImage,
-        output: Union[Path, Type[Image]]=Image,
+        output: Union[Path, ImageType]=ImageType,
         **config
-    ) -> Union[Path, Type[Image]]:
+    ) -> Union[Path, ImageType]:
         """
         Upscale some input image given by its path or Image object.
 
@@ -156,7 +157,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
             return image
 
     @abstractmethod
-    def _upscale(self, image: Image, **config) -> Image:
+    def _upscale(self, image: ImageType, **config) -> ImageType:
         """The upscaler's proper implementation"""
         ...
 
@@ -168,7 +169,7 @@ class PillowUpscaler(UpscalerBase):
     def _load_model(self):
         pass
 
-    def _upscale(self, image: Image) -> Image:
+    def _upscale(self, image: ImageType) -> ImageType:
         return image.resize(self.output_size(*image.size), Image.LANCZOS)
 
 class NoUpscaler(UpscalerBase):
@@ -177,10 +178,10 @@ class NoUpscaler(UpscalerBase):
     def _load_model(self):
         pass
 
-    def upscale(self, *args, **kwargs) -> Image:
+    def upscale(self, *args, **kwargs) -> ImageType:
         return args[0]
 
-    def _upscale(self, image: Image) -> Image:
+    def _upscale(self, image: ImageType) -> ImageType:
         return image
 
 # ------------------------------------------------------------------------------------------------ #

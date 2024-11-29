@@ -133,6 +133,7 @@ class Native:
 import Broken.Resources as BrokenResources
 from Broken.Core import (
     BrokenAttrs,
+    BrokenBaseModel,
     BrokenFluent,
     BrokenRelay,
     BrokenSingleton,
@@ -143,7 +144,6 @@ from Broken.Core import (
     Patch,
     PlainTracker,
     SameTracker,
-    SerdeBaseModel,
     Stack,
     apply,
     arguments,
@@ -151,11 +151,11 @@ from Broken.Core import (
     clamp,
     denum,
     dunder,
+    easy_lock,
     every,
     filter_dict,
     flatten,
     hyphen_range,
-    image_hash,
     install,
     iter_dict,
     limited_ratio,

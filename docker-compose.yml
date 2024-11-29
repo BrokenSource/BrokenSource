@@ -7,10 +7,12 @@ services:
     build:
       context: .
       dockerfile: Docker/base.dockerfile
+      args:
+        TORCH_VERSION: ${TORCH_VERSION:-2.5.1}
+        TORCH_FLAVOR: ${TORCH_FLAVOR:-cpu}
 
     volumes:
       - /usr/lib/wsl:/usr/lib/wsl
-      - .:/app
 
     # "--gpus=all"
     deploy:
@@ -52,6 +54,8 @@ services:
       - broken-base
     ports:
       - "7860:7860"
+      - "8000:8000"
     expose:
       - "7860"
+      - "8000"
     <<: *common

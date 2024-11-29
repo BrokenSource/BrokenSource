@@ -48,6 +48,9 @@ nav:
     - Learn:
       - 📜 Foundations: depthflow/learn/foundations.md
       - 🔧 Parameters: depthflow/learn/parameters.md
+    # - API:
+    #   - depthflow/api/index.md
+    #   - 📚 Reference: depthflow/api/reference.md
     - Code reference:
       - 📦 Package: code/depthflow/
 

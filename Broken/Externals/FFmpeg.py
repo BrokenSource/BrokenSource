@@ -30,12 +30,12 @@ from pydantic import ConfigDict, Field, field_validator
 from typer import Option
 
 from Broken import (
+    BrokenBaseModel,
     BrokenEnum,
     BrokenFluent,
     BrokenPath,
     BrokenPlatform,
     BrokenTyper,
-    SerdeBaseModel,
     denum,
     every,
     flatten,
@@ -47,7 +47,7 @@ from Broken.Types import Bytes, Hertz, Seconds
 
 # ------------------------------------------------------------------------------------------------ #
 
-class FFmpegModuleBase(SerdeBaseModel, ABC):
+class FFmpegModuleBase(BrokenBaseModel, ABC):
     model_config = ConfigDict(
         use_attribute_docstrings=True,
         validate_assignment=True,
@@ -938,7 +938,7 @@ FFmpegAudioCodecType: TypeAlias = Union[
 
 # ------------------------------------------------------------------------------------------------ #
 
-class FFmpegFilterBase(SerdeBaseModel, ABC):
+class FFmpegFilterBase(BrokenBaseModel, ABC):
 
     @abstractmethod
     def string(self) -> Iterable[str]:
@@ -992,7 +992,7 @@ FFmpegFilterType: TypeAlias = Union[
 
 # ------------------------------------------------------------------------------------------------ #
 
-class BrokenFFmpeg(SerdeBaseModel, BrokenFluent):
+class BrokenFFmpeg(BrokenBaseModel, BrokenFluent):
     """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
 
     # ------------------------------------------|

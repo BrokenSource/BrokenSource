@@ -1,18 +1,21 @@
 # pyright: reportMissingImports=false
 
-import contextlib
 import copy
 import functools
+import hashlib
 import itertools
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
 
 import numpy
+from diskcache import Cache as DiskCache
 from halo import Halo
 from PIL import Image
+from PIL.Image import Image as ImageType
 from pydantic import Field, PrivateAttr
 from typer import Option
 
@@ -22,7 +25,6 @@ from Broken import (
     BrokenPath,
     BrokenResolution,
     BrokenTyper,
-    image_hash,
     install,
     log,
 )
@@ -49,44 +51,49 @@ class BaseEstimator(
     ExternalModelsBase,
     ABC
 ):
-    _cache: Path = PrivateAttr(default=Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator")
-    """Path where the depth map will be cached. Broken.PROJECT is the current working project"""
+    _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
+        directory=(Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator"),
+        size_limit=int((2**20)*float(os.getenv("DEPTHMAP_CACHE_SIZE_MB", 50))),
+    ))
+    """DiskCache object for caching depth maps"""
 
     _format: str = PrivateAttr("png")
     """The format to save the depth map as"""
 
     @staticmethod
-    def normalize(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place
+    def normalize(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
     @staticmethod
-    def normalize_uint16(array: numpy.ndarray) -> numpy.ndarray:
+    def normalize_uint16(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
         return ((2**16 - 1) * BaseEstimator.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
+
+    @staticmethod
+    def image_hash(image: LoadableImage) -> int: # Fixme: Better place?
+        # Fixme: Speed gains on improving this heuristic, but it's good enough for now
+        return int(hashlib.sha256(LoaderImage(image).tobytes()).hexdigest(), 16)
 
     def estimate(self,
         image: LoadableImage,
         cache: bool=True
     ) -> numpy.ndarray:
 
-        # Load image and find expected cache path
-        image = numpy.array(LoaderImage(image).convert("RGB"))
-        cached_image = self._cache/f"{self.__class__.__name__}-{self.model}-{image_hash(image)}.{self._format}"
-        cached_image.parent.mkdir(parents=True, exist_ok=True)
+        # Hashlib for deterministic hashes, join class name, model, and image hash
+        image: ImageType = numpy.array(LoaderImage(image).convert("RGB"))
+        image_hash: str = f"{hash(self)}{BaseEstimator.image_hash(image)}"
+        image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
 
-        # Load cached estimation if found
-        if (cache and cached_image.exists()):
-            depth = numpy.array(Image.open(cached_image))
-            cached_image.touch()
-        else:
+        # Estimate if not on cache
+        if (not cache) or not (depth := self._cache.get(image_hash)):
             self.load_torch()
             self.load_model()
-            with self._lock, Halo(f"Estimating Depthmap (Torch: {self.device})"):
-                torch.set_num_threads(max(4, multiprocessing.cpu_count()//2))
-                depth = self._estimate(image)
-            depth = BaseEstimator.normalize_uint16(depth)
-            Image.fromarray(depth).save(cached_image)
-            with contextlib.suppress(Exception):
-                self.cleanup()
+            torch.set_num_threads(multiprocessing.cpu_count())
+            depth = BaseEstimator.normalize_uint16(self._estimate(image))
+            Image.fromarray(depth).save(buffer := BytesIO(), format=self._format)
+            self._cache.set(key=image_hash, value=buffer.getvalue())
+        else:
+            # Load the virtual file raw bytes as numpy
+            depth = numpy.array(Image.open(BytesIO(depth)))
 
         return BaseEstimator.normalize(self._post_processing(depth))
 
@@ -99,16 +106,6 @@ class BaseEstimator(
         dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
         normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
         return BaseEstimator.normalize(normal).astype(numpy.float32)
-
-    def cleanup(self, maximum: int=20) -> None:
-        files = list(os.scandir(self._cache))
-
-        if (overflow := (len(files) - maximum)) > 0:
-            files = sorted(files, key=os.path.getmtime)
-
-            for file in itertools.islice(files, overflow):
-                log.debug(f"Removing old depthmap: {file.path}")
-                os.unlink(file.path)
 
     @functools.wraps(estimate)
     @abstractmethod

@@ -93,7 +93,7 @@ class _Directories:
 
     @property
     def SYSTEM_TEMP(self) -> Path:
-        return Path(tempfile.gettempdir())
+        return (Path(tempfile.gettempdir())/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
 
     # # Repository specific
 

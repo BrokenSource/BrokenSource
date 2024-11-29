@@ -6,10 +6,10 @@ pulseaudio --verbose --exit-idle-time=-1 --system --disallow-exit -D > /dev/null
 # Switch case on the first argv
 case "$1" in
     "depthflow")
-        python /App/Docker/Scripts/depthflow.py
+        uv run python /App/Docker/Scripts/depthflow.py
         ;;
     "shaderflow")
-        python /App/Docker/Scripts/shaderflow.py
+        uv run python /App/Docker/Scripts/shaderflow.py
         ;;
     *)
         echo "Unrecognized command: $1"

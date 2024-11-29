@@ -1,18 +1,18 @@
 # pyright: reportMissingImports=false
 
-import functools
 import inspect
 import os
 from abc import ABC, abstractmethod
-from threading import Lock
 from typing import TYPE_CHECKING, Any, Self
 
 from halo import Halo
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+from pydantic import ConfigDict, Field, PrivateAttr
 
 from Broken import (
+    BrokenBaseModel,
     BrokenTorch,
     SameTracker,
+    easy_lock,
 )
 
 if TYPE_CHECKING:
@@ -21,10 +21,7 @@ if TYPE_CHECKING:
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ExternalTorchBase(BaseModel):
-
-    _lock: Lock = PrivateAttr(default_factory=Lock)
-    """Calling PyTorch in a multi-threaded environment isn't safe, so lock before any inference"""
+class ExternalTorchBase(BrokenBaseModel):
 
     @property
     def device(self) -> str:
@@ -38,17 +35,13 @@ class ExternalTorchBase(BaseModel):
         return "cpu"
 
     def load_torch(self) -> None:
-        global torch
+        """Install and inject torch in the caller's globals"""
         BrokenTorch.install(exists_ok=True)
-        with Halo(text="Importing PyTorch..."):
-            import torch
-
-        # Inject torch in the caller's global namespace
-        inspect.currentframe().f_back.f_globals["torch"] = torch
+        inspect.currentframe().f_back.f_globals["torch"] = __import__("torch")
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ExternalModelsBase(BaseModel, ABC):
+class ExternalModelsBase(BrokenBaseModel, ABC):
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         validate_assignment=True
@@ -62,6 +55,7 @@ class ExternalModelsBase(BaseModel, ABC):
     _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)
     """Keeps track of the current loaded model name, to avoid reloading"""
 
+    @easy_lock
     def load_model(self) -> Self:
         if self._loaded(self.model):
             return
@@ -70,7 +64,6 @@ class ExternalModelsBase(BaseModel, ABC):
         self._load_model()
         return self
 
-    @functools.wraps(load_model)
     @abstractmethod
     def _load_model(self) -> None:
         ...

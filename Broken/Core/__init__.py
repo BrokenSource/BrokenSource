@@ -11,16 +11,14 @@ import shutil
 import subprocess
 import sys
 import time
-import uuid
 from abc import ABC, abstractmethod
 from collections import deque
 from numbers import Number
 from pathlib import Path
 from queue import Queue
-from threading import Thread
+from threading import Lock, Thread
 from typing import (
     TYPE_CHECKING,
-    Annotated,
     Any,
     Callable,
     Container,
@@ -29,7 +27,6 @@ from typing import (
     Generator,
     Iterable,
     List,
-    Literal,
     Optional,
     Self,
     Tuple,
@@ -467,6 +464,27 @@ def recache(*args, patch: bool=False, **kwargs):
     return session
 
 
+def easy_lock(method: Callable) -> Callable:
+    lock = Lock()
+
+    @functools.wraps(method)
+    def wrapper(*args, **kwargs):
+        with lock:
+            return method(*args, **kwargs)
+
+    return wrapper
+
+
+def delete_old_files(self, path: Path, maximum: int=20) -> None:
+    files = list(os.scandir(path))
+
+    if (overflow := (len(files) - maximum)) > 0:
+        files = sorted(files, key=os.path.getmtime)
+
+        for file in itertools.islice(files, overflow):
+            os.unlink(file.path)
+
+
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
@@ -519,7 +537,7 @@ class BrokenAttrs:
         ...
 
 
-class SerdeBaseModel(BaseModel):
+class BrokenBaseModel(BaseModel):
     model_config = ConfigDict(
         use_attribute_docstrings=True,
     )
@@ -527,7 +545,7 @@ class SerdeBaseModel(BaseModel):
     # Deterministic hash heuristic
 
     def __hash__(self) -> int:
-        return hash(int(hashlib.sha256(self.json().encode()).hexdigest(), 16))
+        return int(hashlib.sha256(self.json().encode()).hexdigest(), 16)
 
     # Serialization
 
@@ -755,11 +773,6 @@ class PlainTracker:
 
 # ------------------------------------------------------------------------------------------------ #
 # Stuff that needs a revisit
-
-
-def image_hash(image) -> str:
-    """A Fast-ish method to get an object's hash that implements .tobytes()"""
-    return str(uuid.UUID(hashlib.sha256(image.tobytes()).hexdigest()[::2]))
 
 
 def transcends(method, base, generator: bool=False):

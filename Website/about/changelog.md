@@ -9,22 +9,27 @@
 
 <!------------------------------------------------------------------------------------------------->
 
-### 🔘 0.8.1 <small>Ongoing</small> {#0.8.1}
+### 🔘 0.9.0 <small>Ongoing</small> {#0.9.0}
 
 :material-arrow-right: You can run this version right now [from source](site:/get/source)!
 
-##### General {#0.8.1-general}
+##### General {#0.9.0-general}
 - Added support for Intel Macs and Linux Arm builds to the releases
 - Actually fix FFmpeg automatic downloads on macOS
 
-##### DepthFlow {#0.8.1-depthflow}
+##### DepthFlow {#0.9.0-depthflow}
 - Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option
 - Fixed drag and drop of files due new lazy loading logic
 - Improve dolly preset phase start to be more accurate
 - Add stretch detection math on the shader for potential fill-in with gen ai
-    - Options are `--inpaint`, `--inpaint-black`, `--inpaint-limit`
+    - Command is `inpaint`, options `--black`, `--limit`
+- Create a robust and fast `DepthServer` with FastAPI interface
+- DepthMaps are now cached using diskcache for safer and safer cross-process access
+- Rewrite the animation system to be more flexible and reliable
+- Add colors filters (sepia, grayscale, saturation, contrast, brightness)
+- Add transverse lens distortion filter (intensity, decay options)
 
-##### ShaderFlow {#0.8.1-shaderflow}
+##### ShaderFlow {#0.9.0-shaderflow}
 - Enforce `#!py weakref.proxy()` on every module's `.scene` to allow for explicit `gc.collect()` to find circular references and clean up resources properly
 - Assign all module scenes with a `weakref.proxy` for better gc collection
 - Add an heuristic to use the headless context when exporting videos (TODO)
