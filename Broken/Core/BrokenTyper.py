@@ -137,7 +137,7 @@ class BrokenTyper:
         if getattr(target, "__isabstractmethod__", False):
             return
 
-        _class = (target if isinstance(target, type) else target.__class__)
+        _class = (target if isinstance(target, type) else type(target))
 
         # Convert pydantic to a wrapper with same signature
         if issubclass(_class, BaseModel):

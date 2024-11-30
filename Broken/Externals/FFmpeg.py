@@ -380,10 +380,10 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
     """Use [bold orange3][link=https://www.videolan.org/developers/x265.html]VideoLAN's[/link][/] [blue][link=https://trac.ffmpeg.org/wiki/Encode/H.265]libx265[/link][/]"""
     type: Annotated[Literal["h265"], BrokenTyper.exclude()] = "h265"
 
-    crf: Annotated[int,
+    crf: Annotated[Optional[int],
         Option("--crf", "-c", min=0, max=51)] = \
         Field(25, ge=0, le=51)
-    """Constant Rate Factor. 0 is lossless, 51 is the worst quality"""
+    """Constant Rate Factor (perceptual quality). 0 is lossless, 51 is the worst quality"""
 
     bitrate: Annotated[Optional[int],
         Option("--bitrate", "-b", min=0)] = \

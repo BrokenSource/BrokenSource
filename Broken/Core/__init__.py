@@ -315,7 +315,7 @@ def pydantic2typer(instance: object, post: Callable=None) -> Callable:
         if post: post(instance)
 
     # Copy the signatures to the wrapper function (the new initializer)
-    wrapper.__signature__ = inspect.signature(instance.__class__)
+    wrapper.__signature__ = inspect.signature(type(instance))
     wrapper.__doc__ = instance.__doc__
 
     # Inject docstring into typer's help
@@ -825,13 +825,13 @@ class LazyImport:
         return getattr(self.__load__(), name)
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(name='{self._lzname_}')"
+        return f"{type(self).__name__}(name='{self._lzname_}')"
 
     def __enter__(self):
 
         @functools.wraps(LazyImport.__import__)
         def laziest(*args):
-            module = self.__class__(_name=args[0])
+            module = type(self)(_name=args[0])
             return sys.modules.setdefault(module._lzname_, module)
 
         # Patch the import function with ours

@@ -16,8 +16,7 @@ title: Get/Installation
 
 # ✅ Installation
 
-- There are **three ways** to get started with the projects:
-
+- There are **a couple of ways** to get started with the projects:
 
 ### 📦 From Releases
 
@@ -28,9 +27,7 @@ title: Get/Installation
     - **Double click and run**, everything's managed for you.
 
     <sup><b>Recommended for:</b> Basic users, alpha testers.</sup>
-</a>
-</div>
-
+</a></div>
 
 ### 🧀 From PyPI
 
@@ -41,9 +38,7 @@ title: Get/Installation
     - Run the package commands or as a python import.
 
     <sup><b>Recommended for:</b> Basic users, advanced users, developers</sup>
-</a>
-</div>
-
+</a></div>
 
 ### 🔥 From Source
 
@@ -54,5 +49,4 @@ title: Get/Installation
     - **Latest** features, bugs, fixes, highly configurable.
 
     <sup><b>Recommended for:</b usersb> Basic++ users, contributors, developers.</sup>
-</a>
-</div>
+</a></div>

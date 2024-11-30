@@ -248,7 +248,7 @@ class BrokenEnumBase:
         """
         return attrs.field(
             default=self,
-            converter=self.__class__.get,
+            converter=type(self).get,
             **kwargs
         )
 

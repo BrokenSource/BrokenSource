@@ -44,13 +44,13 @@ nav:
     - Quick start:
       - depthflow/quick/index.md
       - ✅ Installation: depthflow/quick/install.md
-      - ⭐️ Examples: depthflow/quick/examples.md
+      - 🔴 Gradio WebUI: depthflow/quick/webui.md
+      - 🟡 Command line: depthflow/quick/cli.md
+      - 🟢 Python scripts: depthflow/quick/scripts.md
+      - ☁️ Cloud/Docker: depthflow/quick/docker.md
     - Learn:
       - 📜 Foundations: depthflow/learn/foundations.md
       - 🔧 Parameters: depthflow/learn/parameters.md
-    # - API:
-    #   - depthflow/api/index.md
-    #   - 📚 Reference: depthflow/api/reference.md
     - Code reference:
       - 📦 Package: code/depthflow/
 
