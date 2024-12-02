@@ -6,9 +6,6 @@
 
 FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
-ENV UV_COMPILE_BYTECODE=1
-ARG TORCH_VERSION="2.5.1"
-ARG TORCH_FLAVOR="cpu"
 RUN apt update
 WORKDIR /App
 
@@ -24,7 +21,7 @@ ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
 
 # Install libEGL stuff (for non-nvidia glvnd base images)
-RUN apt update && apt install -y libegl1-mesa-dev libglvnd-dev libglvnd0
+RUN apt install -y libegl1-mesa-dev libglvnd-dev libglvnd0
 RUN mkdir -p /usr/share/glvnd/egl_vendor.d
 RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > \
     /usr/share/glvnd/egl_vendor.d/10_nvidia.json
@@ -34,11 +31,14 @@ RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-
 
 # Install uv and create a virtual environment
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+ENV UV_COMPILE_BYTECODE=1
 RUN uv venv --python 3.12
 ENV VIRTUAL_ENV=/App/.venv
 ENV PATH="/App/.venv/bin:$PATH"
 
 # Install a PyTorch flavor
+ARG TORCH_VERSION="2.5.1"
+ARG TORCH_FLAVOR="cpu"
 RUN uv pip install torch==${TORCH_VERSION}+${TORCH_FLAVOR} \
     --index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 RUN uv pip install transformers
