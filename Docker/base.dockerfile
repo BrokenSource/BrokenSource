@@ -1,4 +1,7 @@
 # ------------------------------------------------------------------------------------------------ #
+# (c) MIT License, Tremeschin
+# Dockerfile v2024.12.1
+# ------------------------------------------------------------------------------------------------ #
 # General metadata and configuration
 
 FROM ubuntu:24.04
@@ -6,6 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV UV_COMPILE_BYTECODE=1
 ARG TORCH_VERSION="2.5.1"
 ARG TORCH_FLAVOR="cpu"
+RUN apt update
 WORKDIR /App
 
 # ------------------------------------------------------------------------------------------------ #
@@ -35,19 +39,12 @@ ENV VIRTUAL_ENV=/App/.venv
 ENV PATH="/App/.venv/bin:$PATH"
 
 # Install a PyTorch flavor
-RUN uv pip install torch==${TORCH_VERSION}+${TORCH_FLAVOR} --index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
+RUN uv pip install torch==${TORCH_VERSION}+${TORCH_FLAVOR} \
+    --index-url https://download.pytorch.org/whl/${TORCH_FLAVOR}
 RUN uv pip install transformers
 
-# Ubuntu apt stuff
-RUN apt update && apt install -y curl xz-utils
-
-# Fixme: Why BtbN FFmpeg binaries "are faster" than 'apt install ffmpeg'?
-ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
-ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
-RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
-
-# ------------------------------------------------------------------------------------------------ #
-# Audio
+# Video encoding and decoding
+RUN apt install -y ffmpeg
 
 # SoundCard needs libpulse.so and server
 RUN apt install -y pulseaudio
