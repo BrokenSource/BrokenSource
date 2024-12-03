@@ -510,7 +510,7 @@ class BrokenApp(ABC, BrokenAttrs):
     typer: BrokenTyper = Factory(BrokenTyper)
 
     def __post__(self):
-        self.typer.release_repl()
+        self.typer.should_shell()
         self.typer.description = self.PROJECT.ABOUT
 
         with BrokenProfiler(self.PROJECT.APP_NAME):

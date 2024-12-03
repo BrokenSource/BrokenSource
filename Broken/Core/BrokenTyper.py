@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import inspect
 import itertools
 import os
 import shlex
@@ -35,7 +36,6 @@ from Broken import (
     flatten,
     list_get,
     log,
-    pydantic2typer,
 )
 
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
@@ -69,7 +69,7 @@ class BrokenTyper:
     posthook: Callable = lambda: None
     """Function to run after any command"""
 
-    repl: bool = False
+    shell: bool = False
     """If True, will run a REPL when no arguments are provided"""
 
     naih: bool = True
@@ -142,7 +142,7 @@ class BrokenTyper:
         # Convert pydantic to a wrapper with same signature
         if issubclass(_class, BaseModel):
             _instance = (target() if isinstance(target, type) else target)
-            target = pydantic2typer(instance=_instance, post=post)
+            target = BrokenTyper.pydantic2typer(cls=_instance, post=post)
             name = (name or _class.__name__)
             naih = True # (Complex command)
 
@@ -170,13 +170,42 @@ class BrokenTyper:
             **kwargs,
         )(target)
 
-    @property
-    def _repl(self) -> bool:
-        BYPASS = (os.getenv("REPL", "1") == "0")
-        return (self.repl and not BYPASS)
+    @staticmethod
+    def pydantic2typer(cls: object, post: Callable=None) -> Callable:
+        """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
+        to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
+        will send all default ones overriden by the user commands. The 'post' method is called afterwards,
+        for example `post = self.set_object` for back-communication between the caller and the instance"""
+        from pydantic import BaseModel
+        from typer.models import OptionInfo
 
-    def release_repl(self) -> Self:
-        self.repl = all((
+        if not issubclass(this := type(cls), BaseModel):
+            raise TypeError(f"Object {this} is not a Pydantic BaseModel")
+
+        def wrapper(**kwargs):
+            for name, value in kwargs.items():
+                setattr(cls, name, value)
+            if post: post(cls)
+
+        # Copy the signatures to the wrapper function (the new initializer)
+        wrapper.__signature__ = inspect.signature(type(cls))
+        wrapper.__doc__ = cls.__doc__
+
+        # Inject docstring into typer's help
+        for value in cls.model_fields.values():
+            for metadata in value.metadata:
+                if isinstance(metadata, OptionInfo):
+                    metadata.help = (metadata.help or value.description)
+
+        return wrapper
+
+    @property
+    def _shell(self) -> bool:
+        BYPASS = (os.getenv("REPL", "1") == "0")
+        return (self.shell and not BYPASS)
+
+    def should_shell(self) -> Self:
+        self.shell = all((
             (Runtime.Binary),
             (not BrokenPlatform.OnLinux),
             (not arguments()),
@@ -206,7 +235,7 @@ class BrokenTyper:
         app = BrokenTyper(description=(
             "📦 [bold orange3]Note:[/] The default command is implicit when no other command is run!\n\n"
             "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
-        ), help=False).release_repl()
+        ), help=False).should_shell()
 
         # Preprocess arguments
         nested = flatten(nested)
@@ -236,7 +265,7 @@ class BrokenTyper:
 
         return app(sys.argv[1:])
 
-    def repl_welcome(self) -> None:
+    def shell_welcome(self) -> None:
         console.print(Panel(
             title="( 🔴🟡🟢 ) Basic prompt for releases",
             title_align="left",
@@ -255,7 +284,7 @@ class BrokenTyper:
             ),
         ))
 
-    def repl_prompt(self) -> bool:
+    def shell_prompt(self) -> bool:
         try:
             sys.argv[1:] = shlex.split(typer.prompt(
                 text="", prompt_suffix="\n❯",
@@ -280,8 +309,8 @@ class BrokenTyper:
         for index in itertools.count(0):
 
             # On subsequent runs, prompt for command
-            if (self._repl) and (index > 0):
-                if not self.repl_prompt():
+            if (self._shell) and (index > 0):
+                if not self.shell_prompt():
                     return
 
             # Allow repl users to use the same commands as python entry point scripts,
@@ -302,14 +331,14 @@ class BrokenTyper:
             except KeyboardInterrupt:
                 log.success("BrokenTyper exit KeyboardInterrupt")
             except Exception as error:
-                if (not self.repl):
+                if (not self.shell):
                     raise error
                 console.print_exception(); print() # noqa
                 log.error(f"BrokenTyper exited with error: {repr(error)}")
                 input("\nPress Enter to continue..")
 
             # Exit out non-repl mode
-            if (not self._repl):
+            if (not self._shell):
                 return
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
@@ -318,7 +347,7 @@ class BrokenTyper:
 
             # Pretty welcome message on the first 'empty' run
             if (index == 0):
-                self.repl_welcome()
+                self.shell_welcome()
 
             # The args were "consumed"
             sys.argv = [sys.argv[0]]

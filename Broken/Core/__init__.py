@@ -16,7 +16,7 @@ from collections import deque
 from numbers import Number
 from pathlib import Path
 from queue import Queue
-from threading import Lock, Thread
+from threading import Thread
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -42,6 +42,7 @@ from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import arrow
+
 
 def flatten(
     *items: Iterable[Any],
@@ -267,64 +268,31 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None,
 
 
 @contextlib.contextmanager
-def temp_env(**env: Dict[str, str]) -> Generator[None, None, None]:
+def environment(**variables: Dict[str, str]) -> Generator[None, None, None]:
     """Temporarily sets environment variables inside a context"""
-    old = os.environ.copy()
-    os.environ.update(env)
+    original = os.environ.copy()
+    os.environ.update(variables)
     try:
-        yield
+        yield None
     finally:
         os.environ.clear()
-        os.environ.update(old)
+        os.environ.update(original)
 
 
-class block_modules:
+@contextlib.contextmanager
+def block_modules(*modules: List[str]):
     """Pretend a module isn't installed"""
-    def __init__(self, *modules: List[str]):
-        self.modules = flatten(modules)
-        self.state = sys.modules.copy()
-
-        for module in self.modules:
+    state = sys.modules.copy()
+    try:
+        for module in flatten(modules):
             sys.modules[module] = None
-
-    def __enter__(self) -> Self:
-        return self
-
-    def __exit__(self, *args) -> None:
-        for module in self.modules:
-            if (module in self.state):
-                sys.modules[module] = self.state[module]
+        yield None
+    finally:
+        for module in modules:
+            if (module in state):
+                sys.modules[module] = state[module]
                 continue
             del sys.modules[module]
-
-
-def pydantic2typer(instance: object, post: Callable=None) -> Callable:
-    """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
-    to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
-    will send all default ones overriden by the user commands. The 'post' method is called afterwards,
-    for example `post = self.set_object` for back-communication between the caller and the instance"""
-    from pydantic import BaseModel
-    from typer.models import OptionInfo
-
-    if not issubclass(this := type(instance), BaseModel):
-        raise TypeError(f"Object {this} is not a Pydantic BaseModel")
-
-    def wrapper(**kwargs):
-        for name, value in kwargs.items():
-            setattr(instance, name, value)
-        if post: post(instance)
-
-    # Copy the signatures to the wrapper function (the new initializer)
-    wrapper.__signature__ = inspect.signature(type(instance))
-    wrapper.__doc__ = instance.__doc__
-
-    # Inject docstring into typer's help
-    for value in instance.model_fields.values():
-        for metadata in value.metadata:
-            if isinstance(metadata, OptionInfo):
-                metadata.help = (metadata.help or value.description)
-
-    return wrapper
 
 
 def smartproxy(object: Any) -> Any:
@@ -464,27 +432,6 @@ def recache(*args, patch: bool=False, **kwargs):
     return session
 
 
-def easy_lock(method: Callable) -> Callable:
-    lock = Lock()
-
-    @functools.wraps(method)
-    def wrapper(*args, **kwargs):
-        with lock:
-            return method(*args, **kwargs)
-
-    return wrapper
-
-
-def delete_old_files(self, path: Path, maximum: int=20) -> None:
-    files = list(os.scandir(path))
-
-    if (overflow := (len(files) - maximum)) > 0:
-        files = sorted(files, key=os.path.getmtime)
-
-        for file in itertools.islice(files, overflow):
-            os.unlink(file.path)
-
-
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
@@ -542,9 +489,8 @@ class BrokenBaseModel(BaseModel):
         use_attribute_docstrings=True,
     )
 
-    # Deterministic hash heuristic
-
     def __hash__(self) -> int:
+        """Deterministic hash heuristic, as hash() is random seeded"""
         return int(hashlib.sha256(self.json().encode()).hexdigest(), 16)
 
     # Serialization
@@ -724,52 +670,6 @@ class EasyTracker:
     def update(self, **shift: Dict) -> None:
         time = __import__("arrow").utcnow().shift(**(shift or {}))
         self.file.write_text(str(time), "utf-8")
-
-
-@define
-class SameTracker:
-    """Doumo same desu. If a value is the same, returns True, else updates it and returns False
-    • Useful on ignoring expensive calls where parameters doesn't changes"""
-    value: Any = None
-
-    def __call__(self, value: Any=True) -> bool:
-        if self.value != value:
-            self.value = value
-            return False
-        return True
-
-
-@define
-class OnceTracker:
-    """Returns False the first time it's called, never nest style: `if once/already(): return`"""
-    _first: bool = False
-
-    def __call__(self) -> bool:
-        if not self._first:
-            self._first = True
-            return False
-        return True
-
-    def decorator(method: Callable) -> Callable:
-        tracker = OnceTracker()
-        @functools.wraps(method)
-        def wrapper(*args, **kwargs):
-            if tracker():
-                return
-            return method(*args, **kwargs)
-        return wrapper
-
-
-@define
-class PlainTracker:
-    value: Any = None
-
-    def __call__(self, set: bool=None) -> bool:
-        """Returns value if None else sets it"""
-        if set is not None:
-            self.value = set
-        return self.value
-
 
 # ------------------------------------------------------------------------------------------------ #
 # Stuff that needs a revisit

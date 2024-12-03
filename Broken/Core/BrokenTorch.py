@@ -1,11 +1,19 @@
 import site
 import sys
 from pathlib import Path
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 
 from typer import Option
 
-from Broken import BrokenEnum, BrokenPlatform, Native, Runtime, easy_lock, log, shell
+from Broken import (
+    BrokenEnum,
+    BrokenPlatform,
+    BrokenThread,
+    Native,
+    Runtime,
+    log,
+    shell,
+)
 
 
 class TorchFlavor(str, BrokenEnum):
@@ -28,7 +36,7 @@ class BrokenTorch:
                 exec(torch_version.read_text(), namespace := {})
                 return namespace["__version__"]
 
-    @easy_lock
+    @BrokenThread.easy_lock
     @staticmethod
     def install(
         version: Annotated[str,

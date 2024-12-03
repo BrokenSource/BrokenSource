@@ -10,9 +10,9 @@ from pydantic import ConfigDict, Field, PrivateAttr
 
 from Broken import (
     BrokenBaseModel,
+    BrokenThread,
     BrokenTorch,
     SameTracker,
-    easy_lock,
 )
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class ExternalModelsBase(BrokenBaseModel, ABC):
     _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)
     """Keeps track of the current loaded model name, to avoid reloading"""
 
-    @easy_lock
+    @BrokenThread.easy_lock
     def load_model(self) -> Self:
         if self._loaded(self.model):
             return

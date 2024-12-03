@@ -2,6 +2,7 @@ import contextlib
 import ctypes
 import functools
 import hashlib
+import itertools
 import os
 import shutil
 import sys
@@ -545,6 +546,16 @@ class BrokenPath:
         for item in map(Path, path):
             if item.is_file():
                 yield item
+
+    @staticmethod
+    def delete_old_files(path: Path, maximum: int=20) -> None:
+        files = list(os.scandir(path))
+
+        if (overflow := (len(files) - maximum)) > 0:
+            files = sorted(files, key=os.path.getmtime)
+
+            for file in itertools.islice(files, overflow):
+                os.unlink(file.path)
 
     # # Specific / "Utils"
 

@@ -323,15 +323,13 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     class RateControl(str, BrokenEnum):
         None_ = None
-        ConstantBitrateHighQuality = "cbr_hq"
-        VariableBitrateHighQuality = "vbr_hq"
         ConstantQuality = "constqp"
         VariableBitrate = "vbr"
         ConstantBitrate = "cbr"
 
     rate_control: Annotated[Optional[RateControl],
         Option("--rc", "-r", hidden=True)] = \
-        Field(RateControl.VariableBitrateHighQuality)
+        Field(RateControl.VariableBitrate)
     """Rate control mode of the bitrate"""
 
     rc_lookahead: Annotated[Optional[int],
@@ -346,8 +344,8 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
 
     gpu: Annotated[Optional[int],
         Option("--gpu", "-g", min=0)] = \
-        Field(0, ge=0)
-    """Use the Nth NVENC capable GPU for encoding, 0 for first available"""
+        Field(-1, ge=-1)
+    """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 
     cq: Annotated[Optional[int],
         Option("--cq", "-q", min=0)] = \
@@ -359,7 +357,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
         yield every("-b:v", 0)
         yield every("-preset", denum(self.preset))
         yield every("-tune", denum(self.tune))
-        yield every("-profile", denum(self.profile))
+        yield every("-profile:v", denum(self.profile))
         yield every("-rc", denum(self.rate_control))
         yield every("-rc-lookahead", self.rc_lookahead)
         yield every("-cbr", int(self.cbr))
@@ -494,10 +492,10 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         Field(False)
     """Use Constant Bitrate mode"""
 
-    gpu: Annotated[int,
+    gpu: Annotated[Optional[int],
         Option("--gpu", "-g", min=0)] = \
-        Field(0, ge=0)
-    """Use the Nth NVENC capable GPU for encoding"""
+        Field(-1, ge=-1)
+    """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 
     cq: Annotated[int,
         Option("--cq", "-q", min=0)] = \
@@ -508,7 +506,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         yield every("-c:v", "hevc_nvenc")
         yield every("-preset", denum(self.preset))
         yield every("-tune", denum(self.tune))
-        yield every("-profile", denum(self.profile))
+        yield every("-profile:v", denum(self.profile))
         yield every("-tier", denum(self.tier))
         yield every("-rc", denum(self.rate_control))
         yield every("-rc-lookahead", self.rc_lookahead)
@@ -721,10 +719,10 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
         Field(10, ge=1)
     """Number of frames to look ahead for the rate control"""
 
-    gpu: Annotated[int,
+    gpu: Annotated[Optional[int],
         Option("--gpu", "-g", min=0)] = \
-        Field(0, ge=0)
-    """Use the Nth NVENC capable GPU for encoding"""
+        Field(-1, ge=-1)
+    """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 
     cq: int = Field(25, ge=1)
     """Set the Constant Quality factor in a Variable Bitrate mode (similar to -crf)"""

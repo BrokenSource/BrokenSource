@@ -1,52 +1,61 @@
+from __future__ import annotations
+
 import functools
 import time
-from threading import Thread
-from typing import Any, Callable, Dict, List
+from multiprocessing import Process
+from threading import Lock, Thread
+from typing import Any, Callable, Dict, Generator, List, Set, TypeAlias, Union
 
 from attrs import Factory, define
 
+Worker: TypeAlias = Union[Thread, Process]
+"""A parallelizable object"""
+
+POOLS: Dict[str, WorkerPool] = dict()
+"""Global worker pools tracker"""
 
 @define
-class BrokenThreadPool:
-    threads: List[Thread] = Factory(list)
-    max: int = 1
+class WorkerPool:
+    workers: Set[Worker] = Factory(set)
+    size: int = 1
 
     @property
-    def alive(self) -> List[Thread]:
-        return [x for x in self.threads if x.is_alive()]
+    def alive(self) -> Generator[Worker, None, None]:
+        for worker in self.workers:
+            if worker.is_alive():
+                yield worker
 
     @property
     def n_alive(self) -> int:
         return len(self.alive)
 
     def sanitize(self) -> None:
-        self.threads = self.alive
+        self.workers = set(self.alive)
 
-    def append(self, thread: Thread, wait: float=0.01) -> Thread:
-        while self.n_alive >= self.max:
-            time.sleep(wait)
+    def append(self, worker: Worker) -> Worker:
+        while (self.n_alive >= self.size):
+            time.sleep(0.01)
+        self.workers.append(worker)
         self.sanitize()
-        self.threads.append(thread)
-        return thread
+        worker.start()
+        return worker
 
     def join(self) -> None:
-        for thread in self.threads:
-            thread.join()
+        for worker in self.workers:
+            worker.join()
 
 @define
 class BrokenThread:
-    pools = {}
-
     def __new__(cls, *args, **kwargs) -> Thread:
         return cls.new(*args, **kwargs)
 
     @staticmethod
-    def pool(name: str) -> BrokenThreadPool:
-        return BrokenThread.pools.setdefault(name, BrokenThreadPool())
+    def pool(name: str) -> WorkerPool:
+        return POOLS.setdefault(name, WorkerPool())
 
     @staticmethod
     def join_all_pools() -> None:
-        for pool in BrokenThread.pools.values():
+        for pool in POOLS.values():
             pool.join()
 
     @staticmethod
@@ -99,7 +108,7 @@ class BrokenThread:
         )
 
         # Maybe wait for the pool to be free
-        if pool and (pool := BrokenThread.pools.setdefault(pool, BrokenThreadPool())):
+        if pool and (pool := BrokenThread.pools.setdefault(pool, WorkerPool())):
             pool.max = max
             pool.append(parallel)
         if start:
@@ -107,3 +116,14 @@ class BrokenThread:
         if join and start:
             parallel.join()
         return parallel
+
+    @staticmethod
+    def easy_lock(method: Callable) -> Callable:
+        lock = Lock()
+
+        @functools.wraps(method)
+        def wrapper(*args, **kwargs):
+            with lock:
+                return method(*args, **kwargs)
+
+        return wrapper
