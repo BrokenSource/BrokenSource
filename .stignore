@@ -1,17 +1,12 @@
 # [Syncthing](https://syncthing.net/) Ignore file
 # Nested use: `#include BrokenSource/.stignore`
-# Or un-stage .stignore removal as a repository
+# Or un-stage .stignore removal in git
 
-# Recursive
-**/node_modules
-**/Workspace
+# Common
+**/.cache
+**/.venv
 **/Build
 **/Release
-**/.venv
-**/.cache
-**/.pio
-
-# Targeted
-**/android
-**/ios
-*.lock
+**/Workspace
+**/*.pyc
+**/*.lock

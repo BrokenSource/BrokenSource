@@ -1,20 +1,16 @@
-# Monorepo
-.cache
-.nomedia
-.venv
-Build
-Release
-Meta/*
-Workspace
-*.lock
 
-# Python
-**__pycache__*
-*.pyc
-dist
+# Common
+**/.cache
+**/.venv
+**/Build
+**/Release
+**/Workspace
+**/*.pyc
+**/*.lock
 
-# Syncthing
-.stfolder
-
-# Custom
-.ignore
+# Non-syncthing
+**/.stfolder
+**/.ignore
+**/.nomedia
+**/Meta
+**/*.env

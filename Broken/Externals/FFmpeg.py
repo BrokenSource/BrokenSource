@@ -938,12 +938,13 @@ FFmpegAudioCodecType: TypeAlias = Union[
 
 class FFmpegFilterBase(BrokenBaseModel, ABC):
 
+    def __str__(self) -> str:
+        return self.string()
+
     @abstractmethod
     def string(self) -> Iterable[str]:
         ...
 
-    def __str__(self) -> str:
-        return self.string()
 
 class FFmpegFilterScale(FFmpegFilterBase):
     type: Annotated[Literal["scale"], BrokenTyper.exclude()] = "scale"
@@ -968,11 +969,13 @@ class FFmpegFilterScale(FFmpegFilterBase):
     def string(self) -> str:
         return f"scale={self.width}:{self.height}:flags={denum(self.resample)}"
 
+
 class FFmpegFilterVerticalFlip(FFmpegFilterBase):
     type: Annotated[Literal["vflip"], BrokenTyper.exclude()] = "vflip"
 
     def string(self) -> str:
         return "vflip"
+
 
 class FFmpegFilterCustom(FFmpegFilterBase):
     type: Annotated[Literal["custom"], BrokenTyper.exclude()] = "custom"
@@ -981,6 +984,7 @@ class FFmpegFilterCustom(FFmpegFilterBase):
 
     def string(self) -> str:
         return self.content
+
 
 FFmpegFilterType: TypeAlias = Union[
     FFmpegFilterScale,
@@ -1107,6 +1111,7 @@ class BrokenFFmpeg(BrokenBaseModel, BrokenFluent):
     """
 
     inputs: List[FFmpegInputType] = Field(default_factory=list)
+    """A list of inputs for FFmpeg"""
 
     filters: List[FFmpegFilterType] = Field(default_factory=list)
 
@@ -1379,7 +1384,8 @@ class BrokenFFmpeg(BrokenBaseModel, BrokenFluent):
 
         extend("-shortest"*self.shortest)
         extend(("-t", self.time)*bool(self.time))
-        return list(map(str, denum(flatten(command))))
+
+        return list(map(str, map(denum, flatten(command))))
 
     def run(self, **options) -> subprocess.CompletedProcess:
         return shell(self.command, **options)

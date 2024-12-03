@@ -1,15 +1,22 @@
-___*
-.cache
-.venv
-.vscode
-Build
-Meta
-Release
-*.env
-*.dockerfile
 
-# Common files across projects
+# Common
+**/.cache
+**/.venv
+**/Build
+**/Release
 **/Workspace
-**/Website
-**/Private
+**/*.pyc
+**/*.lock
+
+# Non-syncthing
+**/.stfolder
+**/.ignore
+**/.nomedia
+**/Meta
+**/*.env
+
+# Docker
 **/.github
+**/.vscode
+**/.dockerfile
+**/Website
