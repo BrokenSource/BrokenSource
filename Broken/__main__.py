@@ -467,15 +467,14 @@ class BrokenManager(BrokenSingleton):
             with environment(TORCH_FLAVOR=flavor):
                 shell("docker-compose", "build")
 
-                for (image, tag) in itertools.product(
-                    ("broken-base", "depthflow", "shaderflow"),
-                    (f"latest-{flavor}", f"{__version__}-{flavor}"),
-                ):
-                    tag = f"ghcr.io/brokensource/{image}:{tag}"
-                    shell("docker", "tag", image, tag)
-                    # shell("docker", "push", tag)
+                for image in ("broken-base", "depthflow", "shaderflow"):
+                    for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
+                        name: str = f"ghcr.io/brokensource/{image}:{tag}"
 
-                shell("docker", "rmi", f"{image}:latest")
+                        shell("docker", "tag", image, name)
+                        # shell("docker", "push", name)
+
+                    shell("docker", "rmi", f"{image}:latest")
 
     def upgrade(self) -> None:
         """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""

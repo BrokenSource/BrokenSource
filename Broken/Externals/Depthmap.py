@@ -30,6 +30,7 @@ from Broken import (
 )
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
 from Broken.Loaders import LoadableImage, LoaderImage
+from Broken.Types import MiB
 
 if TYPE_CHECKING:
     import diffusers
@@ -53,7 +54,7 @@ class BaseEstimator(
 ):
     _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
         directory=(Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator"),
-        size_limit=int((2**20)*float(os.getenv("DEPTHMAP_CACHE_SIZE_MB", 50))),
+        size_limit=int(float(os.getenv("DEPTHMAP_CACHE_SIZE_MB", 50))*MiB),
     ))
     """DiskCache object for caching depth maps"""
 
