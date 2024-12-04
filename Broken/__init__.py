@@ -105,8 +105,8 @@ class Runtime:
 
     # # Special and Containers
 
-    Docker: bool = bool(os.getenv("DOCKER_RUNTIME", False))
-    """True if running from a Docker container""" # Fixme: Detect without manual flag
+    Docker: bool = Path("/.dockerenv").exists()
+    """True if running from a Docker container"""
 
     GitHub: bool = bool(os.getenv("GITHUB_ACTIONS", False))
     """True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""

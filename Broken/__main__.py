@@ -1,3 +1,4 @@
+import itertools
 import os
 import shutil
 import sys
@@ -22,6 +23,8 @@ from Broken import (
     Runtime,
     Stack,
     SystemEnum,
+    __version__,
+    environment,
     flatten,
     log,
     shell,
@@ -355,6 +358,7 @@ class BrokenManager(BrokenSingleton):
             self.cli.command(self.sync)
             self.cli.command(self.rust)
             self.cli.command(self.link)
+            self.cli.command(self.docker, hidden=True)
             self.cli.command(self.tremeschin, hidden=True)
             self.cli.command(self.clean, hidden=True)
             self.cli.command(self.upgrade, hidden=True)
@@ -431,7 +435,6 @@ class BrokenManager(BrokenSingleton):
         all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=False,
     ) -> Path:
         """🧀 Build all Projects and Publish to PyPI"""
-        from Broken.Version import __version__ as version
         BrokenPath.recreate(output)
 
         # Files that will be patched
@@ -442,9 +445,9 @@ class BrokenManager(BrokenSingleton):
 
         # What to replace on pyproject
         replaces = dict()
-        replaces['"Private/'] = '# "Private/'  # Ignore private projects
-        replaces['"0.0.0"'  ] = f'"{version}"' # Write current version
-        replaces['>=0.0.0'  ] = f"=={version}" # Link projects version
+        replaces['"Private/'] = '# "Private/'      # Ignore private projects
+        replaces['"0.0.0"'  ] = f'"{__version__}"' # Write current version
+        replaces['>=0.0.0'  ] = f"=={__version__}" # Link projects version
 
         with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
@@ -458,6 +461,21 @@ class BrokenManager(BrokenSingleton):
             )
 
         return Path(output)
+
+    def docker(self) -> None:
+        for flavor in ("cpu", "cu121"):
+            with environment(TORCH_FLAVOR=flavor):
+                shell("docker-compose", "build")
+
+                for (image, tag) in itertools.product(
+                    ("broken-base", "depthflow", "shaderflow"),
+                    (f"latest-{flavor}", f"{__version__}-{flavor}"),
+                ):
+                    tag = f"ghcr.io/brokensource/{image}:{tag}"
+                    shell("docker", "tag", image, tag)
+                    # shell("docker", "push", tag)
+
+                shell("docker", "rmi", f"{image}:latest")
 
     def upgrade(self) -> None:
         """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""

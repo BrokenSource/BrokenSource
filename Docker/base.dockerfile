@@ -1,10 +1,15 @@
 # ------------------------------------------------------------------------------------------------ #
 # (c) MIT License, Tremeschin
-# Dockerfile v2024.12.1
+# Dockerfile v2024.12.4
 # ------------------------------------------------------------------------------------------------ #
 # General metadata and configuration
 
 FROM ubuntu:24.04
+LABEL org.opencontainers.image.title="BrokenBase"
+LABEL org.opencontainers.image.description="Batteries-included image for all Broken Source projects"
+LABEL org.opencontainers.image.source="https://github.com/BrokenSource/BrokenSource"
+LABEL org.opencontainers.image.authors="Tremeschin"
+LABEL org.opencontainers.image.licenses="MIT"
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt update
 WORKDIR /App
@@ -16,7 +21,7 @@ WORKDIR /App
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 ENV NVIDIA_VISIBLE_DEVICES="all"
 
-# Don't use llvmpipe (Software Rendering) on WSL
+# Don't use llvmpipe (software rendering) on WSL
 ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH="/usr/lib/wsl/lib"
 
@@ -30,7 +35,10 @@ RUN apt install -y libegl1-mesa-dev libglvnd-dev libglvnd0 && \
 # Base requirements
 
 # Video encoding and decoding
-RUN apt install -y ffmpeg
+RUN apt install -y xz-utils curl
+ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
+ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
+RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
 
 # SoundCard needs libpulse.so and server
 RUN apt install -y pulseaudio
@@ -65,11 +73,16 @@ RUN uv pip install \
 COPY . /App
 RUN uv sync --all-packages --inexact
 
-# Don't need the cache anymore
-RUN uv cache clean
-
 # Signal Python we're Docker
 ENV WINDOW_BACKEND="headless"
-ENV DOCKER_RUNTIME="1"
+
+# ------------------------------------------------------------------------------------------------ #
+# Image optimizations
+
+# Clean apt caches and sources
+RUN apt clean && rm -rf /var/lib/apt/lists/*
+
+# Don't need the cache anymore
+RUN uv cache clean
 
 # ------------------------------------------------------------------------------------------------ #

@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest, macos-14]
+        os: [ubuntu-20.04, windows-latest, macos-latest]
     steps:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
@@ -19,13 +19,13 @@ jobs:
       # Linux cross-compilation
 
       - name: Install gcc aarch64
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{matrix.os == 'ubuntu-20.04' }}
         run: sudo apt install -y gcc-aarch64-linux-gnu
 
       # DepthFlow
 
       - name: Build DepthFlow
-        if: ${{ env.GHA_PYAPP == 'True' }}
+        if: ${{env.GHA_PYAPP == 'True'}}
         run: uv run broken depthflow release --tarball --target all-host
 
       - name: Upload DepthFlow releases
@@ -49,7 +49,7 @@ jobs:
       # ShaderFlow
 
       - name: Build ShaderFlow
-        if: ${{ env.GHA_PYAPP == 'True' }}
+        if: ${{env.GHA_PYAPP == 'True' }}
         run: uv run broken shaderflow release --tarball --target all-host
 
       - name: Upload ShaderFlow releases
@@ -61,7 +61,7 @@ jobs:
       # SpectroNote
 
       - name: Build SpectroNote
-        if: ${{ env.GHA_PYAPP == 'True' }}
+        if: ${{env.GHA_PYAPP == 'True'}}
         run: uv run broken spectronote release --tarball --target all-host
 
       - name: Upload SpectroNote releases
@@ -82,7 +82,7 @@ jobs:
         run: uv run broken pypi
 
       - name: Publish wheels
-        if: ${{ env.GHA_PYPI == 'True' }}
+        if: ${{env.GHA_PYPI == 'True'}}
         run: uv run broken pypi --publish
 
       - name: Upload wheels
@@ -92,7 +92,7 @@ jobs:
           path: Build/Wheels/*.whl
 
       - name: Create Release Tag
-        if: ${{ env.GHA_TAG == 'True' }}
+        if: ${{env.GHA_TAG == 'True'}}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

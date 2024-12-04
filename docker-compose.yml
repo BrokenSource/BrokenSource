@@ -3,7 +3,7 @@ services:
   # Base images
 
   broken-base: &common
-    image: broken-base-local
+    image: broken-base
     build:
       context: .
       dockerfile: Docker/base.dockerfile
@@ -26,7 +26,7 @@ services:
   # Sanity checks, assertions
 
   glinfo:
-    image: glinfo-local
+    image: glinfo
     build:
       context: .
       dockerfile: Docker/glinfo.dockerfile
@@ -37,7 +37,7 @@ services:
   # Actual software
 
   shaderflow:
-    image: shaderflow-local
+    image: shaderflow
     build:
       context: .
       dockerfile: Docker/shaderflow.dockerfile
@@ -46,7 +46,7 @@ services:
     <<: *common
 
   depthflow:
-    image: depthflow-local
+    image: depthflow
     build:
       context: .
       dockerfile: Docker/depthflow.dockerfile

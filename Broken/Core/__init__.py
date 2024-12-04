@@ -273,8 +273,10 @@ def environment(**variables: Dict[str, str]) -> Generator[None, None, None]:
     original = os.environ.copy()
     os.environ.update(variables)
     try:
+        log.info(f"Setting environment variables: {tuple(variables.items())}")
         yield None
     finally:
+        log.info(f"Restoring environment variables: {tuple(variables.keys())}")
         os.environ.clear()
         os.environ.update(original)
 

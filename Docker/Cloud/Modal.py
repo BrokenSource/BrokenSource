@@ -42,7 +42,7 @@ image = (
     .pip_install("depthflow")
 
     # Download depth estimator model once
-    .run_commands("depthflow load-model")
+    .run_commands("depthflow load-estimator")
 )
 
 app = modal.App(
