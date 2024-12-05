@@ -128,9 +128,9 @@ def shell(
         raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({args[0]})"))
 
     # Log the command being run, temp variables
-    _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
     _log = (log.skip if skip else log.info)
     _the = ("Skipping" if skip else "Running")
+    _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
     _log(_the + f" command {args}{_cwd}", echo=echo)
     if skip: return
 
@@ -546,6 +546,50 @@ class BrokenBaseModel(BaseModel):
     def reset(self) -> None:
         for key, value in self.model_fields.items():
             setattr(self, key, value.default)
+
+
+class BrokenAttribute:
+    """Recursive implementation for getattr and setattr from strings"""
+
+    @define
+    class Parts:
+        all: List[str]
+        body: List[str]
+        last: str
+
+    @staticmethod
+    def decompose(key: str) -> Parts:
+        parts = str(key).replace("-", "_").split(".")
+
+        return BrokenAttribute.Parts(
+            all=parts,
+            body=parts[:-1],
+            last=parts[-1]
+        )
+
+    @staticmethod
+    def get(root: Any, key: str) -> Optional[Any]:
+        parts = BrokenAttribute.decompose(key)
+
+        for part in parts.all:
+            try:
+                root = getattr(root, part)
+            except AttributeError:
+                return None
+
+        return root
+
+    @staticmethod
+    def set(object: Any, attribute: str, value: Any) -> None:
+        parts = BrokenAttribute.decompose(attribute)
+
+        for part in parts.body:
+            try:
+                object = getattr(object, part)
+            except AttributeError:
+                return None
+
+        setattr(object, parts.last, value)
 
 
 class BrokenWatchdog(ABC):

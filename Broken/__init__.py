@@ -132,6 +132,7 @@ class Native:
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
+    BrokenAttribute,
     BrokenAttrs,
     BrokenBaseModel,
     BrokenFluent,

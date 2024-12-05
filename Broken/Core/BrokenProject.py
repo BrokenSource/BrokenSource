@@ -106,6 +106,10 @@ class _Directories:
         return (self.REPOSITORY/"Build")
 
     @property
+    def REPO_DOCKER(self) -> Path:
+        return (self.REPOSITORY/"Docker")
+
+    @property
     def BUILD_WINEPREFIX(self) -> Path:
         return (self.REPO_BUILD/"Wineprefix")
 

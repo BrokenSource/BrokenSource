@@ -462,19 +462,28 @@ class BrokenManager(BrokenSingleton):
 
         return Path(output)
 
-    def docker(self) -> None:
+    def docker(self,
+        push:  Annotated[bool, Option("--push",  "-p", help="Push built images to GHCR")]=False,
+        clean: Annotated[bool, Option("--clean", "-c", help="Remove local images after pushing")]=False,
+    ) -> None:
+        """Build and push docker images for all projects"""
         for flavor in ("cpu", "cu121"):
-            with environment(TORCH_FLAVOR=flavor):
-                shell("docker-compose", "build")
+            setattr(os.environ, "TORCH_FLAVOR", flavor)
+            shell("docker-compose", "build")
 
-                for image in ("broken-base", "depthflow", "shaderflow"):
-                    for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
-                        name: str = f"ghcr.io/brokensource/{image}:{tag}"
+            for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
+                image:  str = dockerfile.stem
+                latest: str = f"{image}:latest"
 
-                        shell("docker", "tag", image, name)
-                        # shell("docker", "push", name)
+                # Tag a latest and versioned flavored images, optional push
+                for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
+                    final: str = f"ghcr.io/brokensource/{image}:{tag}"
+                    shell("docker", "tag", latest, final)
+                    shell("docker", "push", final, skip=(not push))
+                    shell("docker", "rmi", final, skip=(not clean))
 
-                    shell("docker", "rmi", f"{image}:latest")
+                # No need for generic latest image
+                shell("docker", "rmi", latest)
 
     def upgrade(self) -> None:
         """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""

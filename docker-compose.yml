@@ -6,7 +6,7 @@ services:
     image: broken-base
     build:
       context: .
-      dockerfile: Docker/base.dockerfile
+      dockerfile: Docker/broken-base.dockerfile
       args:
         TORCH_VERSION: ${TORCH_VERSION:-2.5.1}
         TORCH_FLAVOR: ${TORCH_FLAVOR:-cpu}
