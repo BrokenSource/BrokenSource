@@ -39,273 +39,6 @@ from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenTyper import BrokenTyper
 
-
-def mkdir(path: Path, resolve: bool=True) -> Path:
-    """Make a directory and return it"""
-    path = Path(path).resolve() if resolve else Path(path)
-    if not path.exists():
-        log.info(f"Creating directory: {path}")
-        path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-@define(slots=False)
-class _Directories:
-    PROJECT: BrokenProject
-    APP_DIRS: AppDirs = None
-
-    def __attrs_post_init__(self):
-        args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
-        args = (reversed(args) if (os.name == "nt") else args)
-        self.APP_DIRS = AppDirs(*args)
-
-    @property
-    def PACKAGE(self) -> Path:
-        """
-        When running from the Source Code:
-            - The current project's __init__.py location
-
-        When running from a Release:
-            - Directory where the executable is located
-        """
-        if Runtime.Binary:
-            return Path(sys.executable).parent.resolve()
-        return Path(self.PROJECT.PACKAGE).resolve()
-
-    # # Unknown / new project directories
-
-    def __set__(self, name: str, value: Path) -> Path:
-        """Create a new directory property if Path is given, else set the value"""
-        self.__dict__[name] = (value if not isinstance(value, Path) else mkdir(value))
-
-    def __setattr__(self, name: str, value: Path) -> Path:
-        self.__set__(name, value)
-
-    def __setitem__(self, name: str, value: Path) -> Path:
-        self.__set__(name, value)
-
-    # # Base directories
-
-    @property
-    def REPOSITORY(self) -> Path:
-        """The current project repository's root"""
-        return self.PACKAGE.parent
-
-    @property
-    def SYSTEM_TEMP(self) -> Path:
-        return (Path(tempfile.gettempdir())/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
-
-    # # Repository specific
-
-    @property
-    def REPO_RELEASES(self) -> Path:
-        return (self.REPOSITORY/"Release")
-
-    @property
-    def REPO_BUILD(self) -> Path:
-        return (self.REPOSITORY/"Build")
-
-    @property
-    def REPO_DOCKER(self) -> Path:
-        return (self.REPOSITORY/"Docker")
-
-    @property
-    def BUILD_WINEPREFIX(self) -> Path:
-        return (self.REPO_BUILD/"Wineprefix")
-
-    @property
-    def BUILD_WHEELS(self) -> Path:
-        return (self.REPO_BUILD/"Wheels")
-
-    @property
-    def REPO_PROJECTS(self) -> Path:
-        return (self.REPOSITORY/"Projects")
-
-    @property
-    def REPO_META(self) -> Path:
-        return (self.REPOSITORY/"Meta")
-
-    @property
-    def INSIDERS(self) -> Path:
-        return (self.REPO_META/"Insiders")
-
-    # # Meta directories
-
-    @property
-    def WEBSITE(self) -> Path:
-        return (self.REPOSITORY/"Website")
-
-    @property
-    def EXAMPLES(self) -> Path:
-        return (self.REPOSITORY/"Examples")
-
-    # # Workspace directories
-
-    @property
-    def WORKSPACE(self) -> Path:
-        """Workspace root of the current project"""
-        if (path := os.getenv("WORKSPACE")):
-            return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
-        if (os.name == "nt"):
-            return mkdir(BrokenPath.Windows.Documents()/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
-        return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
-
-    @property
-    def CONFIG(self) -> Path:
-        return mkdir(self.WORKSPACE/"Config")
-
-    @property
-    def LOGS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Logs")
-
-    @property
-    def CACHE(self) -> Path:
-        return mkdir(self.WORKSPACE/"Cache")
-
-    @property
-    def DATA(self) -> Path:
-        return mkdir(self.WORKSPACE/"Data")
-
-    @property
-    def PROJECTS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Projects")
-
-    @property
-    def OUTPUT(self) -> Path:
-        return mkdir(self.WORKSPACE/"Output")
-
-    @property
-    def DOWNLOADS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Downloads")
-
-    @property
-    def TEMP(self) -> Path:
-        return mkdir(self.WORKSPACE/"Temp")
-
-    @property
-    def DUMP(self) -> Path:
-        return mkdir(self.WORKSPACE/"Dump")
-
-    @property
-    def SCREENSHOTS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Screenshots")
-
-    # # Third party dependencies
-
-    @property
-    def EXTERNALS(self) -> Path:
-        return mkdir(self.WORKSPACE/"Externals")
-
-    @property
-    def EXTERNAL_MODELS(self) -> Path:
-        return mkdir(self.EXTERNALS/"Models")
-
-    @property
-    def EXTERNAL_ARCHIVES(self) -> Path:
-        return mkdir(self.EXTERNALS/"Archives")
-
-    @property
-    def EXTERNAL_IMAGES(self) -> Path:
-        return mkdir(self.EXTERNALS/"Images")
-
-    @property
-    def EXTERNAL_AUDIO(self) -> Path:
-        return mkdir(self.EXTERNALS/"Audio")
-
-    @property
-    def EXTERNAL_FONTS(self) -> Path:
-        return mkdir(self.EXTERNALS/"Fonts")
-
-    @property
-    def EXTERNAL_SOUNDFONTS(self) -> Path:
-        return mkdir(self.EXTERNALS/"Soundfonts")
-
-    @property
-    def EXTERNAL_MIDIS(self) -> Path:
-        return mkdir(self.EXTERNALS/"Midis")
-
-# ------------------------------------------------------------------------------------------------ #
-
-@define(slots=False)
-class _Resources:
-    PROJECT: BrokenProject
-
-    def __attrs_post_init__(self):
-        if self.PROJECT.RESOURCES:
-
-            # Fixme (#py39): Python 3.9 workaround; Spec-less packages
-            if (sys.version_info < (3, 10)):
-                spec = self.PROJECT.RESOURCES.__spec__
-                spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
-
-            # Note: Importlib bundles the resources with the package wheel!
-            self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
-
-    __RESOURCES__: Path = None
-
-    @property
-    def ROOT(self) -> Path:
-        # Workaround: Convert a MultiplexedPath to Path
-        return mkdir(self.__RESOURCES__/"workaround"/"..")
-
-    def __div__(self, name: str) -> Path:
-        return self.__RESOURCES__/name
-
-    def __truediv__(self, name: str) -> Path:
-        return self.__div__(name)
-
-    # # Common section
-
-    @property
-    def IMAGES(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Images")
-
-    @property
-    def AUDIO(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Audio")
-
-    # # Branding section
-
-    @property
-    def ICON_PNG(self) -> Path:
-        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
-
-    @property
-    def ICON_ICO(self) -> Path:
-        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
-
-    # # Shaders section
-
-    @property
-    def SCENES(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Scenes")
-
-    @property
-    def SHADERS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Shaders")
-
-    @property
-    def SHADERS_INCLUDE(self) -> Path:
-        return mkdir(self.SHADERS/"Include")
-
-    @property
-    def FRAGMENT(self) -> Path:
-        return mkdir(self.SHADERS/"Fragment")
-
-    @property
-    def VERTEX(self) -> Path:
-        return mkdir(self.SHADERS/"Vertex")
-
-    # # Generic
-
-    @property
-    def PROMPTS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Prompts")
-
-    @property
-    def FONTS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Fonts")
-
 # ------------------------------------------------------------------------------------------------ #
 
 @define(slots=False)
@@ -583,3 +316,270 @@ class BrokenApp(ABC, BrokenAttrs):
             )
 
         return bool(matches)
+
+# ------------------------------------------------------------------------------------------------ #
+
+def mkdir(path: Path, resolve: bool=True) -> Path:
+    """Make a directory and return it"""
+    path = Path(path).resolve() if resolve else Path(path)
+    if not path.exists():
+        log.info(f"Creating directory: {path}")
+        path.mkdir(parents=True, exist_ok=True)
+    return path
+
+@define(slots=False)
+class _Directories:
+    PROJECT: BrokenProject
+    APP_DIRS: AppDirs = None
+
+    def __attrs_post_init__(self):
+        args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
+        args = (reversed(args) if (os.name == "nt") else args)
+        self.APP_DIRS = AppDirs(*args)
+
+    @property
+    def PACKAGE(self) -> Path:
+        """
+        When running from the Source Code:
+            - The current project's __init__.py location
+
+        When running from a Release:
+            - Directory where the executable is located
+        """
+        if Runtime.Binary:
+            return Path(sys.executable).parent.resolve()
+        return Path(self.PROJECT.PACKAGE).resolve()
+
+    # # Unknown / new project directories
+
+    def __set__(self, name: str, value: Path) -> Path:
+        """Create a new directory property if Path is given, else set the value"""
+        self.__dict__[name] = (value if not isinstance(value, Path) else mkdir(value))
+
+    def __setattr__(self, name: str, value: Path) -> Path:
+        self.__set__(name, value)
+
+    def __setitem__(self, name: str, value: Path) -> Path:
+        self.__set__(name, value)
+
+    # # Base directories
+
+    @property
+    def REPOSITORY(self) -> Path:
+        """The current project repository's root"""
+        return self.PACKAGE.parent
+
+    @property
+    def SYSTEM_TEMP(self) -> Path:
+        return (Path(tempfile.gettempdir())/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
+
+    # # Repository specific
+
+    @property
+    def REPO_RELEASES(self) -> Path:
+        return (self.REPOSITORY/"Release")
+
+    @property
+    def REPO_BUILD(self) -> Path:
+        return (self.REPOSITORY/"Build")
+
+    @property
+    def REPO_DOCKER(self) -> Path:
+        return (self.REPOSITORY/"Docker")
+
+    @property
+    def BUILD_WINEPREFIX(self) -> Path:
+        return (self.REPO_BUILD/"Wineprefix")
+
+    @property
+    def BUILD_WHEELS(self) -> Path:
+        return (self.REPO_BUILD/"Wheels")
+
+    @property
+    def REPO_PROJECTS(self) -> Path:
+        return (self.REPOSITORY/"Projects")
+
+    @property
+    def REPO_META(self) -> Path:
+        return (self.REPOSITORY/"Meta")
+
+    @property
+    def INSIDERS(self) -> Path:
+        return (self.REPO_META/"Insiders")
+
+    # # Meta directories
+
+    @property
+    def WEBSITE(self) -> Path:
+        return (self.REPOSITORY/"Website")
+
+    @property
+    def EXAMPLES(self) -> Path:
+        return (self.REPOSITORY/"Examples")
+
+    # # Workspace directories
+
+    @property
+    def WORKSPACE(self) -> Path:
+        """Workspace root of the current project"""
+        if (path := os.getenv("WORKSPACE")):
+            return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
+        if (os.name == "nt"):
+            return mkdir(BrokenPath.Windows.Documents()/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
+        return mkdir(Path(self.APP_DIRS.user_data_dir)/self.PROJECT.APP_NAME)
+
+    @property
+    def CONFIG(self) -> Path:
+        return mkdir(self.WORKSPACE/"Config")
+
+    @property
+    def LOGS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Logs")
+
+    @property
+    def CACHE(self) -> Path:
+        return mkdir(self.WORKSPACE/"Cache")
+
+    @property
+    def DATA(self) -> Path:
+        return mkdir(self.WORKSPACE/"Data")
+
+    @property
+    def PROJECTS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Projects")
+
+    @property
+    def OUTPUT(self) -> Path:
+        return mkdir(self.WORKSPACE/"Output")
+
+    @property
+    def DOWNLOADS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Downloads")
+
+    @property
+    def TEMP(self) -> Path:
+        return mkdir(self.WORKSPACE/"Temp")
+
+    @property
+    def DUMP(self) -> Path:
+        return mkdir(self.WORKSPACE/"Dump")
+
+    @property
+    def SCREENSHOTS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Screenshots")
+
+    # # Third party dependencies
+
+    @property
+    def EXTERNALS(self) -> Path:
+        return mkdir(self.WORKSPACE/"Externals")
+
+    @property
+    def EXTERNAL_MODELS(self) -> Path:
+        return mkdir(self.EXTERNALS/"Models")
+
+    @property
+    def EXTERNAL_ARCHIVES(self) -> Path:
+        return mkdir(self.EXTERNALS/"Archives")
+
+    @property
+    def EXTERNAL_IMAGES(self) -> Path:
+        return mkdir(self.EXTERNALS/"Images")
+
+    @property
+    def EXTERNAL_AUDIO(self) -> Path:
+        return mkdir(self.EXTERNALS/"Audio")
+
+    @property
+    def EXTERNAL_FONTS(self) -> Path:
+        return mkdir(self.EXTERNALS/"Fonts")
+
+    @property
+    def EXTERNAL_SOUNDFONTS(self) -> Path:
+        return mkdir(self.EXTERNALS/"Soundfonts")
+
+    @property
+    def EXTERNAL_MIDIS(self) -> Path:
+        return mkdir(self.EXTERNALS/"Midis")
+
+# ------------------------------------------------------------------------------------------------ #
+
+@define(slots=False)
+class _Resources:
+    PROJECT: BrokenProject
+
+    def __attrs_post_init__(self):
+        if self.PROJECT.RESOURCES:
+
+            # Fixme (#py39): Python 3.9 workaround; Spec-less packages
+            if (sys.version_info < (3, 10)):
+                spec = self.PROJECT.RESOURCES.__spec__
+                spec.origin = spec.submodule_search_locations[0] + "/SpecLessPackagePy39Workaround"
+
+            # Note: Importlib bundles the resources with the package wheel!
+            self.__RESOURCES__ = importlib.resources.files(self.PROJECT.RESOURCES)
+
+    __RESOURCES__: Path = None
+
+    @property
+    def ROOT(self) -> Path:
+        # Workaround: Convert a MultiplexedPath to Path
+        return mkdir(self.__RESOURCES__/"workaround"/"..")
+
+    def __div__(self, name: str) -> Path:
+        return self.__RESOURCES__/name
+
+    def __truediv__(self, name: str) -> Path:
+        return self.__div__(name)
+
+    # # Common section
+
+    @property
+    def IMAGES(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Images")
+
+    @property
+    def AUDIO(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Audio")
+
+    # # Branding section
+
+    @property
+    def ICON_PNG(self) -> Path:
+        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
+
+    @property
+    def ICON_ICO(self) -> Path:
+        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
+
+    # # Shaders section
+
+    @property
+    def SCENES(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Scenes")
+
+    @property
+    def SHADERS(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Shaders")
+
+    @property
+    def SHADERS_INCLUDE(self) -> Path:
+        return mkdir(self.SHADERS/"Include")
+
+    @property
+    def FRAGMENT(self) -> Path:
+        return mkdir(self.SHADERS/"Fragment")
+
+    @property
+    def VERTEX(self) -> Path:
+        return mkdir(self.SHADERS/"Vertex")
+
+    # # Generic
+
+    @property
+    def PROMPTS(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Prompts")
+
+    @property
+    def FONTS(self) -> Path:
+        return mkdir(self.__RESOURCES__/"Fonts")
