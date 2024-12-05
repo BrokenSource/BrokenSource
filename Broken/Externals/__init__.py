@@ -9,7 +9,7 @@ from halo import Halo
 from pydantic import ConfigDict, Field, PrivateAttr
 
 from Broken import (
-    BrokenBaseModel,
+    BrokenModel,
     BrokenThread,
     BrokenTorch,
     SameTracker,
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ExternalTorchBase(BrokenBaseModel):
+class ExternalTorchBase(BrokenModel):
 
     @property
     def device(self) -> str:
@@ -41,7 +41,7 @@ class ExternalTorchBase(BrokenBaseModel):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ExternalModelsBase(BrokenBaseModel, ABC):
+class ExternalModelsBase(BrokenModel, ABC):
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         validate_assignment=True

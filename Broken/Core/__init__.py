@@ -201,54 +201,6 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     return (item.value if isinstance(item, enum.Enum) else item)
 
 
-def filter_dict(
-    data: Dict[str, Any], *,
-    block: Optional[Container[Any]] = None,
-    allow: Optional[Container[Any]] = None,
-) -> Dict[str, Any]:
-    """Filters a dictionary by removing 'block' or only allowing 'allow' keys"""
-    if block:
-        data = {key: value for key, value in data.items() if (key not in block)}
-    if allow:
-        data = {key: value for key, value in data.items() if (key in allow)}
-    return data
-
-
-def iter_dict(data: Dict[str, Any]) -> Generator[Any, None, None]:
-    """Recursively yields all values from a dictionary"""
-    for value in data.values():
-        if isinstance(value, dict):
-            yield from iter_dict(value)
-            continue
-        yield value
-
-
-def selfless(data: Dict) -> Dict:
-    """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
-    # Note: It's also possible to call Class.method(**locals()) instead!
-    return filter_dict(data, block=["self"])
-
-
-def border(string: str, border: str) -> bool:
-    """Returns True if 'border' is both a prefix and suffix of 'string'"""
-    return (string.startswith(border) and string.endswith(reversed(border)))
-
-
-def dunder(name: str) -> bool:
-    """Checks if a string is a double underscore '__name__'"""
-    return border(name, "__")
-
-
-def sunder(name: str) -> bool:
-    """Checks if a string is a single underscore '_name_'"""
-    return (border(name, "_") and not dunder(name))
-
-
-def private(name: str) -> bool:
-    """Checks if a string is a private name"""
-    return name.startswith("_")
-
-
 def pop_fill(data: Container, fill: Type[Any], length: int) -> Container[Any]:
     """Pop or fill until a data's length is met"""
     while len(data) > length:
@@ -260,7 +212,7 @@ def pop_fill(data: Container, fill: Type[Any], length: int) -> Container[Any]:
 
 @contextlib.contextmanager
 def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
-    """Enter multiple contexts at once as `with Stack(open() as f1, open() as f2): ...`"""
+    """Enter multiple contexts at once as `with Stack(items): ...`"""
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):
             stack.enter_context(context)
@@ -298,6 +250,7 @@ def block_modules(*modules: List[str]):
 
 
 def smartproxy(object: Any) -> Any:
+    """Returns a weakref proxy if the object is not already proxied"""
     from weakref import CallableProxyType, ProxyType, proxy
 
     if not isinstance(object, (CallableProxyType, ProxyType)):
@@ -486,7 +439,7 @@ class BrokenAttrs:
         ...
 
 
-class BrokenBaseModel(BaseModel):
+class BrokenModel(BaseModel):
     model_config = ConfigDict(
         use_attribute_docstrings=True,
     )
@@ -568,7 +521,7 @@ class BrokenAttribute:
         )
 
     @staticmethod
-    def get(root: Any, key: str) -> Optional[Any]:
+    def get(root: object, key: str) -> Optional[Any]:
         parts = BrokenAttribute.decompose(key)
 
         for part in parts.all:
@@ -580,7 +533,7 @@ class BrokenAttribute:
         return root
 
     @staticmethod
-    def set(object: Any, attribute: str, value: Any) -> None:
+    def set(object: object, attribute: str, value: Any) -> None:
         parts = BrokenAttribute.decompose(attribute)
 
         for part in parts.body:
@@ -590,6 +543,66 @@ class BrokenAttribute:
                 return None
 
         setattr(object, parts.last, value)
+
+
+class StringUtils:
+
+    @staticmethod
+    def border(string: str, border: str) -> bool:
+        """Returns True if 'border' is both a prefix and suffix of 'string'"""
+        return (string.startswith(border) and string.endswith(reversed(border)))
+
+    @staticmethod
+    def dunder(name: str) -> bool:
+        """Checks if a string is a double underscore '__name__'"""
+        return StringUtils.border(name, "__")
+
+    @staticmethod
+    def sunder(name: str) -> bool:
+        """Checks if a string is a single underscore '_name_'"""
+        return (StringUtils.border(name, "_") and not StringUtils.dunder(name))
+
+    @staticmethod
+    def private(name: str) -> bool:
+        """Checks if a string is a private name"""
+        return name.startswith("_")
+
+
+class DictUtils:
+
+    @staticmethod
+    def filter_dict(
+        data: Dict[str, Any], *,
+        block: Optional[Container[Any]] = None,
+        allow: Optional[Container[Any]] = None,
+    ) -> Dict[str, Any]:
+        """Filters a dictionary by removing 'block' or only allowing 'allow' keys"""
+        if block:
+            data = {key: value for key, value in data.items() if (key not in block)}
+        if allow:
+            data = {key: value for key, value in data.items() if (key in allow)}
+        return data
+
+    @staticmethod
+    def ritems(data: Dict[str, Any]) -> Generator[Tuple[str, Any], None, None]:
+        """Recursively yields all items from a dictionary"""
+        for (key, value) in data.items():
+            if isinstance(value, dict):
+                yield from DictUtils.ritems(value)
+                continue
+            yield (key, value)
+
+    @staticmethod
+    def rvalues(data: Dict[str, Any]) -> Generator[Any, None, None]:
+        """Recursively yields all values from a dictionary"""
+        for (key, value) in DictUtils.ritems(data):
+            yield value
+
+    @staticmethod
+    def selfless(data: Dict) -> Dict:
+        """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
+        # Note: It's also possible to call Class.method(**locals()) instead!
+        return DictUtils.filter_dict(data, block=["self"])
 
 
 class BrokenWatchdog(ABC):
