@@ -440,6 +440,7 @@ class BrokenAttrs:
 
 
 class BrokenModel(BaseModel):
+    """Pydantic model utilities"""
     model_config = ConfigDict(
         use_attribute_docstrings=True,
     )
@@ -483,16 +484,13 @@ class BrokenModel(BaseModel):
     # Dict-like utilities
 
     def keys(self) -> Generator[str, None, None]:
-        for key in self.dict().keys():
-            yield key
+        yield from self.dict().keys()
 
     def values(self) -> Generator[Any, None, None]:
-        for value in self.dict().values():
-            yield value
+        yield from self.dict().values()
 
     def items(self) -> Generator[Tuple[str, Any], None, None]:
-        for (key, value) in self.dict().items():
-            yield (key, value)
+        yield from self.dict().items()
 
     # Special
 
