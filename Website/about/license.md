@@ -61,7 +61,7 @@ This choice can be controversial, here's my thoughts:
 
 - The GPLv3 part is often well-accepted, even though both are nearly identical licenses.
 - ShaderFlow and derived projects can easily be hosted as a **SaaS**. The "Affero" clause ensures no bad actors can take advantage of the software without contributing back.
-- It can be a blocker for some businesses, for that,
+- It can be a blocker for some businesses, get in touch for further discussion.
 
 **I plan on relicensing to [MIT](https://www.tldrlegal.com/license/mit-license){:target="_blank"} in the future**, the [**contributions**](#contributions) terms are a step towards that.
 
