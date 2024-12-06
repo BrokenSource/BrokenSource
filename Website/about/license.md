@@ -51,9 +51,7 @@ There are **no restrictions** on **private** use of any Software. {>>(personal p
 
 ## Code license
 
-### ♻️ Community
-
-The community license of choice is the [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0){:target="_blank"}. It's a strong copyleft[^copyleft] license that ensures the software remains **free and open source** for all users • commercial use is allowed.
+The license of choice is the [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0){:target="_blank"}. It's a strong copyleft[^copyleft] license that ensures the software remains **free and open source** for all users • commercial use is allowed.
 
 [^copyleft]: It's the opposite of _copyright!_ ba dum tss 😅
 
@@ -61,40 +59,14 @@ The community license of choice is the [**AGPLv3**](https://www.tldrlegal.com/li
 
 This choice can be controversial, here's my thoughts:
 
-- It can be a blocker for some businesses, for that, there's a [**commercial license**](#commercial-license) available.
 - The GPLv3 part is often well-accepted, even though both are nearly identical licenses.
 - ShaderFlow and derived projects can easily be hosted as a **SaaS**. The "Affero" clause ensures no bad actors can take advantage of the software without contributing back.
+- It can be a blocker for some businesses, for that,
 
 **I plan on relicensing to [MIT](https://www.tldrlegal.com/license/mit-license){:target="_blank"} in the future**, the [**contributions**](#contributions) terms are a step towards that.
 
 - Some of my projects like [**TurboPipe**](https://github.com/BrokenSource/TurboPipe) are under **MIT**, and I use many packages under it!
 - [**Support**](site:/about/sponsors) my work to achieve that faster, I believe the projects can be successful and sustainable in the future, just unsure on the amount of support in this early era 😅
-
-### ⭐️ Commercial
-
-> **Note**: The commercial license is about **non-AGPLv3** use of the software. The community license allows usage for **any purpose**, including commercial • read more [above](#community-license).
-
-Certain projects are dual-licensed under a [**Community**](#community-license) and a **Commercial (MIT)** license.
-
-The community license will forever be available for free and by default, while the commercial license is available under [custom agreements](site:/about/contact){:target="_blank"}, often, but not always, for a fee[^fee].
-
-[^fee]: Either a fixed recurring amount or a fraction of what you yould've paid for a competitor's service.
-
-**The main reasons** for this model are:
-
-- The commercial license **does not** adds any restrictions, in fact, it adds **more rights** to what the community license already sets as a baseline for interested parties.
-- A significant amount of open source projects have fallen to their own permissivity by the hands of corporations or individuals, without retributing patches or monetary support:
-    - Giving it for free is [altruistic and noble](site:/about/sponsors), there's nothing wrong in selling one's work.
-    - Dual-licensing allows interested parties to still use the software permissively, while _softly_ ensuring them to return the interest as investment to further development.
-
-**The general terms**, unless agreed otherwise, are:
-
-- I'll grant you technical support and updates for the software, including, but not limited to custom functionality, integrations, compatibility, let my general availability allow it.
-- No relicensing or sublicensing: Your rights are exclusive and non-transferable by default.
-- Distribution is relicensing: Your users must (in)directly have this commercial license. You can be a proxy on their behalf; I'm open to discuss the mechanisms and terms.
-- I may terminate the agreement at any time in case of non-compliance with a 30 days notice. In such cases, you don't retain the rights to use the "last permitted version" and must cease usage, or switch to the community license and non-custom written code.
-
-<small>As far as I know, the terms here superseed the ones in the MIT you're getting. I'm trusting for your honesty and fairness to respect the terms here being a private user. It is in both of our interests to have a sustainable relationship and loyalty moving forward.</small>
 
 <hr>
 
@@ -110,7 +82,7 @@ There's some good reasons of why I want to do so:
 
 - No contribution will easily outweight the current work; by the time someone's submitting such contributions, they'll already be part of the team and receive monetary support.
 - The code base is very complex and took years to develop on my own. It doesn't feel fair to lock it to **AGPLv3**, making it hard[^hard] to transition to **MIT** in the future.
-- Having full rights to the code-base gives me strong governance to prevent abuse from happening: choosing the right and/or well-minded partners for [**private**](#commercial-license) use under the commercial license, while also getting funding to continue the work.
+- Having full rights to the code-base gives me strong governance to prevent abuse from happening: choosing the right and/or well-minded partners for private use, while also getting funding to continue the work.
 
 [^hard]: Each contributor would need to agree re-licensing their contributions.
 
