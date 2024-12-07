@@ -223,9 +223,9 @@ class Upscayl(UpscalerNCNN_Base):
         realesrgan_x4plus       = "realesrgan-x4plus"
         realesrgan_x4fast       = "realesrgan-x4fast"
         realesrgan_x4plus_anime = "realesrgan-x4plus-anime"
-        remacri                 = "remacri"
         ultramix_balanced       = "ultramix_balanced"
         ultrasharp              = "ultrasharp"
+        remacri                 = "remacri"
 
     model: Annotated[Model, Option("--model", "-m", hidden=True,
         help="(🔵 Special ) Model to use for Upscayl")] = \

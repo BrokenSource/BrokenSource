@@ -145,6 +145,8 @@ class FFmpegOutputPipe(FFmpegModuleBase):
     class Format(str, BrokenEnum):
         Rawvideo   = "rawvideo"
         Image2Pipe = "image2pipe"
+        Matroska   = "matroska"
+        Mpegts     = "mpegts"
         Null       = "null"
 
     format: Annotated[Optional[Format],
@@ -157,7 +159,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     pixel_format: Annotated[Optional[PixelFormat],
         Option("--pixel-format", "-p")] = \
-        Field(PixelFormat.RGB24)
+        Field(None)
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-f", denum(self.format))
@@ -1456,7 +1458,10 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             .filter(content=f"select='gte(n\\,{skip})'")
             .rawvideo()
             .no_audio()
-            .pipe_output(format="rawvideo")
+            .pipe_output(
+                pixel_format="rgb24",
+                format="rawvideo",
+            )
         ).popen(stdout=PIPE, echo=echo)
 
         # Keep reading frames until we run out, each pixel is 3 bytes !

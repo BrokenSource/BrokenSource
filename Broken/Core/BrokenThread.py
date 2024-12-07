@@ -46,8 +46,8 @@ class WorkerPool:
 
 @define
 class BrokenThread:
-    def __new__(cls, *args, **kwargs) -> Thread:
-        return cls.new(*args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        raise RuntimeError("This class is not meant to be instantiated directly")
 
     @staticmethod
     def pool(name: str) -> WorkerPool:
@@ -60,7 +60,7 @@ class BrokenThread:
 
     @staticmethod
     def new(
-        target: Callable,
+        target: Callable, /,
         *args: List[Any],
         start: bool=True,
         join: bool=False,
@@ -68,7 +68,7 @@ class BrokenThread:
         period: float=0.0,
         pool: str=None,
         max: int=10,
-        daemon: bool=False,
+        daemon: bool=True,
         **kwargs: Dict[str, Any],
     ) -> Thread:
         """
@@ -113,7 +113,7 @@ class BrokenThread:
             pool.append(parallel)
         if start:
             parallel.start()
-        if join and start:
+        if (join and start):
             parallel.join()
         return parallel
 
