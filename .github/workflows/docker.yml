@@ -1,0 +1,14 @@
+name: docker
+on:
+  workflow_dispatch:
+
+jobs:
+  main:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Build and push images
+        run: uv run broken docker --push

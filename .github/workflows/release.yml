@@ -19,7 +19,7 @@ jobs:
       # Linux cross-compilation
 
       - name: Install gcc aarch64
-        if: ${{matrix.os == 'ubuntu-20.04' }}
+        if: ${{matrix.os == 'ubuntu-20.04'}}
         run: sudo apt install -y gcc-aarch64-linux-gnu
 
       # DepthFlow
@@ -37,7 +37,7 @@ jobs:
       # Pianola
 
       - name: Build Pianola
-        if: ${{ env.GHA_PYAPP == 'True' }}
+        if: ${{env.GHA_PYAPP == 'True'}}
         run: uv run broken pianola release --tarball --target all-host
 
       - name: Upload Pianola releases
@@ -49,7 +49,7 @@ jobs:
       # ShaderFlow
 
       - name: Build ShaderFlow
-        if: ${{env.GHA_PYAPP == 'True' }}
+        if: ${{env.GHA_PYAPP == 'True'}}
         run: uv run broken shaderflow release --tarball --target all-host
 
       - name: Upload ShaderFlow releases

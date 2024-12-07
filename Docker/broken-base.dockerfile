@@ -39,14 +39,16 @@ RUN apt install -y xz-utils curl
 ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
 ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
 RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
+RUN apt remove -y xz-utils curl
 
 # SoundCard needs libpulse.so and server
 RUN apt install -y pulseaudio
 RUN adduser root pulse-access
 
 # Install uv and create a virtual environment
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5.7 /uv /uvx /bin/
 ENV UV_COMPILE_BYTECODE="1"
+ENV UV_LINK_MODE=copy
 ENV VIRTUAL_ENV="/App/.venv"
 ENV PATH="/App/.venv/bin:$PATH"
 RUN uv venv --python 3.12 "$VIRTUAL_ENV"
@@ -54,24 +56,20 @@ RUN uv venv --python 3.12 "$VIRTUAL_ENV"
 # Install a PyTorch flavor
 ARG TORCH_VERSION="2.5.1"
 ARG TORCH_FLAVOR="cpu"
-RUN uv pip install torch=="${TORCH_VERSION}+${TORCH_FLAVOR}" \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install torch=="${TORCH_VERSION}+${TORCH_FLAVOR}" \
     --index-url "https://download.pytorch.org/whl/${TORCH_FLAVOR}"
-RUN uv pip install transformers
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install transformers
 
 # ------------------------------------------------------------------------------------------------ #
 # Broken Source stuff
 
-# Install latest release
-RUN uv pip install \
-    depthflow \
-    pianola \
-    shaderflow \
-    spectronote
-
 # Install development version of broken-source
 # Note: --inexact to preserve torch
 COPY . /App
-RUN uv sync --all-packages --inexact
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --all-packages --inexact
 
 # Signal Python we're Docker
 ENV WINDOW_BACKEND="headless"
@@ -79,10 +77,8 @@ ENV WINDOW_BACKEND="headless"
 # ------------------------------------------------------------------------------------------------ #
 # Image optimizations
 
-# Clean apt caches and sources
-RUN apt clean && rm -rf /var/lib/apt/lists/*
-
-# Don't need the cache anymore
-RUN uv cache clean
+# Clean caches, sources, etc.
+RUN apt clean && rm -rf /var/lib/apt/lists/* && \
+    uv cache clean
 
 # ------------------------------------------------------------------------------------------------ #
