@@ -32,22 +32,25 @@ RUN apt install -y libegl1-mesa-dev libglvnd-dev libglvnd0 && \
     /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # ------------------------------------------------------------------------------------------------ #
-# Base requirements
-
-# Video encoding and decoding
-RUN apt install -y xz-utils curl
-ARG FFMPEG_FLAVOR="ffmpeg-master-latest-linux64-gpl"
-ARG FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_FLAVOR}.tar.xz"
-RUN curl -L ${FFMPEG_URL} | tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
-RUN apt remove -y xz-utils curl
 
 # SoundCard needs libpulse.so and server
-RUN apt install -y pulseaudio
-RUN adduser root pulse-access
+RUN apt install -y pulseaudio && \
+    adduser root pulse-access
+
+# Video encoding and decoding
+RUN apt install -y xz-utils curl git
+ARG FFMPEG="ffmpeg-master-latest-linux64-gpl"
+RUN curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG}.tar.xz" | \
+    tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
+
+# Begin with the current git main at workdir
+RUN git clone --recurse-submodules --jobs 4 https://github.com/BrokenSource/BrokenSource /App && \
+    git submodule foreach --recursive 'git checkout main || true' && \
+    git pull --recurse-submodules
 
 # Install uv and create a virtual environment
 COPY --from=ghcr.io/astral-sh/uv:0.5.7 /uv /uvx /bin/
-ENV UV_COMPILE_BYTECODE="1"
+ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV VIRTUAL_ENV="/App/.venv"
 ENV PATH="/App/.venv/bin:$PATH"
@@ -62,12 +65,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install transformers
 
-# ------------------------------------------------------------------------------------------------ #
-# Broken Source stuff
-
-# Install development version of broken-source
 # Note: --inexact to preserve torch
-COPY . /App
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --all-packages --inexact
 
@@ -78,7 +76,8 @@ ENV WINDOW_BACKEND="headless"
 # Image optimizations
 
 # Clean caches, sources, etc.
-RUN apt clean && rm -rf /var/lib/apt/lists/* && \
-    uv cache clean
+RUN rm -rf /var/lib/apt/lists/* .git && \
+    uv cache clean && \
+    apt clean
 
 # ------------------------------------------------------------------------------------------------ #

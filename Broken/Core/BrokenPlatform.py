@@ -1,13 +1,12 @@
 import ctypes
 import os
 import platform
-from typing import Generator, List, Self
-from aenum import MultiValueEnum
+from typing import Generator, Self
 
 import distro
 
+from Broken.Core.BrokenEnum import BrokenEnum, MultiEnum
 from Broken.Core.BrokenLogging import log
-from Broken.Core.BrokenEnum import MultiEnum, BrokenEnum
 
 
 class SystemEnum(str, MultiEnum):
