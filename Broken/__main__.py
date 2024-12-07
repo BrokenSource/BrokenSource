@@ -469,7 +469,7 @@ class BrokenManager(BrokenSingleton):
         """Build and push docker images for all projects"""
         for flavor in ("cpu", "cu121"):
             os.environ["TORCH_FLAVOR"] = flavor
-            shell("docker-compose", "build")
+            shell("docker", "compose", "build")
 
             for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
                 image:  str = dockerfile.stem
