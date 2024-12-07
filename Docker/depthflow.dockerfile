@@ -12,4 +12,4 @@ RUN depthflow upscayl load-upscaler
 # COPY . /App
 # RUN uv sync --all-packages --inexact
 
-CMD ["uv", "run", "python", "/App/Docker/Scripts/depthflow.py"]
+CMD ["python", "/App/Docker/Scripts/depthflow.py"]
