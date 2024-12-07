@@ -468,12 +468,16 @@ class BrokenManager(BrokenSingleton):
     ) -> None:
         """Build and push docker images for all projects"""
         for flavor in ("cpu", "cu121"):
-            setattr(os.environ, "TORCH_FLAVOR", flavor)
+            os.environ["TORCH_FLAVOR"] = flavor
             shell("docker-compose", "build")
 
             for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
                 image:  str = dockerfile.stem
                 latest: str = f"{image}:latest"
+
+                # Temporary whitelist
+                if (image != "depthflow"):
+                    continue
 
                 # Tag a latest and versioned flavored images, optional push
                 for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
