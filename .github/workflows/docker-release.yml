@@ -1,4 +1,4 @@
-name: docker
+name: docker-release
 on:
   workflow_dispatch:
 
@@ -6,9 +6,14 @@ jobs:
   main:
     name: Build and push images
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
+
+      - name: Login to ghcr
+        run: docker login ghcr.io -u ${{github.actor}} -p ${{secrets.GITHUB_TOKEN}}
 
       - name: Build and push images
         run: uv run broken docker --push
