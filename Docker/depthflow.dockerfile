@@ -8,4 +8,8 @@ RUN depthflow any2 --model small load-estimator \
 # Have common upscalers preloaded
 RUN depthflow upscayl load-upscaler
 
+# Development mode
+# COPY . /App
+# RUN uv sync --all-packages --inexact
+
 CMD ["uv", "run", "python", "/App/Docker/Scripts/depthflow.py"]

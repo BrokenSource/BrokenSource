@@ -345,7 +345,7 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """Enable Constant Bitrate mode"""
 
     gpu: Annotated[Optional[int],
-        Option("--gpu", "-g", min=0)] = \
+        Option("--gpu", "-g", min=-1)] = \
         Field(-1, ge=-1)
     """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 
@@ -495,7 +495,7 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """Use Constant Bitrate mode"""
 
     gpu: Annotated[Optional[int],
-        Option("--gpu", "-g", min=0)] = \
+        Option("--gpu", "-g", min=-1)] = \
         Field(-1, ge=-1)
     """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 
@@ -722,7 +722,7 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """Number of frames to look ahead for the rate control"""
 
     gpu: Annotated[Optional[int],
-        Option("--gpu", "-g", min=0)] = \
+        Option("--gpu", "-g", min=-1)] = \
         Field(-1, ge=-1)
     """Use the Nth NVENC capable GPU for encoding, -1 to pick the first device available"""
 

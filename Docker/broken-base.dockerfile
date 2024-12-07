@@ -15,7 +15,7 @@ RUN apt update
 WORKDIR /App
 
 # ------------------------------------------------------------------------------------------------ #
-# Make OpenGL acceleration with EGL work on NVIDIA
+# Make OpenGL acceleration with EGL and Vulkan work on NVIDIA
 
 # Basic required configuration
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
@@ -26,10 +26,16 @@ ENV MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"
 ENV LD_LIBRARY_PATH="/usr/lib/wsl/lib"
 
 # Install libEGL stuff (for non-nvidia glvnd base images)
-RUN apt install -y libegl1-mesa-dev libglvnd-dev libglvnd0 && \
+RUN apt install -y libglvnd0 libglvnd-dev libegl1-mesa-dev && \
     mkdir -p /usr/share/glvnd/egl_vendor.d && \
-    echo '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0"}}' > \
+    echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}' > \
     /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
+# Similar story with Vulkan
+RUN apt install -y libvulkan1 libvulkan-dev && \
+    mkdir -p /usr/share/vulkan/icd.d && \
+    echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libGLX_nvidia.so.0","api_version":"1.3"}}' > \
+    /usr/share/vulkan/icd.d/nvidia_icd.json
 
 # ------------------------------------------------------------------------------------------------ #
 
