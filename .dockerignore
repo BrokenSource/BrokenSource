@@ -7,7 +7,6 @@
 **/Release
 **/Workspace
 **/*.pyc
-**/*.lock
 
 # Non-syncthing
 **/.stfolder

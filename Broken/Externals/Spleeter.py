@@ -1,7 +1,6 @@
 # pyright: reportMissingImports=false
 
 import hashlib
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Tuple
 

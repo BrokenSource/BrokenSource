@@ -3,12 +3,11 @@
 import copy
 import functools
 import hashlib
-import itertools
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
 
 import numpy
@@ -132,8 +131,8 @@ class DepthAnythingBase(BaseEstimator):
         import transformers
         HUGGINGFACE_MODEL = (f"{self._model_prefix()}{self.model.value}-hf")
         log.info(f"Loading Depth Estimator model ({HUGGINGFACE_MODEL})")
-        self._processor = transformers.AutoImageProcessor.from_pretrained(HUGGINGFACE_MODEL)
-        self._model = transformers.AutoModelForDepthEstimation.from_pretrained(HUGGINGFACE_MODEL)
+        self._processor = lru_cache()(transformers.AutoImageProcessor.from_pretrained)(HUGGINGFACE_MODEL)
+        self._model = lru_cache()(transformers.AutoModelForDepthEstimation.from_pretrained)(HUGGINGFACE_MODEL)
         self._model.to(self.device)
 
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
@@ -194,7 +193,7 @@ class DepthPro(BaseEstimator):
         config.checkpoint_uri = checkpoint
 
         with Halo("Creating DepthPro model"):
-            self._model, self._transform = create_model_and_transforms(
+            self._model, self._transform = lru_cache()(create_model_and_transforms)(
                 precision=torch.float16,
                 device=self.device,
                 config=config
@@ -240,7 +239,7 @@ class ZoeDepth(BaseEstimator):
         install(packages="timm", pypi="timm==0.6.7", args="--no-deps")
 
         log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
-        self._model = torch.hub.load(
+        self._model = lru_cache()(torch.hub.load)(
             "isl-org/ZoeDepth", f"ZoeD_{self.model.value.upper()}",
             pretrained=True, trust_repo=True
         ).to(self.device)
@@ -275,7 +274,7 @@ class Marigold(BaseEstimator):
 
         log.info("Loading Depth Estimator model (Marigold)")
         log.warning("Note: Use FP16 for CPU, but it's VERY SLOW")
-        self._model = DiffusionPipeline.from_pretrained(
+        self._model = lru_cache()(DiffusionPipeline.from_pretrained)(
             "prs-eth/marigold-depth-lcm-v1-0",
             custom_pipeline="marigold_depth_estimation",
             torch_dtype=dict(

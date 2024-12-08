@@ -4,6 +4,7 @@ services:
 
   broken-base: &common
     image: broken-base
+    pull_policy: never
     build:
       context: .
       dockerfile: Docker/broken-base.dockerfile
@@ -27,6 +28,7 @@ services:
 
   glinfo:
     image: glinfo
+    pull_policy: never
     build:
       context: .
       dockerfile: Docker/glinfo.dockerfile
@@ -38,6 +40,7 @@ services:
 
   shaderflow:
     image: shaderflow
+    pull_policy: never
     build:
       context: .
       dockerfile: Docker/shaderflow.dockerfile
@@ -47,6 +50,7 @@ services:
 
   depthflow:
     image: depthflow
+    pull_policy: never
     build:
       context: .
       dockerfile: Docker/depthflow.dockerfile
