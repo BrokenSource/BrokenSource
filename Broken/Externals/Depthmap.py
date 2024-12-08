@@ -38,15 +38,6 @@ if TYPE_CHECKING:
 
 # ------------------------------------------------------------------------------------------------ #
 
-MODELS_CACHE = (Broken.BROKEN.DIRECTORIES.EXTERNAL_MODELS)
-
-os.environ.update(dict(
-    TORCH_HOME=str(MODELS_CACHE),
-    HF_HOME=str(MODELS_CACHE),
-))
-
-# ------------------------------------------------------------------------------------------------ #
-
 class BaseEstimator(
     ExternalTorchBase,
     ExternalModelsBase,
