@@ -378,15 +378,6 @@ def arguments() -> bool:
     return bool(sys.argv[1:])
 
 
-def recache(*args, patch: bool=False, **kwargs):
-    import requests
-    import requests_cache
-    session = requests_cache.CachedSession(*args, **kwargs)
-    if patch:
-        requests.Session = session
-    return session
-
-
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
@@ -399,6 +390,13 @@ class Nothing:
         return self
     def __getattr__(self, _):
         return self.__nop__
+
+
+class StaticClass:
+    """A class that can't be instantiated directl, only used for static methods (namespace)"""
+
+    def __new__(cls, *args, **kwargs):
+        raise TypeError(f"Can't instantiate static class '{cls.__name__}'")
 
 
 class BrokenSingleton(ABC):
@@ -499,7 +497,7 @@ class BrokenModel(BaseModel):
             setattr(self, key, value.default)
 
 
-class BrokenAttribute:
+class BrokenAttribute(StaticClass):
     """Recursive implementation for getattr and setattr from strings"""
 
     @define
@@ -543,7 +541,7 @@ class BrokenAttribute:
         setattr(object, parts.last, value)
 
 
-class StringUtils:
+class StringUtils(StaticClass):
 
     @staticmethod
     def border(string: str, border: str) -> bool:
@@ -566,7 +564,7 @@ class StringUtils:
         return name.startswith("_")
 
 
-class DictUtils:
+class DictUtils(StaticClass):
 
     @staticmethod
     def filter_dict(
@@ -603,17 +601,26 @@ class DictUtils:
         return DictUtils.filter_dict(data, block=["self"])
 
 
-class BrokenWatchdog(ABC):
+class BrokenCache(StaticClass):
 
-    @abstractmethod
-    def __changed__(self, key, value) -> None:
-        """Called when a property changes"""
-        ...
+    _lru_cache = {}
 
-    def __setattr__(self, key, value):
-        """Calls __changed__ when a property changes"""
-        super().__setattr__(key, value)
-        self.__changed__(key, value)
+    @staticmethod
+    @functools.wraps(functools.lru_cache)
+    def lru(method, *args, **kwargs):
+        """Returns the same lru_cache wrapper if calling on the same method"""
+        return BrokenCache._lru_cache.setdefault(
+            method, functools.lru_cache(method, *args, **kwargs)
+        )
+
+    @staticmethod
+    def requests(*args, patch: bool=False, **kwargs):
+        import requests
+        import requests_cache
+        session = requests_cache.CachedSession(*args, **kwargs)
+        if patch:
+            requests.Session = session
+        return session
 
 
 @define
@@ -679,7 +686,22 @@ class Patch:
     def __exit__(self, *args):
         self.revert()
 
+
+class BrokenWatchdog(ABC):
+
+    @abstractmethod
+    def __changed__(self, key, value) -> None:
+        """Called when a property changes"""
+        ...
+
+    def __setattr__(self, key, value):
+        """Calls __changed__ when a property changes"""
+        super().__setattr__(key, value)
+        self.__changed__(key, value)
+
+
 # # Trackers
+
 
 @define
 class EasyTracker:
@@ -730,7 +752,6 @@ class EasyTracker:
 
 # ------------------------------------------------------------------------------------------------ #
 # Stuff that needs a revisit
-
 
 def transcends(method, base, generator: bool=False):
     """

@@ -17,6 +17,7 @@ from halo import Halo
 
 import Broken
 from Broken import denum, flatten, log, shell
+from Broken.Core import StaticClass
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Types import FileExtensions
@@ -29,9 +30,8 @@ class ShutilFormat(BrokenEnum):
     TarBz = "tar.bz2"
     TarXz = "tar.xz"
 
-class BrokenPath:
-    def __new__(cls, *args, **kwargs):
-        raise TypeError(f"{cls.__name__} is a static class and shouldn't be instantiated")
+
+class BrokenPath(StaticClass):
 
     def get(*args,
         absolute: bool=True,

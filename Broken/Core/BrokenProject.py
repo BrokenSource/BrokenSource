@@ -27,10 +27,10 @@ import Broken
 from Broken import Runtime
 from Broken.Core import (
     BrokenAttrs,
+    BrokenCache,
     EasyTracker,
     arguments,
     flatten,
-    recache,
     shell,
 )
 from Broken.Core.BrokenLogging import BrokenLogging, log
@@ -163,7 +163,7 @@ class BrokenProject:
             if (current := Version(self.VERSION)).is_prerelease:
                 return None
 
-            with recache(
+            with BrokenCache.requests(
                 cache_name=(venv_path/"version.check"),
                 expire_after=(3600),
             ) as requests:

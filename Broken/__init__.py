@@ -134,6 +134,7 @@ import Broken.Resources as BrokenResources
 from Broken.Core import (
     BrokenAttribute,
     BrokenAttrs,
+    BrokenCache,
     BrokenFluent,
     BrokenModel,
     BrokenRelay,
@@ -159,7 +160,6 @@ from Broken.Core import (
     nearest,
     overrides,
     pop_fill,
-    recache,
     shell,
     smartproxy,
 )
