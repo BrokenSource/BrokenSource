@@ -70,8 +70,8 @@ RUN uv venv --python 3.12 "$VIRTUAL_ENV"
 # Cache depth estimator models
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install huggingface-hub && \
-    huggingface-cli download "depth-anything/Depth-Anything-V2-small" && \
-    huggingface-cli download "depth-anything/Depth-Anything-V2-base"
+    huggingface-cli download "depth-anything/Depth-Anything-V2-small-hf" && \
+    huggingface-cli download "depth-anything/Depth-Anything-V2-base-hf"
 
 # Install a PyTorch flavor
 ARG TORCH_VERSION="2.5.1"
