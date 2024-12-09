@@ -61,8 +61,8 @@ RUN curl -L "https://github.com/upscayl/upscayl/releases/download/v2.11.5/upscay
 
 # Install uv and create a virtual environment
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE="1"
+ENV UV_LINK_MODE="copy"
 ENV VIRTUAL_ENV="/App/.venv"
 ENV PATH="/App/.venv/bin:$PATH"
 RUN uv venv --python 3.12 "$VIRTUAL_ENV"
@@ -70,8 +70,8 @@ RUN uv venv --python 3.12 "$VIRTUAL_ENV"
 # Cache depth estimator models
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install huggingface-hub && \
-    huggingface-cli download depth-anything/Depth-Anything-V2-small && \
-    huggingface-cli download depth-anything/Depth-Anything-V2-base
+    huggingface-cli download "depth-anything/Depth-Anything-V2-small" && \
+    huggingface-cli download "depth-anything/Depth-Anything-V2-base"
 
 # Install a PyTorch flavor
 ARG TORCH_VERSION="2.5.1"

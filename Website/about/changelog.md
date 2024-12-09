@@ -13,11 +13,17 @@
 
 :material-arrow-right: You can run this version right now [from source](site:/get/source)!
 
-##### General {#0.9.0-general}
-- Added support for Intel Macs and Linux Arm builds to the releases
-- Actually fix FFmpeg automatic downloads on macOS
+**General**:
 
-##### DepthFlow {#0.9.0-depthflow}
+- Added support for Intel Macs and Linux Arm builds to the releases
+- Actually fix FFmpeg automatic downloads on macOS (missing chmod)
+- Many improvements on the Docker images, and publish them on GHCR
+    - Vulkan now works inside docker for upscayl and ncnn upscalers
+    - Publish images of tags `project-(latest,cpu,cu121)`
+- Moderate code simplifications and refactoring throughout the codebase
+
+**DepthFlow**:
+
 - Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option
 - Fixed drag and drop of files due new lazy loading logic
 - Improve dolly preset phase start to be more accurate
@@ -28,8 +34,20 @@
 - Rewrite the animation system to be more flexible and reliable
 - Add colors filters (sepia, grayscale, saturation, contrast, brightness)
 - Add transverse lens distortion filter (intensity, decay options)
+- Base scene duration is now 5 seconds
+- Internally interpolate isometric factor from 0.5 to 1 for better edges
+- Overhaul animation system to be more flexible and reliable:
+    - Completely serializable, changing any state parameter
+- Reorganize website examples section into their own pages
+- Cached depthmaps are now handled by `diskcache` for safer cross-process access
+- Implement an API with FastAPI, Uvicorn accessible via `depthflow server`:
+    - Fully serializable, simple json requests and responses
+    - Videos are cached, same-hash requests are served from it
+    - Configurable maximum simultaneous renders at any time
 
-##### ShaderFlow {#0.9.0-shaderflow}
+
+**ShaderFlow**:
+
 - Enforce `#!py weakref.proxy()` on every module's `.scene` to allow for explicit `gc.collect()` to find circular references and clean up resources properly
 - Assign all module scenes with a `weakref.proxy` for better gc collection
 - Add an heuristic to use the headless context when exporting videos (TODO)
@@ -37,16 +55,26 @@
 - Fix frametimer first frame being `dt=0`
 - Rename `ShaderObject` to `ShaderProgram`
 - Initial ground work on better metaprogramming and include system
-- Partial overhaul and heavily simplify `ShaderTexture` class
+- Partial overhaul and heavily simplify `ShaderTexture` class:
+    - The `track` parameter is now a float ratio of the scene's resolution
 - `ShaderTexture.track` is now a float ratio of the scene's resolution
 - Drastically improve import times and consequently CLI startup times
-- Speed improvements moving to float64 on dynamic number + partial rewrite
+- Speed improvements moving to float64 on dynamic number + partial rewrite:
+    - Integral and derivatices are optional now, huge speedup as well
+- Fix many _(dumb)_ memory leaks:
+    - Do not recreate imgui context on every scene init
+    - Release proxy render buffers that are piped to ffmpeg when done
+    - Release texture objects when ShaderTexture is garbage collected
+    - Enforce a `gc.collect()` on scene deletion for cyclic references
+- Base duration of the scenes are now configurable (10 seconds default)
+- Throw an exception when FFmpeg process stops unexpectedly
+- Fix sharing a global watchdog causing errors on many initializations
 
 <!------------------------------------------------------------------------------------------------->
 
 ### 🔘 0.8.0 <small>October 27, 2024</small> {#0.8.0}
 
-##### General {#0.8.0-general}
+**General**:
 
 - Move away from [Rye](https://rye.astral.sh/) to [uv](https://astral.sh/) tooling
 - ⚠️ **New** minimum version of Python: 3.10
@@ -63,7 +91,7 @@
     - Similarly, a `version.check` SQLite from `requests-cache` is created, which verifies the latest version of the software using PyPI endpoints each hour. A warning will be shown if a newer version is available; and a error will be shown if the current version is newer than the latest, which can indicate a yanked release or a time-traveller.
 - Potential fix on macOS automatic downloads of a FFmpeg binary
 
-##### DepthFlow {#0.8.0-depthflow}
+**DepthFlow**:
 
 - Implement batch export logic within the main command line
 - PyTorch is now managed within a top-most CLI entry point
@@ -73,7 +101,7 @@
 - Loading inputs is now _lazy_, and only happens at module setup before rendering
 - Improved the Readme with community work, quick links, showcase
 
-##### ShaderFlow {#0.8.0-shaderflow}
+**ShaderFlow**:
 
 - [**(#6)**](https://github.com/BrokenSource/ShaderFlow/issues/6) Move away from [pyimgui](https://pypi.org/project/imgui/) to [imgui-bundle](https://pypi.org/project/imgui-bundle/)
 - Fix `Scene.tau` overlooked calculation, it was _half right!_
@@ -97,9 +125,6 @@
 ### 🔘 0.7.1 <small>October 5, 2024</small> {id="0.7.1"}
 
 - Fixed readme links to the website
-
-<h5>ShaderFlow</h5>
-
 - Fixed black video exports on Linux llvmpipe
 - Fixed black video exports on macOS
 
