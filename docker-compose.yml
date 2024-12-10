@@ -14,6 +14,7 @@ services:
 
     volumes:
       - /usr/lib/wsl:/usr/lib/wsl
+      # - ./Docker/Workspace:/root/.local/share/BrokenSource
 
     # "--gpus=all"
     deploy:

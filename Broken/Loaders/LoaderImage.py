@@ -8,7 +8,6 @@ from attr import define
 from PIL.Image import Image
 
 import Broken
-from Broken import log
 from Broken.Loaders import BrokenLoader
 from Broken.Types import URL
 
@@ -39,31 +38,25 @@ class LoaderImage(BrokenLoader):
             return None
 
         if isinstance(value, Image):
-            log.debug("Loading already an Instance of Image")
             return value
 
-        if value is Image:
-            log.debug("Loading already an Class of Image")
+        if (value is Image):
             return value
 
         if isinstance(value, bytes):
-            log.debug("Loading Image from Bytes")
             return PIL.Image.open(io.BytesIO(value), **kwargs)
 
         if ("numpy" in str(type(value))):
-            log.debug("Loading Image from Numpy Array")
             return PIL.Image.fromarray(value, **kwargs)
 
         if (path := Path(value).expanduser().resolve()).exists():
-            log.debug(f"Loading Image from Path ({path})")
             return PIL.Image.open(path, **kwargs)
 
         if validators.url(value):
-            log.debug(f"Loading Image from URL ({value})")
             import requests
             get = getattr(LoaderImage.cache(), "get", requests.get)
             return PIL.Image.open(io.BytesIO(get(value).content), **kwargs)
 
         return None
 
-LoadableImage: TypeAlias = Union[Image, Path, URL, "numpy.ndarray", bytes, None]
+LoadableImage: TypeAlias = Union[Image, Path, URL, "numpy.ndarray", bytes]

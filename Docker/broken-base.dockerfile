@@ -4,15 +4,19 @@
 # ------------------------------------------------------------------------------------------------ #
 # General metadata and configuration
 
-FROM ubuntu:24.04
+ARG BASE_IMAGE="ubuntu:24.04"
+FROM ${BASE_IMAGE}
 LABEL org.opencontainers.image.title="BrokenBase"
 LABEL org.opencontainers.image.description="Batteries-included image for all Broken Source projects"
 LABEL org.opencontainers.image.source="https://github.com/BrokenSource/BrokenSource"
+LABEL org.opencontainers.image.url="https://github.com/orgs/BrokenSource/packages"
+LABEL org.opencontainers.image.documentation="https://brokensrc.dev/"
 LABEL org.opencontainers.image.authors="Tremeschin"
 LABEL org.opencontainers.image.licenses="MIT"
 ENV DEBIAN_FRONTEND="noninteractive"
+ARG WORKDIR="/App"
 RUN apt update
-WORKDIR /App
+WORKDIR "${WORKDIR}"
 
 # ------------------------------------------------------------------------------------------------ #
 # Make Vulkan and OpenGL EGL acceleration work on NVIDIA (the unveiled magic of nvidia/glvnd)
@@ -47,7 +51,7 @@ RUN apt install -y pulseaudio && \
     adduser root pulse-access
 
 # Video encoding and decoding
-RUN apt install -y xz-utils curl git
+RUN apt install -y xz-utils curl
 ARG FFMPEG="ffmpeg-master-latest-linux64-gpl"
 RUN curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG}.tar.xz" | \
     tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
@@ -63,8 +67,8 @@ RUN curl -L "https://github.com/upscayl/upscayl/releases/download/v2.11.5/upscay
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 ENV UV_COMPILE_BYTECODE="1"
 ENV UV_LINK_MODE="copy"
-ENV VIRTUAL_ENV="/App/.venv"
-ENV PATH="/App/.venv/bin:$PATH"
+ENV VIRTUAL_ENV="${WORKDIR}/.venv"
+ENV PATH="${WORKDIR}/.venv/bin:$PATH"
 RUN uv venv --python 3.12 "$VIRTUAL_ENV"
 
 # Cache depth estimator models
@@ -88,8 +92,16 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --inexact
 
+# Clone the latest commited code
+RUN apt install -y git
+ARG REPOSITORY="https://github.com/BrokenSource/BrokenSource"
+RUN git clone --recurse-submodules --jobs 4 "${REPOSITORY}" ./clone && \
+    cp -r ./clone/. . && rm -rf ./clone && \
+    git submodule foreach --recursive 'git checkout main || true' && \
+    git pull --recurse-submodules && rm -rf .git
+
 # Development mode
-COPY . /App
+# COPY . ${WORKDIR}
 
 # Note: --inexact to preserve torch
 RUN --mount=type=cache,target=/root/.cache/uv \
