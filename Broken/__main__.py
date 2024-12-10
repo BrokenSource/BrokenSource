@@ -24,7 +24,7 @@ from Broken import (
     Stack,
     SystemEnum,
     __version__,
-    environment,
+    combinations,
     flatten,
     log,
     shell,
@@ -467,20 +467,22 @@ class BrokenManager(BrokenSingleton):
         clean: Annotated[bool, Option("--clean", "-c", help="Remove local images after pushing")]=False,
     ) -> None:
         """Build and push docker images for all projects"""
-        for flavor in ("cpu", "cu121"):
-            os.environ["TORCH_FLAVOR"] = flavor
+        for build in combinations(
+            base_image=["ubuntu:24.04"],
+            flavor=["cpu", "cu121"],
+        ):
+            # Warn: Must use same env vars as in docker-compose.yml
+            os.environ["BASE_IMAGE"] = build.base_image
+            os.environ["TORCH_FLAVOR"] = build.flavor
             shell("docker", "compose", "build")
 
+            # Assumes all dockerfiles were built by docker compose, fails ok otherwise
             for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
                 image:  str = dockerfile.stem
                 latest: str = f"{image}:latest"
 
-                # Temporary whitelist
-                if (image != "depthflow"):
-                    continue
-
                 # Tag a latest and versioned flavored images, optional push
-                for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
+                for tag in (f"latest-{build.flavor}", f"{__version__}-{build.flavor}"):
                     final: str = f"ghcr.io/brokensource/{image}:{tag}"
                     shell("docker", "tag", latest, final)
                     shell("docker", "push", final, skip=(not push))

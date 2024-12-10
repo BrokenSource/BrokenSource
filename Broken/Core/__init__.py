@@ -373,6 +373,12 @@ def install(
     raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
 
 
+def combinations(**options) -> Iterable[DotMap]:
+    """Returns a dictionary of key='this' of itertools.product"""
+    for items in itertools.product(*options.values()):
+        yield DotMap(zip(options.keys(), items))
+
+
 def arguments() -> bool:
     """Returns True if any arguments are present on sys.argv"""
     return bool(sys.argv[1:])
