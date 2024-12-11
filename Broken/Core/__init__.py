@@ -197,7 +197,7 @@ def pop_fill(data: Container, fill: type[Any], length: int) -> Container[Any]:
 
 
 @contextlib.contextmanager
-def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None, None]:
+def Stack(*contexts: contextlib.AbstractContextManager) -> Generator:
     """Enter multiple contexts at once as `with Stack(items): ...`"""
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):
@@ -206,7 +206,7 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None,
 
 
 @contextlib.contextmanager
-def environment(**variables: dict[str, str]) -> Generator[None, None, None]:
+def environment(**variables: dict[str, str]) -> Generator:
     """Temporarily sets environment variables inside a context"""
     original = os.environ.copy()
     os.environ.update(variables)
@@ -261,7 +261,7 @@ def list_get(data: list, index: int, default: Any=None) -> Optional[Any]:
     return data[index]
 
 
-def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[int, None, None]:
+def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Iterable[int]:
     """
     Yields the numbers in a hyphenated CSV range, just like when selecting what pages to print
     - Accepts any of ("-", "..", "...", "_", "->") as a hyphenated range
@@ -473,13 +473,13 @@ class BrokenModel(BaseModel):
 
     # Dict-like utilities
 
-    def keys(self) -> Generator[str, None, None]:
+    def keys(self) -> Iterable[str]:
         yield from self.dict().keys()
 
-    def values(self) -> Generator[Any, None, None]:
+    def values(self) -> Iterable[Any]:
         yield from self.dict().values()
 
-    def items(self) -> Generator[tuple[str, Any], None, None]:
+    def items(self) -> Iterable[tuple[str, Any]]:
         yield from self.dict().items()
 
     # Special
@@ -572,7 +572,7 @@ class DictUtils(StaticClass):
         return data
 
     @staticmethod
-    def ritems(data: dict[str, Any]) -> Generator[tuple[str, Any], None, None]:
+    def ritems(data: dict[str, Any]) -> Iterable[tuple[str, Any]]:
         """Recursively yields all items from a dictionary"""
         for (key, value) in data.items():
             if isinstance(value, dict):
@@ -581,7 +581,7 @@ class DictUtils(StaticClass):
             yield (key, value)
 
     @staticmethod
-    def rvalues(data: dict[str, Any]) -> Generator[Any, None, None]:
+    def rvalues(data: dict[str, Any]) -> Iterable[Any]:
         """Recursively yields all values from a dictionary"""
         for (key, value) in DictUtils.ritems(data):
             yield value

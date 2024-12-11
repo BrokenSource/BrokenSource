@@ -103,11 +103,11 @@ class BrokenTyper:
     _panel: str = None
 
     @contextlib.contextmanager
-    def panel(self, name: str) -> Generator[None, None, None]:
+    def panel(self, name: str) -> Generator:
         try:
             previous = self._panel
             self._panel = name
-            yield
+            yield None
         finally:
             self._panel = previous
 

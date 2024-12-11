@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from collections import deque
-from collections.abc import Generator, Iterable
+from collections.abc import Iterable
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Annotated, Literal, Optional, Self, TypeAlias, Union
@@ -1614,7 +1614,7 @@ class BrokenAudioReader:
         return (self.size * self.channels)
 
     @property
-    def stream(self) -> Generator[numpy.ndarray, None, None]:
+    def stream(self) -> Iterable[numpy.ndarray]:
         if not (path := BrokenPath.get(self.path, exists=True)):
             return None
         self.path = path

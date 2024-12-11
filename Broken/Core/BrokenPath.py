@@ -533,7 +533,7 @@ class BrokenPath(StaticClass):
         return original
 
     @staticmethod
-    def directories(path: Union[Path, Iterable]) -> Generator[Path, None, None]:
+    def directories(path: Union[Path, Iterable]) -> Iterable[Path]:
         if isinstance(path, Path):
             path = Path(path).glob("*")
         for item in map(Path, path):
@@ -541,7 +541,7 @@ class BrokenPath(StaticClass):
                 yield item
 
     @staticmethod
-    def files(path: Union[Path, Iterable]) -> Generator[Path, None, None]:
+    def files(path: Union[Path, Iterable]) -> Iterable[Path]:
         if isinstance(path, Path):
             path = Path(path).glob("*")
         for item in map(Path, path):

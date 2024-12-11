@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import time
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Iterable
 from multiprocessing import Process
 from threading import Lock, Thread
 from typing import Any, TypeAlias, Union
@@ -21,7 +21,7 @@ class WorkerPool:
     size: int = 1
 
     @property
-    def alive(self) -> Generator[Worker, None, None]:
+    def alive(self) -> Iterable[Worker]:
         for worker in self.workers:
             if worker.is_alive():
                 yield worker

@@ -2,15 +2,9 @@ import contextlib
 import shutil
 import tempfile
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from pathlib import Path
-from typing import (
-    Annotated,
-    Generator,
-    Literal,
-    Optional,
-    TypeAlias,
-    Union,
-)
+from typing import Annotated, Literal, Optional, TypeAlias, Union
 
 from PIL import Image
 from PIL.Image import Image as ImageType
@@ -63,7 +57,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
         )
 
     @contextlib.contextmanager
-    def path_image(self, image: Optional[LoadableImage]=None) -> Generator[Path, None, None]:
+    def path_image(self, image: Optional[LoadableImage]=None) -> Iterable[Path]:
         image = LoaderImage(image)
         try:
             # Note: No context because NTFS only allows one fd per path

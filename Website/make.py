@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Generator, Iterable, Union
+from typing import Callable, Iterable, Union
 
 import mkdocs_gen_files
 from attr import define, field
@@ -47,7 +47,7 @@ def parts(path: Path, *functions: Callable[[str], str]) -> Path:
 
     return Path(*(reduce(part) for part in path.parts))
 
-def files(iterable: Iterable[Path]) -> Generator[Path, None, None]:
+def files(iterable: Iterable[Path]) -> Iterable[Path]:
     for path in iterable:
         if path.is_file():
             yield path

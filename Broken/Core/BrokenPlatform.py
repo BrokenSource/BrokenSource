@@ -1,7 +1,7 @@
 import ctypes
 import os
 import platform
-from collections.abc import Generator
+from collections.abc import Iterable
 from typing import Self
 
 import distro
@@ -92,7 +92,7 @@ class Platform(str, BrokenEnum):
     _AllHost:  str = "all-host"
     _All:      str = "all"
 
-    def get_all(self) -> Generator[Self, None, None]:
+    def get_all(self) -> Iterable[Self]:
         if ("all" in self.value):
             for option in Platform.options():
                 if ("all" in option.value):
