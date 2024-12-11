@@ -5,7 +5,6 @@ import os
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Self
 
-from halo import Halo
 from pydantic import ConfigDict, Field, PrivateAttr
 
 from Broken import (

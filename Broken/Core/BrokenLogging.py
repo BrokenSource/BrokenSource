@@ -1,7 +1,7 @@
 import os
 import textwrap
 import time
-from typing import Callable, Dict
+from collections.abc import Callable
 
 import rich
 from loguru import logger as log
@@ -24,9 +24,9 @@ class BrokenLogging(BrokenSingleton):
     @staticmethod
     def set_project(name: str, *, force: bool=False) -> None:
         if (BrokenLogging.project() == "Broken") or force:
-            os.environ["BROKEN_APP_NAME"] = name
+            os.setenv("BROKEN_APP_NAME", name)
 
-    def format(self, data: Dict) -> str:
+    def format(self, data: dict) -> str:
         when = time.absolute()
         data["time"] = f"{int(when//60)}'{(when%60):06.3f}"
         data["project"] = self.project()
@@ -49,7 +49,7 @@ class BrokenLogging(BrokenSingleton):
 
     @level.setter
     def level(self, level: str) -> None:
-        os.environ["LOGLEVEL"] = level.upper()
+        os.setenv("LOGLEVEL", level.upper())
         self.reset()
 
     @property

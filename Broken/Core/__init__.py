@@ -13,26 +13,12 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from collections import deque
+from collections.abc import Callable, Container, Generator, Iterable
 from numbers import Number
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Container,
-    Deque,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Self,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
 from attrs import Factory, define, field
@@ -46,7 +32,7 @@ if TYPE_CHECKING:
 
 def flatten(
     *items: Iterable[Any],
-    cast: Type = list,
+    cast: type = list,
     block: Optional[Container[Any]] = (None, ""),
     unpack: Iterable[type] = (list, deque, tuple, map, Generator),
 ) -> Iterable[Any]:
@@ -79,7 +65,7 @@ def flatten(
 
 def every(
     *items: Iterable[Any],
-    cast: Type = list,
+    cast: type = list,
     block: Container[Any] = (None, ""),
 ) -> Optional[Iterable[Any]]:
     """
@@ -103,7 +89,7 @@ def shell(
     *args: Iterable[Any],
     output: bool = False,
     Popen: bool = False,
-    env: Dict[str, str] = None,
+    env: dict[str, str] = None,
     confirm: bool = False,
     threaded_stdin: bool = False,
     skip: bool = False,
@@ -191,7 +177,7 @@ def apply(
     callback: Callable,
     iterable: Iterable[Any], *,
     cast: Callable = list
-) -> List[Any]:
+) -> list[Any]:
     """Applies a callback to all items of an iterable, returning a $cast of the results"""
     return cast(map(callback, iterable))
 
@@ -201,7 +187,7 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     return (item.value if isinstance(item, enum.Enum) else item)
 
 
-def pop_fill(data: Container, fill: Type[Any], length: int) -> Container[Any]:
+def pop_fill(data: Container, fill: type[Any], length: int) -> Container[Any]:
     """Pop or fill until a data's length is met"""
     while len(data) > length:
         data.pop()
@@ -220,7 +206,7 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator[None, None,
 
 
 @contextlib.contextmanager
-def environment(**variables: Dict[str, str]) -> Generator[None, None, None]:
+def environment(**variables: dict[str, str]) -> Generator[None, None, None]:
     """Temporarily sets environment variables inside a context"""
     original = os.environ.copy()
     os.environ.update(variables)
@@ -234,7 +220,7 @@ def environment(**variables: Dict[str, str]) -> Generator[None, None, None]:
 
 
 @contextlib.contextmanager
-def block_modules(*modules: List[str]):
+def block_modules(*modules: list[str]):
     """Pretend a module isn't installed"""
     state = sys.modules.copy()
     try:
@@ -268,7 +254,7 @@ def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=ro
     return cast(multiple * operator(number/multiple))
 
 
-def list_get(data: List, index: int, default: Any=None) -> Optional[Any]:
+def list_get(data: list, index: int, default: Any=None) -> Optional[Any]:
     """Returns the item at 'index' or 'default' if out of range"""
     if (index >= len(data)):
         return default
@@ -312,7 +298,7 @@ def hyphen_range(string: Optional[str], *, inclusive: bool=True) -> Generator[in
 def limited_ratio(
     number: Optional[float], *,
     limit: float = None
-) -> Optional[Tuple[int, int]]:
+) -> Optional[tuple[int, int]]:
     """Same as Number.as_integer_ratio but with an optional upper limit and optional return"""
     if (number is None):
         return None
@@ -493,7 +479,7 @@ class BrokenModel(BaseModel):
     def values(self) -> Generator[Any, None, None]:
         yield from self.dict().values()
 
-    def items(self) -> Generator[Tuple[str, Any], None, None]:
+    def items(self) -> Generator[tuple[str, Any], None, None]:
         yield from self.dict().items()
 
     # Special
@@ -508,8 +494,8 @@ class BrokenAttribute(StaticClass):
 
     @define
     class Parts:
-        all: List[str]
-        body: List[str]
+        all: list[str]
+        body: list[str]
         last: str
 
     @staticmethod
@@ -574,10 +560,10 @@ class DictUtils(StaticClass):
 
     @staticmethod
     def filter_dict(
-        data: Dict[str, Any], *,
+        data: dict[str, Any], *,
         block: Optional[Container[Any]] = None,
         allow: Optional[Container[Any]] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Filters a dictionary by removing 'block' or only allowing 'allow' keys"""
         if block:
             data = {key: value for key, value in data.items() if (key not in block)}
@@ -586,7 +572,7 @@ class DictUtils(StaticClass):
         return data
 
     @staticmethod
-    def ritems(data: Dict[str, Any]) -> Generator[Tuple[str, Any], None, None]:
+    def ritems(data: dict[str, Any]) -> Generator[tuple[str, Any], None, None]:
         """Recursively yields all items from a dictionary"""
         for (key, value) in data.items():
             if isinstance(value, dict):
@@ -595,13 +581,13 @@ class DictUtils(StaticClass):
             yield (key, value)
 
     @staticmethod
-    def rvalues(data: Dict[str, Any]) -> Generator[Any, None, None]:
+    def rvalues(data: dict[str, Any]) -> Generator[Any, None, None]:
         """Recursively yields all values from a dictionary"""
         for (key, value) in DictUtils.ritems(data):
             yield value
 
     @staticmethod
-    def selfless(data: Dict) -> Dict:
+    def selfless(data: dict) -> dict:
         """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
         # Note: It's also possible to call Class.method(**locals()) instead!
         return DictUtils.filter_dict(data, block=["self"])
@@ -650,7 +636,7 @@ class BrokenRelay:
         window.key_event_func = relay @ (camera.walk, camera.rotate)
         ```
     """
-    callbacks: Deque[Callable] = Factory(deque)
+    callbacks: deque[Callable] = Factory(deque)
 
     def __bind__(self, *callbacks: Iterable[Callable]) -> Self:
         self.callbacks.extend(flatten(callbacks))
@@ -741,7 +727,7 @@ class EasyTracker:
         return __import__("arrow").get(self.file.read_text("utf-8"))
 
     @property
-    def sleeping(self, granularity: Tuple[str]=("day")) -> str:
+    def sleeping(self, granularity: tuple[str]=("day")) -> str:
         """How long it's been since the last run, for printing purposes"""
         return self.last.humanize(only_distance=True, granularity=granularity)
 
@@ -752,7 +738,7 @@ class EasyTracker:
             self.update()
         return trigger
 
-    def update(self, **shift: Dict) -> None:
+    def update(self, **shift: dict) -> None:
         time = __import__("arrow").utcnow().shift(**(shift or {}))
         self.file.write_text(str(time), "utf-8")
 

@@ -6,9 +6,10 @@ import itertools
 import os
 import shutil
 import sys
+from collections.abc import Generator, Iterable
 from enum import Enum
 from pathlib import Path
-from typing import Generator, Iterable, List, Optional, Union
+from typing import Optional, Union
 
 import click
 import tqdm
@@ -252,7 +253,7 @@ class BrokenPath(StaticClass):
 
         return output
 
-    def merge_zips(*zips: List[Path], output: Path, echo: bool=True) -> Path:
+    def merge_zips(*zips: list[Path], output: Path, echo: bool=True) -> Path:
         """Merge multiple ZIP files into a single one"""
         import zipfile
         with zipfile.ZipFile(output, "w") as archive:
@@ -522,11 +523,11 @@ class BrokenPath(StaticClass):
             else:
                 if prepend:
                     log.debug(f"• Prepending: ({other})", echo=echo)
-                    os.environ["PATH"] = (str(other) + os.pathsep + os.getenv("PATH"))
+                    os.setenv("PATH", str(other) + os.pathsep + os.getenv("PATH"))
                     sys.path.insert(0, str(other))
                 else:
                     log.debug(f"• Appending: ({other})", echo=echo)
-                    os.environ["PATH"] = (os.getenv("PATH") + os.pathsep + str(other))
+                    os.setenv("PATH", os.getenv("PATH") + os.pathsep + str(other))
                     sys.path.append(str(other))
 
         return original

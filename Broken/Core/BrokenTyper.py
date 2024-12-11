@@ -7,16 +7,8 @@ import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Callable,
-    Generator,
-    Iterable,
-    Optional,
-    Self,
-    Set,
-    Union,
-)
+from collections.abc import Callable, Generator, Iterable
+from typing import Any, Optional, Self, Union
 
 import click
 import typer
@@ -57,7 +49,7 @@ class BrokenTyper:
     chain: bool = False
     """Same as Typer.chain"""
 
-    commands: Set[str] = Factory(set)
+    commands: set[str] = Factory(set)
     """List of known commands"""
 
     default: str = None

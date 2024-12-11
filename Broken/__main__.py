@@ -93,7 +93,7 @@ class ProjectManager:
         return description
 
     @property
-    def languages(self) -> Set[ProjectLanguage]:
+    def languages(self) -> set[ProjectLanguage]:
         languages = set()
 
         # Best attempts to detect language
@@ -201,7 +201,7 @@ class ProjectManager:
     # # Python shenanigans
 
     def release(self,
-        target: Annotated[List[Platform],
+        target: Annotated[list[Platform],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
         )] = [BrokenPlatform.Host],
@@ -279,7 +279,7 @@ class ProjectManager:
             ).items() if val})
 
             # Cache Rust compilation across projects
-            os.environ["CARGO_TARGET_DIR"] = str(BUILD_DIR)
+            os.setenv("CARGO_HOME", BUILD_DIR)
             shell("rustup", "target", "add", target.triple)
 
             # Cargo warning: We're not 'installing' a utility
@@ -472,8 +472,8 @@ class BrokenManager(BrokenSingleton):
             flavor=["cpu", "cu121"],
         ):
             # Warn: Must use same env vars as in docker-compose.yml
-            os.environ["BASE_IMAGE"] = build.base_image
-            os.environ["TORCH_FLAVOR"] = build.flavor
+            os.setenv("BASE_IMAGE", build.base_image)
+            os.setenv("TORCH_FLAVOR", build.flavor)
             shell("docker", "compose", "build")
 
             # Assumes all dockerfiles were built by docker compose, fails ok otherwise
@@ -495,7 +495,7 @@ class BrokenManager(BrokenSingleton):
         """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""
         import re
 
-        def update(data: List[str], *, dev: bool=False, optional: str=None) -> None:
+        def update(data: list[str], *, dev: bool=False, optional: str=None) -> None:
             for dependency in data:
                 try:
                     name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)

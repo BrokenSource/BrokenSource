@@ -7,20 +7,10 @@ import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from collections import deque
+from collections.abc import Generator, Iterable
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import (
-    Annotated,
-    Generator,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Self,
-    Tuple,
-    TypeAlias,
-    Union,
-)
+from typing import Annotated, Literal, Optional, Self, TypeAlias, Union
 
 import numpy
 import typer
@@ -252,7 +242,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
         Field(None, ge=0)
     """Bitrate in kilobits per second, the higher the better quality and file size"""
 
-    x264params: Annotated[Optional[List[str]],
+    x264params: Annotated[Optional[list[str]],
         Option("--x264-params", hidden=True)] = \
         Field(default_factory=list)
     """Additional options to pass to x264"""
@@ -1112,12 +1102,12 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options)
     """
 
-    inputs: List[FFmpegInputType] = Field(default_factory=list)
+    inputs: list[FFmpegInputType] = Field(default_factory=list)
     """A list of inputs for FFmpeg"""
 
-    filters: List[FFmpegFilterType] = Field(default_factory=list)
+    filters: list[FFmpegFilterType] = Field(default_factory=list)
 
-    outputs: List[FFmpegOutputType] = Field(default_factory=list)
+    outputs: list[FFmpegOutputType] = Field(default_factory=list)
     """A list of outputs. Yes, FFmpeg natively supports multi-encoding targets"""
 
     video_codec: Optional[FFmpegVideoCodecType] = Field(default_factory=FFmpegVideoCodecH264)
@@ -1352,7 +1342,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
     # Command building and running
 
     @property
-    def command(self) -> List[str]:
+    def command(self) -> list[str]:
         BrokenFFmpeg.install()
 
         if (not self.inputs):
@@ -1431,7 +1421,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
     @staticmethod
     @functools.lru_cache
-    def get_video_resolution(path: Path, *, echo: bool=True) -> Optional[Tuple[int, int]]:
+    def get_video_resolution(path: Path, *, echo: bool=True) -> Optional[tuple[int, int]]:
         """Get the resolution of a video in a smart way"""
         if not (path := BrokenPath.get(path, exists=True)):
             return None

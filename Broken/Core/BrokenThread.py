@@ -2,21 +2,22 @@ from __future__ import annotations
 
 import functools
 import time
+from collections.abc import Callable, Generator
 from multiprocessing import Process
 from threading import Lock, Thread
-from typing import Any, Callable, Dict, Generator, List, Set, TypeAlias, Union
+from typing import Any, TypeAlias, Union
 
 from attrs import Factory, define
 
 Worker: TypeAlias = Union[Thread, Process]
 """A parallelizable object"""
 
-POOLS: Dict[str, WorkerPool] = dict()
+POOLS: dict[str, WorkerPool] = dict()
 """Global worker pools tracker"""
 
 @define
 class WorkerPool:
-    workers: Set[Worker] = Factory(set)
+    workers: set[Worker] = Factory(set)
     size: int = 1
 
     @property
@@ -61,7 +62,7 @@ class BrokenThread:
     @staticmethod
     def new(
         target: Callable, /,
-        *args: List[Any],
+        *args: list[Any],
         start: bool=True,
         join: bool=False,
         loop: bool=False,
@@ -69,7 +70,7 @@ class BrokenThread:
         pool: str=None,
         max: int=10,
         daemon: bool=True,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> Thread:
         """
         Create a thread on a callable, yeet whatever you think it works

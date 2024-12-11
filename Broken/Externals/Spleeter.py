@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Tuple
+from typing import TYPE_CHECKING, Annotated
 
 from pydantic import Field
 from typer import Option
@@ -36,7 +36,7 @@ class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
         )
         self._model.load_model()
 
-    def separate(self, audio: Path, *, cache: bool=True) -> Tuple[Path, Path]:
+    def separate(self, audio: Path, *, cache: bool=True) -> tuple[Path, Path]:
         if not (audio := Path(audio).expanduser().resolve()).exists():
             raise FileNotFoundError(f"File not found: {audio}")
 

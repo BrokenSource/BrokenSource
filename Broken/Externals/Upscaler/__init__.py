@@ -8,8 +8,6 @@ from typing import (
     Generator,
     Literal,
     Optional,
-    Tuple,
-    Type,
     TypeAlias,
     Union,
 )
@@ -55,7 +53,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
         help="[bold red](🔴 Basic   )[/] Temporary image processing 'PIL.Image.save' quality used on --format")] = \
         Field(95, ge=0, le=100)
 
-    def output_size(self, width: int, height: int) -> Tuple[int, int]:
+    def output_size(self, width: int, height: int) -> tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""
         return BrokenResolution.fit(
             old=(width, height),

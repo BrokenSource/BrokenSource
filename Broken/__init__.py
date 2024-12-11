@@ -3,33 +3,37 @@
 import time
 
 time.zero = time.perf_counter()
-"""Precise time at which the program started since booting the computer"""
+"""Precise time the program started since last boot"""
 
 time.absolute = (lambda: time.perf_counter() - time.zero)
-"""Precise time this Python process has been running, started at time.zero"""
+"""Precise time the program has been running for"""
 
 import os
 import sys
 from pathlib import Path
 
-# Keep repository clean of __pycache__ and .pyc files by writing them to .venv
+
+# Monkey patch os.setenv, since os.getenv exists (?)
+def setenv(key: str, value: str, /) -> None:
+    os.environ[key] = str(value)
+
+os.setenv = setenv
+
+# Keep the repository clean of cache files by writing them to .venv
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 # Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
-os.environ["OMP_NUM_THREADS"] = "1"
+os.setenv("OMP_NUM_THREADS", 1)
 
 # NVIDIA: High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind vsync
 # https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
-os.environ["__GL_YIELD"] = "USLEEP"
+os.setenv("__GL_YIELD", "USLEEP")
 
-# Force UTF-8 encoding for the environment
-os.environ["PYTHONIOENCODING"] = "utf-8"
-
-# Replace argv[0]=="-c" with PyApp's managed python
+# Replace argv[0] being "-c" with PyApp's managed python
 if bool(os.getenv("PYAPP", None)):
     sys.argv[0] = sys.executable
 
@@ -55,7 +59,6 @@ if (os.getenv("RICH_TRACEBACK", "1") == "1"):
 # --------------------------- Information about the release and version -------------------------- #
 
 import struct
-from typing import List, Union
 
 from Broken.Version import __version__
 
@@ -109,7 +112,7 @@ class Runtime:
     """True if running from a Docker container"""
 
     GitHub: bool = bool(os.getenv("GITHUB_ACTIONS", False))
-    """True if running in a GitHub Actions CI environment (https://docs.github.com/en/actions/writing-workflows/quickstart)"""
+    """True if running in a GitHub Actions CI environment (https://github.com/features/actions)"""
 
     WSL: bool = Path("/usr/lib/wsl/lib").exists()
     """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
@@ -122,10 +125,10 @@ class Native:
     python: Path = Path(sys.executable)
     """The current Python interpreter executable"""
 
-    uv: List[Union[str, Path]] = [python, "-m", "uv"]
+    uv: list[str, Path] = [python, "-m", "uv"]
     """Entry point for the uv package manager (https://github.com/astral-sh/uv)"""
 
-    pip: List[Union[str, Path]] = [python, "-m", "uv", "pip"]
+    pip: list[str, Path] = [python, "-m", "uv", "pip"]
     """Entry point for pip"""
 
 # ---------------------------------------- Module imports ---------------------------------------- #
@@ -187,9 +190,9 @@ BROKEN = BrokenProject(
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
     RESOURCES=BrokenResources)
-"""The main library's BrokenProject instance. Useful for common downloads and resources"""
+"""The main library's BrokenProject instance"""
 
-PROJECT = BROKEN
+PROJECT: BrokenProject = BROKEN
 """The first BrokenProject initialized after (but including) BROKEN itself"""
 
 # ------------------------------------------------------------------------------------------------ #

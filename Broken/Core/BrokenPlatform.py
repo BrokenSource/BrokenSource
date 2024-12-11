@@ -1,7 +1,8 @@
 import ctypes
 import os
 import platform
-from typing import Generator, Self
+from collections.abc import Generator
+from typing import Self
 
 import distro
 

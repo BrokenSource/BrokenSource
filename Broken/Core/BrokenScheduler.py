@@ -2,8 +2,9 @@ import contextlib
 import inspect
 import time
 from collections import deque
+from collections.abc import Callable, Iterable
 from threading import Lock
-from typing import Any, Callable, Deque, Dict, Iterable, List, Optional, Self
+from typing import Any, Optional, Self
 
 from attrs import Factory, define, field
 
@@ -38,10 +39,10 @@ class BrokenTask:
     """Function callable to call every synchronization. Automatically sends a 'time' or 'dt'
     argument if the function's signature contains it"""
 
-    args: List[Any] = field(factory=list, repr=False)
+    args: list[Any] = field(factory=list, repr=False)
     """Method's positional arguments"""
 
-    kwargs: Dict[str, Any] = field(factory=dict, repr=False)
+    kwargs: dict[str, Any] = field(factory=dict, repr=False)
     """Method's keyword arguments"""
 
     output: Any = field(default=None, repr=False)
@@ -185,7 +186,7 @@ class BrokenTask:
 
 @define
 class BrokenScheduler:
-    tasks: Deque[BrokenTask] = Factory(deque)
+    tasks: deque[BrokenTask] = Factory(deque)
 
     def append(self, task: BrokenTask) -> BrokenTask:
         """Adds a client to the manager with immediate next call"""

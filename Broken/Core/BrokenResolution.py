@@ -1,6 +1,7 @@
 import math
+from collections.abc import Iterable
 from numbers import Number
-from typing import Iterable, Optional, Tuple, Union
+from typing import Optional, Union
 
 from Broken import log
 
@@ -8,20 +9,20 @@ from Broken import log
 class BrokenResolution:
 
     @staticmethod
-    def round(*numbers: Iterable[Number], multiple: int=2) -> Union[int, Tuple[int, ...]]:
+    def round(*numbers: Iterable[Number], multiple: int=2) -> Union[int, tuple[int, ...]]:
         """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
         values = tuple(max(multiple, multiple*round(value/multiple)) for value in numbers)
         return (values[0] if (len(values) == 1) else values)
 
     @staticmethod
     def fit(
-        old: Optional[Tuple[int, int]]=None,
-        new: Optional[Tuple[int, int]]=None,
-        max: Optional[Tuple[int, int]]=None,
-        ar: Optional[float]=None,
-        scale: float=1.0,
-        multiple: int=2,
-    ) -> Tuple[int, int]:
+        old: Optional[tuple[int, int]] = None,
+        new: Optional[tuple[int, int]] = None,
+        max: Optional[tuple[int, int]]=None,
+        ar: Optional[float] = None,
+        scale: float = 1.0,
+        multiple: int = 2,
+    ) -> tuple[int, int]:
         """Fit, Scale and optionally force Aspect Ratio on a base to a (un)limited target resolution
 
         This method solves the following problem:
@@ -34,7 +35,7 @@ class BrokenResolution:
                 - Returns the original resolution overridden by any new (nw, nh)
 
             Aspect ratio (ar!=None) is send:
-                - If any of the new (nw, nh) is missing, find the other based on the aspect ratio
+                - If any of the new (nw, nh) is missing, find the other based on the aspect ratio;
                 - Else, prioritize width changes, and downscale/upscale accordingly;
                 - Post-limits resolution to (mw, mh) by multiplying both components to max fit it
 
@@ -44,11 +45,11 @@ class BrokenResolution:
 
         Parameters
         ----------
-        old : Tuple[int, int] or None
+        old : tuple[int, int] or None
             Old resolution
-        new : Tuple[int, int] or None
+        new : tuple[int, int] or None
             New resolution
-        max : Tuple[int, int] or None
+        max : tuple[int, int] or None
             Maximum resolution
         scale : float or None
             Scale factor

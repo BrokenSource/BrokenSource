@@ -1,7 +1,7 @@
 import contextlib
 import enum
 import functools
-from typing import Any, Dict, Optional, Self, Tuple, Union
+from typing import Any, Optional, Self, Union
 
 import attrs
 from aenum import Flag, MultiValueEnum
@@ -59,7 +59,7 @@ class BrokenEnumBase:
     # Values
 
     @classmethod
-    def options(cls) -> Tuple[enum.Enum]:
+    def options(cls) -> tuple[enum.Enum]:
         """
         Get all members of the enum
 
@@ -77,7 +77,7 @@ class BrokenEnumBase:
         return tuple(cls)
 
     @classmethod
-    def values(cls) -> Tuple[Any]:
+    def values(cls) -> tuple[Any]:
         """
         Get all values of the enum (name=value)
 
@@ -97,7 +97,7 @@ class BrokenEnumBase:
     # Key/names properties
 
     @classmethod
-    def keys(cls) -> Tuple[str]:
+    def keys(cls) -> tuple[str]:
         """
         Get all 'keys' of the enum (key=value)
 
@@ -117,7 +117,7 @@ class BrokenEnumBase:
     # Items and dict-like
 
     @classmethod
-    def items(cls) -> Tuple[Tuple[str, Any]]:
+    def items(cls) -> tuple[tuple[str, Any]]:
         """
         Get the tuple of (name, value) of all members of the enum
 
@@ -135,7 +135,7 @@ class BrokenEnumBase:
         return tuple((member.name, member.value) for member in cls)
 
     @classmethod
-    def as_dict(cls) -> Dict[str, Any]:
+    def as_dict(cls) -> dict[str, Any]:
         """
         Get the dictionary of key: value of all members of the enum
 
@@ -222,7 +222,7 @@ class BrokenEnumBase:
 
     # # Advanced functions
 
-    def field(self, **kwargs: Dict[str, Any]) -> attrs.Attribute:
+    def field(self, **kwargs: dict[str, Any]) -> attrs.Attribute:
         """
         Make a attrs.field() with this member as default and enum class's get method as converter
 
