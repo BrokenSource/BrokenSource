@@ -409,7 +409,7 @@ class BrokenModel(BaseModel):
 
     def __hash__(self) -> int:
         """Deterministic hash heuristic, as hash() is random seeded"""
-        return int(hashlib.sha256(self.json().encode()).hexdigest(), 16)
+        return int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
 
     # Serialization
 

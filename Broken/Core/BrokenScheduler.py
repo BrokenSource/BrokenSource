@@ -189,17 +189,25 @@ class BrokenScheduler:
     tasks: deque[BrokenTask] = Factory(deque)
 
     def append(self, task: BrokenTask) -> BrokenTask:
-        """Adds a client to the manager with immediate next call"""
+        """Adds a task to the scheduler with immediate next call"""
         self.tasks.append(task)
         return task
 
     def new(self, task: Callable, **options) -> BrokenTask:
-        """Wraps around BrokenVsync for convenience"""
+        """Add a new task to the scheduler"""
         return self.append(BrokenTask(task=task, **options))
 
     def once(self, task: Callable, **options) -> BrokenTask:
-        """Wraps around BrokenVsync for convenience"""
+        """Add a new task that shall only run once and immediately"""
         return self.append(BrokenTask(task=task, **options, once=True))
+
+    def delete(self, task: BrokenTask) -> None:
+        """Removes a task from the scheduler"""
+        self.tasks.remove(task)
+
+    def clear(self) -> None:
+        """Removes all tasks"""
+        self.tasks.clear()
 
     @property
     def enabled_tasks(self) -> Iterable[BrokenTask]:
