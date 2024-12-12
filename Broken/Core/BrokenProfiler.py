@@ -14,27 +14,32 @@ class BrokenProfilerEnum(BrokenEnum):
     # imports       = "imports"
     # pyinstrument  = "pyinstrument"
 
+
 @define
 class BrokenProfiler:
     name: str = "NONE"
     profiler: BrokenProfilerEnum = BrokenProfilerEnum.cprofile
 
+    @property
+    def label(self) -> str:
+        return self.name.upper()
+
     def __attrs_post_init__(self):
-        profiler = os.getenv(f"{self.name}_PROFILER", self.profiler)
+        profiler = os.getenv(f"{self.label}_PROFILER", self.profiler)
         self.profiler = BrokenProfilerEnum.get(profiler)
 
     @property
     def enabled(self) -> bool:
-        return os.getenv(f"{self.name}_PROFILE", "0") == "1"
+        return os.getenv(f"{self.label}_PROFILE", "0") == "1"
 
     @property
     def output(self) -> Path:
-        return Path(tempfile.gettempdir())/f"{self.name}.prof"
+        return Path(tempfile.gettempdir())/f"{self.label}.prof"
 
     __profiler__: Any = None
 
     def __enter__(self) -> Self:
-        if not self.enabled:
+        if (not self.enabled):
             pass
         elif (self.profiler == BrokenProfilerEnum.cprofile):
             log.trace("Profiling with cProfile")
@@ -44,8 +49,8 @@ class BrokenProfiler:
         return self
 
     def __exit__(self, *args) -> None:
-        if not self.enabled:
-            return
+        if (not self.enabled):
+            return None
 
         if (self.profiler == BrokenProfilerEnum.cprofile):
             log.trace("Finishing cProfile")
@@ -56,3 +61,4 @@ class BrokenProfiler:
                 shell("snakeviz", output)
             except KeyboardInterrupt:
                 pass
+            output.unlink()

@@ -15,13 +15,13 @@ from pathlib import Path
 from typing import Self
 
 import dotenv
+import typer
 from appdirs import AppDirs
 from attr import Factory, define, field
 from halo import Halo
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
-from typer import Context
 
 import Broken
 from Broken import Runtime
@@ -49,7 +49,7 @@ class BrokenProject:
     # App information
     APP_NAME: str
     APP_AUTHOR: str
-    VERSION: str = None
+    VERSION: str = Runtime.Version
     ABOUT: str = "No description provided"
 
     # Standard Broken objects for a project
@@ -59,8 +59,13 @@ class BrokenProject:
     def __attrs_post_init__(self):
         self.DIRECTORIES = _Directories(PROJECT=self)
         self.RESOURCES = _Resources(PROJECT=self)
-        self.VERSION = Runtime.Version
         BrokenLogging.set_project(self.APP_NAME)
+
+        # Print version information and exit on "--version/-V"
+        if (self.APP_NAME != "Broken"):
+            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")):
+                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host.value}")
+                sys.exit(0)
 
         # Replace Broken.PROJECT with the first initialized project
         if (project := getattr(Broken, "PROJECT", None)):
@@ -70,12 +75,6 @@ class BrokenProject:
                 self._pyapp_management()
                 Broken.PROJECT = self
 
-        # Print version information and exit on "--version/-V"
-        if (self.APP_NAME != "Broken"):
-            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")):
-                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host}")
-                exit(0)
-
         # Convenience symlink the project's workspace
         if Runtime.Source and (os.getenv("WORKSPACE_SYMLINK", "0") == "1"):
             BrokenPath.symlink(
@@ -84,17 +83,14 @@ class BrokenProject:
             )
 
         # Load dotenv files in common directories
-        for path in (x for x in flatten(
-            [self.RESOURCES.ROOT/"Release.env"]*Runtime.Binary,
-            self.DIRECTORIES.REPOSITORY.glob("*.env"),
-        ) if x.exists()):
+        for path in self.DIRECTORIES.REPOSITORY.glob("*.env"):
             dotenv.load_dotenv(path, override=True)
 
     def chdir(self) -> Self:
         """Change directory to the project's root"""
         return os.chdir(self.PACKAGE.parent.parent) or self
 
-    def welcome(self):
+    def welcome(self) -> None:
         import pyfiglet
         ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
@@ -244,11 +240,11 @@ class BrokenProject:
 @define
 class BrokenApp(ABC, BrokenAttrs):
     PROJECT: BrokenProject
-    typer: BrokenTyper = Factory(BrokenTyper)
+    cli: BrokenTyper = Factory(BrokenTyper)
 
     def __post__(self):
-        self.typer.should_shell()
-        self.typer.description = self.PROJECT.ABOUT
+        self.cli.should_shell()
+        self.cli.description = self.PROJECT.ABOUT
 
         with BrokenProfiler(self.PROJECT.APP_NAME):
             self.main()
@@ -260,26 +256,31 @@ class BrokenApp(ABC, BrokenAttrs):
     def find_projects(self, tag: str="Project") -> None:
         """Find Python files in common directories (direct call, cwd) that any class inherits from
         something that contains the substring of `tag` and add as a command to this Typer app"""
-        files = deque()
+        search = deque()
 
         # Note: Safe get argv[1], pop if valid, else a null path
         if (direct := Path(dict(enumerate(sys.argv)).get(1, "\0"))).exists():
             direct = Path(sys.argv.pop(1))
 
-        # Scan files
+        # The project file was sent directly
         if (direct.suffix == ".py"):
-            files.append(direct)
-        elif direct.is_dir():
-            files.extend(direct.glob("*.py"))
-        else:
-            files.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
-            files.extend(self.PROJECT.DIRECTORIES.EXAMPLES.rglob("*.py"))
-            files.extend(Path.cwd().glob("*.py"))
+            search.append(direct)
 
-        # Add commands of all files, exit if none was sucessfully added
-        if (sum(map(lambda file: self.add_project(python=file, tag=tag), files)) == 0):
+        # A directory of projects was sent
+        elif direct.is_dir():
+            search.extend(direct.rglob("*.py"))
+
+        # Scan common directories
+        else:
+            if (Runtime.Source):
+                search.extend(self.PROJECT.DIRECTORIES.REPO_EXAMPLES.rglob("*.py"))
+            search.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
+            search.extend(Path.cwd().glob("*.py"))
+
+        # Add commands of all files, warn if none was sucessfully added
+        if (sum(self.add_project(python=file, tag=tag) for file in search) == 0):
             log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in:")
-            log.warning('\n'.join(map(lambda file: f"• {file}", files)))
+            log.warning('\n'.join(f"• {file}" for file in search))
 
     def _regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
@@ -294,7 +295,7 @@ class BrokenApp(ABC, BrokenAttrs):
             return False
 
         def run(file: Path, name: str, code: str):
-            def run(ctx: Context):
+            def run(ctx: typer.Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))
                 namespace[name]().cli(*ctx.args)
@@ -306,7 +307,7 @@ class BrokenApp(ABC, BrokenAttrs):
         # Add a command for each match
         for match in matches:
             class_name, docstring = match.groups()
-            self.typer.command(
+            self.cli.command(
                 target=run(python, class_name, code),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
@@ -410,11 +411,11 @@ class _Directories:
     # # Meta directories
 
     @property
-    def WEBSITE(self) -> Path:
+    def REPO_WEBSITE(self) -> Path:
         return (self.REPOSITORY/"Website")
 
     @property
-    def EXAMPLES(self) -> Path:
+    def REPO_EXAMPLES(self) -> Path:
         return (self.REPOSITORY/"Examples")
 
     # # Workspace directories
@@ -523,11 +524,15 @@ class _Resources:
 
     @property
     def ROOT(self) -> Path:
+
+        if (not self.__RESOURCES__):
+            raise FileNotFoundError("Resources aren't being bundled with the package!")
+
         # Workaround: Convert a MultiplexedPath to Path
         return mkdir(self.__RESOURCES__/"workaround"/"..")
 
     def __div__(self, name: str) -> Path:
-        return self.__RESOURCES__/name
+        return (self.__RESOURCES__/name)
 
     def __truediv__(self, name: str) -> Path:
         return self.__div__(name)
@@ -536,11 +541,15 @@ class _Resources:
 
     @property
     def IMAGES(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Images")
+        return mkdir(self.ROOT/"Images")
 
     @property
     def AUDIO(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Audio")
+        return mkdir(self.ROOT/"Audio")
+
+    @property
+    def FONTS(self) -> Path:
+        return mkdir(self.ROOT/"Fonts")
 
     # # Branding section
 
@@ -556,11 +565,11 @@ class _Resources:
 
     @property
     def SCENES(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Scenes")
+        return mkdir(self.ROOT/"Scenes")
 
     @property
     def SHADERS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Shaders")
+        return mkdir(self.ROOT/"Shaders")
 
     @property
     def SHADERS_INCLUDE(self) -> Path:
@@ -573,13 +582,3 @@ class _Resources:
     @property
     def VERTEX(self) -> Path:
         return mkdir(self.SHADERS/"Vertex")
-
-    # # Generic
-
-    @property
-    def PROMPTS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Prompts")
-
-    @property
-    def FONTS(self) -> Path:
-        return mkdir(self.__RESOURCES__/"Fonts")

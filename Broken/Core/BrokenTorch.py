@@ -1,3 +1,4 @@
+import os
 import site
 import sys
 from pathlib import Path
@@ -9,8 +10,8 @@ from Broken import (
     BrokenEnum,
     BrokenPlatform,
     BrokenThread,
-    Native,
     Runtime,
+    Tools,
     log,
     shell,
 )
@@ -52,6 +53,11 @@ class BrokenTorch:
         exists_ok: bool=False
     ) -> None:
         """📦 Install or modify PyTorch versions"""
+
+        # Global kill switch opt-out of this feature
+        if (os.getenv("BROKEN_TORCH", "1") == "0"):
+            return None
+
         installed = BrokenTorch.current()
 
         # Only skip if installed and exists_ok, but not 'torch' in sys.argv
@@ -111,12 +117,12 @@ class BrokenTorch:
             index = ("https://download.pytorch.org/whl/" + (flavor or ''))
 
             # Remove previous version, install new
-            shell(Native.pip, "uninstall", "--quiet",
+            shell(Tools.pip, "uninstall", "--quiet",
                 "torch", "torchvision", "torchaudio")
-            shell(Native.pip, "install",
+            shell(Tools.pip, "install",
                 f"torch=={version}", "torchvision", "torchaudio",
                 ("--index-url", index)*(not BrokenPlatform.OnMacOS))
-            shell(Native.pip, "install", "transformers")
+            shell(Tools.pip, "install", "transformers")
         else:
             log.special(f"PyTorch version ({version}) is already installed")
 

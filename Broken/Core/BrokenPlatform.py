@@ -12,9 +12,9 @@ from Broken.Core.BrokenLogging import log
 
 class SystemEnum(str, MultiEnum):
     Linux:   str = "linux"
-    Windows: str = "windows"
-    MacOS:   str = ("macos", "darwin")
-    BSD:     str = "bsd"
+    Windows: str = ("windows", "win")
+    MacOS:   str = ("macos", "darwin", "osx")
+    BSD:     str = ("bsd", "freebsd", "openbsd", "netbsd")
 
     @property
     def extension(self) -> str:
@@ -62,6 +62,12 @@ class Platform(str, BrokenEnum):
     LinuxARM64:   str = "linux-arm64"
     MacosAMD64:   str = "macos-amd64"
     MacosARM64:   str = "macos-arm64"
+    NetBSDAMD64:  str = "netbsd-amd64"
+    NetBSDARM64:  str = "netbsd-arm64"
+    FreeBSDAMD64: str = "freebsd-amd64"
+    FreeBSDARM64: str = "freebsd-arm64"
+    OpenBSDAMD64: str = "openbsd-amd64"
+    OpenBSDARM64: str = "openbsd-arm64"
 
     @property
     def system(self) -> SystemEnum:
@@ -85,6 +91,11 @@ class Platform(str, BrokenEnum):
             self.LinuxARM64:   "aarch64-unknown-linux-gnu",
             self.MacosAMD64:   "x86_64-apple-darwin",
             self.MacosARM64:   "aarch64-apple-darwin",
+            self.NetBSDAMD64:  "x86_64-unknown-netbsd",
+            self.NetBSDARM64:  "aarch64-unknown-netbsd",
+            self.FreeBSDAMD64: "x86_64-unknown-freebsd",
+            self.FreeBSDARM64: "aarch64-unknown-freebsd",
+            self.OpenBSDAMD64: "x86_64-unknown-openbsd",
         }[self]
 
     _AllAMD64: str = "all-amd64"
@@ -114,12 +125,15 @@ class Platform(str, BrokenEnum):
 class BrokenPlatform:
     Arch: ArchEnum = ArchEnum.get(
         platform.machine().lower())
+    """The current architecture of the operating system"""
 
     System: SystemEnum = SystemEnum.get(
         platform.system().lower())
+    """The current running operating system"""
 
     Host: Platform = Platform.get(
         f"{System.value}-{Arch.value}")
+    """The current platform target"""
 
     # Booleans if the current platform is the following
     OnLinux:   bool = (System == SystemEnum.Linux)
@@ -155,6 +169,7 @@ class BrokenPlatform:
     OnGentoo: bool = (LinuxDistro == "gentoo")
 
     # BSD-like
+    OnNetBSD:  bool = (LinuxDistro == "netbsd")
     OnFreeBSD: bool = (LinuxDistro == "freebsd")
     OnOpenBSD: bool = (LinuxDistro == "openbsd")
     OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)

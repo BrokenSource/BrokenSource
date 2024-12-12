@@ -9,7 +9,7 @@ import sys
 from collections.abc import Generator, Iterable
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import click
 import tqdm
@@ -34,27 +34,28 @@ class ShutilFormat(BrokenEnum):
 
 class BrokenPath(StaticClass):
 
-    def get(*args,
+    def get(*parts: Any,
         absolute: bool=True,
         exists: bool=False,
         raises: bool=False,
     ) -> Optional[Path]:
 
-        # Return None if all args are falsy
-        if not (args := list(filter(None, args))):
+        # Return None if all parts are falsy
+        if not (parts := list(filter(None, parts))):
             return None
 
-        # Create instance as normal, all Python versions
-        path = Path(*args)
+        # Create instance as normal
+        path = Path(*map(str, parts))
 
         # Note that we do not want to .resolve() as having symlink paths _can_ be wanted
         path = (path.expanduser().absolute() if absolute else path)
 
-        # Return None if it's invalid
+        # Handle existence requirements
         if ((exists or raises) and not path.exists()):
             if raises:
                 raise FileNotFoundError(f"Path ({path}) doesn't exist")
             return None
+
         return path
 
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
@@ -253,7 +254,7 @@ class BrokenPath(StaticClass):
 
         return output
 
-    def merge_zips(*zips: list[Path], output: Path, echo: bool=True) -> Path:
+    def merge_zips(*zips: Path, output: Path, echo: bool=True) -> Path:
         """Merge multiple ZIP files into a single one"""
         import zipfile
         with zipfile.ZipFile(output, "w") as archive:

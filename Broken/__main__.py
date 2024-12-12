@@ -1,9 +1,8 @@
-import itertools
 import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, List, Self, Set
+from typing import Annotated, Self
 
 import toml
 from attr import Factory, define

@@ -31,11 +31,13 @@ class BrokenLogging(BrokenSingleton):
         data["time"] = f"{int(when//60)}'{(when%60):06.3f}"
         data["project"] = self.project()
 
-        # Simpler logging for non utf8
+        # Simpler logging for non utf8 or workflows
         if Runtime.GitHub or (os.getenv("SIMPLE_LOGGING", "0") == "1"):
             return ("[{project}][{time}][{level:7}] {message}").format(**data)
+
         elif (os.getenv("PLAIN_LOGGING", "0") == "1"):
             return ("[{level:7}] {message}").format(**data)
+
         return (
             f"│[dodger_blue3]{self.project()}[/dodger_blue3]├"
             "┤[green]{time}[/green]├"

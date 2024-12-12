@@ -13,7 +13,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from collections import deque
-from collections.abc import Callable, Container, Generator, Iterable
+from collections.abc import Callable, Collection, Generator, Iterable
 from numbers import Number
 from pathlib import Path
 from queue import Queue
@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 
 
 def flatten(
-    *items: Iterable[Any],
+    *items: Any,
     cast: type = list,
-    block: Optional[Container[Any]] = (None, ""),
+    block: Optional[Collection] = (None, ""),
     unpack: Iterable[type] = (list, deque, tuple, map, Generator),
 ) -> Iterable[Any]:
     """
@@ -64,10 +64,10 @@ def flatten(
 
 
 def every(
-    *items: Iterable[Any],
+    *items: Any,
     cast: type = list,
-    block: Container[Any] = (None, ""),
-) -> Optional[Iterable[Any]]:
+    block: Collection[Any] = (None, ""),
+) -> Optional[Iterable]:
     """
     Returns the flattened items if not any element is in the block list, else None. Useful when
     a Model class has a list of optional arguments that doesn't add falsy values to a command
@@ -86,16 +86,15 @@ def every(
 
 
 def shell(
-    *args: Iterable[Any],
+    *args: Any,
     output: bool = False,
     Popen: bool = False,
     env: dict[str, str] = None,
     confirm: bool = False,
-    threaded_stdin: bool = False,
     skip: bool = False,
     echo: bool = True,
     **kwargs
-) -> Union[None, str, subprocess.Popen, subprocess.CompletedProcess]:
+) -> Optional[Union[str, subprocess.Popen, subprocess.CompletedProcess]]:
     """
     Enhanced subprocess runners with many additional features. Flattens the args, converts to str
 
@@ -137,47 +136,20 @@ def shell(
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
-    if output:
+    if (output):
         return subprocess.check_output(args, **kwargs).decode("utf-8")
 
-    elif Popen:
-        process = subprocess.Popen(args, **kwargs)
+    if (Popen):
+        return subprocess.Popen(args, **kwargs)
 
-        if bool(threaded_stdin):
-
-            @define
-            class StdinWrapper:
-                _process: subprocess.Popen
-                _queue: Queue = Factory(factory=lambda: Queue(maxsize=10))
-                _loop: bool = True
-                _stdin: Any = None
-
-                def __attrs_post_init__(self):
-                    Thread(target=self.worker, daemon=True).start()
-                def write(self, data):
-                    self._queue.put(data)
-                def worker(self):
-                    while self._loop:
-                        self._stdin.write(self._queue.get())
-                        self._queue.task_done()
-                def close(self):
-                    self._queue.join()
-                    self._stdin.close()
-                    self._loop = False
-                    while self._process.poll() is None:
-                        time.sleep(0.01)
-
-            process.stdin = StdinWrapper(process=process, stdin=process.stdin)
-        return process
-    else:
-        return subprocess.run(args, **kwargs)
+    return subprocess.run(args, **kwargs)
 
 
 def apply(
     callback: Callable,
-    iterable: Iterable[Any], *,
+    iterable: Iterable, *,
     cast: Callable = list
-) -> list[Any]:
+) -> list:
     """Applies a callback to all items of an iterable, returning a $cast of the results"""
     return cast(map(callback, iterable))
 
@@ -187,11 +159,11 @@ def denum(item: Union[enum.Enum, Any]) -> Any:
     return (item.value if isinstance(item, enum.Enum) else item)
 
 
-def pop_fill(data: Container, fill: type[Any], length: int) -> Container[Any]:
+def pop_fill(data: Collection, fill: type, length: int) -> Collection:
     """Pop or fill until a data's length is met"""
-    while len(data) > length:
+    while (len(data) > length):
         data.pop()
-    while len(data) < length:
+    while (len(data) < length):
         data.append(fill())
     return data
 
@@ -202,7 +174,7 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator:
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):
             stack.enter_context(context)
-        yield
+        yield None
 
 
 @contextlib.contextmanager
@@ -220,7 +192,7 @@ def environment(**variables: dict[str, str]) -> Generator:
 
 
 @contextlib.contextmanager
-def block_modules(*modules: list[str]):
+def block_modules(*modules: str) -> Generator:
     """Pretend a module isn't installed"""
     state = sys.modules.copy()
     try:
@@ -314,7 +286,7 @@ def limited_ratio(
 
 
 def overrides(
-    old: Optional[Any],
+    old: Any,
     new: Optional[Any],
     default: Optional[Any]=None,
     resets: Any=-1
@@ -328,7 +300,7 @@ def overrides(
 
 
 def install(
-    *packages: Union[str, Iterable[str]],
+    *packages: str,
     pypi: Optional[Union[str, Iterable[str]]]=None,
     args: Optional[Union[str, Iterable[str]]]=None
 ) -> None:
@@ -359,7 +331,7 @@ def install(
     raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
 
 
-def combinations(**options) -> Iterable[DotMap]:
+def combinations(**options: Any) -> Iterable[DotMap]:
     """Returns a dictionary of key='this' of itertools.product"""
     for items in itertools.product(*options.values()):
         yield DotMap(zip(options.keys(), items))
@@ -380,7 +352,7 @@ class Nothing:
         return self
     def __call__(self, *args, **kwargs) -> Self:
         return self
-    def __getattr__(self, _):
+    def __getattr__(self, _) -> Callable:
         return self.__nop__
 
 
@@ -463,8 +435,7 @@ class BrokenModel(BaseModel):
             return cls.model_validate_json(data)
         elif isinstance(data, cls):
             return data
-        else:
-            raise ValueError(f"Can't load from value of type {type(data)}")
+        raise ValueError(f"Can't load from value of type {type(data)}")
 
     def update(self, **data: Union[dict, str]) -> Self:
         for (key, value) in data.items():
@@ -561,8 +532,8 @@ class DictUtils(StaticClass):
     @staticmethod
     def filter_dict(
         data: dict[str, Any], *,
-        block: Optional[Container[Any]] = None,
-        allow: Optional[Container[Any]] = None,
+        block: Optional[Collection] = None,
+        allow: Optional[Collection] = None,
     ) -> dict[str, Any]:
         """Filters a dictionary by removing 'block' or only allowing 'allow' keys"""
         if block:
@@ -599,7 +570,7 @@ class BrokenCache(StaticClass):
 
     @staticmethod
     @functools.wraps(functools.lru_cache)
-    def lru(method, *args, **kwargs):
+    def lru(method: Callable, *args, **kwargs) -> Callable:
         """Returns the same lru_cache wrapper if calling on the same method"""
         return BrokenCache._lru_cache.setdefault(
             method, functools.lru_cache(method, *args, **kwargs)
@@ -636,22 +607,22 @@ class BrokenRelay:
         window.key_event_func = relay @ (camera.walk, camera.rotate)
         ```
     """
-    callbacks: deque[Callable] = Factory(deque)
+    registry: deque[Callable] = Factory(deque)
 
-    def __bind__(self, *callbacks: Iterable[Callable]) -> Self:
-        self.callbacks.extend(flatten(callbacks))
+    def __bind__(self, *methods: Iterable[Callable]) -> Self:
+        self.registry.extend(flatten(methods))
         return self
 
-    def subscribe(self, *callbacks: Iterable[Callable]) -> Self:
+    def subscribe(self, *methods: Iterable[Callable]) -> Self:
         """Adds callbacks to be called with same arguments as self.__call__"""
-        return self.__bind__(callbacks)
+        return self.__bind__(methods)
 
-    def __matmul__(self, *callbacks: Iterable[Callable]) -> Self:
+    def __matmul__(self, *methods: Iterable[Callable]) -> Self:
         """Convenience syntax for subscribing with `relay @ (A, B)`"""
-        return self.__bind__(callbacks)
+        return self.__bind__(methods)
 
     def __call__(self, *args, **kwargs):
-        for callback in self.callbacks:
+        for callback in self.registry:
             callback(*args, **kwargs)
 
 
@@ -692,8 +663,29 @@ class BrokenWatchdog(ABC):
         self.__changed__(key, value)
 
 
-# # Trackers
+@define
+class ThreadedStdin:
+    _process: subprocess.Popen
+    _queue: Queue = Factory(factory=lambda: Queue(maxsize=10))
+    _loop: bool = True
 
+    def __attrs_post_init__(self):
+        Thread(target=self.worker, daemon=True).start()
+        self._process.stdin = self
+    def write(self, data):
+        self._queue.put(data)
+    def worker(self):
+        while self._loop:
+            self._process.stdin.write(self._queue.get())
+            self._queue.task_done()
+    def close(self):
+        self._queue.join()
+        self._loop = False
+        self._process.stdin.close()
+        while self._process.poll() is None:
+            time.sleep(0.01)
+
+# # Trackers
 
 @define
 class EasyTracker:
@@ -722,9 +714,10 @@ class EasyTracker:
         return None
 
     @property
-    def last(self) -> 'arrow.Arrow':
+    def last(self) -> "arrow.Arrow":
         """How long it's been since the last run"""
-        return __import__("arrow").get(self.file.read_text("utf-8"))
+        import arrow
+        return arrow.get(self.file.read_text("utf-8"))
 
     @property
     def sleeping(self, granularity: tuple[str]=("day")) -> str:
@@ -733,13 +726,15 @@ class EasyTracker:
 
     def trigger(self, update: bool=False) -> bool:
         """True if it's been more than 'self.retention' since the last run"""
-        trigger = (self.last.shift(**self.retention) < __import__("arrow").utcnow())
+        import arrow
+        trigger = (self.last.shift(**self.retention) < arrow.utcnow())
         if (trigger and update):
             self.update()
         return trigger
 
     def update(self, **shift: dict) -> None:
-        time = __import__("arrow").utcnow().shift(**(shift or {}))
+        import arrow
+        time = arrow.utcnow().shift(**(shift or {}))
         self.file.write_text(str(time), "utf-8")
 
 # ------------------------------------------------------------------------------------------------ #
@@ -809,4 +804,3 @@ class LazyImport:
 
     def __exit__(self, *args):
         __builtins__["__import__"] = LazyImport.__import__
-

@@ -30,6 +30,7 @@ from Broken import (
     log,
 )
 
+# Apply custom styling to typer
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
 typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
 typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
@@ -41,7 +42,9 @@ console = get_console()
 @define
 class BrokenTyper:
     """Yet another Typer wrapper, with goodies"""
+
     description: str = ""
+    """The default 'help' message of the CLI"""
 
     app: typer.Typer = None
     """The main managed typer.Typer instance"""
@@ -68,6 +71,7 @@ class BrokenTyper:
     """No args is help"""
 
     help: bool = True
+    """Add an --help option to the CLI"""
 
     credits: str = (
         f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
@@ -125,9 +129,9 @@ class BrokenTyper:
         **kwargs,
     ) -> None:
 
-        # Command must be implemented
+        # Method must be implemented, ignore and fail ok else
         if getattr(target, "__isabstractmethod__", False):
-            return
+            return None
 
         _class = (target if isinstance(target, type) else type(target))
 
@@ -205,7 +209,7 @@ class BrokenTyper:
         return self
 
     @staticmethod
-    def simple(*commands: Iterable[Callable]) -> None:
+    def simple(*commands: Callable) -> None:
         app = BrokenTyper()
         apply(app.command, commands)
         return app(sys.argv[1:])
@@ -295,6 +299,11 @@ class BrokenTyper:
         Warn:
             Send sys.argv[1:] if running directly from user input
         """
+        if (not self.commands):
+            log.warn("No commands were added to the Typer app")
+            return None
+
+        # Minor pre-processing
         self.app.info.help = (self.description or "No help provided for this CLI")
         sys.argv[1:] = apply(str, flatten(args))
 

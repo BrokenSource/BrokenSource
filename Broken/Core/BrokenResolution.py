@@ -9,7 +9,7 @@ from Broken import log
 class BrokenResolution:
 
     @staticmethod
-    def round(*numbers: Iterable[Number], multiple: int=2) -> Union[int, tuple[int, ...]]:
+    def round(*numbers: Number, multiple: int=2) -> Union[int, tuple[int, ...]]:
         """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
         values = tuple(max(multiple, multiple*round(value/multiple)) for value in numbers)
         return (values[0] if (len(values) == 1) else values)

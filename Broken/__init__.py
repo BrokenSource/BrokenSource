@@ -120,7 +120,8 @@ class Runtime:
     Interactive: bool = sys.stdout.isatty()
     """True if running in an interactive terminal session (user can input)"""
 
-class Native:
+class Tools:
+    """Shortcuts to common tools and utilities"""
 
     python: Path = Path(sys.executable)
     """The current Python interpreter executable"""
@@ -184,6 +185,8 @@ from Broken.Core.BrokenThread import BrokenThread, WorkerPool
 from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
 from Broken.Core.BrokenTrackers import OnceTracker, PlainTracker, SameTracker
 from Broken.Core.BrokenTyper import BrokenTyper
+
+# ------------------------------------------------------------------------------------------------ #
 
 BROKEN = BrokenProject(
     PACKAGE=__file__,

@@ -62,7 +62,7 @@ class BrokenThread:
     @staticmethod
     def new(
         target: Callable, /,
-        *args: list[Any],
+        *args: Any,
         start: bool=True,
         join: bool=False,
         loop: bool=False,
