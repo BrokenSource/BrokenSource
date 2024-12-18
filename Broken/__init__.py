@@ -181,7 +181,7 @@ from Broken.Core.BrokenProfiler import BrokenProfiler, BrokenProfilerEnum
 from Broken.Core.BrokenProject import BrokenApp, BrokenProject
 from Broken.Core.BrokenResolution import BrokenResolution
 from Broken.Core.BrokenScheduler import BrokenScheduler, BrokenTask
-from Broken.Core.BrokenThread import BrokenThread, WorkerPool
+from Broken.Core.BrokenThread import BrokenThread, WorkerPool, ParallelQueue
 from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
 from Broken.Core.BrokenTrackers import OnceTracker, PlainTracker, SameTracker
 from Broken.Core.BrokenTyper import BrokenTyper

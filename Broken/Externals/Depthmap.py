@@ -28,7 +28,7 @@ from Broken import (
     log,
 )
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
-from Broken.Loaders import LoadableImage, LoaderImage
+from Broken.Loaders import LoadableImage, LoadImage
 from Broken.Types import MiB
 
 if TYPE_CHECKING:
@@ -62,7 +62,7 @@ class BaseEstimator(
     @staticmethod
     def image_hash(image: LoadableImage) -> int: # Fixme: Better place?
         # Fixme: Speed gains on improving this heuristic, but it's good enough for now
-        return int(hashlib.sha256(LoaderImage(image).tobytes()).hexdigest(), 16)
+        return int(hashlib.sha256(LoadImage(image).tobytes()).hexdigest(), 16)
 
     def estimate(self,
         image: LoadableImage,
@@ -70,7 +70,7 @@ class BaseEstimator(
     ) -> numpy.ndarray:
 
         # Hashlib for deterministic hashes, join class name, model, and image hash
-        image: ImageType = numpy.array(LoaderImage(image).convert("RGB"))
+        image: ImageType = numpy.array(LoadImage(image).convert("RGB"))
         image_hash: str = f"{hash(self)}{BaseEstimator.image_hash(image)}"
         image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
 

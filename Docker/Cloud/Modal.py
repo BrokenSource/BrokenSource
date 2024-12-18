@@ -8,14 +8,11 @@ Example file for running the projects / DepthFlow on [Modal](https://modal.com/)
 
 # ------------------------------------------------------------------------------------------------ #
 
-NOTE: The `modal` Python package isn't included on the Projects, you should manage it yourself
+NOTE: The 'modal' Python package isn't included on the Projects, you should manage it yourself
 
 WARN: You must ask the support team to enable a Workspace configuration for GPU OpenGL acceleration
     to work - that is, enable `graphics,video` capabilities on NVIDIA CONTAINER TOOLKIT, as they are
     selective to enable it. Failing to do so WILL NOT USE THE GPU and render at abyssmal speeds
-
-WARN: Avoid A100, H100 GPUs as they are tensor core only, without graphics API support (OpenGL).
-    They are overkill for DepthFlow, as memory bandwidth on reading frames data is the bottleneck
 
 WARN: NVENC is disabled by default for security reasons, but you could try asking for enabling it.
     Otherwise, throw a couple more cores and use CPU video encoding, which gives better quality

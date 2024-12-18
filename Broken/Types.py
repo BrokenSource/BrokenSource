@@ -8,7 +8,6 @@ warnings.filterwarnings("ignore")
 # Custom types and utilities
 Unchanged: TypeAlias = None
 Channels:  TypeAlias = int
-URL:       TypeAlias = str
 
 # Units
 Seconds: TypeAlias = float
@@ -34,12 +33,10 @@ KB:  int = (1000)
 MB:  int = (KB*1000)
 GB:  int = (MB*1000)
 TB:  int = (GB*1000)
-PB:  int = (TB*1000)
 KiB: int = (1024)
 MiB: int = (KiB*1024)
 GiB: int = (MiB*1024)
 TiB: int = (GiB*1024)
-PiB: int = (TiB*1024)
 
 class FileExtensions:
     Audio:     set[str] = {".wav", ".ogg", ".flac", ".mp3"}

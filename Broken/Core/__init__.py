@@ -24,10 +24,12 @@ import click
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger as log
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     import arrow
+    import requests
+    import requests_cache
 
 
 def flatten(
@@ -409,7 +411,14 @@ class BrokenModel(BaseModel):
 
     def __hash__(self) -> int:
         """Deterministic hash heuristic, as hash() is random seeded"""
-        return int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
+        hash = int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
+
+        # Frozen hash model
+        if hasattr(self, "hash"):
+            self.hash = (self.hash or hash)
+            return self.hash
+
+        return hash
 
     # Serialization
 
@@ -609,17 +618,10 @@ class BrokenRelay:
     """
     registry: deque[Callable] = Factory(deque)
 
-    def __bind__(self, *methods: Iterable[Callable]) -> Self:
-        self.registry.extend(flatten(methods))
-        return self
-
     def subscribe(self, *methods: Iterable[Callable]) -> Self:
         """Adds callbacks to be called with same arguments as self.__call__"""
-        return self.__bind__(methods)
-
-    def __matmul__(self, *methods: Iterable[Callable]) -> Self:
-        """Convenience syntax for subscribing with `relay @ (A, B)`"""
-        return self.__bind__(methods)
+        self.registry.extend(flatten(methods))
+        return self
 
     def __call__(self, *args, **kwargs):
         for callback in self.registry:

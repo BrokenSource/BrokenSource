@@ -13,7 +13,7 @@ from typer import Option
 
 from Broken import BrokenEnum, BrokenResolution, BrokenTyper, denum
 from Broken.Externals import ExternalModelsBase
-from Broken.Loaders import LoadableImage, LoaderImage
+from Broken.Loaders import LoadableImage, LoadImage
 
 
 class UpscalerBase(ExternalModelsBase, ABC):
@@ -58,7 +58,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
 
     @contextlib.contextmanager
     def path_image(self, image: Optional[LoadableImage]=None) -> Iterable[Path]:
-        image = LoaderImage(image)
+        image = LoadImage(image)
         try:
             # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
@@ -92,12 +92,12 @@ class UpscalerBase(ExternalModelsBase, ABC):
         """
 
         # Convenience: Direct configs
-        for key, val in config.items():
+        for (key, val) in config.items():
             if hasattr(self, key):
                 setattr(self, key, val)
 
         # Input image must be a valid image
-        if not (image := LoaderImage(image)):
+        if not (image := LoadImage(image)):
             raise ValueError("Invalid input Image for upscaling")
 
         # Only valid output for str is Path

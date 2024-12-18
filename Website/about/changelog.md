@@ -69,6 +69,7 @@
 - Base duration of the scenes are now configurable (10 seconds default)
 - Throw an exception when FFmpeg process stops unexpectedly
 - Fix sharing a global watchdog causing errors on many initializations
+- Cleanup scheduler before module setup, fixes scene reutilization bug
 
 <!------------------------------------------------------------------------------------------------->
 

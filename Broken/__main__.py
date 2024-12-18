@@ -7,7 +7,7 @@ from typing import Annotated, Self
 import toml
 from attr import Factory, define
 from dotmap import DotMap
-from typer import Argument, Context, Option, Typer
+from typer import Argument, Context, Option
 
 from Broken import (
     BROKEN,
@@ -29,6 +29,7 @@ from Broken import (
     shell,
 )
 
+# ------------------------------------------------------------------------------------------------ #
 
 class ProjectLanguage(BrokenEnum):
     Unknown = "unknown"
@@ -37,22 +38,23 @@ class ProjectLanguage(BrokenEnum):
     Rust    = "rust"
     CPP     = "cpp"
 
+# ------------------------------------------------------------------------------------------------ #
 
 @define
 class ProjectManager:
     path: Path
     name: str = "Unknown"
-    typer: Typer = None
+    cli: BrokenTyper = None
 
     # # Main entry point
 
-    def cli(self, ctx: Context) -> None:
-        self.typer = BrokenTyper(help=False)
-        self.typer.command(self.update,  help=True)
-        self.typer.command(self.release, help=True)
-        self.typer.command(self.run,     help=False, context=True)
+    def main(self, ctx: Context) -> None:
+        self.cli = BrokenTyper(help=False)
+        self.cli.command(self.update,  help=True)
+        self.cli.command(self.release, help=True)
+        self.cli.command(self.run,     help=False, context=True)
         with BrokenPath.pushd(self.path, echo=False):
-            self.typer(ctx.args)
+            self.cli(*ctx.args)
 
     # # Initialization
 
@@ -67,7 +69,8 @@ class ProjectManager:
     @property
     def version(self) -> str:
         import arrow
-        return self.config.setdefault("version", arrow.utcnow().format("YYYY.M.D"))
+        now = arrow.utcnow().format("YYYY.M.D")
+        return self.config.setdefault("version", now)
 
     @property
     def description(self) -> str:
@@ -116,7 +119,7 @@ class ProjectManager:
         return DotMap(toml.loads((self.path/"Cargo.toml").read_text()))
 
     @property
-    def description_pretty_language(self) -> str:
+    def _pretty_language(self) -> str:
         if self.is_python: return f"🐍 (Python) {self.description}"
         if self.is_nodejs: return f"🟢 (NodeJS) {self.description}"
         if self.is_rust:   return f"🦀 (Rust  ) {self.description}"
@@ -299,7 +302,7 @@ class ProjectManager:
                     "--root", BUILD_DIR,
                     "--target", target.triple,
                 ).returncode != 0:
-                    raise RuntimeError(log.error("Failed to compile PyAPP"))
+                    raise RuntimeError(log.error("Failed to compile PyApp"))
             else:
                 if shell(
                     "cargo", "install",
@@ -307,7 +310,7 @@ class ProjectManager:
                     "--root", BUILD_DIR,
                     "--target", target.triple,
                 ).returncode != 0:
-                    raise RuntimeError(log.error("Failed to compile PyAPP"))
+                    raise RuntimeError(log.error("Failed to compile PyApp"))
 
             RELEASE_ENV.unlink()
 
@@ -367,9 +370,9 @@ class BrokenManager(BrokenSingleton):
 
         for project in self.projects:
             self.cli.command(
-                target=project.cli,
+                target=project.main,
                 name=project.name.lower(),
-                description=project.description_pretty_language,
+                description=project._pretty_language,
                 panel=f"🔥 Projects at [bold]({project.path.parent})[/]",
                 hidden=("Projects/Others" in str(project.path)),
                 context=True,

@@ -18,7 +18,7 @@ class BrokenResolution:
     def fit(
         old: Optional[tuple[int, int]] = None,
         new: Optional[tuple[int, int]] = None,
-        max: Optional[tuple[int, int]]=None,
+        max: Optional[tuple[int, int]] = None,
         ar: Optional[float] = None,
         scale: float = 1.0,
         multiple: int = 2,
@@ -74,6 +74,7 @@ class BrokenResolution:
             raise ValueError(f"Can't build a resolution with missing component(s): ({width=}, {height=})")
 
         if (ar is not None):
+
             # Build from width (W) or from height (H)
             from_width  = (width, width/ar)
             from_height = (height*ar, height)
