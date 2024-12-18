@@ -3,6 +3,7 @@
 **/.cache
 **/.venv
 **/Build
+**/Private
 **/Release
 **/Workspace
 **/*.pyc
