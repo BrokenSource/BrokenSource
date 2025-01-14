@@ -37,7 +37,7 @@ def flatten(
     cast: type = list,
     block: Optional[Collection] = (None, ""),
     unpack: Iterable[type] = (list, deque, tuple, map, Generator),
-) -> Iterable[Any]:
+) -> Collection[Any]:
     """
     Flatten/unpack nested iterables (list, deque, tuple, map, Generator) to a plain 1D list
     - Removes common falsy values by default, modify with `block={None, False, "", [], ...}`
@@ -69,7 +69,7 @@ def every(
     *items: Any,
     cast: type = list,
     block: Collection[Any] = (None, ""),
-) -> Optional[Iterable]:
+) -> Optional[Collection]:
     """
     Returns the flattened items if not any element is in the block list, else None. Useful when
     a Model class has a list of optional arguments that doesn't add falsy values to a command
@@ -96,7 +96,11 @@ def shell(
     skip: bool = False,
     echo: bool = True,
     **kwargs
-) -> Optional[Union[str, subprocess.Popen, subprocess.CompletedProcess]]:
+) -> Optional[Union[
+    subprocess.CompletedProcess,
+    subprocess.Popen,
+    str,
+]]:
     """
     Enhanced subprocess runners with many additional features. Flattens the args, converts to str
 
@@ -151,7 +155,7 @@ def apply(
     callback: Callable,
     iterable: Iterable, *,
     cast: Callable = list
-) -> list:
+) -> Collection:
     """Applies a callback to all items of an iterable, returning a $cast of the results"""
     return cast(map(callback, iterable))
 
@@ -171,8 +175,8 @@ def pop_fill(data: Collection, fill: type, length: int) -> Collection:
 
 
 @contextlib.contextmanager
-def Stack(*contexts: contextlib.AbstractContextManager) -> Generator:
-    """Enter multiple contexts at once as `with Stack(items): ...`"""
+def multi_context(*contexts: contextlib.AbstractContextManager) -> Generator:
+    """Enter multiple contexts at once"""
     with contextlib.ExitStack() as stack:
         for context in flatten(contexts):
             stack.enter_context(context)
@@ -180,7 +184,7 @@ def Stack(*contexts: contextlib.AbstractContextManager) -> Generator:
 
 
 @contextlib.contextmanager
-def environment(**variables: dict[str, str]) -> Generator:
+def environment(**variables: str) -> Generator:
     """Temporarily sets environment variables inside a context"""
     original = os.environ.copy()
     os.environ.update(variables)
@@ -433,6 +437,9 @@ class BrokenModel(BaseModel):
             exclude_defaults=(not full),
             exclude_none=False
         )
+
+    def schema(self) -> dict:
+        return self.model_json_schema()
 
     # Deserialization
 

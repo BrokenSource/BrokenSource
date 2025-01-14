@@ -36,7 +36,7 @@ title: About/Contact
 
     - Business and Formal
 
-    [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:tremeschin.dev@outlook.com)
+    [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:contact@brokensrc.dev)
 
 </div>
 

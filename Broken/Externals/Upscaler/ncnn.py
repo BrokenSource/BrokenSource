@@ -108,7 +108,7 @@ class Waifu2x(UpscalerNCNN_Base):
         models_upconv_7_anime_style_art_rgb = "models_upconv_7_anime_style_art_rgb"
         models_upconv_7_photo = "models_upconv_7_photo"
 
-    model: Annotated[Model, Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m",
         help="(🔵 Special ) Model to use for Waifu2x")] = \
         Field(Model.models_cunet)
 
@@ -170,7 +170,7 @@ class Realesr(UpscalerNCNN_Base):
         realesrgan_x4plus_anime = "realesrgan_x4plus_anime"
         realesrnet_x4plus       = "realesrnet_x4plus"
 
-    model: Annotated[Model, Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m",
         help="(🔵 Special ) Model to use for RealESRGAN")] = \
         Field(Model.realesr_animevideov3)
 
@@ -227,7 +227,7 @@ class Upscayl(UpscalerNCNN_Base):
         ultrasharp              = "ultrasharp"
         remacri                 = "remacri"
 
-    model: Annotated[Model, Option("--model", "-m", hidden=True,
+    model: Annotated[Model, Option("--model", "-m",
         help="(🔵 Special ) Model to use for Upscayl")] = \
         Field(Model.realesrgan_x4plus_anime)
 

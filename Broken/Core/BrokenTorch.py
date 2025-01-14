@@ -25,17 +25,39 @@ class TorchFlavor(str, BrokenEnum):
     ROCM61  = "rocm6.1"
     ROCM62  = "rocm6.2"
 
+    def is_cuda(self) -> bool:
+        return ("cu1" in self.value)
+
+    def is_rocm(self) -> bool:
+        return ("rocm" in self.value)
+
+    def is_cpu(self) -> bool:
+        return (self == TorchFlavor.CPU)
+
+
 class BrokenTorch:
 
     @staticmethod
-    def current() -> Optional[str]:
-        """Get the current installed flavor without importing torch"""
+    def full_version() -> Optional[str]:
+        """Get the current installed full version string importing torch"""
 
         # Note: Reversed as Windows lists system first, and we might have multiple on Docker
         for site_packages in map(Path, reversed(site.getsitepackages())):
             if (torch_version := (site_packages/"torch"/"version.py")).exists():
-                exec(torch_version.read_text(), namespace := {})
+                exec(torch_version.read_text("utf-8"), namespace := {})
                 return namespace["__version__"]
+
+    @staticmethod
+    def version() -> Optional[tuple[int]]:
+        """Get the current installed version tuple without importing torch"""
+        if (version := BrokenTorch.full_version()):
+            return tuple(map(int, version.split("+")[0].split(".")))
+
+    @staticmethod
+    def flavor() -> Optional[TorchFlavor]:
+        """Get the current installed flavor without importing torch"""
+        if (version := BrokenTorch.full_version()):
+            return TorchFlavor.get(version.split("+")[-1])
 
     @BrokenThread.easy_lock
     @staticmethod
@@ -47,24 +69,24 @@ class BrokenTorch:
 
         flavor: Annotated[Optional[TorchFlavor],
             Option("--flavor", "-f",
-            help="Torch flavor to install. 'None' to ask interactively"
+            help="Torch flavor to install, 'None' to ask interactively"
         )]=None,
 
         exists_ok: bool=False
     ) -> None:
         """📦 Install or modify PyTorch versions"""
 
-        # Global kill switch opt-out of this feature
+        # Global opt-out of torch management
         if (os.getenv("BROKEN_TORCH", "1") == "0"):
             return None
 
-        installed = BrokenTorch.current()
+        installed = BrokenTorch.full_version()
 
         # Only skip if installed and exists_ok, but not 'torch' in sys.argv
         if (exists_ok and (installed or "torch" in sys.argv)):
             return None
 
-        log.special(f"Current PyTorch version: {installed}")
+        log.special(f"Currently installed PyTorch version: {installed}")
 
         # Ask interactively if no flavor was provided
         if not (flavor := TorchFlavor.get(flavor)):
@@ -75,23 +97,13 @@ class BrokenTorch:
 
             # Pick your GPU on non-macos
             elif (not BrokenPlatform.OnMacOS):
-                if installed:
-                    log.special("""
-                    PyTorch is installed, now managing package versions!
-                    """, dedent=True)
-                else:
-                    log.special("""
-                    This project requires PyTorch, but it's not installed
-                    • Checked all site.getsitepackages() locations
-                    """, dedent=True)
-
                 log.special("""
-                    Chose one for your platform and hardware:
+                    Generally speaking, you should chose for:
                     • [royal_blue1](Windows or Linux)[/] NVIDIA GPU: 'cuda'
                     • [royal_blue1](Linux)[/] AMD GPU (>= RX 5000): 'rocm'
-                    • [royal_blue1](Other)[/] Intel ARC or Others: 'cpu'
+                    • [royal_blue1](Other)[/] Intel ARC or others: 'cpu'
 
-                    Tip: Set 'HSA_OVERRIDE_GFX_VERSION=10.3.0' for RX 5000 Series
+                    [dim]Tip: Set 'HSA_OVERRIDE_GFX_VERSION=10.3.0' for RX 5000 Series[/]
                 """, dedent=True)
 
                 try:
@@ -113,7 +125,7 @@ class BrokenTorch:
         if (installed != version):
             log.special(f"Installing PyTorch version ({version})")
 
-            # Pytorch releases different build under their own urls
+            # Pytorch releases flavors on their own custom index
             index = ("https://download.pytorch.org/whl/" + (flavor or ''))
 
             # Remove previous version, install new

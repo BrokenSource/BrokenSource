@@ -837,7 +837,7 @@ class FFmpegAudioCodecFLAC(FFmpegModuleBase):
 
 
 class FFmpegAudioCodecCopy(FFmpegModuleBase):
-    """Copy the inputs' audio streams"""
+    """Copy the inputs' audio streams to the output"""
     type: Annotated[Literal["copy"], BrokenTyper.exclude()] = "copy"
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:

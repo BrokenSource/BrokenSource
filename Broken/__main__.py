@@ -1,3 +1,4 @@
+import contextlib
 import os
 import shutil
 import sys
@@ -20,12 +21,12 @@ from Broken import (
     Patch,
     Platform,
     Runtime,
-    Stack,
     SystemEnum,
     __version__,
     combinations,
     flatten,
     log,
+    multi_context,
     shell,
 )
 
@@ -451,7 +452,7 @@ class BrokenManager(BrokenSingleton):
         replaces['"0.0.0"'  ] = f'"{__version__}"' # Write current version
         replaces['>=0.0.0'  ] = f"=={__version__}" # Link projects version
 
-        with Stack(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
+        with multi_context(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
             shell("uv", "publish",
                 (not Runtime.GitHub)*(
@@ -497,7 +498,14 @@ class BrokenManager(BrokenSingleton):
         """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""
         import re
 
-        def update(data: list[str], *, dev: bool=False, optional: str=None) -> None:
+        import requests
+
+        def update(
+            pyproject: Path,
+            data: list[str], *,
+            dev: bool=False,
+            group: str=None
+        ) -> None:
             for dependency in data:
                 try:
                     name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
@@ -508,24 +516,36 @@ class BrokenManager(BrokenSingleton):
                     if (compare == "=="):
                         continue
 
-                    shell("uv", "add", "--no-sync", name, "--pin", "~=",
-                        "--dev"*dev, ("--optional", optional)*bool(optional))
+                    # Get the latest version of the package on PyPI
+                    with contextlib.suppress(KeyError):
+                        latest = requests.get(f"https://pypi.org/pypi/{name}/json").json()["info"]["version"]
+
+                        # Update the version in the pyproject.toml
+                        pyproject.write_text(
+                            pyproject.read_text().replace(
+                                f"{name}{compare}{version}",
+                                f"{name}{compare}{latest}"
+                            )
+                        )
+
                 except ValueError:
                     continue
 
         def manage(path: Path):
-            with BrokenPath.pushd(path):
-                pyproject = DotMap(toml.loads((path/"pyproject.toml").read_text()))
-                update(pyproject.project["dependencies"])
-                update(pyproject.tool.uv["dev-dependencies"], dev=True)
-                for (optional, items) in pyproject.project["optional-dependencies"].items():
-                    update(items, optional=optional)
+            pyproject = (path/"pyproject.toml")
+            data = DotMap(toml.loads(pyproject.read_text()))
 
-        for project in filter(lambda project: project.is_python, self.projects):
+            update(pyproject, data.project["dependencies"])
+            update(pyproject, data.tool.uv["dev-dependencies"], dev=True)
+
+            for (optional, items) in data.project["optional-dependencies"].items():
+                update(pyproject, items, group=optional)
+
+        for project in self.python_projects:
             manage(project.path)
 
         manage(BROKEN.DIRECTORIES.REPOSITORY)
-        shell("uv", "sync")
+        shell("uv", "sync", "--all-packages")
 
     @staticmethod
     def rust(
@@ -535,13 +555,14 @@ class BrokenManager(BrokenSingleton):
         """🦀 Installs Rustup and a Rust Toolchain"""
         import requests
 
-        # Skip if we're on a GitHub Action
+        # Actions has its own workflow setup
         if (Runtime.GitHub):
             return
 
         # Install rustup based on platform
         if not shutil.which("rustup"):
             log.info("Rustup wasn't found, will install it")
+
             if BrokenPlatform.OnWindows:
                 shell("winget", "install", "-e", "--id", "Rustlang.Rustup")
             elif BrokenPlatform.OnUnix:
@@ -561,10 +582,10 @@ class BrokenManager(BrokenSingleton):
             log.warning("You must have Microsoft Visual C++ Build Tools installed to compile Rust projects")
             log.warning("• Broken will try installing it, you might need to restart your shell afterwards")
             shell("winget", "install", "-e", "--id", "Microsoft.VisualStudio.2022.BuildTools", "--override", (
-                "--wait --passive"
                 " --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
                 " --add Microsoft.VisualStudio.Component.Windows10SDK"
                 " --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
+                "--wait --passive"
             ))
 
         class RustToolchain(BrokenEnum):

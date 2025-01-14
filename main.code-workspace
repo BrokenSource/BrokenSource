@@ -48,7 +48,8 @@
 
 		// Custom icons assossiations
 		"material-icon-theme.files.associations": {
-			".stignore": "credits"},
+			".stignore": "credits"
+		},
 		"material-icon-theme.folders.associations": {
 
 			// Common website directories
@@ -164,25 +165,25 @@
 			{
 				"label": "release-depthflow",
 				"command": ["uv", "run", "broken", "depthflow",
-					"release", "--tarball", "--target", "all"],
+					"release", "--target", "all", "--tarball"],
 				"type": "shell",
 			},
 			{
 				"label": "release-pianola",
-				"type": "shell",
 				"command": ["uv", "run", "broken", "pianola",
-					"release","--target", "all", "--tarball"]
+					"release", "--target", "all", "--tarball"],
+				"type": "shell",
 			},
 			{
 				"label": "release-shaderflow",
 				"command": ["uv", "run", "broken", "shaderflow",
-					"release", "--tarball", "--target", "all"],
+					"release", "--target", "all", "--tarball"],
 				"type": "shell",
 			},
 			{
 				"label": "release-spectronote",
 				"command": ["uv", "run", "broken", "spectronote",
-					"release", "--tarball", "--target", "all"],
+					"release", "--target", "all", "--tarball"],
 				"type": "shell",
 			}
 		]
