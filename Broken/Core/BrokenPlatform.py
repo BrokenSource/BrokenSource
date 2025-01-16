@@ -54,7 +54,7 @@ class ArchEnum(str, MultiEnum):
         return ("64" in self.value)
 
 
-class Platform(str, BrokenEnum):
+class PlatformEnum(str, BrokenEnum):
     """List of common platforms targets for releases"""
     WindowsAMD64: str = "windows-amd64"
     WindowsARM64: str = "windows-arm64"
@@ -105,7 +105,7 @@ class Platform(str, BrokenEnum):
 
     def get_all(self) -> Iterable[Self]:
         if ("all" in self.value):
-            for option in Platform.options():
+            for option in PlatformEnum.options():
                 if ("all" in option.value):
                     continue
                 elif (self == self._All):
@@ -125,17 +125,17 @@ class Platform(str, BrokenEnum):
 class BrokenPlatform:
     Arch: ArchEnum = ArchEnum.get(
         platform.machine().lower())
-    """The current architecture of the operating system"""
+    """The current machine's architecture"""
 
     System: SystemEnum = SystemEnum.get(
         platform.system().lower())
-    """The current running operating system"""
+    """The current machine's operating system"""
 
-    Host: Platform = Platform.get(
+    Host: PlatformEnum = PlatformEnum.get(
         f"{System.value}-{Arch.value}")
-    """The current platform target"""
+    """The current machine's full platform"""
 
-    # Booleans if the current platform is the following
+    # Primary platforms
     OnLinux:   bool = (System == SystemEnum.Linux)
     OnWindows: bool = (System == SystemEnum.Windows)
     OnMacOS:   bool = (System == SystemEnum.MacOS)
@@ -175,11 +175,11 @@ class BrokenPlatform:
     OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)
 
     @staticmethod
-    def log_system_info():
+    def log_system_info() -> None:
         log.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
 
     @staticmethod
-    def clear_terminal():
+    def clear_terminal() -> None:
         os.system("cls" if BrokenPlatform.OnWindows else "clear")
 
     # Literally, why Windows/Python have different directory names for scripts? ...
@@ -187,9 +187,9 @@ class BrokenPlatform:
     PyBinDir = ("Scripts" if OnWindows else "bin")
 
     try:
-        Administrator: bool = (os.getuid() == 0)
+        Root: bool = (os.getuid() == 0)
     except AttributeError:
-        Administrator: bool = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        Root: bool = ctypes.windll.shell32.IsUserAnAdmin() != 0
 
     class DeveloperMode:
         # https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging
@@ -206,7 +206,7 @@ class BrokenPlatform:
         @staticmethod
         def set(state: bool=True):
             import winreg
-            if (not BrokenPlatform.Administrator):
+            if (not BrokenPlatform.Root):
                 raise PermissionError("Administrator privileges are required to enable Developer Mode")
             key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
             key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)

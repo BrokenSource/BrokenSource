@@ -28,7 +28,6 @@ from Broken import Environment, Runtime
 from Broken.Core import (
     BrokenAttrs,
     BrokenCache,
-    EasyTracker,
     arguments,
     list_get,
     shell,
@@ -37,6 +36,7 @@ from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenProfiler import BrokenProfiler
+from Broken.Core.BrokenTrackers import FileTracker
 from Broken.Core.BrokenTyper import BrokenTyper
 
 # ------------------------------------------------------------------------------------------------ #
@@ -69,7 +69,7 @@ class BrokenProject:
         # Replace Broken.PROJECT with the first initialized project
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
-                if (BrokenPlatform.Administrator and not Runtime.Docker):
+                if (BrokenPlatform.Root and not Runtime.Docker):
                     log.warning("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
                 self._pyapp_management()
                 Broken.PROJECT = self
@@ -189,7 +189,7 @@ class BrokenProject:
         # ---------------------------------------------------------------------------------------- #
 
         def manage_unused(version: Path):
-            tracker = EasyTracker(version/"version.tracker")
+            tracker = FileTracker(version/"version.tracker")
             tracker.retention.days = 7
 
             # Running a new version, prune previous cache

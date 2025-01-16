@@ -20,7 +20,7 @@ from Broken import (
     BrokenTyper,
     Environment,
     Patch,
-    Platform,
+    PlatformEnum,
     Runtime,
     SystemEnum,
     __version__,
@@ -205,7 +205,7 @@ class ProjectManager:
     # # Python shenanigans
 
     def release(self,
-        target: Annotated[list[Platform],
+        target: Annotated[list[PlatformEnum],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
         )] = [BrokenPlatform.Host],
@@ -229,7 +229,7 @@ class ProjectManager:
 
         # Recurse on each target item
         if isinstance(target, list):
-            for target in flatten(map(Platform.get_all, target)):
+            for target in flatten(map(PlatformEnum.get_all, target)):
                 ProjectManager.release(**locals())
             return None
 
@@ -240,7 +240,7 @@ class ProjectManager:
             return log.skip("macOS can only [italic]easily[/] compile for itself")
         elif BrokenPlatform.OnWindows and (target.system != SystemEnum.Windows):
             return log.skip("Windows can only [italic]easily[/] compile for itself")
-        elif (target == Platform.WindowsARM64):
+        elif (target == PlatformEnum.WindowsARM64):
             return log.skip("Windows on ARM is not widely supported")
 
         # Non-macOS ARM builds can be unstable/not tested, disable on CI

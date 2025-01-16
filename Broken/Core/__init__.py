@@ -27,7 +27,6 @@ from loguru import logger as log
 from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
-    import arrow
     import requests
     import requests_cache
 
@@ -694,57 +693,6 @@ class ThreadedStdin:
         while self._process.poll() is None:
             time.sleep(0.01)
 
-# # Trackers
-
-@define
-class EasyTracker:
-    file: Path = field(converter=Path)
-    retention: DotMap = Factory(lambda: DotMap(days=1, hours=0))
-
-    def __attrs_post_init__(self):
-        self.file.touch()
-
-        # Initialize new or empty trackers
-        if (not self.file.read_text("utf-8")):
-            self._first = True
-            self.update()
-
-    _first: bool = False
-
-    @property
-    def first(self) -> bool:
-        """True if initializing the tracker for the first time"""
-        return self._first
-
-    def __enter__(self) -> Self:
-        return self
-
-    def __exit__(self, *args) -> None:
-        return None
-
-    @property
-    def last(self) -> "arrow.Arrow":
-        """How long it's been since the last run"""
-        import arrow
-        return arrow.get(self.file.read_text("utf-8"))
-
-    @property
-    def sleeping(self, granularity: tuple[str]=("day")) -> str:
-        """How long it's been since the last run, for printing purposes"""
-        return self.last.humanize(only_distance=True, granularity=granularity)
-
-    def trigger(self, update: bool=False) -> bool:
-        """True if it's been more than 'self.retention' since the last run"""
-        import arrow
-        trigger = (self.last.shift(**self.retention) < arrow.utcnow())
-        if (trigger and update):
-            self.update()
-        return trigger
-
-    def update(self, **shift: dict) -> None:
-        import arrow
-        time = arrow.utcnow().shift(**(shift or {}))
-        self.file.write_text(str(time), "utf-8")
 
 # ------------------------------------------------------------------------------------------------ #
 # Stuff that needs a revisit
