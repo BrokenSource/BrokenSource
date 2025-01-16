@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import inspect
 import itertools
-import os
 import shlex
 import sys
 from abc import ABC, abstractmethod
@@ -22,6 +21,7 @@ from rich.text import Text
 
 from Broken import (
     BrokenPlatform,
+    Environment,
     Runtime,
     apply,
     arguments,
@@ -197,7 +197,7 @@ class BrokenTyper:
 
     @property
     def _shell(self) -> bool:
-        BYPASS = (os.getenv("REPL", "1") == "0")
+        BYPASS = Environment.flag("REPL", 1)
         return (self.shell and not BYPASS)
 
     def should_shell(self) -> Self:

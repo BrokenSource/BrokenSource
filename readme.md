@@ -8,8 +8,6 @@
   <a href="https://pypi.org/project/broken-source/"><img src="https://img.shields.io/pypi/dw/broken-source?label=Installs&color=blue"></a>
   <a href="https://github.com/BrokenSource/BrokenSource"><img src="https://img.shields.io/github/v/tag/BrokenSource/BrokenSource?label=GitHub&color=orange"></a>
   <a href="https://github.com/BrokenSource/BrokenSource/stargazers"><img src="https://img.shields.io/github/stars/BrokenSource/BrokenSource?label=Stars&style=flat&color=orange"></a>
-  <!-- <a href="https://github.com/BrokenSource/BrokenSource/releases/"><img src="https://img.shields.io/github/v/release/BrokenSource/BrokenSource?label=Release&color=light-green"></a> -->
-  <!-- <a href="https://github.com/BrokenSource/BrokenSource/releases/"><img src="https://img.shields.io/github/downloads/BrokenSource/BrokenSource/total?label=Downloads&color=light-green"></a> -->
   <a href="https://discord.gg/KjqvcYwRHm"><img src="https://img.shields.io/discord/1184696441298485370?label=Discord&style=flat&color=purple"></a>
 </div>
 

@@ -1,6 +1,5 @@
 import functools
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Callable, Iterable, Union
@@ -13,7 +12,7 @@ from mkdocs_include_markdown_plugin import IncludeMarkdownPlugin
 
 IncludeMarkdownPlugin._update_watched_files = lambda self: None
 
-from Broken import BROKEN, BrokenEnum, BrokenPlatform
+from Broken import BROKEN, BrokenEnum, BrokenPlatform, Environment
 from Broken.__main__ import BrokenManager
 
 # Silence the site-urls plugin, it's too verbose / should be a lower level
@@ -146,7 +145,7 @@ class BrokenWebsite:
                     # Note: Code reference takes a bit to generate
                     reference = Path("code", self.website, markdown)
 
-                    if (os.getenv("CODE_REFERENCE", "0") != "1"):
+                    if (not Environment.flag("CODE_REFERENCE", 0)):
                         self.write(path=reference, content='!!! failure "**Missing**: Code reference generation disabled"')
                         continue
 

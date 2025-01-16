@@ -18,6 +18,7 @@ from Broken import (
     BrokenProfiler,
     BrokenSingleton,
     BrokenTyper,
+    Environment,
     Patch,
     Platform,
     Runtime,
@@ -282,7 +283,7 @@ class ProjectManager:
             ).items() if val})
 
             # Cache Rust compilation across projects
-            os.setenv("CARGO_HOME", BUILD_DIR)
+            Environment.set("CARGO_HOME", BUILD_DIR)
             shell("rustup", "target", "add", target.triple)
 
             # Cargo warning: We're not 'installing' a utility
@@ -457,7 +458,7 @@ class BrokenManager(BrokenSingleton):
             shell("uv", "publish",
                 (not Runtime.GitHub)*(
                     "--username", "__token__",
-                    "--password", os.getenv("PYPI_TOKEN")
+                    "--password", Environment.get("PYPI_TOKEN")
                 ),
                 f"{output}/*.whl", echo=False,
                 skip=(not bool(publish)),
@@ -475,8 +476,8 @@ class BrokenManager(BrokenSingleton):
             flavor=["cpu", "cu121"],
         ):
             # Warn: Must use same env vars as in docker-compose.yml
-            os.setenv("BASE_IMAGE", build.base_image)
-            os.setenv("TORCH_FLAVOR", build.flavor)
+            Environment.set("BASE_IMAGE", build.base_image)
+            Environment.set("TORCH_FLAVOR", build.flavor)
             shell("docker", "compose", "build")
 
             # Assumes all dockerfiles were built by docker compose, fails ok otherwise

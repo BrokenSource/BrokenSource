@@ -1,5 +1,6 @@
 # -------------------------------- General fixes, quality of life -------------------------------- #
 
+import os
 import time
 
 time.zero = time.perf_counter()
@@ -8,34 +9,57 @@ time.zero = time.perf_counter()
 time.absolute = (lambda: time.perf_counter() - time.zero)
 """Precise time the program has been running for"""
 
-import os
+class Environment:
+    """Utilities for managing environment variables"""
+
+    def __new__(cls) -> None:
+        raise TypeError(f"{cls.__name__} class cannot be instantiated")
+
+    @staticmethod
+    def set(key: str, value: str, /) -> None:
+        os.environ[key] = str(value)
+
+    @staticmethod
+    def setdefault(key: str, value: str, /) -> None:
+        os.environ.setdefault(key, str(value))
+
+    @staticmethod
+    def get(key: str, default: str=None, /) -> str:
+        return os.getenv(key, default)
+
+    @staticmethod
+    def int(key: str, default: int=0, /) -> int:
+        return int(os.getenv(key, default))
+
+    @staticmethod
+    def float(key: str, default: float=1.0, /) -> float:
+        return float(os.getenv(key, default))
+
+    @staticmethod
+    def bool(key: str, default: bool=False, /) -> bool:
+        value = str(os.getenv(key, default)).lower()
+
+        if value in ("1", "true", "yes", "on"):
+            return True
+        elif value in ("0", "false", "no", "off"):
+            return False
+
+        raise ValueError(f"Invalid boolean value for environment variable '{key}': {value}")
+
+    @staticmethod
+    def flag(key: str, default: bool=False, /) -> bool:
+        return Environment.bool(key, default)
+
+    @staticmethod
+    def unset(key: str, /) -> None:
+        os.unsetenv(key)
+
 import sys
 from pathlib import Path
-
-
-# Monkey patch os.setenv, since os.getenv exists (?)
-def setenv(key: str, value: str, /) -> None:
-    os.environ[key] = str(value)
-
-os.setenv = setenv
 
 # Keep the repository clean of cache files by writing them to .venv
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
-
-# Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
-# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
-# Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
-os.setenv("OMP_NUM_THREADS", 1)
-
-# NVIDIA: High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind vsync
-# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
-# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
-os.setenv("__GL_YIELD", "USLEEP")
-
-# Replace argv[0] being "-c" with PyApp's managed python
-if bool(os.getenv("PYAPP", None)):
-    sys.argv[0] = sys.executable
 
 # Warn if running unsupported Python versions
 if sys.version_info <= (3, 9):
@@ -51,8 +75,22 @@ if sys.version_info < (3, 11):
     typing.TypeAlias = TypeAlias
     typing.Self = Self
 
+# Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
+# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+# Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
+Environment.setdefault("OMP_NUM_THREADS", 1)
+
+# NVIDIA: High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind vsync
+# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
+# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
+Environment.setdefault("__GL_YIELD", "USLEEP")
+
+# Replace argv[0] being "-c" to PyApp's managed python
+if bool(Environment.get("PYAPP")):
+    sys.argv[0] = sys.executable
+
 # Pretty tracebacks
-if (os.getenv("RICH_TRACEBACK", "1") == "1"):
+if Environment.flag("RICH_TRACEBACK", 1):
     import rich.traceback
     rich.traceback.install(width=None)
 
@@ -88,7 +126,7 @@ class Runtime:
     Nuitka: bool = ("__compiled__" in globals())
     """True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
 
-    PyApp: bool = bool(os.getenv("PYAPP", False))
+    PyApp: bool = bool(Environment.get("PYAPP"))
     """True if running as a PyApp release (https://github.com/ofek/pyapp)"""
 
     PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
@@ -111,7 +149,7 @@ class Runtime:
     Docker: bool = Path("/.dockerenv").exists()
     """True if running from a Docker container"""
 
-    GitHub: bool = bool(os.getenv("GITHUB_ACTIONS", False))
+    GitHub: bool = bool(Environment.get("GITHUB_ACTIONS"))
     """True if running in a GitHub Actions CI environment (https://github.com/features/actions)"""
 
     WSL: bool = Path("/usr/lib/wsl/lib").exists()
@@ -132,7 +170,7 @@ class Tools:
     pip: list[str, Path] = [python, "-m", "uv", "pip"]
     """Entry point for pip"""
 
-# ---------------------------------------- Module imports ---------------------------------------- #
+# ---------------------------------------- Package exports --------------------------------------- #
 
 import Broken.Resources as BrokenResources
 from Broken.Core import (
@@ -154,7 +192,6 @@ from Broken.Core import (
     clamp,
     combinations,
     denum,
-    environment,
     every,
     flatten,
     hyphen_range,
@@ -167,6 +204,7 @@ from Broken.Core import (
     pop_fill,
     shell,
     smartproxy,
+    tempvars,
 )
 from Broken.Core.BrokenEnum import BrokenEnum, FlagEnum, MultiEnum
 from Broken.Core.BrokenLogging import BrokenLogging, log

@@ -1,4 +1,3 @@
-import os
 import site
 import sys
 from pathlib import Path
@@ -10,6 +9,7 @@ from Broken import (
     BrokenEnum,
     BrokenPlatform,
     BrokenThread,
+    Environment,
     Runtime,
     Tools,
     log,
@@ -77,7 +77,7 @@ class BrokenTorch:
         """📦 Install or modify PyTorch versions"""
 
         # Global opt-out of torch management
-        if (os.getenv("BROKEN_TORCH", "1") == "0"):
+        if not Environment.flag("BROKEN_TORCH", "1"):
             return None
 
         installed = BrokenTorch.full_version()

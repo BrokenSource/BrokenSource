@@ -17,7 +17,7 @@ import validators
 from halo import Halo
 
 import Broken
-from Broken import denum, flatten, log, shell
+from Broken import Environment, denum, flatten, log, shell
 from Broken.Core import StaticClass
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenPlatform import BrokenPlatform
@@ -475,7 +475,7 @@ class BrokenPath(StaticClass):
 
     def on_path(path: Path) -> bool:
         """Check if a path is on PATH, works with symlinks"""
-        return (Path(path) in map(Path, os.getenv("PATH", "").split(os.pathsep)))
+        return (Path(path) in map(Path, Environment.get("PATH", "").split(os.pathsep)))
 
     def add_to_path(
         path: Path,
@@ -524,11 +524,11 @@ class BrokenPath(StaticClass):
             else:
                 if prepend:
                     log.debug(f"• Prepending: ({other})", echo=echo)
-                    os.setenv("PATH", str(other) + os.pathsep + os.getenv("PATH"))
+                    Environment.set("PATH", str(other) + os.pathsep + Environment.get("PATH"))
                     sys.path.insert(0, str(other))
                 else:
                     log.debug(f"• Appending: ({other})", echo=echo)
-                    os.setenv("PATH", os.getenv("PATH") + os.pathsep + str(other))
+                    Environment.set("PATH", Environment.get("PATH") + os.pathsep + str(other))
                     sys.path.append(str(other))
 
         return original

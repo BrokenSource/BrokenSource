@@ -1,7 +1,6 @@
 # pyright: reportMissingImports=false
 
 import inspect
-import os
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Self
 
@@ -11,6 +10,7 @@ from Broken import (
     BrokenModel,
     BrokenThread,
     BrokenTorch,
+    Environment,
     SameTracker,
 )
 
@@ -25,7 +25,7 @@ class ExternalTorchBase(BrokenModel):
     @property
     def device(self) -> str:
         self.load_torch()
-        if (device := os.getenv("TORCH_DEVICE")):
+        if (device := Environment.get("TORCH_DEVICE")):
             return device
         if torch.cuda.is_available():
             return "cuda"

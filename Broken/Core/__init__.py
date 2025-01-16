@@ -24,7 +24,7 @@ import click
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger as log
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import arrow
@@ -184,7 +184,7 @@ def multi_context(*contexts: contextlib.AbstractContextManager) -> Generator:
 
 
 @contextlib.contextmanager
-def environment(**variables: str) -> Generator:
+def tempvars(**variables: str) -> Generator:
     """Temporarily sets environment variables inside a context"""
     original = os.environ.copy()
     os.environ.update(variables)
@@ -394,8 +394,8 @@ class BrokenFluent:
 class BrokenAttrs:
     """
     Walk over an @attrs.defined class and call __post__ on all classes in the MRO
-    # Warn: Must NOT define __attrs_post_init__ in an inheriting class
-    # Fixme: Can improve by starting on BrokenAttrs itself
+    Warn: Must NOT define __attrs_post_init__ in an inheriting class
+    Fixme: Can improve by starting on BrokenAttrs itself
     """
     def __attrs_post_init__(self):
         for cls in reversed(type(self).mro()):

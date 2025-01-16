@@ -12,35 +12,7 @@ class BrokenEnumBase:
     @classmethod
     @functools.lru_cache()
     def get(cls, /, value: Union[str, enum.Enum, Any], default: Any=None) -> Optional[Self]:
-        """
-        Get enum members from their value, name or themselves
-
-        Example:
-            ```python
-            # Inherit from this package
-            class Multivalue(BrokenEnum):
-                Color  = "blue"
-                Hat    = False
-                Age    = 9000
-                Height = 1.41
-                Emoji  = "🔱"
-
-            # Use the .get method
-            Multivalue.get("blue")   # Multivalue.Color
-            Multivalue.get(False)    # Multivalue.Hat
-            Multivalue.get("Height") # Multivalue.Height
-            Multivalue.get("height") # Multivalue.Height
-
-            # Use from a member itself
-            Multivalue.get(Multivalue.Color) # Multivalue.Color
-            ```
-
-        Args:
-            value: Value to get the enum member from, can be the member's name or value
-
-        Returns:
-            The enum member with the given value if found, None otherwise
-        """
+        """Get enum members from their value, name or themselves"""
 
         # Value is already a member of the enum
         if isinstance(value, cls):
@@ -60,96 +32,31 @@ class BrokenEnumBase:
 
     @classmethod
     def options(cls) -> tuple[enum.Enum]:
-        """
-        Get all members of the enum
-
-        Example:
-            ```python
-            class Fruits(BrokenEnum):
-                Apple  = "Maçã"
-                Banana = "Banana"
-                Orange = "Laranja"
-
-            # (Fruits.Apple, Fruits.Banana, Fruits.Orange)
-            Fruits.options()
-            ```
-        """
+        """Get all options (Class.A, Class.B, ...) of the enum"""
         return tuple(cls)
 
     @classmethod
     def values(cls) -> tuple[Any]:
-        """
-        Get all values of the enum (name=value)
-
-        Example:
-            ```python
-            class Fruits(BrokenEnum):
-                Apple  = "Maçã"
-                Banana = "Banana"
-                Orange = "Laranja"
-
-            # ("Maçã", "Banana", "Laranja")
-            Fruits.values()
-            ```
-        """
+        """Get all 'values' of the enum (name=value)"""
         return tuple(member.value for member in cls)
 
     # Key/names properties
 
     @classmethod
     def keys(cls) -> tuple[str]:
-        """
-        Get all 'keys' of the enum (key=value)
-
-        Example:
-            ```python
-            class Fruits(BrokenEnum):
-                Apple  = "Maçã"
-                Banana = "Banana"
-                Orange = "Laranja"
-
-            # ("Apple", "Banana", "Orange")
-            Fruits.keys()
-            ```
-        """
+        """Get all 'keys' of the enum (key=value)"""
         return tuple(member.name for member in cls)
 
     # Items and dict-like
 
     @classmethod
     def items(cls) -> tuple[tuple[str, Any]]:
-        """
-        Get the tuple of (name, value) of all members of the enum
-
-        Example:
-            ```python
-            class Fruits(BrokenEnum):
-                Apple  = "Maçã"
-                Banana = "Banana"
-                Orange = "Laranja"
-
-            # (("Apple", "Maçã"), ("Banana", "Banana"), ("Orange", "Laranja"))
-            Fruits.items()
-            ```
-        """
+        """Get the tuple of (name, value) of all members of the enum"""
         return tuple((member.name, member.value) for member in cls)
 
     @classmethod
     def as_dict(cls) -> dict[str, Any]:
-        """
-        Get the dictionary of key: value of all members of the enum
-
-        Example:
-            ```python
-            class Fruits(BrokenEnum):
-                Apple  = "Maçã"
-                Banana = "Banana"
-                Orange = "Laranja"
-
-            # {"Apple": "Maçã", "Banana": "Banana", "Orange": "Laranja"}
-            Fruits.as_dict()
-            ```
-        """
+        """Get the dictionary of all key=value of the enum"""
         return dict(cls.items())
 
     def __getitem__(self, index: int) -> enum.Enum:
@@ -158,31 +65,8 @@ class BrokenEnumBase:
     # # Smart methods
 
     @functools.lru_cache()
-    def next(self, value: Union[str, enum.Enum]=None, offset: int=1) -> Self:
-        """
-        Get the next enum member (in position) from their value, name or themselves
-
-        Example:
-            ```python
-            # Inherit from this package
-            class Platform(BrokenEnum):
-                Linux   = "linux"
-                Windows = "windows"
-                MacOS   = "macos"
-
-            # Cycle through options
-            Platform.next("linux")   # Platform.Windows
-            Platform.next("windows") # Platform.MacOS
-            Platform.next("macos")   # Platform.Linux
-            (...)
-            ```
-
-        Args:
-            value: Value to get the next enum member from, can be the Option's name or value
-
-        Returns:
-            The next enum member (in position) from the given value
-        """
+    def next(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
+        """Get the next enum member defined in the class"""
         cls   = type(self)
         value = cls.get(value or self)
         return cls.options()[(cls.options().index(value) + offset) % len(cls)]
@@ -191,31 +75,8 @@ class BrokenEnumBase:
         return self.next()
 
     @functools.lru_cache()
-    def previous(self, value: Union[str, enum.Enum]=None, offset: int=1) -> Self:
-        """
-        Get the previous enum member (in position) from their value, name or themselves
-
-        Example:
-            ```python
-            # Inherit from this package
-            class Platform(BrokenEnum):
-                Linux   = "linux"
-                Windows = "windows"
-                MacOS   = "macos"
-
-            # Cycle through options
-            Platform.previous("linux")   # Platform.MacOS
-            Platform.previous("windows") # Platform.Linux
-            Platform.previous("macos")   # Platform.Windows
-            (...)
-            ```
-
-        Args:
-            value: Value to get the previous enum member from, can be the Option's name or value
-
-        Returns:
-            The previous enum member (in position) from the given value
-        """
+    def previous(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
+        """Get the previous enum member defined in the class"""
         cls   = type(self)
         value = cls.get(value or self)
         return cls.options()[(cls.options().index(value) - offset) % len(cls)]
@@ -223,29 +84,7 @@ class BrokenEnumBase:
     # # Advanced functions
 
     def field(self, **kwargs: dict[str, Any]) -> attrs.Attribute:
-        """
-        Make a attrs.field() with this member as default and enum class's get method as converter
-
-        Example:
-            ```python
-            class Platform(BrokenEnum):
-                Linux   = "linux"
-                Windows = "windows"
-                MacOS   = "macos"
-
-            @define
-            class Computer:
-                os: Platform = Platform.Linux.field()
-
-            # Any setattr will be redirected to the enum's get method
-            computer = Computer()
-            computer.os = "linux" # Ok
-            computer.os = "dne"   # Not ok
-            ```
-
-        Args:
-            kwargs: Keyword arguments to pass to the field, may override default and converter
-        """
+        """Get an attrs.field() with this option as default and Enum.get as converter"""
         return attrs.field(
             default=self,
             converter=type(self).get,
@@ -254,29 +93,7 @@ class BrokenEnumBase:
 
     @classmethod
     def extend(cls, name: str, value: Any) -> Self:
-        """
-        Dynamically extend the enum with a new member (name=value)
-
-        Example:
-            ```python
-            # Inherit from this package
-            class Platform(BrokenEnum):
-                ...
-
-            # Extend the enum
-            Platform.extend("Android", "android")
-
-            # Use the new member
-            platform = Platform.Android
-            ```
-
-        Args:
-            name:  Name of the new member
-            value: Value of the new member
-
-        Returns:
-            Fluent interface, the class that was extended
-        """
+        """Dynamically extend the enum with a new member (name=value)"""
         raise NotImplementedError("This method is not implemented yet")
 
 class BrokenEnum(BrokenEnumBase, enum.Enum):

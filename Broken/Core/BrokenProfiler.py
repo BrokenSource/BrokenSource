@@ -1,11 +1,10 @@
-import os
 import tempfile
 from pathlib import Path
 from typing import Any, Self
 
 from attrs import define
 
-from Broken import BrokenEnum, log, shell
+from Broken import BrokenEnum, Environment, log, shell
 
 
 class BrokenProfilerEnum(BrokenEnum):
@@ -25,12 +24,12 @@ class BrokenProfiler:
         return self.name.upper()
 
     def __attrs_post_init__(self):
-        profiler = os.getenv(f"{self.label}_PROFILER", self.profiler)
+        profiler = Environment.get(f"{self.label}_PROFILER", self.profiler)
         self.profiler = BrokenProfilerEnum.get(profiler)
 
     @property
     def enabled(self) -> bool:
-        return os.getenv(f"{self.label}_PROFILE", "0") == "1"
+        return Environment.flag(f"{self.label}_PROFILE", 0)
 
     @property
     def output(self) -> Path:

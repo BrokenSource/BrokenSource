@@ -24,13 +24,13 @@ from rich.align import Align
 from rich.panel import Panel
 
 import Broken
-from Broken import Runtime
+from Broken import Environment, Runtime
 from Broken.Core import (
     BrokenAttrs,
     BrokenCache,
     EasyTracker,
     arguments,
-    flatten,
+    list_get,
     shell,
 )
 from Broken.Core.BrokenLogging import BrokenLogging, log
@@ -61,11 +61,10 @@ class BrokenProject:
         self.RESOURCES = _Resources(PROJECT=self)
         BrokenLogging.set_project(self.APP_NAME)
 
-        # Print version information and exit on "--version/-V"
-        if (self.APP_NAME != "Broken"):
-            if (len(sys.argv) > 1) and (sys.argv[1] in ("--version", "-V")):
-                print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host.value}")
-                sys.exit(0)
+        # Print version information on "--version/-V"
+        if (list_get(sys.argv, 1) in ("--version", "-V")):
+            print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host.value}")
+            sys.exit(0)
 
         # Replace Broken.PROJECT with the first initialized project
         if (project := getattr(Broken, "PROJECT", None)):
@@ -76,7 +75,7 @@ class BrokenProject:
                 Broken.PROJECT = self
 
         # Convenience symlink the project's workspace
-        if Runtime.Source and (os.getenv("WORKSPACE_SYMLINK", "0") == "1"):
+        if Runtime.Source and Environment.flag("WORKSPACE_SYMLINK", 0):
             BrokenPath.symlink(
                 virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
                 real=self.DIRECTORIES.WORKSPACE, echo=False
@@ -105,13 +104,13 @@ class BrokenProject:
     def _pyapp_management(self) -> None:
 
         # Skip if not executing within a binary release
-        if not (executable := os.getenv("PYAPP", False)):
+        if not (executable := Environment.get("PYAPP")):
             return None
 
         # ---------------------------------------------------------------------------------------- #
 
         import hashlib
-        venv_path = Path(os.getenv("VIRTUAL_ENV"))
+        venv_path = Path(Environment.get("VIRTUAL_ENV"))
         hash_file = (venv_path/"version.sha256")
         this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
         old_hash  = (hash_file.read_text() if hash_file.exists() else None)
@@ -172,18 +171,18 @@ class BrokenProject:
                 # Newer version available
                 if (current < latest):
                     log.minor((
-                        f"A newer version [bold blue]v{latest}[/] "
-                        f"than the current [bold blue]v{current}[/] is available! "
-                        "Get it at https://brokensrc.dev/get/releases/"
+                        f"A newer version of the project [bold blue]v{latest}[/] is available! "
+                        f"Get it at https://brokensrc.dev/get/releases/ (Current: v{current})"
                     ))
 
                 # Back to the future!
                 elif (current > latest):
                     log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
                     log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
-                    log.error("[bold indian_red]• Otherwise it was likely recalled for whatever reason, consider downgrading it![/]")
+                    log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
 
-        if (os.getenv("VERSION_CHECK", "1") == "1") and (not arguments()):
+        # Warn: Must not interrupt user if actions are being taken (argv)
+        if Environment.flag("VERSION_CHECK", 1) and (not arguments()):
             with contextlib.suppress(Exception):
                 check_new_version()
 
@@ -193,9 +192,9 @@ class BrokenProject:
             tracker = EasyTracker(version/"version.tracker")
             tracker.retention.days = 7
 
+            # Running a new version, prune previous cache
             if (tracker.first):
-                shell(sys.executable, "-m", "uv", "cache",
-                    "prune", "--quiet", echo=False)
+                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet", echo=False)
 
             # Skip in-use versions
             if (not tracker.trigger()):
@@ -210,7 +209,7 @@ class BrokenProject:
             log.warning((
                 f"The version [bold green]v{version.name}[/] of the projects "
                 f"hasn't been used for {tracker.sleeping}, unninstall it to save space!"
-                f"\n[bold bright_black]• Data at: {version}[/]"
+                f"\n[bold bright_black]• Files at: {version}[/]"
             ))
 
             try:
@@ -230,10 +229,13 @@ class BrokenProject:
                 exit(0)
 
         # Note: Avoid interactive prompts if running with arguments
-        if (os.getenv("UNUSED_CHECK", "1") == "1") and (not arguments()):
+        if Environment.flag("UNUSED_CHECK", 1) and (not arguments()):
             for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
                 with contextlib.suppress(Exception):
                     manage_unused(version)
+
+    def uninstall(self) -> None:
+        ...
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -266,9 +268,13 @@ class BrokenApp(ABC, BrokenAttrs):
         if (direct.suffix == ".py"):
             search.append(direct)
 
+        # It can be a glob pattern
+        elif ("*" in direct.name):
+            search.extend(Path.cwd().glob(direct.name))
+
         # A directory of projects was sent
         elif direct.is_dir():
-            search.extend(direct.rglob("*.py"))
+            search.extend(direct.glob("*.py"))
 
         # Scan common directories
         else:
@@ -294,21 +300,22 @@ class BrokenApp(ABC, BrokenAttrs):
         if (not python.exists()):
             return False
 
-        def run(file: Path, name: str, code: str):
+        def wrapper(file: Path, name: str, code: str):
             def run(ctx: typer.Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))
                 namespace[name]().cli(*ctx.args)
             return run
 
-        # Match all scenes and their optional docstrings
-        matches = list(self._regex(tag).finditer(code := python.read_text("utf-8")))
+        # Match all projects and their optional docstrings
+        code = python.read_text("utf-8")
+        matches = list(self._regex(tag).finditer(code))
 
         # Add a command for each match
         for match in matches:
             class_name, docstring = match.groups()
             self.cli.command(
-                target=run(python, class_name, code),
+                target=wrapper(python, class_name, code),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
                 panel=f"📦 {tag}s at ({python})",
@@ -423,7 +430,7 @@ class _Directories:
     @property
     def WORKSPACE(self) -> Path:
         """Workspace root of the current project"""
-        if (path := os.getenv("WORKSPACE")):
+        if (path := Environment.get("WORKSPACE")):
             return mkdir(Path(path)/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)
         if (os.name == "nt"):
             return mkdir(BrokenPath.Windows.Documents()/self.PROJECT.APP_AUTHOR/self.PROJECT.APP_NAME)

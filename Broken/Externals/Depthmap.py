@@ -4,7 +4,6 @@ import copy
 import functools
 import hashlib
 import multiprocessing
-import os
 from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
@@ -24,6 +23,7 @@ from Broken import (
     BrokenPath,
     BrokenResolution,
     BrokenTyper,
+    Environment,
     install,
     log,
 )
@@ -44,7 +44,7 @@ class BaseEstimator(
 ):
     _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
         directory=(Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator"),
-        size_limit=int(float(os.getenv("DEPTHMAP_CACHE_SIZE_MB", 50))*MiB),
+        size_limit=int(Environment.float("DEPTHMAP_CACHE_SIZE_MB", 50)*MiB),
     ))
     """DiskCache object for caching depth maps"""
 

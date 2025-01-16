@@ -1,4 +1,3 @@
-import os
 import textwrap
 import time
 from collections.abc import Callable
@@ -6,7 +5,7 @@ from collections.abc import Callable
 import rich
 from loguru import logger as log
 
-from Broken import Runtime
+from Broken import Environment, Runtime
 from Broken.Core import BrokenSingleton
 
 # Don't log contiguous long paths
@@ -19,23 +18,23 @@ class BrokenLogging(BrokenSingleton):
 
     @staticmethod
     def project() -> str:
-        return os.getenv("BROKEN_APP_NAME", "Broken")
+        return Environment.get("BROKEN_APP_NAME", "Broken")
 
     @staticmethod
     def set_project(name: str, *, force: bool=False) -> None:
         if (BrokenLogging.project() == "Broken") or force:
-            os.setenv("BROKEN_APP_NAME", name)
+            Environment.set("BROKEN_APP_NAME", name)
 
     def format(self, data: dict) -> str:
         when = time.absolute()
         data["time"] = f"{int(when//60)}'{(when%60):06.3f}"
         data["project"] = self.project()
 
-        # Simpler logging for non utf8 or workflows
-        if Runtime.GitHub or (os.getenv("SIMPLE_LOGGING", "0") == "1"):
+        # Simpler logging for non UTF or workflows
+        if Runtime.GitHub or Environment.flag("SIMPLE_LOGGING", 0):
             return ("[{project}][{time}][{level:7}] {message}").format(**data)
 
-        elif (os.getenv("PLAIN_LOGGING", "0") == "1"):
+        elif Environment.flag("PLAIN_LOGGING", 0):
             return ("[{level:7}] {message}").format(**data)
 
         return (
@@ -47,11 +46,11 @@ class BrokenLogging(BrokenSingleton):
 
     @property
     def level(self) -> str:
-        return os.getenv("LOGLEVEL", "INFO").upper()
+        return Environment.get("LOGLEVEL", "INFO").upper()
 
     @level.setter
     def level(self, level: str) -> None:
-        os.setenv("LOGLEVEL", level.upper())
+        Environment.set("LOGLEVEL", level.upper())
         self.reset()
 
     @property
@@ -65,7 +64,7 @@ class BrokenLogging(BrokenSingleton):
         log.add(
             sink=self.sink,
             format=self.format,
-            level=os.getenv("LOGLEVEL", "INFO").upper(),
+            level=Environment.get("LOGLEVEL", "INFO").upper(),
             colorize=False,
             backtrace=True,
             diagnose=True,
@@ -87,8 +86,9 @@ class BrokenLogging(BrokenSingleton):
         self._make_level("CRITICAL", None, "red")
 
     def _make_level(self, level: str, loglevel: int=0, color: str=None) -> None:
-        """Create or update a loglevel `.{name.lower()}` on the logger, optional 'echo' argument"""
-        def wrapper(*args,
+        """Create or update a loglevel `.{name.lower()}` on the logger"""
+        def wrapper(
+            *args: str,
             dedent: bool=False,
             echo: bool=True,
         ) -> str:
