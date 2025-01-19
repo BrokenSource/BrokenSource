@@ -86,6 +86,7 @@ class BrokenTask:
     """Last time task was called (initializes $now+last_call, value in now() seconds)"""
 
     # # Flags
+
     _dt: bool = False
 
     def __attrs_post_init__(self):
@@ -188,18 +189,18 @@ class BrokenTask:
 class BrokenScheduler:
     tasks: deque[BrokenTask] = Factory(deque)
 
-    def append(self, task: BrokenTask) -> BrokenTask:
+    def add(self, task: BrokenTask) -> BrokenTask:
         """Adds a task to the scheduler with immediate next call"""
         self.tasks.append(task)
         return task
 
     def new(self, task: Callable, **options) -> BrokenTask:
         """Add a new task to the scheduler"""
-        return self.append(BrokenTask(task=task, **options))
+        return self.add(BrokenTask(task=task, **options))
 
     def once(self, task: Callable, **options) -> BrokenTask:
         """Add a new task that shall only run once and immediately"""
-        return self.append(BrokenTask(task=task, **options, once=True))
+        return self.add(BrokenTask(task=task, **options, once=True))
 
     def delete(self, task: BrokenTask) -> None:
         """Removes a task from the scheduler"""

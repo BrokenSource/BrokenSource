@@ -29,21 +29,6 @@ class BrokenThread(StaticClass):
         daemon: bool=True,
         **kwargs,
     ) -> Thread:
-        """
-        Create a thread on a callable, yeet whatever you think it works
-
-        Args:
-            target: The function to call, consider using functools.partial or this kwargs
-            args:   Arguments to pass to the function (positional, unnamed)
-            kwargs: Keyword arguments to pass to the function
-            start:  Start the thread immediately after creation
-            join:   Wait for the thread to finish after creation
-            loop:   Time to wait between function calls (0 for no loop)
-            daemon: When the main thread exits, daemon threads are also terminated
-
-        Returns:
-            The created Thread object
-        """
 
         @functools.wraps(target)
         def looped(*args, **kwargs):
@@ -76,19 +61,23 @@ class BrokenThread(StaticClass):
     @staticmethod
     def easy_lock(method: Callable) -> Callable:
         """Get a wrapper with a common Lock for a method"""
-        shared_lock = Lock()
 
-        @functools.wraps(method)
-        def wrapper(*args, **kwargs) -> Any:
-            with shared_lock:
-                return method(*args, **kwargs)
+        def decorator():
+            shared_lock = Lock()
 
-        return BrokenThread._easy_locks.setdefault(method, wrapper)
+            @functools.wraps(method)
+            def wrapper(*args, **kwargs) -> Any:
+                with shared_lock:
+                    return method(*args, **kwargs)
+
+            return wrapper
+
+        return BrokenThread._easy_locks.setdefault(method, decorator())
 
 # ------------------------------------------------------------------------------------------------ #
 
 Worker: TypeAlias = Union[Thread, Process]
-"""A parallelizable object"""
+"""Any stdlib parallelizable object"""
 
 @define
 class WorkerPool:
@@ -111,11 +100,9 @@ class WorkerPool:
                 yield worker
 
     @property
-    def still_alive(self, count: int=0) -> int:
-        """Believe me I am still alive"""
-        for _ in self.alive:
-            count += 1
-        return count
+    def still_alive(self) -> int:
+        """Believe me, I am still alive"""
+        return sum(1 for _ in self.alive)
 
     # # Actions
 

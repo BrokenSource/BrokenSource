@@ -134,8 +134,8 @@ dev-dependencies = [
 
 [tool.uv.workspace]
 members = [
-    "Meta/*/Projects/*",
     "Projects/*",
+    "Meta/*/Projects/*",
     "Meta/*",
 ]
 
@@ -157,7 +157,7 @@ exclude = ["*"]
 _transformers = "python -m uv pip install transformers"
 _torch_base   = "python -m uv pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu"
 _torch_cuda   = "python -m uv pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121"
-_torch_rocm   = "python -m uv pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/rocm6.1"
+_torch_rocm   = "python -m uv pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/rocm6.2"
 _torch_cpu    = "python -m uv pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu"
 _del_torch    = "python -m uv pip uninstall -y torch"
 base          = ["_del_torch", "_torch_base", "_transformers"]

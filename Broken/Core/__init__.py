@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import copy
 import enum
@@ -24,7 +26,7 @@ import click
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger as log
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     import requests
@@ -414,14 +416,7 @@ class BrokenModel(BaseModel):
 
     def __hash__(self) -> int:
         """Deterministic hash heuristic, as hash() is random seeded"""
-        hash = int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
-
-        # Frozen hash model
-        if hasattr(self, "hash"):
-            self.hash = (self.hash or hash)
-            return self.hash
-
-        return hash
+        return int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
 
     # Serialization
 
@@ -473,6 +468,14 @@ class BrokenModel(BaseModel):
     def reset(self) -> None:
         for key, value in self.model_fields.items():
             setattr(self, key, value.default)
+
+
+class FrozenHash(BaseModel):
+    hash: int = Field(0, exclude=True)
+
+    def __hash__(self):
+        self.hash = (self.hash or super().__hash__())
+        return self.hash
 
 
 class BrokenAttribute(StaticClass):

@@ -20,7 +20,7 @@ class Hosts:
     LOOPBACK: str = "127.0.0.1"
     WILDCARD: str = "0.0.0.0"
 
-# Wildcard not necessarily is localhost on Windows, make it explicit
+# Wildcard isn't necessarily localhost on Windows, make it explicit
 DEFAULT_HOST: str = (Hosts.WILDCARD if BrokenPlatform.OnUnix else Hosts.LOOPBACK)
 DEFAULT_PORT: int = 8000
 
@@ -32,10 +32,10 @@ HostType = Annotated[str, Option("--host", "-h",
 PortType = Annotated[int, Option("--port", "-p",
     help="Target Port to run the server on")]
 
-WorkersType = Annotated[int, Option("--workers", "-w",
+WorkersType = Annotated[int, Option("--workers", "-w", min=1,
     help="Maximum number of simultaneous renders")]
 
-QueueType = Annotated[int, Option("--queue", "-q",
+QueueType = Annotated[int, Option("--queue", "-q", min=1,
     help="Maximum number of requests until 503 (back-pressure)")]
 
 BlockType = Annotated[bool, Option("--block", "-b", " /--free", " /-f",
@@ -44,7 +44,7 @@ BlockType = Annotated[bool, Option("--block", "-b", " /--free", " /-f",
 # ------------------------------------------------------------------------------------------------ #
 
 @define
-class BrokenFastAPI:
+class BrokenAPI:
     api: FastAPI = Factory(FastAPI)
     """The main FastAPI instance"""
 
@@ -107,7 +107,7 @@ class BrokenFastAPI:
         import runpod
 
         # Use the cool features of the local server
-        BrokenFastAPI.launch(**locals(), block=False)
+        BrokenAPI.launch(**locals(), block=False)
 
         async def wrapper(config: dict) -> dict:
             response = (await self.render(config["input"]))

@@ -28,6 +28,10 @@ class Environment:
         return os.getenv(key, default)
 
     @staticmethod
+    def exists(key: str, /) -> bool:
+        return (key in os.environ)
+
+    @staticmethod
     def int(key: str, default: int=0, /) -> int:
         return int(os.getenv(key, default))
 
@@ -86,7 +90,7 @@ Environment.setdefault("OMP_NUM_THREADS", 1)
 Environment.setdefault("__GL_YIELD", "USLEEP")
 
 # Replace argv[0] being "-c" to PyApp's managed python
-if bool(Environment.get("PYAPP")):
+if Environment.exists("PYAPP"):
     sys.argv[0] = sys.executable
 
 # Pretty tracebacks
@@ -126,7 +130,7 @@ class Runtime:
     Nuitka: bool = ("__compiled__" in globals())
     """True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
 
-    PyApp: bool = bool(Environment.get("PYAPP"))
+    PyApp: bool = Environment.exists("PYAPP")
     """True if running as a PyApp release (https://github.com/ofek/pyapp)"""
 
     PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
@@ -149,7 +153,7 @@ class Runtime:
     Docker: bool = Path("/.dockerenv").exists()
     """True if running from a Docker container"""
 
-    GitHub: bool = bool(Environment.get("GITHUB_ACTIONS"))
+    GitHub: bool = Environment.exists("GITHUB_ACTIONS")
     """True if running in a GitHub Actions CI environment (https://github.com/features/actions)"""
 
     WSL: bool = Path("/usr/lib/wsl/lib").exists()
@@ -183,6 +187,7 @@ from Broken.Core import (
     BrokenSingleton,
     BrokenWatchdog,
     DictUtils,
+    FrozenHash,
     LazyImport,
     Nothing,
     Patch,
@@ -235,7 +240,8 @@ BROKEN = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
-    RESOURCES=BrokenResources)
+    RESOURCES=BrokenResources
+)
 """The main library's BrokenProject instance"""
 
 PROJECT: BrokenProject = BROKEN

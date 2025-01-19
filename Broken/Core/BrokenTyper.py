@@ -133,17 +133,17 @@ class BrokenTyper:
         if getattr(target, "__isabstractmethod__", False):
             return None
 
-        _class = (target if isinstance(target, type) else type(target))
+        cls = (target if isinstance(target, type) else type(target))
 
         # Convert pydantic to a wrapper with same signature
-        if issubclass(_class, BaseModel):
+        if issubclass(cls, BaseModel):
             _instance = (target() if isinstance(target, type) else target)
             target = BrokenTyper.pydantic2typer(cls=_instance, post=post)
-            name = (name or _class.__name__)
+            name = (name or cls.__name__)
             naih = True # (Complex command)
 
             # Add nested commands from meta class
-            if issubclass(_class, BrokenTyper.BaseModel):
+            if issubclass(cls, BrokenTyper.BaseModel):
                 _instance.commands(self)
         else:
             name = (name or target.__name__)
@@ -168,10 +168,8 @@ class BrokenTyper:
 
     @staticmethod
     def pydantic2typer(cls: object, post: Callable=None) -> Callable:
-        """Makes a Pydantic BaseModel class signature Typer compatible, by copying the class's signature
-        to a wrapper virtual function. All kwargs sent are set as attributes on the instance, and typer
-        will send all default ones overriden by the user commands. The 'post' method is called afterwards,
-        for example `post = self.set_object` for back-communication between the caller and the instance"""
+        """Makes a Pydantic BaseModel class signature Typer compatible, creating a class and sending
+        it to the 'post' method for back-communication/catching the new object instance"""
         from pydantic import BaseModel
         from typer.models import OptionInfo
 
@@ -212,7 +210,7 @@ class BrokenTyper:
     def simple(*commands: Callable) -> None:
         app = BrokenTyper()
         apply(app.command, commands)
-        return app(sys.argv[1:])
+        return app(*sys.argv[1:])
 
     @staticmethod
     def proxy(callable: Callable) -> Callable:
@@ -259,7 +257,7 @@ class BrokenTyper:
                 help=method,
             )
 
-        return app(sys.argv[1:])
+        return app(*sys.argv[1:])
 
     def shell_welcome(self) -> None:
         console.print(Panel(
