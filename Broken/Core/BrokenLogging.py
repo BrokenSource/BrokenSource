@@ -38,8 +38,8 @@ class BrokenLogging(BrokenSingleton):
             return ("[{level:7}] {message}").format(**data)
 
         return (
-            f"│[dodger_blue3]{self.project()}[/dodger_blue3]├"
-            "┤[green]{time}[/green]├"
+            f"│[dodger_blue3]{self.project()}[/]├"
+            "┤[green]{time}[/]├"
             "┤[{level.icon}]{level:7}[/{level.icon}]│ "
             "▸ {message}"
         ).format(**data)

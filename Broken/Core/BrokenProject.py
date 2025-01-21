@@ -279,6 +279,7 @@ class BrokenApp(ABC, BrokenAttrs):
         # Scan common directories
         else:
             if (Runtime.Source):
+                search.extend(self.PROJECT.DIRECTORIES.REPO_PROJECTS.rglob("*.py"))
                 search.extend(self.PROJECT.DIRECTORIES.REPO_EXAMPLES.rglob("*.py"))
             search.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
             search.extend(Path.cwd().glob("*.py"))
@@ -404,10 +405,6 @@ class _Directories:
         return (self.REPO_BUILD/"Wheels")
 
     @property
-    def REPO_PROJECTS(self) -> Path:
-        return (self.REPOSITORY/"Projects")
-
-    @property
     def REPO_META(self) -> Path:
         return (self.REPOSITORY/"Meta")
 
@@ -424,6 +421,10 @@ class _Directories:
     @property
     def REPO_EXAMPLES(self) -> Path:
         return (self.REPOSITORY/"Examples")
+
+    @property
+    def REPO_PROJECTS(self) -> Path:
+        return (self.REPOSITORY/"Projects")
 
     # # Workspace directories
 
@@ -557,6 +558,10 @@ class _Resources:
     @property
     def FONTS(self) -> Path:
         return mkdir(self.ROOT/"Fonts")
+
+    @property
+    def TEMPLATES(self) -> Path:
+        return mkdir(self.ROOT/"Templates")
 
     # # Branding section
 

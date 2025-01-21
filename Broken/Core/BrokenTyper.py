@@ -298,7 +298,7 @@ class BrokenTyper:
             Send sys.argv[1:] if running directly from user input
         """
         if (not self.commands):
-            log.warn("No commands were added to the Typer app")
+            log.warning("No commands were added to the Typer app")
             return None
 
         # Minor pre-processing

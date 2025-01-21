@@ -129,10 +129,8 @@ class BrokenTorch:
             index = ("https://download.pytorch.org/whl/" + (flavor or ''))
 
             # Remove previous version, install new
-            shell(Tools.pip, "uninstall", "--quiet",
-                "torch", "torchvision", "torchaudio")
-            shell(Tools.pip, "install",
-                f"torch=={version}", "torchvision", "torchaudio",
+            shell(Tools.pip, "uninstall", "--quiet", "torch")
+            shell(Tools.pip, "install", f"torch=={version}",
                 ("--index-url", index)*(not BrokenPlatform.OnMacOS))
             shell(Tools.pip, "install", "transformers")
         else:

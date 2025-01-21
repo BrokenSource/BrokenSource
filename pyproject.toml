@@ -28,6 +28,7 @@ dependencies = [
     "validators~=0.34.0",
     "diskcache~=5.6.3",
     "intervaltree~=3.1.0",
+    "numpy",
     # Utils
     "loguru~=0.7.3",
     "appdirs~=1.4.4",
@@ -43,8 +44,6 @@ dependencies = [
     "python-magic~=0.4.27",
     "halo~=0.0.31",
     "pillow~=10.4.0",
-    # Math
-    "numpy~=1.26.4",
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
@@ -102,7 +101,7 @@ shaderflow = [
 gradio = [
     # "orjson~=3.10.11",
     "fastapi~=0.115.6",
-    "gradio==5.11.0",
+    "gradio~=5.12.0",
 ]
 cloud = [
     # "modal~=0.67.18",
