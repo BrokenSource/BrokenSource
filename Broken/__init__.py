@@ -4,10 +4,10 @@ import os
 import time
 
 time.zero = time.perf_counter()
-"""Precise time the program started since last boot"""
+"""Precise time at which the program started since last boot"""
 
 time.absolute = (lambda: time.perf_counter() - time.zero)
-"""Precise time the program has been running for"""
+"""Precise time at which the program has been running for"""
 
 class Environment:
     """Utilities for managing environment variables"""
@@ -197,6 +197,7 @@ from Broken.Core import (
     clamp,
     combinations,
     denum,
+    easyloop,
     every,
     flatten,
     hyphen_range,
@@ -220,11 +221,10 @@ from Broken.Core.BrokenPlatform import (
     PlatformEnum,
     SystemEnum,
 )
-from Broken.Core.BrokenProfiler import BrokenProfiler, BrokenProfilerEnum
+from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenProject import BrokenApp, BrokenProject
 from Broken.Core.BrokenResolution import BrokenResolution
-from Broken.Core.BrokenScheduler import BrokenScheduler, BrokenTask
-from Broken.Core.BrokenThread import BrokenThread, ParallelQueue, WorkerPool
+from Broken.Core.BrokenScheduler import BrokenScheduler, SchedulerTask
 from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
 from Broken.Core.BrokenTrackers import (
     FileTracker,
@@ -233,6 +233,7 @@ from Broken.Core.BrokenTrackers import (
     SameTracker,
 )
 from Broken.Core.BrokenTyper import BrokenTyper
+from Broken.Core.BrokenWorker import BrokenWorker
 
 # ------------------------------------------------------------------------------------------------ #
 

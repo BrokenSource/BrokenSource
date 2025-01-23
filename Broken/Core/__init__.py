@@ -349,6 +349,24 @@ def arguments() -> bool:
     return bool(sys.argv[1:])
 
 
+def easyloop(method: Callable=None, *, period: float=0.0):
+    """Wraps a method in an infinite loop called every 'period' seconds"""
+
+    def decorator(method):
+
+        @functools.wraps(method)
+        def wrapper(*args, **kwargs):
+            while True:
+                method(*args, **kwargs)
+                time.sleep(period)
+
+        return wrapper
+
+    if (method is None):
+        return decorator
+
+    return decorator(method)
+
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
@@ -487,19 +505,19 @@ class BrokenAttribute(StaticClass):
         body: list[str]
         last: str
 
-    @staticmethod
-    def decompose(key: str) -> Parts:
+    @classmethod
+    def decompose(cls, key: str) -> Parts:
         parts = str(key).replace("-", "_").split(".")
 
-        return BrokenAttribute.Parts(
+        return cls.Parts(
             all=parts,
             body=parts[:-1],
             last=parts[-1]
         )
 
-    @staticmethod
-    def get(root: object, key: str) -> Optional[Any]:
-        parts = BrokenAttribute.decompose(key)
+    @classmethod
+    def get(cls, root: object, key: str) -> Optional[Any]:
+        parts = cls.decompose(key)
 
         for part in parts.all:
             try:
@@ -509,9 +527,9 @@ class BrokenAttribute(StaticClass):
 
         return root
 
-    @staticmethod
-    def set(object: object, attribute: str, value: Any) -> None:
-        parts = BrokenAttribute.decompose(attribute)
+    @classmethod
+    def set(cls, object: object, attribute: str, value: Any) -> None:
+        parts = cls.decompose(attribute)
 
         for part in parts.body:
             try:
@@ -524,23 +542,23 @@ class BrokenAttribute(StaticClass):
 
 class StringUtils(StaticClass):
 
-    @staticmethod
-    def border(string: str, border: str) -> bool:
+    @classmethod
+    def border(cls, string: str, border: str) -> bool:
         """Returns True if 'border' is both a prefix and suffix of 'string'"""
         return (string.startswith(border) and string.endswith(reversed(border)))
 
-    @staticmethod
-    def dunder(name: str) -> bool:
+    @classmethod
+    def dunder(cls, name: str) -> bool:
         """Checks if a string is a double underscore '__name__'"""
-        return StringUtils.border(name, "__")
+        return cls.border(name, "__")
 
-    @staticmethod
-    def sunder(name: str) -> bool:
+    @classmethod
+    def sunder(cls, name: str) -> bool:
         """Checks if a string is a single underscore '_name_'"""
-        return (StringUtils.border(name, "_") and not StringUtils.dunder(name))
+        return (cls.border(name, "_") and not cls.dunder(name))
 
-    @staticmethod
-    def private(name: str) -> bool:
+    @classmethod
+    def private(cls, name: str) -> bool:
         """Checks if a string is a private name"""
         return name.startswith("_")
 
@@ -560,39 +578,36 @@ class DictUtils(StaticClass):
             data = {key: value for key, value in data.items() if (key in allow)}
         return data
 
-    @staticmethod
-    def ritems(data: dict[str, Any]) -> Iterable[tuple[str, Any]]:
+    @classmethod
+    def ritems(cls, data: dict[str, Any]) -> Iterable[tuple[str, Any]]:
         """Recursively yields all items from a dictionary"""
         for (key, value) in data.items():
             if isinstance(value, dict):
-                yield from DictUtils.ritems(value)
+                yield from cls.ritems(value)
                 continue
             yield (key, value)
 
-    @staticmethod
-    def rvalues(data: dict[str, Any]) -> Iterable[Any]:
+    @classmethod
+    def rvalues(cls, data: dict[str, Any]) -> Iterable[Any]:
         """Recursively yields all values from a dictionary"""
-        for (key, value) in DictUtils.ritems(data):
+        for (key, value) in cls.ritems(data):
             yield value
 
-    @staticmethod
-    def selfless(data: dict) -> dict:
+    @classmethod
+    def selfless(cls, data: dict) -> dict:
         """Removes the 'self' key from a dictionary (useful for locals() or __dict__)"""
         # Note: It's also possible to call Class.method(**locals()) instead!
-        return DictUtils.filter_dict(data, block=["self"])
+        return cls.filter_dict(data, block=["self"])
 
 
 class BrokenCache(StaticClass):
 
-    _lru_cache = {}
-
     @staticmethod
+    @functools.lru_cache
     @functools.wraps(functools.lru_cache)
-    def lru(method: Callable, *args, **kwargs) -> Callable:
-        """Returns the same lru_cache wrapper if calling on the same method"""
-        return BrokenCache._lru_cache.setdefault(
-            method, functools.lru_cache(method, *args, **kwargs)
-        )
+    def lru(*args, **kwargs) -> Callable:
+        """Smarter lru_cache consistent with multi-calls"""
+        return functools.lru_cache(*args, **kwargs)
 
     @staticmethod
     def requests(*args, patch: bool=False, **kwargs):

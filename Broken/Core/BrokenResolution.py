@@ -14,8 +14,8 @@ class BrokenResolution:
         values = tuple(max(multiple, multiple*round(value/multiple)) for value in numbers)
         return (values[0] if (len(values) == 1) else values)
 
-    @staticmethod
-    def fit(
+    @classmethod
+    def fit(cls,
         old: Optional[tuple[int, int]] = None,
         new: Optional[tuple[int, int]] = None,
         max: Optional[tuple[int, int]] = None,
@@ -108,7 +108,7 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return BrokenResolution.round(width*scale, height*scale, multiple=multiple)
+        return cls.round(width*scale, height*scale, multiple=multiple)
 
 # ------------------------------------------------------------------------------------------------ #
 

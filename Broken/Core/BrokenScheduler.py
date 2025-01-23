@@ -31,7 +31,7 @@ time.precise = precise
 NULL_CONTEXT = contextlib.nullcontext()
 
 @define
-class BrokenTask:
+class SchedulerTask:
 
     # # Basic
 
@@ -187,22 +187,22 @@ class BrokenTask:
 
 @define
 class BrokenScheduler:
-    tasks: deque[BrokenTask] = Factory(deque)
+    tasks: deque[SchedulerTask] = Factory(deque)
 
-    def add(self, task: BrokenTask) -> BrokenTask:
+    def add(self, task: SchedulerTask) -> SchedulerTask:
         """Adds a task to the scheduler with immediate next call"""
         self.tasks.append(task)
         return task
 
-    def new(self, task: Callable, **options) -> BrokenTask:
+    def new(self, task: Callable, **options) -> SchedulerTask:
         """Add a new task to the scheduler"""
-        return self.add(BrokenTask(task=task, **options))
+        return self.add(SchedulerTask(task=task, **options))
 
-    def once(self, task: Callable, **options) -> BrokenTask:
+    def once(self, task: Callable, **options) -> SchedulerTask:
         """Add a new task that shall only run once and immediately"""
-        return self.add(BrokenTask(task=task, **options, once=True))
+        return self.add(SchedulerTask(task=task, **options, once=True))
 
-    def delete(self, task: BrokenTask) -> None:
+    def delete(self, task: SchedulerTask) -> None:
         """Removes a task from the scheduler"""
         self.tasks.remove(task)
 
@@ -211,13 +211,13 @@ class BrokenScheduler:
         self.tasks.clear()
 
     @property
-    def enabled_tasks(self) -> Iterable[BrokenTask]:
+    def enabled_tasks(self) -> Iterable[SchedulerTask]:
         for task in self.tasks:
             if task.enabled:
                 yield task
 
     @property
-    def next_task(self) -> Optional[BrokenTask]:
+    def next_task(self) -> Optional[SchedulerTask]:
         """Returns the next client to be called"""
         return min(self.enabled_tasks, default=None)
 
@@ -232,7 +232,7 @@ class BrokenScheduler:
         for _ in range(len(self.tasks) - move):
             self.tasks.pop()
 
-    def next(self, block=True) -> Optional[BrokenTask]:
+    def next(self, block=True) -> Optional[SchedulerTask]:
         if (task := self.next_task) is None:
             return None
         try:

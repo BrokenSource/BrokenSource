@@ -5,16 +5,12 @@ from typing import Annotated, Optional
 
 from typer import Option
 
-from Broken import (
-    BrokenEnum,
-    BrokenPlatform,
-    BrokenThread,
-    Environment,
-    Runtime,
-    Tools,
-    log,
-    shell,
-)
+from Broken import Environment, Runtime, Tools
+from Broken.Core import shell
+from Broken.Core.BrokenEnum import BrokenEnum
+from Broken.Core.BrokenLogging import log
+from Broken.Core.BrokenPlatform import BrokenPlatform
+from Broken.Core.BrokenWorker import BrokenWorker
 
 
 class TorchFlavor(str, BrokenEnum):
@@ -47,19 +43,19 @@ class BrokenTorch:
                 exec(torch_version.read_text("utf-8"), namespace := {})
                 return namespace["__version__"]
 
-    @staticmethod
-    def version() -> Optional[tuple[int]]:
+    @classmethod
+    def version(cls) -> Optional[tuple[int]]:
         """Get the current installed version tuple without importing torch"""
-        if (version := BrokenTorch.full_version()):
+        if (version := cls.full_version()):
             return tuple(map(int, version.split("+")[0].split(".")))
 
-    @staticmethod
-    def flavor() -> Optional[TorchFlavor]:
+    @classmethod
+    def flavor(cls) -> Optional[TorchFlavor]:
         """Get the current installed flavor without importing torch"""
-        if (version := BrokenTorch.full_version()):
+        if (version := cls.full_version()):
             return TorchFlavor.get(version.split("+")[-1])
 
-    @BrokenThread.easy_lock
+    @BrokenWorker.easy_lock
     @staticmethod
     def install(
         version: Annotated[str,

@@ -11,7 +11,7 @@ from typer import Option
 
 from Broken import (
     BrokenPlatform,
-    BrokenThread,
+    BrokenWorker,
 )
 
 # ------------------------------------------------------------------------------------------------ #
@@ -90,7 +90,7 @@ class BrokenAPI:
             )).serve()
 
         # Start the server
-        BrokenThread.new(asyncio.run, serve())
+        BrokenWorker.thread(asyncio.run, serve())
 
         # Hold main thread
         while bool(block):

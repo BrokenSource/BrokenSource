@@ -7,17 +7,16 @@ from attrs import define
 from Broken import BrokenEnum, Environment, log, shell
 
 
-class BrokenProfilerEnum(BrokenEnum):
-    """List of profilers"""
-    cprofile      = "cprofile"
-    # imports       = "imports"
-    # pyinstrument  = "pyinstrument"
-
-
 @define
 class BrokenProfiler:
     name: str = "NONE"
-    profiler: BrokenProfilerEnum = BrokenProfilerEnum.cprofile
+
+    class Profiler(BrokenEnum):
+        cprofile      = "cprofile"
+        # imports       = "imports"
+        # pyinstrument  = "pyinstrument"
+
+    profiler: Profiler = Profiler.cprofile
 
     @property
     def label(self) -> str:
@@ -25,7 +24,7 @@ class BrokenProfiler:
 
     def __attrs_post_init__(self):
         profiler = Environment.get(f"{self.label}_PROFILER", self.profiler)
-        self.profiler = BrokenProfilerEnum.get(profiler)
+        self.profiler = self.Profiler.get(profiler)
 
     @property
     def enabled(self) -> bool:
@@ -40,7 +39,7 @@ class BrokenProfiler:
     def __enter__(self) -> Self:
         if (not self.enabled):
             pass
-        elif (self.profiler == BrokenProfilerEnum.cprofile):
+        elif (self.profiler == self.Profiler.cprofile):
             log.trace("Profiling with cProfile")
             import cProfile
             self.__profiler__ = cProfile.Profile()
@@ -51,7 +50,7 @@ class BrokenProfiler:
         if (not self.enabled):
             return None
 
-        if (self.profiler == BrokenProfilerEnum.cprofile):
+        if (self.profiler == self.Profiler.cprofile):
             log.trace("Finishing cProfile")
             output = self.output.with_suffix(".prof")
             self.__profiler__.disable()

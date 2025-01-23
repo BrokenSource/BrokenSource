@@ -1,3 +1,12 @@
+
+## General
+
+### **Q:** Can you make X thing run faster?
+
+Most likely not- I'm **very** sensitive to speeds and latencies by myself, and have already done lots of optimizations and micro-benchmarks to squeeze the most out of the hardware and language I use. Sure, there are always things that can be improved, but anything past doing stuff in parallel (rendering), and _specially_ if the CPU/GPU are already nearing 100% usage on your system, it's simply a matter of the hardware's capabilities.
+
+<hr>
+
 ## DepthFlow / ShaderFlow
 
 ### **Q:** The program closes right before rendering (segfaults)
@@ -8,6 +17,7 @@ Your hardware _probably_ doesn't support rendering while there are mapped buffer
 
 > **Sidenote**: There's no easy way to detect support for it. [Most users](https://store.steampowered.com/hwsurvey/){:target="_blank"} have a decently modern GPU and the speed gains are too good to pass on, so it's enabled by default.
 
+<hr>
 
 ### **Q:** Rendered videos are black
 
