@@ -432,6 +432,14 @@ class BrokenModel(BaseModel):
         use_attribute_docstrings=True,
     )
 
+    def model_post_init(self, __context):
+        for cls in reversed(type(self).mro()):
+            if method := cls.__dict__.get("__post__"):
+                method(self)
+
+    def __post__(self) -> None:
+        ...
+
     def __hash__(self) -> int:
         """Deterministic hash heuristic, as hash() is random seeded"""
         return int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)

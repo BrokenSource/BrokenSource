@@ -10,7 +10,7 @@ from collections import deque
 from collections.abc import Iterable
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Annotated, Literal, Optional, Self, TypeAlias, Union
+from typing import Annotated, Generator, Literal, Optional, Self, TypeAlias, Union
 
 import numpy
 import typer
@@ -1523,7 +1523,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
     @staticmethod
     @functools.lru_cache
-    def get_audio_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[float]:
+    def get_audio_samplerate(path: Path, *, stream: int=0, echo: bool=True) -> Optional[int]:
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
@@ -1574,61 +1574,60 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
 @define
 class BrokenAudioReader:
-    path:        Path
-    chunk:       Seconds     = 0.1
-    format:      FFmpegPCM   = FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN
-    echo:        bool        = False
-    _read:       Bytes       = 0
-    _channels:   int         = None
-    _samplerate: Hertz       = None
-    _dtype:      numpy.dtype = None
-    _size:       int         = 4
-    _ffmpeg:     Popen       = None
+    path: Path
+
+    format: FFmpegPCM = FFmpegPCM.PCM_FLOAT_32_BITS_LITTLE_ENDIAN
+    """The audio format to output the contents of the audio file"""
+
+    bytes_per_sample: int = None
+    """Bytes per individual sample"""
+
+    dtype: numpy.dtype = None
+    """Numpy dtype out of self.format"""
+
+    channels: int = None
+    """The number of audio channels in the file"""
+
+    samplerate: int = None
+    """The sample rate of the audio file"""
+
+    chunk: Seconds = 0.1
+    """The amount of seconds to yield data at a time"""
+
+    read: int = 0
+    """Total number of bytes read from the audio file"""
+
+    ffmpeg: Popen = None
+    """The FFmpeg reader process"""
 
     @property
-    def time(self) -> Seconds: # noqa
-        return self._read / self.bytes_per_second
-
-    @property
-    def channels(self) -> int:
-        return self._channels
-
-    @property
-    def samplerate(self) -> Hertz:
-        return self._samplerate
-
-    @property
-    def dtype(self) -> numpy.dtype:
-        return self._dtype
-
-    @property
-    def size(self) -> int:
-        return self._size
+    def block_size(self) -> int:
+        return (self.bytes_per_sample * self.channels)
 
     @property
     def bytes_per_second(self) -> int:
-        return (self.size * self.channels * self.samplerate)
+        return (self.block_size * self.samplerate)
 
     @property
-    def bytes_per_sample(self) -> int:
-        return (self.size * self.channels)
+    def time(self) -> float:
+        return (self.read / self.bytes_per_second)
 
     @property
-    def stream(self) -> Iterable[numpy.ndarray]:
+    def stream(self) -> Generator[numpy.ndarray, float, None]:
         if not (path := BrokenPath.get(self.path, exists=True)):
             return None
         self.path = path
 
         # Get audio file attributes
-        self._channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=self.echo)
-        self._samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=self.echo)
+        self._channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=False)
+        self._samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=False)
         self.format = FFmpegPCM.get(self.format)
-        self._dtype = self.format.dtype
-        self._size = self.format.size
-        self._read = 0
+        self.bytes_per_sample = self.format.size
+        self.dtype = self.format.dtype
+        self.read = 0
 
         # Note: Stderr to null as we might not read all the audio, won't log errors
-        self._ffmpeg = (
+        self.ffmpeg = (
             BrokenFFmpeg()
             .quiet()
             .input(path=self.path)
@@ -1638,7 +1637,7 @@ class BrokenAudioReader:
         ).popen(stdout=PIPE)
 
         """
-        One could think the following code is the way, but it is not
+        The following code is wrong:
 
         ```python
         while (data := ffmpeg.stdout.read(chunk*samplerate)):
@@ -1657,13 +1656,14 @@ class BrokenAudioReader:
             # Calculate the length of the next read to best match the target time,
             # but do not carry over temporal conversion errors
             length = (target - self.time) * self.bytes_per_second
-            length = nearest(length, self.bytes_per_sample, cast=int)
-            length = max(length, self.bytes_per_sample)
-            data   = self._ffmpeg.stdout.read(length)
+            length = nearest(length, self.block_size, cast=int)
+            length = max(length, self.block_size)
+            data   = self.ffmpeg.stdout.read(length)
             if len(data) == 0: break
 
             # Increment precise time and read time
             yield numpy.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)
-            self._read += len(data)
+            self.read += len(data)
 
+        # Allow to catch total duration on GeneratorExit
         return self.time

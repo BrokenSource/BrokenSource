@@ -18,7 +18,7 @@ import dill
 from attrs import Factory, define, field
 from diskcache import Cache as DiskCache
 
-from Broken import flatten, log
+from Broken import BrokenAttrs, flatten, log
 from Broken.Core import easyloop
 from Broken.Types import MB
 
@@ -30,7 +30,7 @@ MANAGER = Manager()
 
 
 @define
-class BrokenWorker:
+class BrokenWorker(BrokenAttrs):
     """
     A semi-complete Thread and Process manager for easy parallelization primitives, smart task
     queueing, caching results and more.
@@ -112,7 +112,7 @@ class BrokenWorker:
     def cache_dict_type(self) -> type[dict]:
         return (dict if (self.type is Thread) else MANAGER.dict)
 
-    def __attrs_post_init__(self):
+    def __post__(self):
 
         # Initialize DiskCache or dict cache
         if (self.diskcache_enabled):
