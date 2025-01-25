@@ -220,20 +220,21 @@ class Upscayl(UpscalerNCNN_Base):
     type: Annotated[Literal["upscayl"], BrokenTyper.exclude()] = "upscayl"
 
     class Model(str, BrokenEnum):
-        realesrgan_x4plus       = "realesrgan-x4plus"
-        realesrgan_x4fast       = "realesrgan-x4fast"
-        realesrgan_x4plus_anime = "realesrgan-x4plus-anime"
-        ultramix_balanced       = "ultramix_balanced"
-        ultrasharp              = "ultrasharp"
-        remacri                 = "remacri"
+        DigitalArt      = "digital-art"
+        HighFidelity    = "high-fidelity"
+        Remacri         = "remacri"
+        Ultramix        = "ultramix-balanced"
+        Ultrasharp      = "ultrasharp"
+        UpscaylLite     = "upscayl-lite"
+        UpscaylStandard = "upscayl-standard"
 
     model: Annotated[Model, Option("--model", "-m",
         help="(🔵 Special ) Model to use for Upscayl")] = \
-        Field(Model.realesrgan_x4plus_anime)
+        Field(Model.DigitalArt)
 
     @staticmethod
     def _download_url() -> str:
-        release, tag = ("https://github.com/upscayl/upscayl/releases/download", "2.11.5")
+        release, tag = ("https://github.com/upscayl/upscayl/releases/download", "2.15.0")
         platform = BrokenPlatform.System.replace("windows", "win").replace("macos", "mac")
         return f"{release}/v{tag}/upscayl-{tag}-{platform}.zip"
 
@@ -272,13 +273,12 @@ class Upscayl(UpscalerNCNN_Base):
                     "-i", input,
                     "-o", output,
                     "-m", "../models",
-                    every("-z", self.scale),
                     every("-s", self.scale),
                     every("-t", self.tile_size),
                     "-g", (self.gpu if not self.cpu else -1),
                     "-j", self._lpc,
                     "-x"*self.tta,
-                    "-n", denum(self.model),
+                    "-n", denum(self.model) + "-4x",
                     preexec_fn=(self._single_core if single_core else None),
                     stderr=DEVNULL,
                     echo=echo,
