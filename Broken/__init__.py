@@ -191,6 +191,7 @@ from Broken.Core import (
     LazyImport,
     Nothing,
     Patch,
+    StaticClass,
     apply,
     arguments,
     block_modules,

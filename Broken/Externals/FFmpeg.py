@@ -1619,8 +1619,8 @@ class BrokenAudioReader:
         self.path = path
 
         # Get audio file attributes
-        self._channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=False)
-        self._samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=False)
+        self.channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=False)
+        self.samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=False)
         self.format = FFmpegPCM.get(self.format)
         self.bytes_per_sample = self.format.size
         self.dtype = self.format.dtype
@@ -1634,7 +1634,7 @@ class BrokenAudioReader:
             .pcm(self.format.value)
             .no_video()
             .output("-")
-        ).popen(stdout=PIPE)
+        ).popen(stdout=PIPE, stderr=PIPE)
 
         """
         The following code is wrong:
