@@ -3,6 +3,13 @@
 {% block content %}
   {{ super() }}
   <div id="tsparticles"></div>
+  <style>
+    @media (max-width: 768px) {
+      #tsparticles {
+        display: none;
+      }
+    }
+  </style>
   <script>
     function loadParticles() {
       tsParticles.load("tsparticles", {

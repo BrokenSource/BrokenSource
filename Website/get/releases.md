@@ -20,7 +20,7 @@ title: Get/Releases
             <div><sup>I am not destroying my reputation by distributing malware.</sup></div>
           </div>
         </div>
-        === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
+        === ":octicons-cpu-16: x86-64"
             <table id="windows-amd64"><tbody/></table>
     === ":simple-linux: Linux"
         <div align="center">
@@ -44,26 +44,29 @@ title: Get/Releases
             <table id="macos-amd64"><tbody/></table>
 
 <script>
+  const download_icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`
+
   function add_release(emoji, project, platform, architecture, version, enabled) {
 
     // Create the project name left button
     const project_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
-    const name_link = Object.assign(document.createElement('a'), {
+    const project_link = Object.assign(document.createElement('a'), {
       className: 'md-button md-button--stretch md-button--thin',
       href: `https://brokensrc.dev/${project.toLowerCase()}`,
       innerHTML: `${emoji} ${project}`,
     });
+    project_cell.appendChild(project_link);
 
     // Create the big clickable download button users love
     const download_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
     const download_link = Object.assign(document.createElement('a'), {
       className: 'md-button md-button--primary md-button--stretch',
     });
+    download_cell.appendChild(download_link);
 
     if (enabled) {
-      const icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`;
       const extension = {windows: 'exe', linux: 'tar.gz', macos: 'tar.gz'}[platform];
-      download_link.innerHTML = `${icon} Download`;
+      download_link.innerHTML = `${download_icon} Download ${version}`;
       download_link.href = [
         `https://github.com/BrokenSource/${project}/releases/download/${version}/`,
         `${project.toLowerCase()}-${platform}-${architecture}-${version}.${extension}`
@@ -75,8 +78,6 @@ title: Get/Releases
 
     // Create the hierarchy of elements of this row
     const row = document.createElement('tr');
-    download_cell.appendChild(download_link);
-    project_cell.appendChild(name_link);
     row.appendChild(project_cell);
     row.appendChild(download_cell);
 
@@ -84,13 +85,13 @@ title: Get/Releases
   }
 
   add_release("🌊", "DepthFlow",   "windows", "amd64", "v0.8.0", true)
-//add_release("🌊", "DepthFlow",   "windows", "arm64", "v0.8.0", true)
+//add_release("🌊", "DepthFlow",   "windows", "arm64", "v0.8.0", false)
   add_release("🌊", "DepthFlow",   "linux",   "amd64", "v0.8.0", true)
   add_release("🌊", "DepthFlow",   "linux",   "arm64", "v0.8.0", false)
   add_release("🌊", "DepthFlow",   "macos",   "amd64", "v0.8.0", false)
   add_release("🌊", "DepthFlow",   "macos",   "arm64", "v0.8.0", true)
   add_release("🔥", "ShaderFlow",  "windows", "amd64", "v0.8.0", true)
-//add_release("🔥", "ShaderFlow",  "windows", "arm64", "v0.8.0", true)
+//add_release("🔥", "ShaderFlow",  "windows", "arm64", "v0.8.0", false)
   add_release("🔥", "ShaderFlow",  "linux",   "amd64", "v0.8.0", true)
   add_release("🔥", "ShaderFlow",  "linux",   "arm64", "v0.8.0", false)
   add_release("🔥", "ShaderFlow",  "macos",   "amd64", "v0.8.0", false)

@@ -45,9 +45,8 @@ nav:
       - depthflow/quick/index.md
       - ✅ Installation: depthflow/quick/install.md
       - 🔴 Gradio WebUI: depthflow/quick/webui.md
-      - 🟡 API Service: depthflow/quick/api.md
-      - 🟢 Command line: depthflow/quick/cli.md
-      - 🔵 Python scripts: depthflow/quick/scripts.md
+      - 🟡 Command line: depthflow/quick/cli.md
+      - 🟢 Python scripts: depthflow/quick/scripts.md
       - ☁️ Cloud/Docker: depthflow/quick/docker.md
     - Learn:
       - 📜 Foundations: depthflow/learn/foundations.md

@@ -15,7 +15,7 @@ title: Get/Source
             <div>Press ++ctrl+l++ , run `powershell` and execute:</div>
         </div>
         ```powershell title="PowerShell"
-        # What it does: 'irm' downloads, 'iex' executes, '|' links the two
+        # What it does: 'irm' downloads, 'iex' executes
         irm https://brokensrc.dev/get.ps1 | iex
         ```
     === ":simple-linux: Linux"
@@ -81,7 +81,7 @@ title: Get/Source
             depthflow
             ```
 
-??? success "Read what the install scripts does [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh), [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1)"
+??? success "See what [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) and [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1) does"
     The content below is a **verbatim copy** of the current live script on this website
     === "(Windows) • get.ps1"
         <span/>

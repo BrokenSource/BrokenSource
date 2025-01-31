@@ -101,7 +101,7 @@ class BrokenWebsite:
                         f"title: '{self.name}'",
                         "template: home.html",
                         "---\n",
-                        ((path/"readme.md").read_text().split("<!-- Website end -->")[0])
+                        (path/"readme.md").read_text()
                 )))
 
             # Raw copy contents

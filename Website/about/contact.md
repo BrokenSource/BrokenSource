@@ -2,7 +2,7 @@
 title: About/Contact
 ---
 
-!!! success "You can reach me through the following platforms:"
+## Where to get in touch
 
 <div class="grid cards" markdown>
 
@@ -20,11 +20,11 @@ title: About/Contact
 
     - One repository per project
 
-    [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories?q=sort%3Astars){:target="_blank"}
 
 -   :fontawesome-brands-telegram:{.lg .middle} **Telegram**
 
-    Also an option if you prefer it!
+    Also an option if you prefer over others!
 
     - Larger uploads can be useful
 
@@ -39,6 +39,8 @@ title: About/Contact
     [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:contact@brokensrc.dev)
 
 </div>
+
+## Availability
 
 !!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
     Feel free to talk in any of the Languages:

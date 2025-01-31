@@ -15,7 +15,7 @@ template: home.html
 
 ⭐️ Learn about my projects:
 
-- [**DepthFlow**](site:/depthflow): Images to → 2.5D parallax effect video
+- [**DepthFlow**](site:/depthflow): Images to → 3D parallax effect video
 - [**ShaderFlow**](site:/shaderflow): Audio reactive shader render engine
 - [**Pianola**](site:/pianola): World's smoothest piano roll, spring physics
 - [**SpectroNote**](site:/spectronote): Unlock a hidden perfect pitch in you

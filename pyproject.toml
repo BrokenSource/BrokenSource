@@ -48,7 +48,7 @@ dependencies = [
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    "uv~=0.5.23",
+    "uv~=0.5.25",
 ]
 
 [project.optional-dependencies]

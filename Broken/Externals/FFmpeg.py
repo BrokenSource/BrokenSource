@@ -1360,12 +1360,14 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
                     command.append(item)
 
         extend(shutil.which("ffmpeg"))
-        extend(("-stream_loop", self.stream_loop)*bool(self.stream_loop))
-        extend("-threads", self.threads)
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", denum(self.loglevel))
+        extend("-threads", self.threads)
         extend(("-hwaccel", denum(self.hwaccel))*bool(self.hwaccel))
+        extend(("-stream_loop", self.stream_loop)*bool(self.stream_loop))
         extend(self.inputs)
+        extend(("-t", self.time)*bool(self.time))
+        extend("-shortest"*self.shortest)
 
         # Note: https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs
         for output in self.outputs:
@@ -1373,9 +1375,6 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             extend(self.video_codec)
             extend(("-vf", ",".join(map(str, self.filters)))*bool(self.filters))
             extend(output)
-
-        extend("-shortest"*self.shortest)
-        extend(("-t", self.time)*bool(self.time))
 
         return list(map(str, map(denum, flatten(command))))
 
