@@ -23,6 +23,7 @@ from Broken import (
     PlatformEnum,
     Runtime,
     SystemEnum,
+    Tools,
     __version__,
     combinations,
     flatten,
@@ -53,7 +54,7 @@ class ProjectManager:
     def main(self, ctx: Context) -> None:
         self.cli = BrokenTyper(help=False)
         self.cli.command(self.update,  help=True)
-        self.cli.command(self.release, help=True)
+        self.cli.command(self.compile, help=True)
         self.cli.command(self.run,     help=False, context=True)
         with BrokenPath.pushd(self.path, echo=False):
             self.cli(*ctx.args)
@@ -204,7 +205,7 @@ class ProjectManager:
 
     # # Python shenanigans
 
-    def release(self,
+    def compile(self,
         target: Annotated[list[PlatformEnum],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
@@ -230,7 +231,7 @@ class ProjectManager:
         # Recurse on each target item
         if isinstance(target, list):
             for target in flatten(map(PlatformEnum.get_all, target)):
-                ProjectManager.release(**locals())
+                ProjectManager.compile(**locals())
             return None
 
         # Filter invalid host -> target combinations of all targets
@@ -354,21 +355,23 @@ class BrokenManager(BrokenSingleton):
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
-        self.find_projects(BROKEN.DIRECTORIES.REPO_META)
-
-        with self.cli.panel("📦 Development"):
-            self.cli.command(self.website)
-            self.cli.command(self.pypi)
-            self.cli.command(self.sync)
-            self.cli.command(self.rust)
-            self.cli.command(self.link)
-            self.cli.command(self.docker, hidden=True)
-            self.cli.command(self.tremeschin, hidden=True)
-            self.cli.command(self.clean, hidden=True)
-            self.cli.command(self.upgrade, hidden=True)
+        # self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
         with self.cli.panel("🚀 Core"):
-            self.cli.command(self.insiders, hidden=True)
+            self.cli.command(self.insiders)
+            self.cli.command(self.clone)
+            self.cli.command(self.rust)
+
+        with self.cli.panel("📦 Development"):
+            self.cli.command(self.compile_all, hidden=True)
+            self.cli.command(self.docker)
+            self.cli.command(self.website)
+            self.cli.command(self.pypi)
+            self.cli.command(self.upgrade)
+            self.cli.command(self.clean)
+            self.cli.command(self.sync)
+
+        self.cli.command(self.tremeschin, hidden=True)
 
         for project in self.projects:
             self.cli.command(
@@ -405,40 +408,68 @@ class BrokenManager(BrokenSingleton):
     # ---------------------------------------------------------------------------------------------|
     # Meta Repositories
 
-    def git_clone(self, url: str, path: Path, *, recurse: bool=True):
-        """Clone a Git Repository with Submodules"""
-        with BrokenPath.pushd(Path(path).parent):
-            shell("git", "clone", ("--recurse-submodules"*recurse), "-j4", url, path)
-        with BrokenPath.pushd(Path(path)):
-            shell("git", "submodule", "foreach", "--recursive", "git checkout main || true")
+    def clone(self,
+        repo:     Annotated[str,  Argument(help="URL of the Git Repository to Clone")],
+        path:     Annotated[Path, Option("--path",     "-p", help="Path to clone the repository to")]=BROKEN.DIRECTORIES.REPO_META,
+        recurse:  Annotated[bool, Option("--recurse",  "-r", help="Clone all submodules recursively")]=True,
+        checkout: Annotated[str,  Option("--checkout", "-c", help="Checkout recursively branch or tag")]="main",
+    ) -> Path:
+        """🔗 Clone a project in the Meta directory"""
+        from urllib.parse import urlparse
 
-    def tremeschin(self):
-        tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")
-        self.git_clone("https://github.com/Tremeschin/Personal", tremeschin)
-        self.git_clone("https://github.com/Tremeschin/Private", tremeschin/"Private")
+        # If the path isn't a repo, use the repository name
+        if (path.exists()) and (not (Path(path)/".git").exists()):
+            log.minor(f"Path {path} isn't a repository, appending the url name")
+            path = (path/Path(urlparse(str(repo).removesuffix(".git")).path).stem)
+
+        # Only attempt cloning if non-existent
+        if (not path.exists()):
+            with BrokenPath.pushd(path.parent, echo=False):
+                shell("git", "clone", ("--recurse-submodules"*recurse), repo, path)
+
+        # Not having .git is a failed clone
+        if not (path/".git").exists():
+            log.error(f"Invalid repository at ({path}), perhaps try removing it")
+            exit(1)
+
+        with BrokenPath.pushd(path, echo=False):
+            shell("git", "submodule", "foreach", "--recursive", f"git checkout {checkout} || true")
+
+        return path
 
     def insiders(self):
-        """💎 Clone the Insiders repository (WIP, Not Available)"""
-        self.git_clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
+        """💎 Clone the Insiders repository (WIP, No content)"""
+        self.clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
+
+    def tremeschin(self):
+        Tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")
+        self.clone("https://github.com/Tremeschin/Personal", Tremeschin)
+        self.clone("https://github.com/Tremeschin/Private",  Tremeschin/"Private")
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
 
     def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
-        """📚 Generate or Deploy the Unified Broken Source Software Website"""
+        """📚 Serve or deploy the monorepo website"""
         if deploy:
-            os.environ.update(CODE_REFERENCE="1")
+            Environment.set("CODE_REFERENCE", 1)
             shell("mkdocs", "gh-deploy", "--force")
         else:
             shell("mkdocs", "serve")
 
+    def compile_all(self) -> None:
+        for project in self.projects:
+            project.compile(
+                target=[PlatformEnum._AllHost],
+                tarball=True,
+            )
+
     def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
-        test:    Annotated[bool, Option("--test",    "-t", help="Upload to Test PyPI instead of PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BUILD_WHEELS,
         all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=False,
     ) -> Path:
-        """🧀 Build all Projects and Publish to PyPI"""
+        """🧀 Build all project wheels and publish to PyPI"""
         BrokenPath.recreate(output)
 
         # Files that will be patched
@@ -455,14 +486,7 @@ class BrokenManager(BrokenSingleton):
 
         with multi_context(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
             shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
-            shell("uv", "publish",
-                (not Runtime.GitHub)*(
-                    "--username", "__token__",
-                    "--password", Environment.get("PYPI_TOKEN")
-                ),
-                f"{output}/*.whl", echo=False,
-                skip=(not bool(publish)),
-            )
+            shell("uv", "publish", f"{output}/*.whl", skip=(not publish))
 
         return Path(output)
 
@@ -470,7 +494,7 @@ class BrokenManager(BrokenSingleton):
         push:  Annotated[bool, Option("--push",  "-p", help="Push built images to GHCR")]=False,
         clean: Annotated[bool, Option("--clean", "-c", help="Remove local images after pushing")]=False,
     ) -> None:
-        """Build and push docker images for all projects"""
+        """🐳 Build and push docker images for all projects"""
         for build in combinations(
             base_image=["ubuntu:24.04"],
             flavor=["cpu", "cu121"],
@@ -488,15 +512,15 @@ class BrokenManager(BrokenSingleton):
                 # Tag a latest and versioned flavored images, optional push
                 for tag in (f"latest-{build.flavor}", f"{__version__}-{build.flavor}"):
                     final: str = f"ghcr.io/brokensource/{image}:{tag}"
-                    shell("docker", "tag", latest, final)
-                    shell("docker", "push", final, skip=(not push))
-                    shell("docker", "rmi", final, skip=(not clean))
+                    shell("docker", "tag",  latest, final)
+                    shell("docker", "push", final,  skip=(not push))
+                    shell("docker", "rmi",  final,  skip=(not clean))
 
                 # No need for generic latest image
                 shell("docker", "rmi", latest)
 
     def upgrade(self) -> None:
-        """📦 uv doesn't have a command to bump versions, but (re)adding dependencies does it"""
+        """📦 Temporary solution to bump pyproject versions"""
         import re
 
         import requests
@@ -553,7 +577,7 @@ class BrokenManager(BrokenSingleton):
         toolchain:   Annotated[str,  Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
         build_tools: Annotated[bool, Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
     ):
-        """🦀 Installs Rustup and a Rust Toolchain"""
+        """🦀 Installs rustup and a rust toolchain"""
         import requests
 
         # Actions has its own workflow setup
@@ -603,11 +627,6 @@ class BrokenManager(BrokenSingleton):
         else:
             log.info(f"Rust toolchain is already the default ({toolchain})")
 
-
-    def link(self, path: Annotated[Path, Argument(help="Path to Symlink under (Projects/Hook/$name) and be added to Broken's CLI")]) -> None:
-        """📌 Add a {Directory of Project(s)} to be Managed by Broken"""
-        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.REPO_PROJECTS/path.name, real=path)
-
     def clean(self) -> None:
         """🧹 Remove pycaches, common blob directories"""
         root = BROKEN.DIRECTORIES.REPOSITORY
@@ -621,7 +640,7 @@ class BrokenManager(BrokenSingleton):
         BrokenPath.remove(root/".cache")
 
     def sync(self) -> None:
-        """♻️  Synchronize common Resources Files across all Projects"""
+        """♻️  Synchronize common resources files across all projects"""
         root = BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:

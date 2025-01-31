@@ -1,6 +1,9 @@
 name: docker-release
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "Broken/Version.py"
 
 jobs:
   main:
@@ -16,4 +19,5 @@ jobs:
         run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{github.actor}} --password-stdin
 
       - name: Build and push images
+        if: ${{env.GHA_DOCKER == 'True'}}
         run: uv run broken docker --push

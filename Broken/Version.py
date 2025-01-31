@@ -11,6 +11,7 @@ def export(**options) -> None:
 if (__name__ == "__main__"):
     export(
         GHA_VERSION=__version__,
+        GHA_DOCKER=False,
         GHA_PYAPP=False,
         GHA_PYPI=False,
         GHA_TAG=False,

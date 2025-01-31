@@ -72,8 +72,8 @@ if sys.version_info <= (3, 9):
     sys.stderr.write("→ Fix: Upgrade to at least Python 3.10 for guaranteed compatibility\n")
     sys.stderr.write("→ See status of your version: https://devguide.python.org/versions/\n")
 
-# Python < 3.11 typing fixes
-if sys.version_info < (3, 11):
+# Python <= 3.10 typing fixes
+if sys.version_info <= (3, 10):
     import typing # noqa
     from typing_extensions import Self, TypeAlias
     typing.TypeAlias = TypeAlias

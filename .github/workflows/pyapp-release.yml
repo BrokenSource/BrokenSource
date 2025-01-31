@@ -1,0 +1,31 @@
+name: pyapp-release
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "Broken/Version.py"
+
+jobs:
+  main:
+    name: Compile (${{matrix.os}})
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-latest, macos-latest]
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Install gcc aarch64
+        if: ${{matrix.os == 'ubuntu-20.04'}}
+        run: sudo apt install -y gcc-aarch64-linux-gnu
+
+      - name: Compile projects
+        if: ${{env.GHA_PYAPP == 'True'}}
+        run: uv run broken compile-all
+
+      - name: Upload releases
+        uses: actions/upload-artifact@v3
+        with:
+          name: Releases
+          path: Release/*

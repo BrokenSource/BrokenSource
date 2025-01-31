@@ -1,0 +1,35 @@
+name: pypi-release
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "Broken/Version.py"
+
+jobs:
+  main:
+    name: Release Wheels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Build wheels
+        run: uv run broken pypi
+
+      - name: Publish wheels
+        if: ${{env.GHA_PYPI == 'True'}}
+        run: uv run broken pypi --publish
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: Wheels
+          path: Build/Wheels/*.whl
+
+      - name: Create Release Tag
+        if: ${{env.GHA_TAG == 'True'}}
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git tag -a v$GHA_VERSION -m "Release v$GHA_VERSION"
+          git push origin v$GHA_VERSION

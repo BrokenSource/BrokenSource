@@ -160,32 +160,6 @@
 				"command": ["uv", "run", "mkdocs", "serve"],
 				"type": "shell",
 			},
-
-			// Releases
-			{
-				"label": "release-depthflow",
-				"command": ["uv", "run", "broken", "depthflow",
-					"release", "--target", "all", "--tarball"],
-				"type": "shell",
-			},
-			{
-				"label": "release-pianola",
-				"command": ["uv", "run", "broken", "pianola",
-					"release", "--target", "all", "--tarball"],
-				"type": "shell",
-			},
-			{
-				"label": "release-shaderflow",
-				"command": ["uv", "run", "broken", "shaderflow",
-					"release", "--target", "all", "--tarball"],
-				"type": "shell",
-			},
-			{
-				"label": "release-spectronote",
-				"command": ["uv", "run", "broken", "spectronote",
-					"release", "--target", "all", "--tarball"],
-				"type": "shell",
-			}
 		]
 	}
 }

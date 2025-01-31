@@ -130,10 +130,10 @@ class BrokenPath(StaticClass):
         """Change directory, then change back when done"""
         path = BrokenPath.get(path)
         cwd = os.getcwd()
-        log.minor(f"Pushd ({path})", echo=echo)
+        log.minor(f"Enter directory ({path})", echo=echo)
         os.chdir(path)
         yield path
-        log.minor(f"Popd  ({path})", echo=echo)
+        log.minor(f"Leave directory ({path})", echo=echo)
         os.chdir(cwd)
 
     def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
