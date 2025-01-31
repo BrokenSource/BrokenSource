@@ -132,7 +132,7 @@ class DepthAnythingBase(BaseEstimator):
         import transformers
         HUGGINGFACE_MODEL = (f"{self._model_prefix()}{self.model.value}-hf")
         log.info(f"Loading Depth Estimator model ({HUGGINGFACE_MODEL})")
-        self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(HUGGINGFACE_MODEL)
+        self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(HUGGINGFACE_MODEL, use_fast=False)
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(HUGGINGFACE_MODEL)
         self._model.to(self.device)
 

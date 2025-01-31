@@ -32,7 +32,7 @@ from PIL import Image
 
 image = (
     modal.Image.from_registry("nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04", add_python="3.11")
-    .run_commands("python3 -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121")
+    .run_commands("python3 -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124")
     .apt_install("mesa-utils")
     .apt_install("ffmpeg")
     .pip_install("transformers")

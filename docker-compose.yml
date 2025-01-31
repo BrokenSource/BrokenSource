@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: Docker/broken-base.dockerfile
       args:
-        TORCH_VERSION: ${TORCH_VERSION:-2.5.1}
+        TORCH_VERSION: ${TORCH_VERSION:-2.6.0}
         TORCH_FLAVOR: ${TORCH_FLAVOR:-cpu}
 
     volumes:

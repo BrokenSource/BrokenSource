@@ -78,7 +78,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     huggingface-cli download "depth-anything/Depth-Anything-V2-base-hf"
 
 # Install a PyTorch flavor
-ARG TORCH_VERSION="2.5.1"
+ARG TORCH_VERSION="2.6.0"
 ARG TORCH_FLAVOR="cpu"
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install torch=="${TORCH_VERSION}+${TORCH_FLAVOR}" \

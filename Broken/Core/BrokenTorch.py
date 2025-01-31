@@ -16,10 +16,9 @@ from Broken.Core.BrokenWorker import BrokenWorker
 class TorchFlavor(str, BrokenEnum):
     CPU     = "cpu"
     CUDA118 = "cu118"
-    CUDA121 = "cu121"
     CUDA124 = "cu124"
-    ROCM61  = "rocm6.1"
-    ROCM62  = "rocm6.2"
+    CUDA126 = "cu126"
+    ROCM    = "rocm6.2.4"
 
     def is_cuda(self) -> bool:
         return ("cu1" in self.value)
@@ -61,7 +60,7 @@ class BrokenTorch:
         version: Annotated[str,
             Option("--version", "-v",
             help="Torch version to install (found in https://pypi.org/project/torch/#history)"
-        )]="2.5.1",
+        )]="2.6.0",
 
         flavor: Annotated[Optional[TorchFlavor],
             Option("--flavor", "-f",
@@ -108,7 +107,7 @@ class BrokenTorch:
                     flavor = TorchFlavor.get(Prompt.ask(
                         prompt="\n:: What PyTorch flavor do you want to install?\n\n",
                         choices=list(x.lower() for x in TorchFlavor.keys() if x != "MACOS"),
-                        default="cuda121"
+                        default="cuda124"
                     ).upper())
                     print()
                 except KeyboardInterrupt:
@@ -126,7 +125,7 @@ class BrokenTorch:
 
             # Remove previous version, install new
             shell(Tools.pip, "uninstall", "--quiet", "torch")
-            shell(Tools.pip, "install", f"torch=={version}",
+            shell(Tools.pip, "install", f"torch=={version}", "torchvision", "torchaudio",
                 ("--index-url", index)*(not BrokenPlatform.OnMacOS))
             shell(Tools.pip, "install", "transformers")
         else:
