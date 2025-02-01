@@ -244,7 +244,7 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
 
     x264params: Annotated[Optional[list[str]],
         Option("--x264-params", hidden=True)] = \
-        Field(default_factory=list)
+        Field(None)
     """Additional options to pass to x264"""
 
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:

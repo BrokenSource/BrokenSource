@@ -73,7 +73,6 @@ class BaseEstimator(
         image: ImageType = numpy.array(LoadImage(image).convert("RGB"))
         image_hash: str = f"{hash(self)}{BaseEstimator.image_hash(image)}"
         image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
-        image_hash: int = hash((image_hash, self.model))
 
         # Estimate if not on cache
         if (not cache) or not (depth := self._cache.get(image_hash)):
