@@ -355,7 +355,7 @@ class BrokenManager(BrokenSingleton):
 
     def __attrs_post_init__(self) -> None:
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
-        # self.find_projects(BROKEN.DIRECTORIES.REPO_META)
+        self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
         with self.cli.panel("🚀 Core"):
             self.cli.command(self.insiders)
@@ -471,23 +471,8 @@ class BrokenManager(BrokenSingleton):
     ) -> Path:
         """🧀 Build all project wheels and publish to PyPI"""
         BrokenPath.recreate(output)
-
-        # Files that will be patched
-        pyprojects = flatten(
-            BROKEN.DIRECTORIES.REPOSITORY/"pyproject.toml",
-            (project.path/"pyproject.toml" for project in self.projects),
-        )
-
-        # What to replace on pyproject
-        replaces = dict()
-        replaces['"Private/'] = '# "Private/'      # Ignore private projects
-        replaces['"0.0.0"'  ] = f'"{__version__}"' # Write current version
-        replaces['>=0.0.0'  ] = f"=={__version__}" # Link projects version
-
-        with multi_context(Patch(file=pyproject, replaces=replaces) for pyproject in pyprojects):
-            shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
-            shell("uv", "publish", f"{output}/*.whl", skip=(not publish))
-
+        shell("uv", "build", "--wheel", ("--all"*all), "--out-dir", output)
+        shell("uv", "publish", f"{output}/*.whl", skip=(not publish))
         return Path(output)
 
     def docker(self,
@@ -647,6 +632,7 @@ class BrokenManager(BrokenSingleton):
             for file in flatten(
                 ((root/".github").glob(ext) for ext in ("*.md", "*.yml")),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.yml"),
+                (root/".github"/"hatch_build.py"),
             ):
                 target = project.path/file.relative_to(root)
                 BrokenPath.copy(src=file, dst=target)

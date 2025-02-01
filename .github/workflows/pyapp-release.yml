@@ -25,7 +25,7 @@ jobs:
         run: uv run broken compile-all
 
       - name: Upload releases
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Releases
           path: Release/*
