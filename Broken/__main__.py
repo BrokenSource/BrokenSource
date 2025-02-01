@@ -265,15 +265,17 @@ class ProjectManager:
                 ).items()
             ))
 
-            MAIN  = next(BrokenManager().pypi().glob("*.whl"))
-            EXTRA =  set(BrokenManager().pypi(all=True).glob("*.whl")) - {MAIN}
+            # Build wheels, find main and extra ones
+            WHEELS = BrokenManager().pypi(all=True)
+            MAIN   = next(WHEELS.glob("broken_source*"))
+            EXTRA  = set(WHEELS.glob("*.whl")) - {MAIN}
 
             # Pyapp configuration
             os.environ.update(dict(
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
                 PYAPP_EXEC_MODULE=self.name,
-                PYAPP_PYTHON_VERSION="3.12",
+                PYAPP_PYTHON_VERSION="3.13",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
             ))
@@ -295,7 +297,7 @@ class ProjectManager:
                     shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork, "-b", "custom")
 
                 # Remove previous embeddings if any
-                for file in (fork/"src"/"embed").glob("*"):
+                for file in (fork/"src"/"embed").glob("*.whl"):
                     file.unlink()
 
                 # Actually compile it
