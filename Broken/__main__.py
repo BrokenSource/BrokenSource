@@ -631,6 +631,8 @@ class BrokenManager(BrokenSingleton):
         root = BROKEN.DIRECTORIES.REPOSITORY
 
         for project in self.projects:
+            if (project.path/".github"/".nosync").exists():
+                continue
             for file in flatten(
                 ((root/".github").glob(ext) for ext in ("*.md", "*.yml")),
                 (root/".github"/"ISSUE_TEMPLATE").glob("*.yml"),
