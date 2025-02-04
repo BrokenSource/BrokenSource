@@ -13,8 +13,8 @@
 **/.stfolder
 **/.ignore
 **/.nomedia
-**/Meta
 **/*.env
+**/Meta
 
 # Docker
 **/.github

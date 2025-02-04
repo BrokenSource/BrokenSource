@@ -11,3 +11,7 @@
 **/Workspace
 **/*.pyc
 **/*.lock
+
+# Syncthing
+**/node_modules
+**/.next
