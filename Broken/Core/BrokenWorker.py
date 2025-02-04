@@ -18,7 +18,7 @@ import dill
 from attrs import Factory, define, field
 from diskcache import Cache as DiskCache
 
-from Broken import BrokenAttrs, flatten, log
+from Broken import flatten, log
 from Broken.Core import easyloop
 from Broken.Types import MB
 
@@ -29,8 +29,8 @@ MANAGER = Manager()
 """Global multiprocessing manager"""
 
 
-@define
-class BrokenWorker(BrokenAttrs):
+@define(eq=False)
+class BrokenWorker:
     """
     A semi-complete Thread and Process manager for easy parallelization primitives, smart task
     queueing, caching results and more.
@@ -112,7 +112,7 @@ class BrokenWorker(BrokenAttrs):
     def cache_dict_type(self) -> type[dict]:
         return (dict if (self.type is Thread) else MANAGER.dict)
 
-    def __post__(self):
+    def __attrs_post_init__(self):
 
         # Initialize DiskCache or dict cache
         if (self.diskcache_enabled):
@@ -163,11 +163,6 @@ class BrokenWorker(BrokenAttrs):
 
     def clear_cache(self) -> None:
         self.cache_data.clear()
-
-    @abstractmethod
-    def store(self, task: Hashable, result: Optional[Any]) -> None:
-        if (result is not None):
-            self.cache_data[hash(task)] = result
 
     # # Serde middleware for Process
 
@@ -310,6 +305,10 @@ class BrokenWorker(BrokenAttrs):
         except Exception as error:
             self.store(task, error)
             raise error
+
+    def store(self, task: Hashable, result: Optional[Any]) -> None:
+        if (result is not None):
+            self.cache_data[hash(task)] = result
 
     # # Specific implementations
 

@@ -224,7 +224,7 @@ class BrokenTyper:
     def complex(
         main: Callable,
         nested: Optional[Iterable[Callable]]=None,
-        direct: Optional[Iterable[Callable]]=None,
+        simple: Optional[Iterable[Callable]]=None,
     ) -> None:
         app = BrokenTyper(description=(
             "📦 [bold orange3]Note:[/] The default command is implicit when no other command is run!\n\n"
@@ -233,10 +233,10 @@ class BrokenTyper:
 
         # Preprocess arguments
         nested = flatten(nested)
-        direct = flatten(direct)
+        simple = flatten(simple)
 
-        for target in set(flatten(main, nested, direct)):
-            method:  bool = (target in direct)
+        for target in flatten(main, nested, simple):
+            method:  bool = (target in simple)
             default: bool = (target is main)
 
             # Mark the default command
