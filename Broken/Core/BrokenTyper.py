@@ -3,10 +3,13 @@ from __future__ import annotations
 import contextlib
 import inspect
 import itertools
+import re
 import shlex
 import sys
 from abc import ABC, abstractmethod
+from collections import deque
 from collections.abc import Callable, Generator, Iterable
+from pathlib import Path
 from typing import Any, Optional, Self, Union
 
 import click
@@ -20,7 +23,10 @@ from rich.panel import Panel
 from rich.text import Text
 
 from Broken import (
+    BrokenAttrs,
     BrokenPlatform,
+    BrokenProfiler,
+    BrokenProject,
     Environment,
     Runtime,
     apply,
@@ -86,13 +92,6 @@ class BrokenTyper:
             hidden=True,
         )
 
-    class BaseModel(ABC, BaseModel):
-        """A meta class for BaseModels that contains other BaseModels and will be added to aBrokenTyper"""
-
-        @abstractmethod
-        def commands(self, typer: BrokenTyper) -> None:
-            pass
-
     def __attrs_post_init__(self):
         self.app = typer.Typer(
             add_help_option=self.help,
@@ -141,10 +140,6 @@ class BrokenTyper:
             target = BrokenTyper.pydantic2typer(cls=_instance, post=post)
             name = (name or cls.__name__)
             naih = True # (Complex command)
-
-            # Add nested commands from meta class
-            if issubclass(cls, BrokenTyper.BaseModel):
-                _instance.commands(self)
         else:
             name = (name or target.__name__)
 
@@ -350,3 +345,92 @@ class BrokenTyper:
 
             # The args were "consumed"
             sys.argv = [sys.argv[0]]
+
+# ------------------------------------------------------------------------------------------------ #
+
+@define
+class BrokenLauncher(ABC, BrokenAttrs):
+    PROJECT: BrokenProject
+    cli: BrokenTyper = Factory(BrokenTyper)
+
+    def __post__(self):
+        self.cli.should_shell()
+        self.cli.description = self.PROJECT.ABOUT
+
+        with BrokenProfiler(self.PROJECT.APP_NAME):
+            self.main()
+
+    @abstractmethod
+    def main(self) -> None:
+        pass
+
+    def find_projects(self, tag: str="Project") -> None:
+        """Find Python files in common directories (direct call, cwd) that any class inherits from
+        something that contains the substring of `tag` and add as a command to this Typer app"""
+        search = deque()
+
+        # Note: Safe get argv[1], pop if valid, else a null path
+        if (direct := Path(dict(enumerate(sys.argv)).get(1, "\0"))).exists():
+            direct = Path(sys.argv.pop(1))
+
+        # The project file was sent directly
+        if (direct.suffix == ".py"):
+            search.append(direct)
+
+        # It can be a glob pattern
+        elif ("*" in direct.name):
+            search.extend(Path.cwd().glob(direct.name))
+
+        # A directory of projects was sent
+        elif direct.is_dir():
+            search.extend(direct.glob("*.py"))
+
+        # Scan common directories
+        else:
+            if (Runtime.Source):
+                search.extend(self.PROJECT.DIRECTORIES.REPO_PROJECTS.rglob("*.py"))
+                search.extend(self.PROJECT.DIRECTORIES.REPO_EXAMPLES.rglob("*.py"))
+            search.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
+            search.extend(Path.cwd().glob("*.py"))
+
+        # Add commands of all files, warn if none was sucessfully added
+        if (sum(self.add_project(python=file, tag=tag) for file in search) == 0):
+            log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in:")
+            log.warning('\n'.join(f"• {file}" for file in search))
+
+    def _regex(self, tag: str) -> re.Pattern:
+        """Generates the self.regex for matching any valid Python class that contains "tag" on the
+        inheritance substring, and its optional docstring on the next line"""
+        return re.compile(
+            r"^class\s+(\w+)\s*\(.*?(?:" + tag + r").*\):\s*(?:\"\"\"((?:\n|.)*?)\"\"\")?",
+            re.MULTILINE
+        )
+
+    def add_project(self, python: Path, tag: str="Project") -> bool:
+        if (not python.exists()):
+            return False
+
+        def wrapper(file: Path, name: str, code: str):
+            def run(ctx: typer.Context):
+                # Note: Point of trust transfer to the file the user is running
+                exec(compile(code, file, "exec"), (namespace := {}))
+                namespace[name]().cli(*ctx.args)
+            return run
+
+        # Match all projects and their optional docstrings
+        code = python.read_text("utf-8")
+        matches = list(self._regex(tag).finditer(code))
+
+        # Add a command for each match
+        for match in matches:
+            class_name, docstring = match.groups()
+            self.cli.command(
+                target=wrapper(python, class_name, code),
+                name=class_name.lower(),
+                description=(docstring or "No description provided"),
+                panel=f"📦 {tag}s at ({python})",
+                context=True,
+                help=False,
+            )
+
+        return bool(matches)
