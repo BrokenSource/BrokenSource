@@ -75,7 +75,7 @@ class BaseEstimator(
         image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
 
         # Estimate if not on cache
-        if (not cache) or not (depth := self._cache.get(image_hash)):
+        if (not cache) or (depth := self._cache.get(image_hash)) is None:
             self.load_torch()
             self.load_model()
             torch.set_num_threads(multiprocessing.cpu_count())

@@ -18,7 +18,6 @@ import typer.rich_utils
 from attr import Factory, define
 from pydantic import BaseModel
 from rich import get_console
-from rich.console import Group
 from rich.panel import Panel
 from rich.text import Text
 
@@ -190,8 +189,7 @@ class BrokenTyper:
 
     @property
     def _shell(self) -> bool:
-        BYPASS = Environment.flag("REPL", 1)
-        return (self.shell and not BYPASS)
+        return (self.shell and Environment.flag("REPL", 1))
 
     def should_shell(self) -> Self:
         self.shell = all((
@@ -212,7 +210,7 @@ class BrokenTyper:
         """Redirects a ctx to sys.argv and calls the method"""
         def wrapper(ctx: typer.Context):
             sys.argv[1:] = ctx.args
-            callable()
+            return callable()
         return wrapper
 
     @staticmethod
@@ -222,7 +220,7 @@ class BrokenTyper:
         simple: Optional[Iterable[Callable]]=None,
     ) -> None:
         app = BrokenTyper(description=(
-            "📦 [bold orange3]Note:[/] The default command is implicit when no other command is run!\n\n"
+            "[bold orange3]Note:[/] The default command is implicit when only arguments are provided\n\n"
             "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
         ), help=False).should_shell()
 
@@ -256,21 +254,19 @@ class BrokenTyper:
 
     def shell_welcome(self) -> None:
         console.print(Panel(
-            title="( 🔴🟡🟢 ) Basic prompt for releases",
+            title="⭐️ Tips",
             title_align="left",
             border_style="bold grey42",
             expand=False,
-            renderable=Group(
-                Text.from_markup(
-                    "\nSelect a [royal_blue1]command above[/], type and run it!\n"
-                    "• Press [royal_blue1]Enter[/] for a command list\n"
-                ), Panel(
-                    "• Run [spring_green1]'{command} --help'[/] for usage [bold bright_black](seen above)[/]\n"
-                    "• Press [spring_green1]'Ctrl+C'[/] to exit [bold bright_black](or close this window)[/]",
-                    title="Tips",
-                    border_style="green"
-                )
-            ),
+            padding=(1, 1),
+            renderable=Text.from_markup(
+                "• Press [spring_green1]'Ctrl+C'[/] to exit [bold bright_black](or close this window)[/]\n"
+                "• Run any [spring_green1]'{command} --help'[/] for more info\n"
+                "• Press [royal_blue1]Enter[/] for a command list [bold bright_black](above)[/]",
+            )
+        ))
+        console.print(Text.from_markup(
+            "\n[bold grey58]→ Write a command from the list above and run it![/]"
         ))
 
     def shell_prompt(self) -> bool:
@@ -285,7 +281,7 @@ class BrokenTyper:
             log.trace("BrokenTyper Repl exit KeyboardInterrupt")
         return False
 
-    def __call__(self, *args: Iterable[Any]) -> None:
+    def __call__(self, *args: Any) -> None:
         """
         Run the Typer app with the provided arguments
 
