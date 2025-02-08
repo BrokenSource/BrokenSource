@@ -54,7 +54,7 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
 
     def _load_model(self):
         self.load_torch()
-        install("faster_whisper")
+        install(packages="faster_whisper")
 
         # Copy PyPI libcudnn to avoid setting LD_LIBRARY_PATH
         if BrokenPlatform.OnLinux:

@@ -306,8 +306,8 @@ def overrides(
     return new
 
 
-def install(
-    *packages: str,
+def install(*,
+    packages: Union[str, Iterable[str]],
     pypi: Optional[Union[str, Iterable[str]]]=None,
     args: Optional[Union[str, Iterable[str]]]=None
 ) -> None:

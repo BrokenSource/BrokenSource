@@ -179,7 +179,7 @@ class DepthPro(BaseEstimator):
 
     def _load_model(self) -> None:
         log.info("Loading Depth Estimator model (DepthPro)")
-        install("depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
+        install(packages="depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
 
         # Download external checkpoint model
         checkpoint = BrokenPath.get_external("https://ml-site.cdn-apple.com/models/depth-pro/depth_pro.pt")
@@ -270,7 +270,7 @@ class Marigold(BaseEstimator):
         Field(Variant.FP16)
 
     def _load_model(self) -> None:
-        install("accelerate", "diffusers", "matplotlib")
+        install(packages=("accelerate", "diffusers", "matplotlib"))
 
         from diffusers import DiffusionPipeline
 
