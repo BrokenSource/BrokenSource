@@ -3,7 +3,7 @@ title: Get/Source
 ---
 
 !!! success "{++The most flexible++} way to use the Projects • Latest features, bugs, fixes, highly configurable."
-    **Recommended for**: Basic++ users, contributors, developers.
+    **Recommended for**: Advanced users, contributors, developers.
 
 ## ⚡️ Installing
 

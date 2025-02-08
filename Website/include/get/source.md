@@ -6,5 +6,5 @@
     - {==**Automatic** install scripts==}, spend more time **using** the projects.
     - **Latest** features, bugs, fixes, highly configurable.
 
-    <sup><b>Recommended for:</b usersb> Basic++ users, contributors, developers.</sup>
+    <sup><b>Recommended for:</b usersb> Advanced users, contributors, developers.</sup>
 </a></div>
