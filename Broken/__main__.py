@@ -266,6 +266,7 @@ class ProjectManager:
             ))
 
             # Build wheels, find main and extra ones
+            Environment.set("PYAPP_RELEASE", 1)
             WHEELS = BrokenManager().pypi(all=True)
             MAIN   = next(WHEELS.glob("broken_source*"))
             EXTRA  = set(WHEELS.glob("*.whl")) - {MAIN}

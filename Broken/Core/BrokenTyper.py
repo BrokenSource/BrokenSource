@@ -406,11 +406,11 @@ class BrokenLauncher(ABC, BrokenAttrs):
         if (not python.exists()):
             return False
 
-        def wrapper(file: Path, name: str, code: str):
+        def wrapper(code: str, file: Path, class_name: str):
             def run(ctx: typer.Context):
                 # Note: Point of trust transfer to the file the user is running
                 exec(compile(code, file, "exec"), (namespace := {}))
-                namespace[name]().cli(*ctx.args)
+                namespace[class_name]().cli(*ctx.args)
             return run
 
         # Match all projects and their optional docstrings
@@ -421,7 +421,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
         for match in matches:
             class_name, docstring = match.groups()
             self.cli.command(
-                target=wrapper(python, class_name, code),
+                target=wrapper(code, python, class_name),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
                 panel=f"📦 {tag}s at ({python})",

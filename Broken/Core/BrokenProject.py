@@ -187,7 +187,7 @@ class BrokenProject:
 
             # Running a new version, prune previous cache
             if (tracker.first):
-                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet")
+                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet", echo=False)
 
             # Skip in-use versions
             if (not tracker.trigger()):
