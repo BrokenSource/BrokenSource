@@ -14,37 +14,43 @@ title: Get/Source
             <div><b>Open</b> a folder to download the code on <b>Windows Explorer</b></div>
             <div>Press ++ctrl+l++ , run `powershell` and execute:</div>
         </div>
-        ```powershell title="PowerShell"
-        # What it does: 'irm' downloads, 'iex' executes
+        ```powershell
         irm https://brokensrc.dev/get.ps1 | iex
         ```
+        <small><b>How it works:</b> `irm` downloads the script, `iex` executes it directly</small>
+        <br>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
     === ":simple-linux: Linux"
         <div align="center">
             <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
             <div><sup></sup></div>
         </div>
-        ```shell title="Terminal"
-        # Curl downloads the script, bash executes as if you typed it
+        ```shell
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
+        <small><b>How it works:</b> `curl` downloads the script, `bash` executes it directly</small>
+        <br>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
     === ":simple-apple: MacOS"
         <div align="center">
             <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
             <div><b>Open</b> a <b>Terminal</b> on some directory and run:</div>
             <div><sup></sup></div>
         </div>
-        ```zsh title="Terminal"
-        # Curl downloads the script, bash executes as if you typed it
+        ```zsh
         /bin/bash -c "$(curl -sS https://brokensrc.dev/get.sh)"
         ```
+        <small><b>How it works:</b> `curl` downloads the script, `bash` executes it directly</small>
+        <br>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
     === ":simple-git: Manual"
         <div align="center"><img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg"></div>
 
-        - **Install** [**Git**](https://git-scm.com/downloads) and [**uv**](https://docs.astral.sh/uv/) on your Platform
+        - **Install** [**git**](https://git-scm.com/downloads) and [**uv**](https://docs.astral.sh/uv/) on your Platform
 
         ```bash title="Download the code"
-        git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
+        git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules
         ```
         ```bash title="Enter the directory"
         cd BrokenSource

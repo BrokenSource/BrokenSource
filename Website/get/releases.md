@@ -17,15 +17,15 @@ title: Get/Releases
               [<a target="_blank" href="https://github.com/astral-sh/rye/issues/468#issuecomment-1956285911">1</a>]
               [<a target="_blank" href="https://github.com/pyinstaller/pyinstaller/issues/6754">2</a>]
             </code>
-            <div><sup>I am not destroying my reputation by distributing malware.</sup></div>
+            <div><sup>I am not destroying my reputation by distributing malware and take security seriously.</sup></div>
           </div>
         </div>
-        === ":octicons-cpu-16: x86-64"
+        === ":octicons-cpu-16: x86-64 :octicons-cpu-16:"
             <table id="windows-amd64"><tbody/></table>
     === ":simple-linux: Linux"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg">
-          <div><b>Note:</b> Open a terminal in the download path, extract it with `tar -xzvf *.tar.gz`</div>
+          <div><b>Note:</b> Open a terminal in the download path, extract it with `cat *.tar.gz | tar -xzvf - -i`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
         === ":octicons-cpu-16: x86-64"
@@ -35,7 +35,7 @@ title: Get/Releases
     === ":simple-apple: MacOS"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
-          <div><b>Note:</b> [Open a terminal](https://apple.stackexchange.com/a/438999) in the download path, extract it with `tar -xzvf *.tar.gz`</div>
+          <div><b>Note:</b> [Open a terminal](https://apple.stackexchange.com/a/438999) in the download path, extract it with `cat *.tar.gz | tar -xzvf - -i`</div>
           <div><sup>And then run `./project-name-*.bin` for its command line!</sup></div>
         </div>
         === ":octicons-cpu-16: Apple Silicon"
