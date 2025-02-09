@@ -212,13 +212,13 @@ class ProjectManager:
         )] = [BrokenPlatform.Host],
 
         tarball: Annotated[bool,
-            Option("--tarball",
+            Option("--tarball", "-z",
             help="Create a compressed tarball archive for unix releases",
         )] = False,
 
-        offline: Annotated[bool,
-            Option("--offline",
-            help="(Experimental) Create self-contained distributions without internet",
+        standalone: Annotated[bool,
+            Option("--standalone", "-s",
+            help="(Experimental) Create self-contained distributions with all dependencies",
         )] = False,
     ) -> None:
         """
@@ -248,11 +248,19 @@ class ProjectManager:
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
             log.warning("ARM general support is only present in macOS")
 
+        # Fixme: Wait for uv's implementation of pip wheel
+        if (standalone and target != BrokenPlatform.Host):
+            return log.error((
+                "Standalone releases require a host matching the target platform, otherwise "
+                "awaiting implementation of (https://github.com/astral-sh/uv/issues/1681). "
+                f"Attempted to build for {target} on {BrokenPlatform.Host}."
+            ))
+
         log.note("Building Project Release for", target)
 
         if self.is_python:
             BrokenManager.rust()
-            BUILD_DIR = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
+            BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
@@ -270,6 +278,29 @@ class ProjectManager:
             WHEELS = BrokenManager().pypi(all=True)
             MAIN   = next(WHEELS.glob("broken_source*"))
             EXTRA  = set(WHEELS.glob("*.whl")) - {MAIN}
+
+            if (standalone):
+                for dependency in filter(None, shell(
+                    "uv", "export", "--all-packages",
+                    "--format", "requirements-txt",
+                    "--no-editable", "--no-hashes",
+                    "--no-header", "--no-dev",
+                    output=True
+                ).splitlines()):
+                    if (dependency.startswith(".")):
+                        continue
+
+                    dependency = dependency.split(";")[0]
+
+                    if shell(
+                        sys.executable, "-m", "pip", "download", dependency,
+                        "--dest", BROKEN.DIRECTORIES.BUILD_WHEELS,
+                        "--no-deps",
+                    ).returncode != 0:
+                        raise RuntimeError(log.error(f"Failed to download wheel for: {dependency}"))
+
+                # Add all dependencies wheels to the extra list
+                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.whl"))
 
             # Pyapp configuration
             os.environ.update(dict(
@@ -330,6 +361,7 @@ class ProjectManager:
                 f"{self.name.lower()}",
                 f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
+                "-std"*standalone,
                 f"{target.extension}",
             ))
             BrokenPath.copy(src=binary, dst=release_path)
@@ -499,7 +531,7 @@ class BrokenManager(BrokenSingleton):
             for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
                 image:  str = dockerfile.stem
                 latest: str = f"{image}:latest"
-                flavor: str = build.torch.value
+                flavor: str = build.torch.flavor
 
                 # Tag a latest and versioned flavored images, optional push
                 for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
