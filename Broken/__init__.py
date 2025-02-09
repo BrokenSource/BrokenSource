@@ -191,7 +191,7 @@ from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenProject import BrokenProject
 from Broken.Core.BrokenResolution import BrokenResolution
 from Broken.Core.BrokenScheduler import BrokenScheduler, SchedulerTask
-from Broken.Core.BrokenTorch import BrokenTorch, TorchFlavor
+from Broken.Core.BrokenTorch import BrokenTorch, TorchRelease
 from Broken.Core.BrokenTrackers import (
     FileTracker,
     OnceTracker,

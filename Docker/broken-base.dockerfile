@@ -57,7 +57,7 @@ RUN curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FF
     tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
 
 # Upscayl upscaler, strip electron part of the package
-RUN curl -L "https://github.com/upscayl/upscayl/releases/download/v2.11.5/upscayl-2.11.5-linux.deb" \
+RUN curl -L "https://github.com/upscayl/upscayl/releases/download/v2.15.0/upscayl-2.15.0-linux.deb" \
     -o /tmp/upscayl.deb && apt install -y /tmp/upscayl.deb && rm /tmp/upscayl.deb && mkdir -p /opt/upscayl && \
     mv /opt/Upscayl/resources/models /opt/upscayl/models && \
     mv /opt/Upscayl/resources/bin /opt/upscayl/bin && \

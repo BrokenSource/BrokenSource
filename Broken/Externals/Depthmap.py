@@ -88,16 +88,6 @@ class BaseEstimator(
 
         return BaseEstimator.normalize(self._post_processing(depth))
 
-    def normal_map(self, depth: numpy.ndarray) -> numpy.ndarray:
-        """Estimates a normal map from a depth map using heuristics"""
-        depth = numpy.array(depth)
-        if depth.ndim == 3:
-            depth = depth[..., 0]
-        dx = numpy.arctan2(200*numpy.gradient(depth, axis=1), 1)
-        dy = numpy.arctan2(200*numpy.gradient(depth, axis=0), 1)
-        normal = numpy.dstack((-dx, dy, numpy.ones_like(depth)))
-        return BaseEstimator.normalize(normal).astype(numpy.float32)
-
     @functools.wraps(estimate)
     @abstractmethod
     def _estimate(self):

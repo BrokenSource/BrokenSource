@@ -946,20 +946,19 @@ class FFmpegFilterScale(FFmpegFilterBase):
 
     class Resample(str, BrokenEnum):
         Bilinear   = "bilinear"
-        Nearest    = "nearest"
-        Oversample = "oversample"
+        Nearest    = "neighbor"
+        Bicubic    = "bicubic"
+        Gaussian   = "gauss"
+        Sinc       = "sinc"
         Lanczos    = "lanczos"
-        Spline     = "spline36"
-        EwaLanczos = "ewa_lanczos"
-        Gaussian   = "gaussian"
-        Mitchell   = "mitchell"
+        Spline     = "spline"
 
     resample: Annotated[Resample,
         Option("--resample", "-r")] = \
         Field(Resample.Lanczos)
 
     def string(self) -> str:
-        return f"scale={self.width}:{self.height}:flags={denum(self.resample)}"
+        return f"scale={self.width}x{self.height}:flags={denum(self.resample)}"
 
 
 class FFmpegFilterVerticalFlip(FFmpegFilterBase):
@@ -1093,7 +1092,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
     [**FFmpeg docs**](https://trac.ffmpeg.org/wiki/HWAccelIntro)
     """
 
-    threads: int = Field(0, ge=0)
+    threads: Optional[int] = Field(None, ge=0)
     """
     The number of threads the codecs should use (). Generally speaking, more threads drastically
     improves performance, at the cost of worse quality and compression ratios. It's not that bad though. Some
@@ -1362,7 +1361,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         extend(shutil.which("ffmpeg"))
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", denum(self.loglevel))
-        extend("-threads", self.threads)
+        extend(every("-threads", self.threads))
         extend(("-hwaccel", denum(self.hwaccel))*bool(self.hwaccel))
         extend(("-stream_loop", self.stream_loop)*bool(self.stream_loop))
         extend(self.inputs)
@@ -1373,7 +1372,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         for output in self.outputs:
             extend(self.audio_codec)
             extend(self.video_codec)
-            extend(("-vf", ",".join(map(str, self.filters)))*bool(self.filters))
+            extend(every("-vf", ",".join(map(str, self.filters))))
             extend(output)
 
         return list(map(str, map(denum, flatten(command))))

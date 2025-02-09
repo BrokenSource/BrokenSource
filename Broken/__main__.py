@@ -483,22 +483,26 @@ class BrokenManager(BrokenSingleton):
         clean: Annotated[bool, Option("--clean", "-c", help="Remove local images after pushing")]=False,
     ) -> None:
         """🐳 Build and push docker images for all projects"""
+        from Broken.Core.BrokenTorch import BrokenTorch
+
         for build in combinations(
             base_image=["ubuntu:24.04"],
-            flavor=["cpu", "cu121"],
+            torch=BrokenTorch.docker(),
         ):
             # Warn: Must use same env vars as in docker-compose.yml
-            Environment.set("BASE_IMAGE", build.base_image)
-            Environment.set("TORCH_FLAVOR", build.flavor)
+            Environment.set("BASE_IMAGE",    build.base_image)
+            Environment.set("TORCH_VERSION", build.torch.version)
+            Environment.set("TORCH_FLAVOR",  build.torch.flavor)
             shell("docker", "compose", "build")
 
             # Assumes all dockerfiles were built by docker compose, fails ok otherwise
             for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
                 image:  str = dockerfile.stem
                 latest: str = f"{image}:latest"
+                flavor: str = build.torch.value
 
                 # Tag a latest and versioned flavored images, optional push
-                for tag in (f"latest-{build.flavor}", f"{__version__}-{build.flavor}"):
+                for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
                     final: str = f"ghcr.io/brokensource/{image}:{tag}"
                     shell("docker", "tag",  latest, final)
                     shell("docker", "push", final,  skip=(not push))
