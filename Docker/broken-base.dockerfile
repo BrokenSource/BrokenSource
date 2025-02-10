@@ -50,8 +50,10 @@ RUN apt install -y libvulkan1 libvulkan-dev && \
 RUN apt install -y pulseaudio && \
     adduser root pulse-access
 
+# Common utilities and dependencies
+RUN apt install -y curl git xz-utils
+
 # Video encoding and decoding
-RUN apt install -y xz-utils curl
 ARG FFMPEG="ffmpeg-master-latest-linux64-gpl"
 RUN curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG}.tar.xz" | \
     tar -xJ --strip-components=2 --exclude="doc" --exclude="man" -C /usr/local/bin
@@ -93,7 +95,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --inexact
 
 # Clone the latest commited code
-RUN apt install -y git
 ARG REPOSITORY="https://github.com/BrokenSource/BrokenSource"
 RUN git clone --recurse-submodules --jobs 4 "${REPOSITORY}" ./clone && \
     cp -r ./clone/. . && rm -rf ./clone && \

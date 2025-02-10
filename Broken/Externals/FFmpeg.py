@@ -558,33 +558,6 @@ class FFmpegVideoCodecVP9(FFmpegModuleBase):
         yield ("-row-mt", "1") * self.row_multithreading
 
 
-# Note: See full help with `ffmpeg -h encoder=libaom-av1`
-class FFmpegVideoCodecAV1_LIBAOM(FFmpegModuleBase):
-    """The reference encoder for AV1. Similar to VP9, not the fastest current implementation
-    • https://trac.ffmpeg.org/wiki/Encode/AV1#libaom
-    """
-    type: Annotated[Literal["libaom-av1"], BrokenTyper.exclude()] = "libaom-av1"
-
-    crf: Annotated[int,
-        Option("--crf", "-c", min=1, max=63)] = \
-        Field(23, ge=1, le=63)
-    """Constant Rate Factor (0-63). Lower values mean better quality, AV1 CRF 23 == x264 CRF 19
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality]→ Documentation[/]"""
-
-    speed: Annotated[int,
-        Option("--speed", "-s", min=1, max=6)] = \
-        Field(3, ge=1, le=6)
-    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/AV1#ControllingSpeedQuality]→ Documentation[/]"""
-
-    def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield ("-c:v", "libaom-av1")
-        yield ("-crf", self.crf)
-        yield ("-cpu-used", self.speed)
-        yield ("-row-mt", 1)
-        yield ("-tiles", "2x2")
-
-
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
     """Use [bold orange3][link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/link][/] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/link][/]"""
@@ -769,7 +742,6 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecH265,
     FFmpegVideoCodecH265_NVENC,
     FFmpegVideoCodecVP9,
-    FFmpegVideoCodecAV1_LIBAOM,
     FFmpegVideoCodecAV1_SVT,
     FFmpegVideoCodecAV1_NVENC,
     FFmpegVideoCodecAV1_RAV1E,
@@ -988,8 +960,8 @@ FFmpegFilterType: TypeAlias = Union[
 class BrokenFFmpeg(BrokenModel, BrokenFluent):
     """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
 
-    # ------------------------------------------|
-    # Make all class available on BrokenFFmpeg.*
+    # -------------------------------------------|
+    # Re-export classes on BrokenFFmpeg.*
 
     class Input:
         Path = FFmpegInputPath
@@ -1005,7 +977,6 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         H265       = FFmpegVideoCodecH265
         H265_NVENC = FFmpegVideoCodecH265_NVENC
         VP9        = FFmpegVideoCodecVP9
-        AV1_LIBAOM = FFmpegVideoCodecAV1_LIBAOM
         AV1_SVT    = FFmpegVideoCodecAV1_SVT
         AV1_NVENC  = FFmpegVideoCodecAV1_NVENC
         AV1_RAV1E  = FFmpegVideoCodecAV1_RAV1E
@@ -1028,15 +999,13 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         VerticalFlip = FFmpegFilterVerticalFlip
         Custom       = FFmpegFilterCustom
 
-    # ------------------------------------------|
+    # -------------------------------------------|
 
     hide_banner: bool = True
     """Hides the compilation information of FFmpeg from the output"""
 
     shortest: bool = False
-    """
-    Ends the output at the shortest stream duration. For example, if the input is an 30s audio and
-    a 20s video, and we're joining the two, the final video will be 20s. Or piping frames, 30s
+    """Ends the video at the shortest input's duration
 
     [**FFmpeg docs**](https://ffmpeg.org/ffmpeg.html#toc-Advanced-options)
     """
@@ -1222,10 +1191,6 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
     def vp9(self, **options) -> Self:
         return self.set_video_codec(FFmpegVideoCodecVP9(**options))
 
-    @functools.wraps(FFmpegVideoCodecAV1_LIBAOM)
-    def av1_aom(self, **options) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecAV1_LIBAOM(**options))
-
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
     def av1_svt(self, **options) -> Self:
         return self.set_video_codec(FFmpegVideoCodecAV1_SVT(**options))
@@ -1257,7 +1222,6 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             typer.command(FFmpegVideoCodecH265,       post=self.set_video_codec, name="h265")
             typer.command(FFmpegVideoCodecH265_NVENC, post=self.set_video_codec, name="h265-nvenc")
             typer.command(FFmpegVideoCodecVP9,        post=self.set_video_codec, name="vp9", hidden=True)
-            typer.command(FFmpegVideoCodecAV1_LIBAOM, post=self.set_video_codec, name="av1-aom", hidden=True)
             typer.command(FFmpegVideoCodecAV1_SVT,    post=self.set_video_codec, name="av1-svt")
             typer.command(FFmpegVideoCodecAV1_NVENC,  post=self.set_video_codec, name="av1-nvenc")
             typer.command(FFmpegVideoCodecAV1_RAV1E,  post=self.set_video_codec, name="av1-rav1e")
