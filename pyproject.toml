@@ -37,18 +37,25 @@ dependencies = [
     "rich~=13.9.4",
     "arrow~=1.3.0",
     "distro~=1.9.0",
-    "typer-slim~=0.15.1",
+    "typer~=0.15.1",
     "tqdm~=4.67.1",
     "thefuzz~=0.22.1",
+    "userpath~=1.9.2",
     "python-dotenv~=1.0.1",
     "cachetools~=5.5.1",
     "pyfiglet~=1.0.2",
     "halo~=0.0.31",
-    "pillow~=10.4.0",
+    "pillow",
     # Internet
     "requests-cache~=1.2.1",
-    "setuptools~=75.8.0",
     "requests~=2.32.3",
+    "yt-dlp~=2024.12.6",
+    # Machine Learning
+    "transformers~=4.48.3",
+    "ollama~=0.4.7",
+    # Packaging
+    "setuptools~=75.8.0",
+    "pip~=25.0.1",
     "uv~=0.5.29",
 ]
 
@@ -58,7 +65,6 @@ all = [
     "broken-source[shaderflow]",
     "broken-source[gradio]",
     "broken-source[cloud]",
-    "broken-source[staging]",
 ]
 website = [
     "mkdocs~=1.6.1",
@@ -82,9 +88,6 @@ shaderflow = [
     "numpy-quaternion==2024.0.7",
     "opensimplex~=0.4.5.1",
     "scipy~=1.15.1",
-    # Audio
-    "pyfluidsynth~=1.3.4",
-    "soundcard~=0.4.3",
     # OpenGL
     "glfw~=2.8.0",
     "glcontext~=3.0.0",
@@ -93,24 +96,21 @@ shaderflow = [
     "imgui-bundle~=1.6.2",
     "turbopipe~=1.2.2",
     "pygame~=2.6.1",
-    # MIDI
+    # Audio / MIDI
+    "soundcard~=0.4.3",
+    "pyfluidsynth~=1.3.4",
     "midi2audio~=0.1.1",
     "pretty-midi~=0.2.10",
     "mido~=1.3.3",
 ]
 gradio = [
-    # "orjson~=3.10.11",
     "fastapi~=0.115.8",
+    "orjson~=3.10.11",
     "gradio~=5.14.0",
 ]
 cloud = [
-    # "modal~=0.67.18",
+    "modal~=0.67.18",
     "runpod~=1.7.7",
-]
-staging = [
-    # "yt-dlp~=2024.12.6",
-    # "schedule~=1.2.2",
-    "ollama~=0.4.7",
 ]
 
 [project.scripts]
@@ -119,13 +119,11 @@ broken = "Broken.__main__:main"
 [tool.uv]
 dev-dependencies = [
     "broken-source[all]",
+
     # Development and Utilities
-    # "pyshortcuts~=1.9.1",
     "pytest-sugar~=1.0.0",
-    "poethepoet~=0.32.2",
     "zstandard~=0.23.0",
-    "userpath~=1.9.2",
-    "pip~=25.0.1",
+
     # Profiling
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
@@ -152,20 +150,6 @@ path = ".github/hatch_build.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = ["*"]
-
-# # PyTorch
-
-[tool.poe.tasks]
-_transformers = "python -m uv pip install transformers"
-_torch_base   = "python -m uv pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu"
-_torch_cuda   = "python -m uv pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124"
-_torch_rocm   = "python -m uv pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/rocm6.2"
-_torch_cpu    = "python -m uv pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu"
-_del_torch    = "python -m uv pip uninstall -y torch"
-base          = ["_del_torch", "_torch_base", "_transformers"]
-cuda          = ["_del_torch", "_torch_cuda", "_transformers"]
-rocm          = ["_del_torch", "_torch_rocm", "_transformers"]
-cpu           = ["_del_torch", "_torch_cpu" , "_transformers"]
 
 # # Ruff
 

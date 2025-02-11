@@ -1,5 +1,8 @@
 import contextlib
+import itertools
+import json
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -23,7 +26,6 @@ from Broken import (
     PlatformEnum,
     Runtime,
     SystemEnum,
-    Tools,
     __version__,
     combinations,
     flatten,
@@ -53,9 +55,9 @@ class ProjectManager:
 
     def main(self, ctx: Context) -> None:
         self.cli = BrokenTyper(help=False)
-        self.cli.command(self.update,  help=True)
-        self.cli.command(self.compile, help=True)
-        self.cli.command(self.run,     help=False, context=True)
+        self.cli.command(self.update)
+        self.cli.command(self.compile)
+        self.cli.command(self.run, context=True)
         with BrokenPath.pushd(self.path, echo=False):
             self.cli(*ctx.args)
 
@@ -149,18 +151,30 @@ class ProjectManager:
 
     # # Commands
 
-    def update(self, dependencies: bool=True) -> None:
+    def update(self) -> None:
         """✨ Update this project's dependencies"""
-        if dependencies:
-            if self.is_python:
-                raise NotImplementedError("Standalone Python projects are not supported yet")
-                shell("uv", "lock", "--update-all")
-            if self.is_nodejs:
-                shell("pnpm", "update")
-            if self.is_rust:
-                shell("cargo", "update")
-            if self.is_cpp:
-                log.error("C++ projects are not supported yet")
+        if self.is_python:
+            outdated = shell("uv", "pip", "list", "--outdated", "--format=json", output=True)
+            pyproject = (self.path/"pyproject.toml").read_text("utf8")
+
+            # Replaces any package version of '~=', '>=', '^=' with latest
+            for package in map(DotMap, json.loads(outdated)):
+                pyproject = re.sub(
+                    rf'({re.escape(package.name)}(?:\[[^\]]+\])?\s*(?:~=|>=|\^))\s*([^\"]*)"',
+                    rf'\g<1>{package.latest_version}"',
+                    pyproject
+                )
+
+            # Write changes
+            (self.path/"pyproject.toml").write_text(pyproject, "utf8")
+            shell("uv", "sync", "--all-packages")
+
+        if self.is_nodejs:
+            shell("pnpm", "update")
+        if self.is_rust:
+            shell("cargo", "update")
+        if self.is_cpp:
+            log.error("C++ projects are not supported yet")
 
     def run(self, ctx: Context,
         loop:  Annotated[bool, Option("--loop",  help="Press Enter after each run to run again")]=False,
@@ -389,8 +403,12 @@ class BrokenManager(BrokenSingleton):
         return list(filter(lambda project: project.is_python, self.projects))
 
     def __attrs_post_init__(self) -> None:
+        self.projects.append(broken := ProjectManager(BROKEN.DIRECTORIES.REPOSITORY))
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
+
+        for path in BROKEN.DIRECTORIES.REPO_META.iterdir():
+            self.find_projects(path/"Projects")
 
         with self.cli.panel("🚀 Core"):
             self.cli.command(self.insiders)
@@ -414,29 +432,23 @@ class BrokenManager(BrokenSingleton):
                 name=project.name.lower(),
                 description=project._pretty_language,
                 panel=f"🔥 Projects at [bold]({project.path.parent})[/]",
-                hidden=("Projects/Others" in str(project.path)),
+                hidden=(project is broken),
                 context=True,
                 help=False,
             )
 
-    def find_projects(self, path: Path, *, _depth: int=0) -> None:
-        if (_depth > 3):
+    def find_projects(self, path: Path, *, max_depth: int=1) -> None:
+        if (not path.exists()):
             return
-        if not path.exists():
+        if (max_depth <= 0):
             return
-
-        IGNORED_DIRECTORIES = (".", "_", "workspace", "pyapp")
 
         # Note: Avoid hidden, workspace, recursion
         for directory in path.iterdir():
-            if BrokenPath.get(directory) == BROKEN.DIRECTORIES.REPOSITORY:
-                continue
-            if directory.is_symlink() or directory.is_dir():
-                self.find_projects(path=BrokenPath.get(directory), _depth=_depth+1)
             if directory.is_file():
                 continue
-            if any(directory.name.lower().startswith(x) for x in IGNORED_DIRECTORIES):
-                continue
+            if directory.is_symlink() or directory.is_dir():
+                self.find_projects(path=BrokenPath.get(directory), max_depth=max_depth-1)
             if (project := ProjectManager(directory)).is_known:
                 self.projects.append(project)
 
@@ -523,7 +535,7 @@ class BrokenManager(BrokenSingleton):
         ):
             # Warn: Must use same env vars as in docker-compose.yml
             Environment.set("BASE_IMAGE",    build.base_image)
-            Environment.set("TORCH_VERSION", build.torch.version)
+            Environment.set("TORCH_VERSION", build.torch.number)
             Environment.set("TORCH_FLAVOR",  build.torch.flavor)
             shell("docker", "compose", "build")
 
@@ -545,56 +557,8 @@ class BrokenManager(BrokenSingleton):
 
     def upgrade(self) -> None:
         """📦 Temporary solution to bump pyproject versions"""
-        import re
-
-        import requests
-
-        def update(
-            pyproject: Path,
-            data: list[str], *,
-            dev: bool=False,
-            group: str=None
-        ) -> None:
-            for dependency in data:
-                try:
-                    name, compare, version = re.split("(<|<=|!=|==|>=|>|~=|===)", dependency)
-
-                    # Skip Dynamic versions and Equals
-                    if (compare == ">=" and version=="0.0.0"):
-                        continue
-                    if (compare == "=="):
-                        continue
-
-                    # Get the latest version of the package on PyPI
-                    with contextlib.suppress(KeyError):
-                        latest = requests.get(f"https://pypi.org/pypi/{name}/json").json()["info"]["version"]
-
-                        # Update the version in the pyproject.toml
-                        pyproject.write_text(
-                            pyproject.read_text().replace(
-                                f"{name}{compare}{version}",
-                                f"{name}{compare}{latest}"
-                            )
-                        )
-
-                except ValueError:
-                    continue
-
-        def manage(path: Path):
-            pyproject = (path/"pyproject.toml")
-            data = DotMap(toml.loads(pyproject.read_text()))
-
-            update(pyproject, data.project["dependencies"])
-            update(pyproject, data.tool.uv["dev-dependencies"], dev=True)
-
-            for (optional, items) in data.project["optional-dependencies"].items():
-                update(pyproject, items, group=optional)
-
-        for project in self.python_projects:
-            manage(project.path)
-
-        manage(BROKEN.DIRECTORIES.REPOSITORY)
-        shell("uv", "sync", "--all-packages")
+        for project in self.projects:
+            project.update()
 
     @staticmethod
     def rust(

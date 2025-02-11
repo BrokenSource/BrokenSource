@@ -147,19 +147,19 @@ class BrokenPlatform:
     # Family of platforms
     OnUnix: bool = (OnLinux or OnMacOS or OnBSD)
 
-    # Ubuntu-like
+    # Ubuntu family
     OnUbuntu:    bool = (LinuxDistro == "ubuntu")
     OnDebian:    bool = (LinuxDistro == "debian")
     OnMint:      bool = (LinuxDistro == "linuxmint")
     OnRaspberry: bool = (LinuxDistro == "raspbian")
     UbuntuLike:  bool = (OnUbuntu or OnDebian or OnMint or OnRaspberry)
 
-    # Arch-like
+    # Arch Linux family
     OnArch:    bool = (LinuxDistro == "arch")
     OnManjaro: bool = (LinuxDistro == "manjaro")
     ArchLike:  bool = (OnArch or OnManjaro)
 
-    # RedHat-like
+    # RedHat family
     OnFedora:   bool = (LinuxDistro == "fedora")
     OnCentOS:   bool = (LinuxDistro == "centos")
     OnRedHat:   bool = (LinuxDistro == "rhel")
@@ -168,10 +168,10 @@ class BrokenPlatform:
     # Others
     OnGentoo: bool = (LinuxDistro == "gentoo")
 
-    # BSD-like
-    OnNetBSD:  bool = (LinuxDistro == "netbsd")
-    OnFreeBSD: bool = (LinuxDistro == "freebsd")
+    # BSD family
     OnOpenBSD: bool = (LinuxDistro == "openbsd")
+    OnFreeBSD: bool = (LinuxDistro == "freebsd")
+    OnNetBSD:  bool = (LinuxDistro == "netbsd")
     OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)
 
     @staticmethod

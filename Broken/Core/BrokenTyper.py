@@ -16,7 +16,7 @@ import click
 import typer
 import typer.rich_utils
 from attr import Factory, define
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from rich import get_console
 from rich.panel import Panel
 from rich.text import Text

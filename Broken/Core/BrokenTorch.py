@@ -111,8 +111,8 @@ class BrokenTorch:
     @staticmethod
     def docker() -> Iterable[TorchRelease]:
         """List of versions for docker images builds"""
-        yield SimpleTorch.CUDA
-        yield SimpleTorch.CPU
+        yield SimpleTorch.CUDA.value
+        yield SimpleTorch.CPU.value
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
