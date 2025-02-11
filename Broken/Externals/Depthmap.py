@@ -113,16 +113,16 @@ class DepthAnythingBase(DepthEstimatorBase):
 
     _processor: Any = PrivateAttr(None)
 
+    @property
     @abstractmethod
-    def _model_prefix(self) -> str:
+    def _huggingface_model(self) -> str:
         ...
 
     def _load_model(self) -> None:
         import transformers
-        HUGGINGFACE_MODEL = (f"{self._model_prefix()}{self.model.value}-hf")
-        log.info(f"Loading Depth Estimator model ({HUGGINGFACE_MODEL})")
-        self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(HUGGINGFACE_MODEL, use_fast=False)
-        self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(HUGGINGFACE_MODEL)
+        log.info(f"Loading Depth Estimator model ({self._huggingface_model})")
+        self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(self._huggingface_model, use_fast=False)
+        self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)
 
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
@@ -136,8 +136,9 @@ class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
     type: Annotated[Literal["depthanything"], BrokenTyper.exclude()] = "depthanything"
 
-    def _model_prefix(self) -> str:
-        return "LiheYoung/depth-anything-"
+    @property
+    def _huggingface_model(self) -> str:
+        return f"LiheYoung/depth-anything-{self.model.value}-hf"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
@@ -148,12 +149,22 @@ class DepthAnythingV1(DepthAnythingBase):
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
     type: Annotated[Literal["depthanything2"], BrokenTyper.exclude()] = "depthanything2"
+    indoor:  bool = Field(False, help="Use an indoor fine-tuned metric model")
+    outdoor: bool = Field(False, help="Use an outdoor fine-tuned metric model")
 
-    def _model_prefix(self) -> str:
-        return "depth-anything/Depth-Anything-V2-"
+    @property
+    def _huggingface_model(self) -> str:
+        if (self.indoor):
+            return f"depth-anything/Depth-Anything-V2-Metric-Indoor-{self.model.value}-hf"
+        elif (self.outdoor):
+            return f"depth-anything/Depth-Anything-V2-Metric-Outdoor-{self.model.value}-hf"
+        else:
+            return f"depth-anything/Depth-Anything-V2-{self.model.value}-hf"
 
     def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
+        if (self.indoor or self.outdoor):
+            depth = (numpy.max(depth) - depth)
         depth = gaussian_filter(input=depth, sigma=0.6)
         depth = maximum_filter(input=depth, size=5)
         return depth
