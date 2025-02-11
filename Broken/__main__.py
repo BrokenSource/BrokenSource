@@ -20,9 +20,9 @@ from Broken import (
     BrokenPlatform,
     BrokenProfiler,
     BrokenSingleton,
+    BrokenTorch,
     BrokenTyper,
     Environment,
-    Patch,
     PlatformEnum,
     Runtime,
     SystemEnum,
@@ -30,7 +30,6 @@ from Broken import (
     combinations,
     flatten,
     log,
-    multi_context,
     shell,
 )
 
@@ -411,6 +410,7 @@ class BrokenManager(BrokenSingleton):
             self.find_projects(path/"Projects")
 
         with self.cli.panel("🚀 Core"):
+            self.cli.command(BrokenTorch.install)
             self.cli.command(self.insiders)
             self.cli.command(self.clone)
             self.cli.command(self.rust)
