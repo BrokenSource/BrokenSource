@@ -1016,6 +1016,10 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
     time: float = Field(0.0)
     """If greater than zero, stops encoding at the specified time. `-t` option of FFmpeg"""
 
+    def set_time(self, time: float) -> Self:
+        self.time = time
+        return self
+
     vsync: Literal["auto", "passthrough", "cfr", "vfr"] = Field("cfr")
     """
     The video's framerate mode, applied to all subsequent output targets. `-vsync` option of FFmpeg
@@ -1380,6 +1384,27 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             raise FileNotFoundError("FFmpeg wasn't found on the system after an attempt to download it")
 
     # # Video
+
+    @staticmethod
+    def loop(path: Path, *, times: int=1, output: Path=None, echo: bool=True) -> Path:
+        """Loop a video N-1 times, output to a new file or replace the original"""
+        if not (path := BrokenPath.get(path, exists=True)):
+            return None
+        if ((times := times - 1) <= 0):
+            return path
+        BrokenFFmpeg.install()
+
+        # Optional override or inline
+        output = (output or path)
+        looped = output.with_stem(f"{output.stem}-{times}-loops")
+        log.info(f"Looping video ({path}) {times}x times to ({output})", echo=echo)
+
+        # Fastest way to loop a video, no re-encoding
+        (BrokenFFmpeg(stream_loop=(times - 1)).quiet().copy_audio().copy_video()
+            .input(path).output(looped, pixel_format=None).run())
+
+        # Replace the original file or move to target
+        return looped.replace(output)
 
     @staticmethod
     @functools.lru_cache

@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 # ------------------------------------------------------------------------------------------------ #
 
-class BaseEstimator(
+class DepthEstimatorBase(
     ExternalTorchBase,
     ExternalModelsBase,
     ABC
@@ -55,9 +55,9 @@ class BaseEstimator(
     def normalize(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
         return (array - array.min()) / ((array.max() - array.min()) or 1)
 
-    @staticmethod
-    def normalize_uint16(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
-        return ((2**16 - 1) * BaseEstimator.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
+    @classmethod
+    def normalize_uint16(cls, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
+        return ((2**16 - 1) * cls.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
 
     @staticmethod
     def image_hash(image: LoadableImage) -> int: # Fixme: Better place?
@@ -71,7 +71,7 @@ class BaseEstimator(
 
         # Hashlib for deterministic hashes, join class name, model, and image hash
         image: ImageType = numpy.array(LoadImage(image).convert("RGB"))
-        image_hash: str = f"{hash(self)}{BaseEstimator.image_hash(image)}"
+        image_hash: str = f"{hash(self)}{DepthEstimatorBase.image_hash(image)}"
         image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
 
         # Estimate if not on cache
@@ -79,14 +79,14 @@ class BaseEstimator(
             self.load_torch()
             self.load_model()
             torch.set_num_threads(multiprocessing.cpu_count())
-            depth = BaseEstimator.normalize_uint16(self._estimate(image))
+            depth = DepthEstimatorBase.normalize_uint16(self._estimate(image))
             Image.fromarray(depth).save(buffer := BytesIO(), format=self._format)
             self._cache.set(key=image_hash, value=buffer.getvalue())
         else:
             # Load the virtual file raw bytes as numpy
             depth = numpy.array(Image.open(BytesIO(depth)))
 
-        return BaseEstimator.normalize(self._post_processing(depth))
+        return DepthEstimatorBase.normalize(self._post_processing(depth))
 
     @functools.wraps(estimate)
     @abstractmethod
@@ -101,7 +101,7 @@ class BaseEstimator(
 
 # ------------------------------------------------------------------------------------------------ #
 
-class DepthAnythingBase(BaseEstimator):
+class DepthAnythingBase(DepthEstimatorBase):
     class Model(str, BrokenEnum):
         Small = "small"
         Base  = "base"
@@ -160,7 +160,7 @@ class DepthAnythingV2(DepthAnythingBase):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class DepthPro(BaseEstimator):
+class DepthPro(DepthEstimatorBase):
     """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[/]"""
     type: Annotated[Literal["depthpro"], BrokenTyper.exclude()] = "depthpro"
 
@@ -214,7 +214,7 @@ class DepthPro(BaseEstimator):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class ZoeDepth(BaseEstimator):
+class ZoeDepth(DepthEstimatorBase):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/]"""
     type: Annotated[Literal["zoedepth"], BrokenTyper.exclude()] = "zoedepth"
 
@@ -238,7 +238,7 @@ class ZoeDepth(BaseEstimator):
 
     # Downscale for the largest component to be 512 pixels (Zoe precision), invert for 0=infinity
     def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
-        depth = Image.fromarray(1 - BaseEstimator.normalize(self._model.infer_pil(image)))
+        depth = Image.fromarray(1 - DepthEstimatorBase.normalize(self._model.infer_pil(image)))
         new = BrokenResolution.fit(old=depth.size, max=(512, 512), ar=depth.size[0]/depth.size[1])
         return numpy.array(depth.resize(new, resample=Image.LANCZOS)).astype(numpy.float32)
 
@@ -247,7 +247,7 @@ class ZoeDepth(BaseEstimator):
 
 # ------------------------------------------------------------------------------------------------ #
 
-class Marigold(BaseEstimator):
+class Marigold(DepthEstimatorBase):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
     type: Annotated[Literal["marigold"], BrokenTyper.exclude()] = "marigold"
 
@@ -293,6 +293,7 @@ class Marigold(BaseEstimator):
 # ------------------------------------------------------------------------------------------------ #
 
 DepthEstimator: TypeAlias = Union[
+    DepthEstimatorBase,
     DepthAnythingV1,
     DepthAnythingV2,
     DepthPro,

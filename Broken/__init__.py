@@ -16,12 +16,19 @@ class Environment:
         raise TypeError(f"{cls.__name__} class cannot be instantiated")
 
     @staticmethod
-    def set(key: str, value: str, /) -> None:
-        os.environ[key] = str(value)
+    def set(key: str, value: str | None, /) -> None:
+        if (value is not None):
+            os.environ[key] = str(value)
 
     @staticmethod
-    def setdefault(key: str, value: str, /) -> None:
-        os.environ.setdefault(key, str(value))
+    def setdefault(key: str, value: str | None, /) -> None:
+        if (value is not None):
+            os.environ.setdefault(key, str(value))
+
+    @staticmethod
+    def update(**values: str | None) -> None:
+        for key, value in values.items():
+            Environment.set(key, value)
 
     @staticmethod
     def get(key: str, default: str=None, /) -> str:

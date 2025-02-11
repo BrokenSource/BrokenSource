@@ -181,6 +181,7 @@ class NoUpscaler(UpscalerBase):
 from Broken.Externals.Upscaler.ncnn import Realesr, Upscayl, Waifu2x
 
 BrokenUpscaler: TypeAlias = Union[
+    UpscalerBase,
     NoUpscaler,
     PillowUpscaler,
     Realesr,

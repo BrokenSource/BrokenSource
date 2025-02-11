@@ -43,13 +43,11 @@ class TorchRelease(str, BrokenEnum):
 
     @property
     def _packages(self) -> tuple[str]:
-        return (f"torch=={self.number}", "torchvision")
+        return (f"torch=={self.value}", "torchvision")
 
     def install(self) -> None:
         log.special(f"Installing PyTorch version ({self.value})")
-
-        shell(Tools.pip, "install", "--reinstall",
-            self._packages, every("--index-url", self.index))
+        shell(Tools.pip, "install", self._packages, every("--index-url", self.index))
 
     def uninstall(self) -> None:
         shell(Tools.pip, "uninstall", "--quiet", self._packages)

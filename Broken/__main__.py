@@ -316,19 +316,19 @@ class ProjectManager:
                 EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.whl"))
 
             # Pyapp configuration
-            os.environ.update(dict(
+            Environment.update(
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
                 PYAPP_EXEC_MODULE=self.name,
                 PYAPP_PYTHON_VERSION="3.13",
                 PYAPP_PASS_LOCATION="1",
                 PYAPP_UV_ENABLED="1",
-            ))
+            )
 
-            # Rust configuration and fixes
-            os.environ.update({key: str(val) for key, val in dict(
+            # Rust configuration
+            Environment.update(
                 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=shutil.which("aarch64-linux-gnu-gcc"),
-            ).items() if val})
+            )
 
             # Cache Rust compilation across projects
             Environment.set("CARGO_HOME", BUILD_DIR)
@@ -437,18 +437,18 @@ class BrokenManager(BrokenSingleton):
                 help=False,
             )
 
-    def find_projects(self, path: Path, *, max_depth: int=1) -> None:
+    def find_projects(self, path: Path, max_depth: int=1) -> None:
         if (not path.exists()):
             return
         if (max_depth <= 0):
             return
 
         # Note: Avoid hidden, workspace, recursion
-        for directory in path.iterdir():
+        for directory in (path := BrokenPath.get(path)).iterdir():
             if directory.is_file():
                 continue
             if directory.is_symlink() or directory.is_dir():
-                self.find_projects(path=BrokenPath.get(directory), max_depth=max_depth-1)
+                self.find_projects(directory, max_depth - 1)
             if (project := ProjectManager(directory)).is_known:
                 self.projects.append(project)
 

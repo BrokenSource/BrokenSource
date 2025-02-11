@@ -62,12 +62,6 @@ class PlatformEnum(str, BrokenEnum):
     LinuxARM64:   str = "linux-arm64"
     MacosAMD64:   str = "macos-amd64"
     MacosARM64:   str = "macos-arm64"
-    NetBSDAMD64:  str = "netbsd-amd64"
-    NetBSDARM64:  str = "netbsd-arm64"
-    FreeBSDAMD64: str = "freebsd-amd64"
-    FreeBSDARM64: str = "freebsd-arm64"
-    OpenBSDAMD64: str = "openbsd-amd64"
-    OpenBSDARM64: str = "openbsd-arm64"
 
     @property
     def system(self) -> SystemEnum:
@@ -91,11 +85,6 @@ class PlatformEnum(str, BrokenEnum):
             self.LinuxARM64:   "aarch64-unknown-linux-gnu",
             self.MacosAMD64:   "x86_64-apple-darwin",
             self.MacosARM64:   "aarch64-apple-darwin",
-            self.NetBSDAMD64:  "x86_64-unknown-netbsd",
-            self.NetBSDARM64:  "aarch64-unknown-netbsd",
-            self.FreeBSDAMD64: "x86_64-unknown-freebsd",
-            self.FreeBSDARM64: "aarch64-unknown-freebsd",
-            self.OpenBSDAMD64: "x86_64-unknown-openbsd",
         }[self]
 
     _AllAMD64: str = "all-amd64"
