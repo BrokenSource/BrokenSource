@@ -1,7 +1,7 @@
 import site
 import sys
 from pathlib import Path
-from typing import Annotated, Iterable, Optional, Self, Union
+from typing import Annotated, Iterable, Optional, Union
 
 from typer import Option
 
@@ -34,15 +34,30 @@ class TorchRelease(str, BrokenEnum):
     TORCH_260_ROCM_624 = "2.6.0+rocm6.2.4"
     TORCH_260_XPU      = "2.6.0+xpu"
 
+    # Installation
+
     @property
     def index(self) -> Optional[str]:
         if (not self.plain):
             return TORCH_INDEX_URL_STABLE + (self.flavor or '')
 
+    @property
+    def _packages(self) -> tuple[str]:
+        return (f"torch=={self.number}", "torchvision")
+
+    def install(self) -> None:
+        log.special(f"Installing PyTorch version ({self.value})")
+
+        shell(Tools.pip, "install", "--reinstall",
+            self._packages, every("--index-url", self.index))
+
+    def uninstall(self) -> None:
+        shell(Tools.pip, "uninstall", "--quiet", self._packages)
+
     # Differentiators
 
     @property
-    def version(self) -> str:
+    def number(self) -> str:
         return self.value.split("+")[0]
 
     @property
@@ -72,6 +87,23 @@ class TorchRelease(str, BrokenEnum):
     def xpu(self) -> bool:
         return ("+xpu" in self.value)
 
+# -----------------------------------------------|
+
+class SimpleTorch(BrokenEnum):
+    """Global torch versions target and suggestions"""
+    CPU   = TorchRelease.TORCH_260_CPU
+    MACOS = TorchRelease.TORCH_260_MACOS
+    CUDA  = TorchRelease.TORCH_260_CUDA_124
+    ROCM  = TorchRelease.TORCH_260_ROCM_624
+    XPU   = TorchRelease.TORCH_260_XPU
+
+    @classmethod
+    def prompt_choices(cls) -> Iterable[str]:
+        for option in cls:
+            if (option is cls.MACOS):
+                continue
+            yield option.name.lower()
+
 # ------------------------------------------------------------------------------------------------ #
 
 class BrokenTorch:
@@ -79,8 +111,8 @@ class BrokenTorch:
     @staticmethod
     def docker() -> Iterable[TorchRelease]:
         """List of versions for docker images builds"""
-        yield TorchRelease.TORCH_260_CUDA_124
-        yield TorchRelease.TORCH_260_CPU
+        yield SimpleTorch.CUDA
+        yield SimpleTorch.CPU
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
@@ -122,34 +154,24 @@ class BrokenTorch:
 
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
-                version = TorchRelease.TORCH_260_CUDA_124
+                version = SimpleTorch.CUDA
 
             # Fixed single version for macOS
             if BrokenPlatform.OnMacOS:
-                version = TorchRelease.TORCH_260_MACOS
+                version = SimpleTorch.MACOS
 
             else:
                 version = BrokenTorch.prompt_flavor()
 
-        if (installed != version):
-            log.special(f"Installing PyTorch version ({denum(version)})")
+        if (installed == version):
+            log.special("• Requested torch version matches current one!")
+            return
 
-            # Remove previous version, install new
-            shell(Tools.pip, "uninstall", "--quiet", "torch")
-            shell(Tools.pip, "install", f"torch=={version.version}", "torchvision", every("--index-url", version.index))
-            shell(Tools.pip, "install", "transformers")
-        else:
-            log.special("• Requested install version matches current!")
+        version.install()
 
     @staticmethod
     def prompt_flavor() -> TorchRelease:
         from rich.prompt import Prompt
-
-        class Options(BrokenEnum):
-            CPU  = TorchRelease.TORCH_260_CPU
-            CUDA = TorchRelease.TORCH_260_CUDA_124
-            ROCM = TorchRelease.TORCH_260_ROCM_624
-            XPU  = TorchRelease.TORCH_260_XPU
 
         log.special("""
             Generally speaking, you should chose for:
@@ -162,9 +184,9 @@ class BrokenTorch:
         """, dedent=True)
 
         try:
-            choice = Options.get(Prompt.ask(
+            choice = SimpleTorch.get(Prompt.ask(
                 prompt="\n:: What PyTorch version do you want to install?\n\n",
-                choices=list(map(str.lower, Options.keys())),
+                choices=list(SimpleTorch.prompt_choices()),
                 default="cuda"
             ).upper())
             print()
