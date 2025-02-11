@@ -16,10 +16,11 @@ import click
 import typer
 import typer.rich_utils
 from attr import Factory, define
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from rich import get_console
 from rich.panel import Panel
 from rich.text import Text
+from typer.models import OptionInfo
 
 from Broken import (
     BrokenAttrs,
@@ -135,8 +136,7 @@ class BrokenTyper:
 
         # Convert pydantic to a wrapper with same signature
         if issubclass(cls, BaseModel):
-            _instance = (target() if isinstance(target, type) else target)
-            target = BrokenTyper.pydantic2typer(cls=_instance, post=post)
+            target = BrokenTyper.pydantic2typer(cls=target, post=post)
             name = (name or cls.__name__)
             naih = True # (Complex command)
         else:
@@ -161,24 +161,50 @@ class BrokenTyper:
         )(target)
 
     @staticmethod
-    def pydantic2typer(cls: object, post: Callable=None) -> Callable:
+    def pydantic2typer(
+        cls: Union[BaseModel, type[BaseModel]],
+        post: Callable=None
+    ) -> Callable:
         """Makes a Pydantic BaseModel class signature Typer compatible, creating a class and sending
         it to the 'post' method for back-communication/catching the new object instance"""
-        from pydantic import BaseModel
-        from typer.models import OptionInfo
 
-        if not issubclass(this := type(cls), BaseModel):
-            raise TypeError(f"Object {this} is not a Pydantic BaseModel")
+        # Assert object derives from BaseModel
+        if isinstance(cls, type):
+            if (not issubclass(cls, BaseModel)):
+                raise TypeError(f"Class type {cls} is not a pydantic BaseModel")
+            signature = cls
+        else:
+            if (not isinstance(cls, BaseModel)):
+                raise TypeError(f"Class instance {cls} is not a pydantic BaseModel")
+            signature = type(cls)
 
         def wrapper(**kwargs):
+            nonlocal cls, post
+
+            # Instantiate if type
+            if isinstance(cls, type):
+                cls = cls()
+
+            # Copy new values to the instance
             for name, value in kwargs.items():
+                field = cls.model_fields[name]
+
+                # Idea: Deal with nested models?
+
+                # Skip factory fields, not our business
+                if (field.default_factory is not None):
+                    continue
+
                 setattr(cls, name, value)
+
+            # Call the post method if provided
             if post: post(cls)
 
         # Copy the signatures to the wrapper function (the new initializer)
-        wrapper.__signature__ = inspect.signature(type(cls))
+        wrapper.__signature__ = inspect.signature(signature)
         wrapper.__doc__ = cls.__doc__
 
+        # Note: Requires ConfigDict(use_attribute_docstrings=True)
         # Inject docstring into typer's help
         for value in cls.model_fields.values():
             for metadata in value.metadata:
