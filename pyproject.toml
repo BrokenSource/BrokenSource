@@ -49,7 +49,7 @@ dependencies = [
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    "yt-dlp~=2024.12.6",
+    "yt-dlp~=2025.1.26",
     # Machine Learning
     "transformers~=4.48.3",
     "ollama~=0.4.7",
@@ -68,13 +68,13 @@ all = [
 ]
 website = [
     "mkdocs~=1.6.1",
-    "mkdocstrings~=0.27.0",
-    "mkdocstrings-python~=1.13.0",
+    "mkdocstrings~=0.28.0",
+    "mkdocstrings-python~=1.14.6",
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.3.0",
     "mkdocs-literate-nav~=0.6.1",
     "mkdocs-section-index~=0.3.9",
-    "mkdocs-material[imaging]~=9.5.46",
+    "mkdocs-material[imaging]~=9.6.3",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-include-markdown-plugin~=7.1.2",
     "mkdocs-site-urls~=0.2.0",
@@ -106,10 +106,10 @@ shaderflow = [
 gradio = [
     "fastapi~=0.115.8",
     "orjson~=3.10.11",
-    "gradio~=5.14.0",
+    "gradio~=5.15.0",
 ]
 cloud = [
-    "modal~=0.67.18",
+    "modal~=0.73.32",
     "runpod~=1.7.7",
 ]
 
