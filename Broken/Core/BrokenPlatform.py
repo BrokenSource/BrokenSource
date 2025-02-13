@@ -87,6 +87,39 @@ class PlatformEnum(str, BrokenEnum):
             self.MacosARM64:   "aarch64-apple-darwin",
         }[self]
 
+    @property
+    def pip_platform(self) -> Iterable[str]:
+
+        # https://en.wikipedia.org/wiki/MacOS_version_history
+        def mac_versions() -> Iterable[str]:
+            for minor in range(0, 16):
+                yield (10, minor)
+            for major in range(11, 16):
+                yield (major, 0)
+
+        # We MUST output ALL the platforms
+        if (self == self.WindowsAMD64):
+            yield "win_amd64"
+
+        elif (self == self.WindowsARM64):
+            yield "win_arm64"
+
+        elif (self == self.LinuxAMD64):
+            yield "manylinux2014_x86_64"
+            yield "manylinux2010_x86_64"
+            yield "manylinux1_x86_64"
+
+        elif (self == self.LinuxARM64):
+            yield "manylinux2014_aarch64"
+
+        elif (self == self.MacosAMD64):
+            for (major, minor) in reversed(list(mac_versions())):
+                yield f"macosx_{major}_{minor}_x86_64"
+
+        elif (self == self.MacosARM64):
+            for (major, minor) in reversed(list(mac_versions())):
+                yield f"macosx_{major}_{minor}_arm64"
+
     _AllAMD64: str = "all-amd64"
     _AllARM64: str = "all-arm64"
     _AllHost:  str = "all-host"

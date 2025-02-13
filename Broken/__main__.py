@@ -1,7 +1,5 @@
-import contextlib
 import itertools
 import json
-import os
 import re
 import shutil
 import sys
@@ -261,19 +259,12 @@ class ProjectManager:
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
             log.warning("ARM general support is only present in macOS")
 
-        # Fixme: Wait for uv's implementation of pip wheel
-        if (standalone and target != BrokenPlatform.Host):
-            return log.error((
-                "Standalone releases require a host matching the target platform, otherwise "
-                "awaiting implementation of (https://github.com/astral-sh/uv/issues/1681). "
-                f"Attempted to build for {target} on {BrokenPlatform.Host}."
-            ))
-
         log.note("Building Project Release for", target)
 
         if self.is_python:
             BrokenManager.rust()
             BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
+            PYTHON_VERSION: str = "3.13"
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
@@ -293,36 +284,53 @@ class ProjectManager:
             EXTRA  = set(WHEELS.glob("*.whl")) - {MAIN}
 
             if (standalone):
-                for dependency in filter(None, shell(
-                    "uv", "export", "--all-packages",
-                    "--format", "requirements-txt",
-                    "--no-editable", "--no-hashes",
-                    "--no-header", "--no-dev",
-                    output=True
-                ).splitlines()):
-                    if (dependency.startswith(".")):
-                        continue
 
-                    dependency = dependency.split(";")[0]
-
-                    if shell(
+                # Fixme: Improve this with (https://github.com/astral-sh/uv/issues/1681)
+                def fetch_wheel(dependency: str) -> None:
+                    if (returncode := shell(
                         sys.executable, "-m", "pip", "download", dependency,
+                        (("--platform", x) for x in target.pip_platform),
                         "--dest", BROKEN.DIRECTORIES.BUILD_WHEELS,
-                        "--no-deps",
-                    ).returncode != 0:
-                        raise RuntimeError(log.error(f"Failed to download wheel for: {dependency}"))
+                        "--python-version", PYTHON_VERSION,
+                        "--no-deps", "--prefer-binary",
+                    ).returncode) != 0:
+                        log.error(f"Failed to download dependency ({dependency})")
+                        exit(returncode)
 
-                # Add all dependencies wheels to the extra list
-                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.whl"))
+                from concurrent.futures import ThreadPoolExecutor
+
+                with ThreadPoolExecutor(max_workers=10) as pool:
+                    for dependency in filter(None, shell(
+                        "uv", "export", "--all-packages",
+                        "--format", "requirements-txt",
+                        "--no-editable", "--no-hashes",
+                        "--no-header", "--no-dev",
+                        output=True
+                    ).splitlines()):
+
+                        # Skip editable packages
+                        if (dependency.startswith(".")):
+                            continue
+
+                        # Ignore platform constraints
+                        dependency = dependency.split(";")[0]
+
+                        pool.submit(fetch_wheel, dependency)
+
+                # Add all dependencies wheels and sdists to the extra list
+                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.whl")) - EXTRA - {MAIN}
+                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.tar.gz"))
 
             # Pyapp configuration
             Environment.update(
+                PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
+                PYAPP_PYTHON_VERSION=PYTHON_VERSION,
                 PYAPP_EXEC_MODULE=self.name,
-                PYAPP_PYTHON_VERSION="3.13",
-                PYAPP_PASS_LOCATION="1",
-                PYAPP_UV_ENABLED="1",
+                PYAPP_DISTRIBUTION_EMBED=1,
+                PYAPP_PASS_LOCATION=1,
+                PYAPP_UV_ENABLED=1,
             )
 
             # Rust configuration
@@ -340,9 +348,12 @@ class ProjectManager:
             if (_PYAPP_FORK := True):
                 if not (fork := BROKEN.DIRECTORIES.REPO_BUILD/"PyApp").exists():
                     shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork, "-b", "custom")
+                embed = (fork/"src"/"embed")
 
                 # Remove previous embeddings if any
-                for file in (fork/"src"/"embed").glob("*.whl"):
+                for file in embed.glob("*.whl"):
+                    file.unlink()
+                for file in embed.glob("*.tar.gz"):
                     file.unlink()
 
                 # Actually compile it
@@ -374,7 +385,7 @@ class ProjectManager:
                 f"{self.name.lower()}",
                 f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
-                "-std"*standalone,
+                "-standalone"*standalone,
                 f"{target.extension}",
             ))
             BrokenPath.copy(src=binary, dst=release_path)
@@ -504,10 +515,13 @@ class BrokenManager(BrokenSingleton):
         else:
             shell("mkdocs", "serve")
 
-    def compile_all(self) -> None:
-        for project in self.projects:
+    def compile_all(self,
+        standalone: Annotated[bool, Option("--standalone", "-s")]=False,
+    ) -> None:
+        for project in self.projects[1:]:
             project.compile(
                 target=[PlatformEnum._AllHost],
+                standalone=standalone,
                 tarball=True,
             )
 
@@ -631,7 +645,7 @@ class BrokenManager(BrokenSingleton):
         """♻️  Synchronize common resources files across all projects"""
         root = BROKEN.DIRECTORIES.REPOSITORY
 
-        for project in self.projects:
+        for project in self.projects[1:]:
             if (project.path/".github"/".nosync").exists():
                 continue
             for file in flatten(
