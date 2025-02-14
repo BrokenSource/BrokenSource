@@ -345,7 +345,7 @@ class ProjectManager:
                 if bool(torch):
 
                     # Help the linker deal with 3.2 GB Torch CUDA binaries..
-                    Environment.add("RUSTFLAGS", "-C code-model=large")
+                    Environment.append("RUSTFLAGS", "-C code-model=large")
 
                     fetch_wheel(
                         dependencies=torch.packages,
@@ -579,7 +579,7 @@ class BrokenManager(BrokenSingleton):
     def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BUILD_WHEELS,
-        all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=False,
+        all:     Annotated[bool, Option("--all",     "-a", help="Build all projects")]=True,
     ) -> Path:
         """🧀 Build all project wheels and publish to PyPI"""
         BrokenPath.recreate(output)

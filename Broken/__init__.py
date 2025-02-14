@@ -21,11 +21,11 @@ class Environment:
             os.environ[key] = str(value)
 
     @staticmethod
-    def add(key: str, value: str | None, /) -> None:
+    def append(key: str, value: str | None, /, pad: str=" ") -> None:
         if (key not in os.environ):
             Environment.set(key, value)
         elif (value is not None):
-            os.environ[key] += " " + str(value)
+            os.environ[key] += pad + str(value)
 
     @staticmethod
     def setdefault(key: str, value: str | None, /) -> None:

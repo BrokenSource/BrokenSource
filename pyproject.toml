@@ -162,6 +162,7 @@ ignore = [
     "F403", # Star imports can be useful at times
     "E402", # Late/runtime imports are ok for torch
     "E701", # Rarely, this looks better than new line
+    "E731", # Lambdas can be more readable at times
     "E741", # Don't tell the Electrical Engineers
 ]
 

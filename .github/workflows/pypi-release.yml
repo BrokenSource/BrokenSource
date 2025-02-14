@@ -7,7 +7,7 @@ on:
 
 jobs:
   main:
-    name: Release Wheels
+    name: Release wheels
     runs-on: ubuntu-latest
     steps:
       - uses: BrokenSource/BrokenSource@main
@@ -24,9 +24,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Wheels
-          path: Build/Wheels/*.whl
+          path: Build/Wheels/*
 
-      - name: Create Release Tag
+      - name: Create tag
         if: ${{env.GHA_TAG == 'True'}}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
