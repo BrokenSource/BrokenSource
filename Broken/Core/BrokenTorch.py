@@ -38,7 +38,7 @@ class TorchRelease(str, BrokenEnum):
 
     @property
     def index(self) -> Optional[str]:
-        if (not self.plain):
+        if (not self.is_plain):
             return TORCH_INDEX_URL_STABLE + (self.flavor or '')
 
     @property
@@ -66,23 +66,23 @@ class TorchRelease(str, BrokenEnum):
     # Util properties
 
     @property
-    def plain(self) -> bool:
+    def is_plain(self) -> bool:
         return ("+" not in self.value)
 
     @property
-    def cuda(self) -> bool:
+    def is_cuda(self) -> bool:
         return ("+cu" in self.value)
 
     @property
-    def rocm(self) -> bool:
+    def is_rocm(self) -> bool:
         return ("+rocm" in self.value)
 
     @property
-    def cpu(self) -> bool:
+    def is_cpu(self) -> bool:
         return ("+cpu" in self.value)
 
     @property
-    def xpu(self) -> bool:
+    def is_xpu(self) -> bool:
         return ("+xpu" in self.value)
 
 # -----------------------------------------------|

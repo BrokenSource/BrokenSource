@@ -271,6 +271,13 @@ class ProjectManager:
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
             log.warning("ARM general support is only present in macOS")
 
+        # Fixme: Wait for uv's implementation of pip wheel for my own sanity
+        if (standalone and target != BrokenPlatform.Host):
+            log.error("Standalone releases are best built in a host matching the target platform")
+            log.error("• Awaiting implementation of (https://github.com/astral-sh/uv/issues/1681)")
+            log.error(f"• Attempted to build for '{target.value}' on '{BrokenPlatform.Host.value}'")
+            return
+
         log.note("Building Project Release for", target)
 
         if self.is_python:
