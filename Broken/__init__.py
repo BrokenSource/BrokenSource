@@ -21,6 +21,13 @@ class Environment:
             os.environ[key] = str(value)
 
     @staticmethod
+    def add(key: str, value: str | None, /) -> None:
+        if (key not in os.environ):
+            Environment.set(key, value)
+        elif (value is not None):
+            os.environ[key] += " " + str(value)
+
+    @staticmethod
     def setdefault(key: str, value: str | None, /) -> None:
         if (value is not None):
             os.environ.setdefault(key, str(value))
@@ -198,7 +205,7 @@ from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenProject import BrokenProject
 from Broken.Core.BrokenResolution import BrokenResolution
 from Broken.Core.BrokenScheduler import BrokenScheduler, SchedulerTask
-from Broken.Core.BrokenTorch import BrokenTorch, TorchRelease
+from Broken.Core.BrokenTorch import BrokenTorch, SimpleTorch, TorchRelease
 from Broken.Core.BrokenTrackers import (
     FileTracker,
     OnceTracker,

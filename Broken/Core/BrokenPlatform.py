@@ -105,12 +105,14 @@ class PlatformEnum(str, BrokenEnum):
             yield "win_arm64"
 
         elif (self == self.LinuxAMD64):
+            yield "linux_x86_64"
             yield "manylinux2014_x86_64"
             yield "manylinux2010_x86_64"
             yield "manylinux1_x86_64"
 
         elif (self == self.LinuxARM64):
             yield "manylinux2014_aarch64"
+            yield "linux_aarch64"
 
         elif (self == self.MacosAMD64):
             for (major, minor) in reversed(list(mac_versions())):

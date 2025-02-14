@@ -4,7 +4,7 @@ import re
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, Self
+from typing import Annotated, Optional, Self, Union
 
 import toml
 from attr import Factory, define
@@ -23,9 +23,12 @@ from Broken import (
     Environment,
     PlatformEnum,
     Runtime,
+    SimpleTorch,
     SystemEnum,
+    TorchRelease,
     __version__,
     combinations,
+    every,
     flatten,
     log,
     shell,
@@ -229,8 +232,13 @@ class ProjectManager:
 
         standalone: Annotated[bool,
             Option("--standalone", "-s",
-            help="(Experimental) Create self-contained distributions with all dependencies",
+            help="(Standalone) Create self-contained distributions with all dependencies",
         )] = False,
+
+        torch: Annotated[Optional[TorchRelease],
+            Option("--torch", "-r",
+            help="(Standalone) Bundle a specific PyTorch version with the project"
+        )] = None,
     ) -> None:
         """
         📦 Release the Project as a distributable binary
@@ -255,6 +263,10 @@ class ProjectManager:
         elif (target == PlatformEnum.WindowsARM64):
             return log.skip("Windows on ARM is not widely supported")
 
+        # Automatically bundle some torch on projects that needs it
+        if (self.name == "DepthFlow"):
+            torch = (torch or SimpleTorch.CPU.value)
+
         # Non-macOS ARM builds can be unstable/not tested, disable on CI
         if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
             log.warning("ARM general support is only present in macOS")
@@ -264,6 +276,7 @@ class ProjectManager:
         if self.is_python:
             BrokenManager.rust()
             BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
+            BUILD_WHL: Path = BROKEN.DIRECTORIES.BUILD_WHEELS
             PYTHON_VERSION: str = "3.13"
 
             # Remove previous build cache for pyapp
@@ -286,15 +299,22 @@ class ProjectManager:
             if (standalone):
 
                 # Fixme: Improve this with (https://github.com/astral-sh/uv/issues/1681)
-                def fetch_wheel(dependency: str) -> None:
+                def fetch_wheel(
+                    dependencies: Union[str, list[str]],
+                    index: Optional[str]=None,
+                    nodeps: bool=True,
+                ) -> None:
                     if (returncode := shell(
-                        sys.executable, "-m", "pip", "download", dependency,
+                        sys.executable, "-m", "pip", "download", dependencies,
                         (("--platform", x) for x in target.pip_platform),
-                        "--dest", BROKEN.DIRECTORIES.BUILD_WHEELS,
                         "--python-version", PYTHON_VERSION,
-                        "--no-deps", "--prefer-binary",
+                        "--only-binary=:all:"*(not nodeps),
+                        "--no-deps"*(nodeps),
+                        "--prefer-binary",
+                        every("--index", index),
+                        "--dest", BUILD_WHL,
                     ).returncode) != 0:
-                        log.error(f"Failed to download dependency ({dependency})")
+                        log.error(f"Failed to download dependency ({dependencies})")
                         exit(returncode)
 
                 from concurrent.futures import ThreadPoolExecutor
@@ -318,14 +338,44 @@ class ProjectManager:
                         pool.submit(fetch_wheel, dependency)
 
                 # Add all dependencies wheels and sdists to the extra list
-                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.whl")) - EXTRA - {MAIN}
-                EXTRA |= set(BROKEN.DIRECTORIES.BUILD_WHEELS.glob("*.tar.gz"))
+                EXTRA |= set(BUILD_WHL.glob("*.whl")) - (EXTRA | {MAIN})
+                EXTRA |= set(BUILD_WHL.glob("*.tar.gz"))
+
+                # Why PyTorch can't be normal?
+                if bool(torch):
+
+                    # Help the linker deal with 3.2 GB Torch CUDA binaries..
+                    Environment.add("RUSTFLAGS", "-C code-model=large")
+
+                    fetch_wheel(
+                        dependencies=torch.packages,
+                        index=torch.index,
+                        nodeps=False
+                    )
+
+                    # Remove new duplicate and list them on extra wheels
+                    for file in set(BUILD_WHL.iterdir()) - (EXTRA | {MAIN}):
+
+                        # Note: Need case insensitive enabled due shit like this:
+                        # - https://pypi.org/project/Jinja2/3.1.4/#jinja2-3.1.4-py3-none-any.whl
+                        # - https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl
+                        duplicates = list(BUILD_WHL.glob(
+                            pattern=f"{file.name.split("-")[0]}-*",
+                            case_sensitive=False
+                        ))
+
+                        if len(duplicates) > 1:
+                            log.info(f"Removing duplicate: {file}")
+                            file.unlink()
+                            continue
+
+                        EXTRA |= {file}
 
             # Pyapp configuration
             Environment.update(
-                PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
+                PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
                 PYAPP_PYTHON_VERSION=PYTHON_VERSION,
                 PYAPP_EXEC_MODULE=self.name,
                 PYAPP_DISTRIBUTION_EMBED=1,
@@ -385,6 +435,7 @@ class ProjectManager:
                 f"{self.name.lower()}",
                 f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
+                f"-{torch.flavor}" if torch else "",
                 "-standalone"*standalone,
                 f"{target.extension}",
             ))

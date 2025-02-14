@@ -42,15 +42,15 @@ class TorchRelease(str, BrokenEnum):
             return TORCH_INDEX_URL_STABLE + (self.flavor or '')
 
     @property
-    def _packages(self) -> tuple[str]:
+    def packages(self) -> tuple[str]:
         return (f"torch=={self.value}", "torchvision")
 
     def install(self) -> None:
         log.special(f"Installing PyTorch version ({self.value})")
-        shell(Tools.pip, "install", self._packages, every("--index-url", self.index))
+        shell(Tools.pip, "install", self.packages, every("--index-url", self.index))
 
     def uninstall(self) -> None:
-        shell(Tools.pip, "uninstall", "--quiet", self._packages)
+        shell(Tools.pip, "uninstall", "--quiet", self.packages)
 
     # Differentiators
 
