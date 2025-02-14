@@ -32,13 +32,13 @@ ENV LD_LIBRARY_PATH="/usr/lib/wsl/lib"
 # (ShaderFlow) Don't use glfw
 ENV WINDOW_BACKEND="headless"
 
-# Add libEGL ICD loader and libraries
+# Add libEGL ICD loaders and libraries
 RUN apt install -y libglvnd0 libglvnd-dev libegl1-mesa-dev && \
     mkdir -p /usr/share/glvnd/egl_vendor.d && \
     echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}' > \
     /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
-# Add Vulkan ICD and libraries
+# Add Vulkan ICD loaders and libraries
 RUN apt install -y libvulkan1 libvulkan-dev && \
     mkdir -p /usr/share/vulkan/icd.d && \
     echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libGLX_nvidia.so.0","api_version":"1.3"}}' > \

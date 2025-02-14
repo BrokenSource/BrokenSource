@@ -277,7 +277,7 @@ class ProjectManager:
             BrokenManager.rust()
             BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
             BUILD_WHL: Path = BROKEN.DIRECTORIES.BUILD_WHEELS
-            PYTHON_VERSION: str = "3.13"
+            PYTHON_VERSION: str = "3.12"
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
@@ -381,6 +381,7 @@ class ProjectManager:
                 PYAPP_DISTRIBUTION_EMBED=1,
                 PYAPP_PASS_LOCATION=1,
                 PYAPP_UV_ENABLED=1,
+                PYAPP_UV_EMBED=1,
             )
 
             # Rust configuration
