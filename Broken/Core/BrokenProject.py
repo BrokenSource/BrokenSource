@@ -83,14 +83,19 @@ class BrokenProject:
         return os.chdir(self.PACKAGE.parent.parent) or self
 
     def welcome(self) -> None:
-        import pyfiglet
+        import pyfiglet # noqa
+        from Broken import BrokenTorch
+        torch = BrokenTorch.version()
         ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
         rprint(Panel(
             Align.center(ascii + "\n"),
             subtitle=''.join((
-                f"[bold dim]📦 Version {self.VERSION} • ",
-                f"Python {sys.version.split()[0]} 📦[/]"
+                "[bold dim]📦 "
+                f"Version {self.VERSION} ",
+                f"• Python {sys.version.split()[0]} ",
+                f"• Torch {torch.value} " if torch else "",
+                "📦[/]",
             )),
         ))
 
