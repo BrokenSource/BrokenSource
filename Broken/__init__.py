@@ -191,7 +191,43 @@ class Tools:
 # ---------------------------------------- Package exports --------------------------------------- #
 
 import Broken.Resources as BrokenResources
-from Broken.Core import *
+from Broken.Core import (
+    BrokenAttribute,
+    BrokenAttrs,
+    BrokenCache,
+    BrokenFluent,
+    BrokenModel,
+    BrokenRelay,
+    BrokenSingleton,
+    BrokenWatchdog,
+    DictUtils,
+    FrozenHash,
+    LazyImport,
+    Nothing,
+    Patch,
+    StaticClass,
+    ThreadedStdin,
+    apply,
+    arguments,
+    block_modules,
+    clamp,
+    combinations,
+    denum,
+    easyloop,
+    every,
+    flatten,
+    hyphen_range,
+    install,
+    limited_ratio,
+    list_get,
+    multi_context,
+    nearest,
+    overrides,
+    pop_fill,
+    shell,
+    smartproxy,
+    tempvars,
+)
 from Broken.Core.BrokenEnum import BrokenEnum, FlagEnum, MultiEnum
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
