@@ -339,6 +339,10 @@ class ProjectManager:
                         if (dependency.startswith(".")):
                             continue
 
+                        # Skip audioop on Python 3.13+ as it was dropped from stdlib
+                        if (PYTHON_VERSION == "3.13") and ("audioop" in dependency):
+                            continue
+
                         # Ignore platform constraints
                         dependency = dependency.split(";")[0]
 
@@ -476,9 +480,6 @@ class BrokenManager(BrokenSingleton):
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
-        for path in BROKEN.DIRECTORIES.REPO_META.iterdir():
-            self.find_projects(path/"Projects")
-
         with self.cli.panel("🚀 Core"):
             self.cli.command(BrokenTorch.install)
             self.cli.command(self.insiders)
@@ -512,6 +513,10 @@ class BrokenManager(BrokenSingleton):
             return
         if (max_depth <= 0):
             return
+
+        # Special directories that could contain projects
+        if (projects := path/"Projects").exists():
+            self.find_projects(projects, 1)
 
         # Note: Avoid hidden, workspace, recursion
         for directory in (path := BrokenPath.get(path)).iterdir():
