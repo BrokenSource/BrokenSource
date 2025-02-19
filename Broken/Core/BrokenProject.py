@@ -20,7 +20,7 @@ from rich.align import Align
 from rich.panel import Panel
 
 import Broken
-from Broken import Environment, Runtime
+from Broken import Environment, Runtime, Tools
 from Broken.Core import (
     BrokenCache,
     arguments,
@@ -156,28 +156,22 @@ class BrokenProject:
             if (current := Version(self.VERSION)).is_prerelease:
                 return None
 
-            with BrokenCache.requests(
-                cache_name=(venv_path/"version.check"),
-                expire_after=(3600),
-            ) as requests:
-                import json
+            with contextlib.suppress(Exception):
+                with BrokenCache.package_info(self.APP_NAME.lower()) as package:
+                    latest = Version(package.info.version)
 
-                with contextlib.suppress(Exception):
-                    _api   = f"https://pypi.org/pypi/{self.APP_NAME.lower()}/json"
-                    latest = Version(json.loads(requests.get(_api).text)["info"]["version"])
+                    # Newer version available
+                    if (current < latest):
+                        log.minor((
+                            f"A newer version of the project [bold blue]v{latest}[/] is available! "
+                            f"Get it at https://brokensrc.dev/get/releases/ (Current: v{current})"
+                        ))
 
-                # Newer version available
-                if (current < latest):
-                    log.minor((
-                        f"A newer version of the project [bold blue]v{latest}[/] is available! "
-                        f"Get it at https://brokensrc.dev/get/releases/ (Current: v{current})"
-                    ))
-
-                # Back to the future!
-                elif (current > latest):
-                    log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
-                    log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
-                    log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
+                    # Back to the future!
+                    elif (current > latest):
+                        log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
+                        log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
+                        log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
 
         # Warn: Must not interrupt user if actions are being taken (argv)
         if Environment.flag("VERSION_CHECK", 1) and (not arguments()):

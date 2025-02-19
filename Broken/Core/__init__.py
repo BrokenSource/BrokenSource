@@ -5,6 +5,7 @@ import functools
 import hashlib
 import inspect
 import itertools
+import json
 import os
 import re
 import shutil
@@ -623,6 +624,17 @@ class BrokenCache(StaticClass):
             requests.Session = session
         return session
 
+    @staticmethod
+    @contextlib.contextmanager
+    def package_info(package: str) -> Generator[DotMap, None, None]:
+        venv_path = Path(os.getenv("VIRTUAL_ENV"))
+
+        with BrokenCache.requests(
+            cache_name=(venv_path/"pypi-info.cache"),
+            expire_after=3600,
+        ) as requests:
+            url = f"https://pypi.org/pypi/{package}/json"
+            yield DotMap(json.loads(requests.get(url).text))
 
 @define
 class BrokenRelay:
@@ -645,15 +657,15 @@ class BrokenRelay:
         window.key_event_func = relay @ (camera.walk, camera.rotate)
         ```
     """
-    registry: deque[Callable] = Factory(deque)
+    _registry: deque[Callable] = Factory(deque)
 
-    def subscribe(self, *methods: Iterable[Callable]) -> Self:
+    def bind(self, *methods: Callable) -> Self:
         """Adds callbacks to be called with same arguments as self.__call__"""
-        self.registry.extend(flatten(methods))
+        self._registry.extend(flatten(methods))
         return self
 
     def __call__(self, *args, **kwargs):
-        for callback in self.registry:
+        for callback in self._registry:
             callback(*args, **kwargs)
 
 
