@@ -449,52 +449,58 @@ class _Resources:
     def __truediv__(self, name: str) -> Path:
         return self.__div__(name)
 
+    # # Bundled items
+
+    @property
+    def EXAMPLES(self) -> Path:
+        return (self.ROOT/"Examples")
+
     # # Common section
 
     @property
     def IMAGES(self) -> Path:
-        return mkdir(self.ROOT/"Images")
+        return (self.ROOT/"Images")
 
     @property
     def AUDIO(self) -> Path:
-        return mkdir(self.ROOT/"Audio")
+        return (self.ROOT/"Audio")
 
     @property
     def FONTS(self) -> Path:
-        return mkdir(self.ROOT/"Fonts")
+        return (self.ROOT/"Fonts")
 
     @property
     def TEMPLATES(self) -> Path:
-        return mkdir(self.ROOT/"Templates")
+        return (self.ROOT/"Templates")
 
     # # Branding section
 
     @property
     def ICON_PNG(self) -> Path:
-        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
+        return (self.IMAGES)/f"{self.PROJECT.APP_NAME}.png"
 
     @property
     def ICON_ICO(self) -> Path:
-        return mkdir(self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
+        return (self.IMAGES)/f"{self.PROJECT.APP_NAME}.ico"
 
     # # Shaders section
 
     @property
     def SCENES(self) -> Path:
-        return mkdir(self.ROOT/"Scenes")
+        return (self.ROOT/"Scenes")
 
     @property
     def SHADERS(self) -> Path:
-        return mkdir(self.ROOT/"Shaders")
+        return (self.ROOT/"Shaders")
 
     @property
     def SHADERS_INCLUDE(self) -> Path:
-        return mkdir(self.SHADERS/"Include")
+        return (self.SHADERS/"Include")
 
     @property
     def FRAGMENT(self) -> Path:
-        return mkdir(self.SHADERS/"Fragment")
+        return (self.SHADERS/"Fragment")
 
     @property
     def VERTEX(self) -> Path:
-        return mkdir(self.SHADERS/"Vertex")
+        return (self.SHADERS/"Vertex")

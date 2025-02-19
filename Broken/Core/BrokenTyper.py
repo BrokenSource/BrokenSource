@@ -383,7 +383,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
         something that contains the substring of `tag` and add as a command to this Typer app"""
         search = deque()
 
-        # Note: Safe get argv[1], pop if valid, else a null path
+        # Note: Safe get argv[1], remove from argv if valid to not interfere with Typer
         if (direct := Path(dict(enumerate(sys.argv)).get(1, "\0"))).exists():
             direct = Path(sys.argv.pop(1))
 
@@ -393,7 +393,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
 
         # It can be a glob pattern
         elif ("*" in direct.name):
-            search.extend(Path.cwd().glob(direct.name))
+            search.extend(direct.parent.glob(direct.name))
 
         # A directory of projects was sent
         elif direct.is_dir():
@@ -407,9 +407,17 @@ class BrokenLauncher(ABC, BrokenAttrs):
             search.extend(self.PROJECT.DIRECTORIES.PROJECTS.rglob("*.py"))
             search.extend(Path.cwd().glob("*.py"))
 
+        # Add bundled examples in the resources directory
+        if (len(search) == 0) or Environment.flag("BUNDLED", 0):
+            search.extend(self.PROJECT.RESOURCES.EXAMPLES.rglob("*.py"))
+
+        # No files were scanned
+        if (len(search) == 0):
+            log.warning(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
+
         # Add commands of all files, warn if none was sucessfully added
-        if (sum(self.add_project(python=file, tag=tag) for file in search) == 0):
-            log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in:")
+        elif (sum(self.add_project(python=file, tag=tag) for file in search) == 0):
+            log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
             log.warning('\n'.join(f"• {file}" for file in search))
 
     def _regex(self, tag: str) -> re.Pattern:
