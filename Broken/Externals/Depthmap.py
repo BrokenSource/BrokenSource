@@ -63,7 +63,7 @@ class _TempHelper:
         ).astype(dtype)
 
     @staticmethod
-    def image_hash(image: LoadableImage) -> int:
+    def image_hash(image: Union[ImageType, np.ndarray]) -> int:
         return xxhash.xxh3_64_intdigest(image.tobytes())
 
 # ------------------------------------------------------------------------------------------------ #
@@ -82,19 +82,29 @@ class DepthEstimatorBase(
     thicken: Annotated[bool, Option("--thicken", "-t", " /--raw")] = Field(True)
     """Extrude the edges to mitigate artifacts in DepthFlow"""
 
-    _dtype: np.dtype = PrivateAttr(np.uint16)
-    """The dtype to use save normalize"""
+    class DTypeEnum(str, BrokenEnum):
+        float64 = "float64"
+        float32 = "float32"
+        float16 = "float16"
+        uint16  = "uint16"
+        uint8   = "uint8"
+
+    dtype: Annotated[DTypeEnum, Option("--dtype", "-d")] = Field(DTypeEnum.uint16)
+    """The final data format to work, save the depthmap with"""
+
+    @property
+    def np_dtype(self) -> np.dtype:
+        return getattr(np, self.dtype.value)
 
     def estimate(self,
         image: LoadableImage,
         cache: bool=True,
-        array: bool=True,
-    ) -> Union[np.ndarray, ImageType]:
+    ) -> np.ndarray:
         import gzip
 
-        # Deterministic hashes, join class name, model, and image hash
+        # Uniquely identify the image and current parameters
         image = LoadImage(image).convert("RGB")
-        key: str = f"{hash(self)}{_TempHelper.image_hash(image)}{self._dtype}"
+        key: str = f"{hash(self)}{_TempHelper.image_hash(image)}"
         key: int = xxhash.xxh3_64_intdigest(key)
 
         # Estimate if not on cache
@@ -104,7 +114,7 @@ class DepthEstimatorBase(
 
             # Estimate and convert to target dtype
             depth = self._estimate(image)
-            depth = _TempHelper.normalize(depth, dtype=self._dtype)
+            depth = _TempHelper.normalize(depth, dtype=self.np_dtype)
 
             # Save the array as a gzip compressed numpy file
             np.save(buffer := BytesIO(), depth, allow_pickle=False)
@@ -117,12 +127,10 @@ class DepthEstimatorBase(
         # Optionally thicken the depth map array
         depth = _TempHelper.normalize(depth, dtype=np.float32, min=0, max=1)
         depth = (self._thicken(depth) if self.thicken else depth)
+        return depth
 
-        return (depth if array else Image.fromarray(depth))
-
-    @functools.wraps(estimate)
     @abstractmethod
-    def _estimate(self):
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
         """The implementation shall return a normalized numpy f32 array of the depth map"""
         ...
 

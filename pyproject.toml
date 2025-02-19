@@ -45,6 +45,7 @@ dependencies = [
     "cachetools~=5.5.1",
     "pyfiglet~=1.0.2",
     "halo~=0.0.31",
+    "xxhash~=3.5.0",
     "pillow",
     # Internet
     "requests-cache~=1.2.1",
