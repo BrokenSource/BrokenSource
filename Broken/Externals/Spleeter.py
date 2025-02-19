@@ -26,7 +26,7 @@ class BrokenSpleeter(ExternalModelsBase, ExternalTorchBase):
     def _load_model(self) -> None:
         self.load_torch()
         gpu = ("[gpu]" if torch.cuda.is_available() else "")
-        install(packages="audio_separator", pypi=f"audio_separator{gpu}")
+        install(package="audio_separator", pypi=f"audio_separator{gpu}")
 
         from audio_separator.separator import Separator
 

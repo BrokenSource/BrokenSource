@@ -1,14 +1,14 @@
 # pyright: reportMissingImports=false
-
 import copy
 import functools
 import hashlib
-import multiprocessing
+import sys
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeAlias, Union
 
-import numpy
+import numpy as np
+import xxhash
 from diskcache import Cache as DiskCache
 from halo import Halo
 from PIL import Image
@@ -37,6 +37,37 @@ if TYPE_CHECKING:
 
 # ------------------------------------------------------------------------------------------------ #
 
+# Fixme: Better place?
+class _TempHelper:
+
+    @staticmethod
+    def normalize(
+        array: np.ndarray,
+        dtype: np.dtype=np.float32,
+        min: Optional[float]=None,
+        max: Optional[float]=None,
+    ) -> np.ndarray:
+
+        # Get the dtype information
+        info = (np.iinfo(dtype) if np.issubdtype(dtype, np.integer) else np.finfo(dtype))
+
+        # Optionally override target dtype min and max
+        min = (info.min if (min is None) else min)
+        max = (info.max if (max is None) else max)
+
+        # Work with float64 as array might be low precision
+        return np.interp(
+            x=array.astype(np.float64),
+            xp=(np.min(array), np.max(array)),
+            fp=(min, max),
+        ).astype(dtype)
+
+    @staticmethod
+    def image_hash(image: LoadableImage) -> int:
+        return xxhash.xxh3_64_intdigest(image.tobytes())
+
+# ------------------------------------------------------------------------------------------------ #
+
 class DepthEstimatorBase(
     ExternalTorchBase,
     ExternalModelsBase,
@@ -48,45 +79,46 @@ class DepthEstimatorBase(
     ))
     """DiskCache object for caching depth maps"""
 
-    _format: str = PrivateAttr("png")
-    """The format to save the depth map as"""
+    thicken: Annotated[bool, Option("--thicken", "-t", " /--raw")] = Field(True)
+    """Extrude the edges to mitigate artifacts in DepthFlow"""
 
-    @staticmethod
-    def normalize(array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
-        return (array - array.min()) / ((array.max() - array.min()) or 1)
-
-    @classmethod
-    def normalize_uint16(cls, array: numpy.ndarray) -> numpy.ndarray: # Fixme: Better place?
-        return ((2**16 - 1) * cls.normalize(array.astype(numpy.float32))).astype(numpy.uint16)
-
-    @staticmethod
-    def image_hash(image: LoadableImage) -> int: # Fixme: Better place?
-        # Fixme: Speed gains on improving this heuristic, but it's good enough for now
-        return int(hashlib.sha256(LoadImage(image).tobytes()).hexdigest(), 16)
+    _dtype: np.dtype = PrivateAttr(np.uint16)
+    """The dtype to use save normalize"""
 
     def estimate(self,
         image: LoadableImage,
-        cache: bool=True
-    ) -> numpy.ndarray:
+        cache: bool=True,
+        array: bool=True,
+    ) -> Union[np.ndarray, ImageType]:
+        import gzip
 
-        # Hashlib for deterministic hashes, join class name, model, and image hash
-        image: ImageType = numpy.array(LoadImage(image).convert("RGB"))
-        image_hash: str = f"{hash(self)}{DepthEstimatorBase.image_hash(image)}"
-        image_hash: int = int(hashlib.sha256(image_hash.encode()).hexdigest(), 16)
+        # Deterministic hashes, join class name, model, and image hash
+        image = LoadImage(image).convert("RGB")
+        key: str = f"{hash(self)}{_TempHelper.image_hash(image)}{self._dtype}"
+        key: int = xxhash.xxh3_64_intdigest(key)
 
         # Estimate if not on cache
-        if (not cache) or (depth := self._cache.get(image_hash)) is None:
+        if (not cache) or (depth := self._cache.get(key)) is None:
             self.load_torch()
             self.load_model()
-            torch.set_num_threads(multiprocessing.cpu_count())
-            depth = DepthEstimatorBase.normalize_uint16(self._estimate(image))
-            Image.fromarray(depth).save(buffer := BytesIO(), format=self._format)
-            self._cache.set(key=image_hash, value=buffer.getvalue())
-        else:
-            # Load the virtual file raw bytes as numpy
-            depth = numpy.array(Image.open(BytesIO(depth)))
 
-        return DepthEstimatorBase.normalize(self._post_processing(depth))
+            # Estimate and convert to target dtype
+            depth = self._estimate(image)
+            depth = _TempHelper.normalize(depth, dtype=self._dtype)
+
+            # Save the array as a gzip compressed numpy file
+            np.save(buffer := BytesIO(), depth, allow_pickle=False)
+            self._cache.set(key, gzip.compress(buffer.getvalue()))
+
+        else:
+            # Load the compressed gzip numpy file from cache
+            depth = np.load(BytesIO(gzip.decompress(depth)))
+
+        # Optionally thicken the depth map array
+        depth = _TempHelper.normalize(depth, dtype=np.float32, min=0, max=1)
+        depth = (self._thicken(depth) if self.thicken else depth)
+
+        return (depth if array else Image.fromarray(depth))
 
     @functools.wraps(estimate)
     @abstractmethod
@@ -95,8 +127,7 @@ class DepthEstimatorBase(
         ...
 
     @abstractmethod
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
-        """A step to apply post processing on the depth map if needed"""
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         return depth
 
 # ------------------------------------------------------------------------------------------------ #
@@ -107,9 +138,8 @@ class DepthAnythingBase(DepthEstimatorBase):
         Base  = "base"
         Large = "large"
 
-    model: Annotated[Model, Option("--model", "-m",
-        help="[bold red](🔴 Basic)[/] What model of DepthAnythingV2 to use")] = \
-        Field(Model.Small)
+    model: Annotated[Model, Option("--model", "-m")] = Field(Model.Small)
+    """The model of DepthAnythingV2 to use"""
 
     _processor: Any = PrivateAttr(None)
 
@@ -127,7 +157,7 @@ class DepthAnythingBase(DepthEstimatorBase):
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)
 
-    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
         inputs = self._processor(images=image, return_tensors="pt")
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
         with torch.no_grad():
@@ -142,7 +172,7 @@ class DepthAnythingV1(DepthAnythingBase):
     def _huggingface_model(self) -> str:
         return f"LiheYoung/depth-anything-{self.model.value}-hf"
 
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
         depth = gaussian_filter(input=depth, sigma=0.3)
         depth = maximum_filter(input=depth, size=5)
@@ -151,8 +181,12 @@ class DepthAnythingV1(DepthAnythingBase):
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
     type: Annotated[Literal["depthanything2"], BrokenTyper.exclude()] = "depthanything2"
-    indoor:  bool = Field(False, help="Use an indoor fine-tuned metric model")
-    outdoor: bool = Field(False, help="Use an outdoor fine-tuned metric model")
+
+    indoor: Annotated[bool, Option("--indoor")] = Field(False)
+    """Use the indoors fine-tuned metric model variant [bold dim](Not recommended for DepthFlow)[/]"""
+
+    outdoor: Annotated[bool, Option("--outdoor")] = Field(False)
+    """Use the outdoor fine-tuned metric model variant [bold dim](Not recommended for DepthFlow)[/]"""
 
     @property
     def _huggingface_model(self) -> str:
@@ -163,10 +197,10 @@ class DepthAnythingV2(DepthAnythingBase):
         else:
             return f"depth-anything/Depth-Anything-V2-{self.model.value}-hf"
 
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
         if (self.indoor or self.outdoor):
-            depth = (numpy.max(depth) - depth)
+            depth = (np.max(depth) - depth)
         depth = gaussian_filter(input=depth, sigma=0.6)
         depth = maximum_filter(input=depth, size=5)
         return depth
@@ -182,7 +216,7 @@ class DepthPro(DepthEstimatorBase):
 
     def _load_model(self) -> None:
         log.info("Loading Depth Estimator model (DepthPro)")
-        install(packages="depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
+        install(package="depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
 
         # Download external checkpoint model
         checkpoint = BrokenPath.get_external("https://ml-site.cdn-apple.com/models/depth-pro/depth_pro.pt")
@@ -205,22 +239,22 @@ class DepthPro(DepthEstimatorBase):
             )
             self._model.eval()
 
-    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
 
         # Infer, transfer to CPU, invert depth values
         depth = self._model.infer(self._transform(image))["depth"]
         depth = depth.detach().cpu().numpy().squeeze()
-        depth = (numpy.max(depth) - depth)
+        depth = (np.max(depth) - depth)
 
         # Limit resolution to 1024 as there's no gains in interpoilation
-        depth = numpy.array(Image.fromarray(depth).resize(BrokenResolution.fit(
+        depth = np.array(Image.fromarray(depth).resize(BrokenResolution.fit(
             old=depth.shape, max=(1024, 1024),
             ar=(depth.shape[1]/depth.shape[0]),
         ), resample=Image.LANCZOS))
 
         return depth
 
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         from scipy.ndimage import maximum_filter
         depth = maximum_filter(input=depth, size=5)
         return depth
@@ -241,7 +275,7 @@ class ZoeDepth(DepthEstimatorBase):
         Field(Model.N)
 
     def _load_model(self) -> None:
-        install(packages="timm", pypi="timm==0.6.7", args="--no-deps")
+        install(package="timm", pypi="timm==0.6.7", args="--no-deps")
 
         log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
         self._model = BrokenCache.lru(torch.hub.load)(
@@ -250,12 +284,12 @@ class ZoeDepth(DepthEstimatorBase):
         ).to(self.device)
 
     # Downscale for the largest component to be 512 pixels (Zoe precision), invert for 0=infinity
-    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
         depth = Image.fromarray(1 - DepthEstimatorBase.normalize(self._model.infer_pil(image)))
         new = BrokenResolution.fit(old=depth.size, max=(512, 512), ar=depth.size[0]/depth.size[1])
-        return numpy.array(depth.resize(new, resample=Image.LANCZOS)).astype(numpy.float32)
+        return np.array(depth.resize(new, resample=Image.LANCZOS)).astype(np.float32)
 
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         return depth
 
 # ------------------------------------------------------------------------------------------------ #
@@ -273,7 +307,7 @@ class Marigold(DepthEstimatorBase):
         Field(Variant.FP16)
 
     def _load_model(self) -> None:
-        install(packages=("accelerate", "diffusers", "matplotlib"))
+        install(package=("accelerate", "diffusers", "matplotlib"))
 
         from diffusers import DiffusionPipeline
 
@@ -289,7 +323,7 @@ class Marigold(DepthEstimatorBase):
             variant=self.variant.value,
         ).to(self.device)
 
-    def _estimate(self, image: numpy.ndarray) -> numpy.ndarray:
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
         return (1 - self._model(
             Image.fromarray(image),
             match_input_res=False,
@@ -297,7 +331,7 @@ class Marigold(DepthEstimatorBase):
             color_map=None,
         ).depth_np)
 
-    def _post_processing(self, depth: numpy.ndarray) -> numpy.ndarray:
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
         depth = gaussian_filter(input=depth, sigma=0.6)
         depth = maximum_filter(input=depth, size=5)

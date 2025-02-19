@@ -305,26 +305,26 @@ def overrides(
 
 
 def install(*,
-    packages: Union[str, Iterable[str]],
+    package: Union[str, Iterable[str]],
     pypi: Optional[Union[str, Iterable[str]]]=None,
     args: Optional[Union[str, Iterable[str]]]=None
 ) -> None:
     # Ensure arguments are tuples
-    packages = flatten(packages, cast=tuple)
-    pypi = flatten(pypi or packages, cast=tuple)
+    package = flatten(package, cast=tuple)
+    pypi = flatten(pypi or package, cast=tuple)
     args = flatten(args, cast=tuple)
 
     caller = inspect.currentframe().f_back.f_globals
 
     # Import the package and insert on the caller's globals
     def inject_packages():
-        for package in packages:
-            caller[package] = __import__(package)
+        for item in package:
+            caller[package] = __import__(item)
 
     try:
         return inject_packages()
     except ImportError:
-        log.info(f"Installing packages: {packages}..")
+        log.info(f"Installing packages: {package}..")
 
     for method in (
         (sys.executable, "-m", "uv", "pip", "install"),
@@ -333,7 +333,7 @@ def install(*,
         if shell(*method, *pypi, *args).returncode == 0:
             return inject_packages()
 
-    raise RuntimeError(log.error(f"Failed to install packages: {packages}"))
+    raise RuntimeError(log.error(f"Failed to install packages: {package}"))
 
 
 def combinations(**options: Any) -> Iterable[DotMap]:

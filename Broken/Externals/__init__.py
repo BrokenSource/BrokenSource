@@ -1,6 +1,7 @@
 # pyright: reportMissingImports=false
 
 import inspect
+import multiprocessing
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Self
 
@@ -25,6 +26,7 @@ class ExternalTorchBase(BrokenModel):
     @property
     def device(self) -> str:
         self.load_torch()
+
         if (device := Environment.get("TORCH_DEVICE")):
             return device
         if torch.cuda.is_available():
@@ -36,7 +38,9 @@ class ExternalTorchBase(BrokenModel):
     def load_torch(self) -> None:
         """Install and inject torch in the caller's globals"""
         BrokenTorch.install(exists_ok=True)
-        inspect.currentframe().f_back.f_globals["torch"] = __import__("torch")
+        torch = __import__("torch")
+        inspect.currentframe().f_back.f_globals["torch"] = torch
+        torch.set_num_threads(multiprocessing.cpu_count())
 
 # ------------------------------------------------------------------------------------------------ #
 
