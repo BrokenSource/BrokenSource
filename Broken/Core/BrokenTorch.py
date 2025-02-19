@@ -1,11 +1,16 @@
+import functools
+import re
 import site
+import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Iterable, Optional, Union
 
+from packaging.version import Version
 from typer import Option
 
-from Broken import Environment, Runtime, Tools
+from Broken import BrokenCache, Environment, Runtime, Tools
 from Broken.Core import denum, every, shell
 from Broken.Core.BrokenEnum import BrokenEnum
 from Broken.Core.BrokenLogging import log
@@ -13,9 +18,10 @@ from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenTyper import BrokenTyper
 from Broken.Core.BrokenWorker import BrokenWorker
 
+# Nightly builds are daily and it's safe-ish to use 'yesterday' as the dev version
+YESTERDAY: str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%d")
 TORCH_INDEX_URL_NIGHTLY: str = "https://download.pytorch.org/whl/nightly/"
 TORCH_INDEX_URL_STABLE:  str = "https://download.pytorch.org/whl/"
-TORCH_VERSION: str = "2.6.0"
 
 class TorchRelease(str, BrokenEnum):
     TORCH_251_MACOS    = "2.5.1"
@@ -33,41 +39,90 @@ class TorchRelease(str, BrokenEnum):
     TORCH_260_ROCM_610 = "2.6.0+rocm6.1"
     TORCH_260_ROCM_624 = "2.6.0+rocm6.2.4"
     TORCH_260_XPU      = "2.6.0+xpu"
+    TORCH_270_MACOS    = "2.7.0"
+    TORCH_270_CPU      = "2.7.0+cpu"
+    TORCH_270_CUDA_118 = "2.7.0+cu118"
+    TORCH_270_CUDA_124 = "2.7.0+cu124"
+    TORCH_270_CUDA_126 = "2.7.0+cu126"
+    TORCH_270_CUDA_128 = "2.7.0+cu128"
+    TORCH_270_ROCM_624 = "2.7.0+rocm6.2.4"
+    TORCH_270_ROCM_630 = "2.7.0+rocm6.3"
+    TORCH_270_XPU      = "2.7.0+xpu"
 
-    # Installation
-
-    @property
-    def index(self) -> Optional[str]:
-        if (not self.is_plain):
-            return TORCH_INDEX_URL_STABLE + (self.flavor or '')
-
-    @property
-    def packages(self) -> tuple[str]:
-        return (f"torch=={self.value}", "torchvision")
-
-    def install(self) -> None:
-        log.special(f"Installing PyTorch version ({self.value})")
-        shell(Tools.pip, "install", self.packages, every("--index-url", self.index))
-
-    def uninstall(self) -> None:
-        shell(Tools.pip, "uninstall", "--quiet", self.packages)
-
-    # Differentiators
+    # # Differentiators
 
     @property
-    def number(self) -> str:
-        return self.value.split("+")[0]
+    def number(self) -> Version:
+        """The number part of the version '2.6.0'"""
+        return Version(self.value.split("+")[0])
 
     @property
     def flavor(self) -> Optional[str]:
+        """The local part of the version '+cu124'"""
         if len(parts := self.value.split("+")) > 1:
             return parts[1]
 
-    # Util properties
+    @property
+    def version(self) -> Version:
+        """The full version of the torch release '2.6.0+cu124'"""
+        return ''.join(filter(None, (
+            f"torch=={self.number}",
+            f".dev{YESTERDAY}"*(self.is_nightly),
+            f"+{self.flavor}"*(self.is_flavored)
+        )))
+
+    # # Installation
+
+    @property
+    def index(self) -> Optional[str]:
+        if self.is_plain:
+            return None
+        elif self.is_stable:
+            return (TORCH_INDEX_URL_STABLE  + self.flavor)
+        elif self.is_nightly:
+            return (TORCH_INDEX_URL_NIGHTLY + self.flavor)
+
+    @property
+    def packages(self) -> Iterable[str]:
+        yield str(self.version)
+        return "torchvision"
+
+    def install(self, reinstall: bool=False) -> subprocess.CompletedProcess:
+        log.special(f"Installing PyTorch version ({self.value})")
+        return shell(
+            Tools.pip, "install", self.packages,
+            every("--index-url", self.index),
+            "--force-reinstall"*(reinstall)
+        )
+
+    def uninstall(self) -> subprocess.CompletedProcess:
+        return shell(Tools.pip, "uninstall", "--quiet", self.packages)
+
+    # # Release types
+
+    @property
+    @functools.lru_cache
+    def is_nightly(self) -> bool:
+        with BrokenCache.package_info("torch") as package:
+            return (Version(package.info.version) < self.number)
+
+    @property
+    def is_stable(self) -> bool:
+        return (not self.is_nightly)
+
+    # # Flavors
+
+    @property
+    def is_flavored(self) -> bool:
+        return ("+" in self.value)
 
     @property
     def is_plain(self) -> bool:
-        return ("+" not in self.value)
+        return (not self.is_flavored)
+
+    @property
+    def is_cpu(self) -> bool:
+        return ("+cpu" in self.value)
 
     @property
     def is_cuda(self) -> bool:
@@ -76,10 +131,6 @@ class TorchRelease(str, BrokenEnum):
     @property
     def is_rocm(self) -> bool:
         return ("+rocm" in self.value)
-
-    @property
-    def is_cpu(self) -> bool:
-        return ("+cpu" in self.value)
 
     @property
     def is_xpu(self) -> bool:
@@ -108,9 +159,11 @@ class BrokenTorch:
 
     @staticmethod
     def docker() -> Iterable[TorchRelease]:
-        """List of versions for docker images builds"""
-        yield SimpleTorch.CUDA.value
-        yield SimpleTorch.CPU.value
+        """Versions to build docker images for"""
+        # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+        yield TorchRelease.TORCH_260_CUDA_124
+        yield TorchRelease.TORCH_270_CUDA_128
+        yield TorchRelease.TORCH_260_CPU
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
@@ -121,6 +174,7 @@ class BrokenTorch:
             if (script := (site_packages/"torch"/"version.py")).exists():
                 exec(script.read_text("utf-8"), namespace := {})
                 version = namespace.get("__version__")
+                version = re.sub(r"\.dev\d{8}", "", version)
                 return TorchRelease.get(version) or version
 
     @BrokenWorker.easy_lock
@@ -130,6 +184,11 @@ class BrokenTorch:
             Option("--version", "-v",
             help="Torch version and flavor to install"
         )]=None,
+
+        reinstall: Annotated[bool,
+            Option("--reinstall", "-r",
+            help="Force a reinstallation of the requested version"
+        )]=False,
 
         exists_ok: Annotated[bool, BrokenTyper.exclude()]=False
     ) -> None:
@@ -161,11 +220,13 @@ class BrokenTorch:
             else:
                 version = BrokenTorch.prompt_flavor()
 
-        if (installed == version):
+        if (installed == version) and (not reinstall):
             log.special("• Requested torch version matches current one!")
+            if version.is_nightly:
+                log.special("• Use '--reinstall' to force a nightly update")
             return
 
-        version.install()
+        version.install(reinstall=reinstall)
 
     @staticmethod
     def prompt_flavor() -> TorchRelease:
