@@ -190,9 +190,10 @@ class BrokenProject:
             tracker = FileTracker(version/"version.tracker")
             tracker.retention.days = 7
 
-            # Running a new version, prune previous cache
-            if (tracker.first):
-                shell(sys.executable, "-m", "uv", "cache", "prune", "--quiet", echo=False)
+            # Non-linux users running executables are unlikely to be developers or
+            # regurarly use Python projects with uv, qol save disk space
+            if (not BrokenPlatform.OnLinux) and (tracker.first):
+                shell(Tools.uv, "cache", "clean")
 
             # Skip in-use versions
             if (not tracker.trigger()):
