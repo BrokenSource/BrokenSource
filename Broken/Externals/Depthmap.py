@@ -121,6 +121,8 @@ class DepthAnythingBase(DepthEstimatorBase):
     def _load_model(self) -> None:
         import transformers
         log.info(f"Loading Depth Estimator model ({self._huggingface_model})")
+        if (self.model != self.Model.Small):
+            log.warning("[bold light_coral]• This model's license is CC BY-NC 4.0[/]")
         self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(self._huggingface_model, use_fast=False)
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import contextlib
 import inspect
 import itertools
@@ -8,9 +6,9 @@ import shlex
 import sys
 from abc import ABC, abstractmethod
 from collections import deque
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Any, Optional, Self, Union
+from typing import Any, Self, Union
 
 import click
 import typer
@@ -49,48 +47,31 @@ console = get_console()
 class BrokenTyper:
     """Yet another Typer wrapper, with goodies"""
 
-    description: str = ""
-    """The default 'help' message of the CLI"""
-
     app: typer.Typer = None
     """The main managed typer.Typer instance"""
 
-    chain: bool = False
-    """Same as Typer.chain"""
+    description: str = ""
+    """The default 'help' message of the CLI"""
 
     commands: set[str] = Factory(set)
-    """List of known commands"""
+    """Known command names"""
 
     default: str = None
     """Default command to run if none is provided"""
 
-    prehook: Callable = lambda: None
-    """Function to run before any command"""
-
-    posthook: Callable = lambda: None
-    """Function to run after any command"""
-
-    shell: bool = False
-    """If True, will run a REPL when no arguments are provided"""
-
-    naih: bool = True
-    """No args is help"""
+    chain: bool = False
+    """Same as Typer.chain"""
 
     help: bool = True
     """Add an --help option to the CLI"""
+
+    naih: bool = True
+    """No args is help"""
 
     credits: str = (
         f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
         "[italic grey53]→ Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[/]"
     )
-
-    @staticmethod
-    def exclude() -> typer.Option:
-        return typer.Option(
-            parser=(lambda type: type),
-            expose_value=False,
-            hidden=True,
-        )
 
     def __attrs_post_init__(self):
         self.app = typer.Typer(
@@ -116,22 +97,33 @@ class BrokenTyper:
 
     def command(self,
         target: Union[Callable, BaseModel],
+        name: str=None,
+        panel: str=None,
         description: str=None,
+        default: bool=False,
+        hidden: bool=False,
         help: bool=True,
         naih: bool=False,
-        name: str=None,
         context: bool=False,
-        default: bool=False,
-        panel: str=None,
         post: Callable=None,
-        hidden: bool=False,
         **kwargs,
     ) -> None:
 
-        # Method must be implemented, ignore and fail ok else
+        # Method must be implemented, fail ok otherwise
         if getattr(target, "__isabstractmethod__", False):
             return None
 
+        # Can only have one default command
+        if (default and self.default):
+            raise ValueError("Only one default command can be set")
+
+        # Add a default indicator
+        description = ''.join((
+            (description or target.__doc__ or "No help provided"),
+            (default*" [bold indian_red](default)[/]"),
+        ))
+
+        # Get the type class of the target
         cls = (target if isinstance(target, type) else type(target))
 
         # Convert pydantic to a wrapper with same signature
@@ -142,15 +134,22 @@ class BrokenTyper:
         else:
             name = (name or target.__name__)
 
+        # Convert a function without args to a proxy
+        if inspect.isfunction(target):
+            if not inspect.signature(target).parameters:
+                target = BrokenTyper.proxy(target)
+                context = True
+                help = False
+
         # Add to known or default commands, create it
         name = name.replace("_", "-").lower()
         self.default = (name if default else self.default)
         self.commands.add(name)
         self.app.command(
-            name=(name),
-            help=(description or target.__doc__),
-            add_help_option=(help),
-            no_args_is_help=(naih),
+            name=name,
+            help=description,
+            add_help_option=help,
+            no_args_is_help=naih,
             rich_help_panel=(panel or self._panel),
             context_settings=dict(
                 allow_extra_args=True,
@@ -159,6 +158,8 @@ class BrokenTyper:
             hidden=(hidden),
             **kwargs,
         )(target)
+
+    # -------------------------------------------|
 
     @staticmethod
     def pydantic2typer(
@@ -213,23 +214,7 @@ class BrokenTyper:
 
         return wrapper
 
-    @property
-    def _shell(self) -> bool:
-        return (self.shell and Environment.flag("REPL", 1))
-
-    def should_shell(self) -> Self:
-        self.shell = all((
-            (Runtime.Binary),
-            (not BrokenPlatform.OnLinux),
-            (not arguments()),
-        ))
-        return self
-
-    @staticmethod
-    def simple(*commands: Callable) -> None:
-        app = BrokenTyper()
-        apply(app.command, commands)
-        return app(*sys.argv[1:])
+    # -------------------------------------------|
 
     @staticmethod
     def proxy(callable: Callable) -> Callable:
@@ -240,59 +225,58 @@ class BrokenTyper:
         return wrapper
 
     @staticmethod
-    def complex(
-        main: Callable,
-        nested: Optional[Iterable[Callable]]=None,
-        simple: Optional[Iterable[Callable]]=None,
-    ) -> None:
-        app = BrokenTyper(description=(
-            "[bold orange3]Note:[/] The default command is implicit when only arguments are provided\n\n"
-            "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
-        ), help=False).should_shell()
-
-        # Preprocess arguments
-        nested = flatten(nested)
-        simple = flatten(simple)
-
-        for target in flatten(main, nested, simple):
-            method:  bool = (target in simple)
-            default: bool = (target is main)
-
-            # Mark the default command
-            description = ' '.join((
-                (target.__doc__ or "No help provided"),
-                (default*"[bold indian_red](default)[/]"),
-            ))
-
-            # Nested typer apps must be used with sys.argv
-            _target = (target if method else BrokenTyper.proxy(target))
-
-            app.command(
-                target=_target,
-                name=target.__name__,
-                description=description,
-                default=default,
-                context=True,
-                help=method,
-            )
-
+    def simple(*commands: Callable) -> None:
+        app = BrokenTyper()
+        apply(app.command, commands)
         return app(*sys.argv[1:])
+
+    @staticmethod
+    def toplevel() -> Self:
+        return BrokenTyper(
+            help=False,
+            description = (
+                "[bold orange3]Note:[/] The default command is implicit when only arguments are provided\n\n"
+                "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
+            )
+        ).should_shell()
+
+    @staticmethod
+    def exclude() -> typer.Option:
+        return typer.Option(
+            parser=(lambda type: type),
+            expose_value=False,
+            hidden=True,
+        )
+
+    # -------------------------------------------|
+
+    shell: bool = False
+    """If True, will run a REPL when no arguments are provided"""
+
+    def should_shell(self) -> Self:
+        self.shell = all((
+            Environment.flag("REPL", 1),
+            (Runtime.Binary),
+            (not BrokenPlatform.OnLinux),
+            (not arguments()),
+        ))
+        return self
 
     def shell_welcome(self) -> None:
         console.print(Panel(
-            title="⭐️ Tips",
+            title="Tips",
             title_align="left",
             border_style="bold grey42",
             expand=False,
-            padding=(1, 1),
+            padding=(0, 1),
             renderable=Text.from_markup(
                 "• Press [spring_green1]'Ctrl+C'[/] to exit [bold bright_black](or close this window)[/]\n"
                 "• Run any [spring_green1]'{command} --help'[/] for more info\n"
-                "• Press [royal_blue1]Enter[/] for a command list [bold bright_black](above)[/]",
+                "• Press [royal_blue1]Enter[/] for a command list [bold bright_black](above)[/]"
             )
         ))
         console.print(Text.from_markup(
-            "\n[bold grey58]→ Write a command from the list above and run it![/]"
+            "\n[bold grey58]→ Write a command above and run it![/]"
         ))
 
     def shell_prompt(self) -> bool:
@@ -304,8 +288,16 @@ class BrokenTyper:
             ))
             return True
         except (click.exceptions.Abort, KeyboardInterrupt):
-            log.trace("BrokenTyper Repl exit KeyboardInterrupt")
+            log.trace(f"{type(self)} shell prompt exit KeyboardInterrupt")
         return False
+
+    # -------------------------------------------|
+
+    prehook: Callable = (lambda: None)
+    """Function to run before any command"""
+
+    posthook: Callable = (lambda: None)
+    """Function to run after any command"""
 
     def __call__(self, *args: Any) -> None:
         """
@@ -325,7 +317,7 @@ class BrokenTyper:
         for index in itertools.count(0):
 
             # On subsequent runs, prompt for command
-            if (self._shell) and (index > 0):
+            if (self.shell) and (index > 0):
                 if not self.shell_prompt():
                     return
 
@@ -343,18 +335,18 @@ class BrokenTyper:
                 self.app(sys.argv[1:])
                 self.posthook()
             except SystemExit:
-                log.trace("Skipping SystemExit on BrokenTyper")
+                log.trace(f"Skipping SystemExit on {type(self)}")
             except KeyboardInterrupt:
-                log.success("BrokenTyper exit KeyboardInterrupt")
+                log.success(f"{type(self)} exit KeyboardInterrupt")
             except Exception as error:
                 if (not self.shell):
                     raise error
                 console.print_exception(); print() # noqa
-                log.error(f"BrokenTyper exited with error: {repr(error)}")
+                log.error(f"{type(self)} exited with error: {repr(error)}")
                 input("\nPress Enter to continue..")
 
             # Exit out non-repl mode
-            if (not self._shell):
+            if (not self.shell):
                 return
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
