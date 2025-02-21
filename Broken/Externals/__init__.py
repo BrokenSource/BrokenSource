@@ -31,7 +31,9 @@ class ExternalTorchBase(BrokenModel):
             return device
         if torch.cuda.is_available():
             return "cuda"
-        if torch.backends.mps.is_available():
+        if torch.xpu.is_available():
+            return "xpu"
+        if torch.mps.is_available():
             return "mps"
         return "cpu"
 

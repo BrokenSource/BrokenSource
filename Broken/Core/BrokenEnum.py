@@ -11,7 +11,10 @@ class BrokenEnumBase:
 
     @classmethod
     @functools.lru_cache()
-    def get(cls, /, value: Union[str, enum.Enum, Any], default: Any=None) -> Optional[Self]:
+    def get(cls, /,
+        value: Union[str, enum.Enum, Any],
+        default: Any=None
+    ) -> Optional[Self]:
         """Get enum members from their value, name or themselves"""
 
         # Value is already a member of the enum

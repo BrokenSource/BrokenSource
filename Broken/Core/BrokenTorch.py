@@ -140,11 +140,12 @@ class TorchRelease(str, BrokenEnum):
 
 class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
-    CPU   = TorchRelease.TORCH_260_CPU
-    MACOS = TorchRelease.TORCH_260_MACOS
-    CUDA  = TorchRelease.TORCH_260_CUDA_124
-    ROCM  = TorchRelease.TORCH_260_ROCM_624
-    XPU   = TorchRelease.TORCH_260_XPU
+    CPU     = TorchRelease.TORCH_260_CPU
+    MACOS   = TorchRelease.TORCH_260_MACOS
+    CUDA124 = TorchRelease.TORCH_260_CUDA_124
+    CUDA128 = TorchRelease.TORCH_270_CUDA_128
+    ROCM    = TorchRelease.TORCH_260_ROCM_624
+    XPU     = TorchRelease.TORCH_260_XPU
 
     @classmethod
     def prompt_choices(cls) -> Iterable[str]:
@@ -152,6 +153,63 @@ class SimpleTorch(BrokenEnum):
             if (option is cls.MACOS):
                 continue
             yield option.name.lower()
+
+    @staticmethod
+    def prompt() -> TorchRelease:
+        if BrokenPlatform.OnMacOS:
+            return SimpleTorch.MACOS.value
+
+        from rich import get_console
+        from rich.box import ROUNDED
+        from rich.prompt import Prompt
+        from rich.table import Table
+
+        table: Table = Table(
+            header_style="bold grey42",
+            border_style="dim",
+            box=ROUNDED,
+        )
+
+        # Table headers
+        table.add_column("GPU", style="bold")
+        table.add_column("Accel")
+        table.add_column("Option")
+        table.add_column("Notes", style="dim")
+
+        # Table rows
+        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda128",
+            "Required for [light_coral]RTX 5000+ Blackwell[/] GPUs")
+        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda124",
+            "Most common, doesn't need latest drivers")
+
+        # Hoping one day ROCm solves their issues..
+        if BrokenPlatform.OnWindows:
+            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "-",
+                "Not supported yet (https://pytorch.org/)")
+        elif BrokenPlatform.OnLinux:
+            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "rocm",
+                "Check GPU support, override GFX if needed")
+
+        table.add_row("[blue]Intel[/]", "[blue]XPU[/]", "xpu",
+            "Desktop Arc or Integrated Graphics")
+        table.add_row("-", "CPU", "cpu",
+            "Slow but most compatible")
+
+        # Display the table
+        console = get_console()
+        console.print(table)
+
+        try:
+            choice: str = Prompt.ask(
+                "\n:: What PyTorch version do you want to install?\n\n",
+                choices=list(SimpleTorch.prompt_choices()),
+                default="cuda124",
+            )
+            console.print()
+        except KeyboardInterrupt:
+            exit(0)
+
+        return SimpleTorch.get(choice.upper()).value
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -162,7 +220,6 @@ class BrokenTorch:
         """Versions to build docker images for"""
         # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
         yield TorchRelease.TORCH_260_CUDA_124
-        yield TorchRelease.TORCH_270_CUDA_128
         yield TorchRelease.TORCH_260_CPU
 
     @staticmethod
@@ -218,7 +275,7 @@ class BrokenTorch:
                 version = SimpleTorch.MACOS
 
             else:
-                version = BrokenTorch.prompt_flavor()
+                version = SimpleTorch.prompt()
 
         if (installed == version) and (not reinstall):
             log.special("• Requested torch version matches current one!")
@@ -227,32 +284,6 @@ class BrokenTorch:
             return
 
         version.install(reinstall=reinstall)
-
-    @staticmethod
-    def prompt_flavor() -> TorchRelease:
-        from rich.prompt import Prompt
-
-        log.special("""
-            Generally speaking, you should chose for:
-            • [royal_blue1](Windows or Linux)[/] NVIDIA GPU: 'cuda'
-            • [royal_blue1](Windows or Linux)[/] Intel ARC: 'xpu'
-            • [royal_blue1](Linux)[/] AMD GPU (>= RX 5000): 'rocm'
-            • [royal_blue1](Other)[/] Others or CPU: 'cpu'
-
-            [dim]Tip: Set 'HSA_OVERRIDE_GFX_VERSION=10.3.0' for RX 5000 Series[/]
-        """, dedent=True)
-
-        try:
-            choice = SimpleTorch.get(Prompt.ask(
-                prompt="\n:: What PyTorch version do you want to install?\n\n",
-                choices=list(SimpleTorch.prompt_choices()),
-                default="cuda"
-            ).upper())
-            print()
-        except KeyboardInterrupt:
-            exit(0)
-
-        return choice.value
 
 # Rename the method for CLI usage
 BrokenTorch.install.__name__ = "torch"
