@@ -4,7 +4,7 @@ import site
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Optional, Union
 
-import numpy
+import numpy as np
 from halo import Halo
 from intervaltree import IntervalTree
 from pydantic import BaseModel, ConfigDict, Field
@@ -80,7 +80,7 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         )
 
     def transcribe(self,
-        audio: Union[str, Path, numpy.ndarray],
+        audio: Union[str, Path, np.ndarray],
         *,
         reference: Optional[str]=None
     ) -> Spoken:

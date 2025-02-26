@@ -103,6 +103,10 @@ Environment.setdefault("OMP_NUM_THREADS", 1)
 # https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
 Environment.setdefault("__GL_YIELD", "USLEEP")
 
+# macOS: Enable CPU fallback for PyTorch unsupported operations in native MPS
+# https://pytorch.org/docs/stable/mps_environment_variables.html
+Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
+
 # Replace argv[0] being "-c" to PyApp's managed python
 if Environment.exists("PYAPP"):
     sys.argv[0] = sys.executable

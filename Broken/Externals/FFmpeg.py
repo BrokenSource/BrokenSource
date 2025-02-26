@@ -12,7 +12,7 @@ from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Annotated, Generator, Literal, Optional, Self, TypeAlias, Union
 
-import numpy
+import numpy as np
 import typer
 from attrs import define
 from halo import Halo
@@ -871,8 +871,8 @@ class FFmpegPCM(BrokenEnum):
 
     @property
     @functools.lru_cache
-    def dtype(self) -> numpy.dtype:
-        return numpy.dtype(f"{self.endian}{self.value[4]}{self.size}")
+    def dtype(self) -> np.dtype:
+        return np.dtype(f"{self.endian}{self.value[4]}{self.size}")
 
 
 class FFmpegAudioCodecPCM(FFmpegModuleBase):
@@ -1422,7 +1422,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         ).stdout), formats=["jpeg"]).size
 
     @staticmethod
-    def iter_video_frames(path: Path, *, skip: int=0, echo: bool=True) -> Optional[Iterable[numpy.ndarray]]:
+    def iter_video_frames(path: Path, *, skip: int=0, echo: bool=True) -> Optional[Iterable[np.ndarray]]:
         """Generator for every frame of the video as numpy arrays, FAST!"""
         if not (path := BrokenPath.get(path, exists=True)):
             return None
@@ -1443,7 +1443,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
         # Keep reading frames until we run out, each pixel is 3 bytes !
         while (raw := ffmpeg.stdout.read(width * height * 3)):
-            yield numpy.frombuffer(raw, dtype=numpy.uint8).reshape((height, width, 3))
+            yield np.frombuffer(raw, dtype=np.uint8).reshape((height, width, 3))
 
     @staticmethod
     def is_valid_video(path: Path, *, echo: bool=True) -> bool:
@@ -1549,12 +1549,12 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             return result.value
 
     @staticmethod
-    def get_audio_numpy(path: Path, *, echo: bool=True) -> Optional[numpy.ndarray]:
+    def get_audio_numpy(path: Path, *, echo: bool=True) -> Optional[np.ndarray]:
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
         log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
-        return numpy.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
+        return np.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
 
 # ------------------------------------------------------------------------------------------------ #
 # BrokenFFmpeg Spin-offs
@@ -1569,7 +1569,7 @@ class BrokenAudioReader:
     bytes_per_sample: int = None
     """Bytes per individual sample"""
 
-    dtype: numpy.dtype = None
+    dtype: np.dtype = None
     """Numpy dtype out of self.format"""
 
     channels: int = None
@@ -1600,7 +1600,7 @@ class BrokenAudioReader:
         return (self.read / self.bytes_per_second)
 
     @property
-    def stream(self) -> Generator[numpy.ndarray, float, None]:
+    def stream(self) -> Generator[np.ndarray, float, None]:
         if not (path := BrokenPath.get(self.path, exists=True)):
             return None
         self.path = path
@@ -1649,7 +1649,7 @@ class BrokenAudioReader:
             if len(data) == 0: break
 
             # Increment precise time and read time
-            yield numpy.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)
+            yield np.frombuffer(data, dtype=self.dtype).reshape(-1, self.channels)
             self.read += len(data)
 
         # Allow to catch total duration on GeneratorExit

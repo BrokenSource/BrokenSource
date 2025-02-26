@@ -14,7 +14,7 @@ import Broken
 from Broken import BrokenCache
 
 if TYPE_CHECKING:
-    import numpy
+    import numpy as np
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -145,7 +145,7 @@ class LoadImage(BrokenLoader):
 LoadableImage: TypeAlias = Union[
     ImageType,
     Path,
-    "numpy.ndarray",
+    "np.ndarray",
     bytes,
     str
 ]
