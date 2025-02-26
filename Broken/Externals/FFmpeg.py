@@ -1326,7 +1326,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
                 else:
                     command.append(item)
 
-        extend(shutil.which("ffmpeg"))
+        extend("ffmpeg")
         extend("-hide_banner"*self.hide_banner)
         extend("-loglevel", denum(self.loglevel))
         extend(every("-threads", self.threads))
@@ -1416,7 +1416,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
         log.minor(f"Getting Video Resolution of ({path})", echo=echo)
         import PIL
         return PIL.Image.open(io.BytesIO(shell(
-            shutil.which("ffmpeg"), "-hide_banner", "-loglevel", "error",
+            "ffmpeg", "-hide_banner", "-loglevel", "error",
             "-i", path, "-vframes", "1", "-f", "image2pipe", "-",
             stdout=PIPE, echo=echo
         ).stdout), formats=["jpeg"]).size
@@ -1451,8 +1451,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
             return False
         BrokenFFmpeg.install()
         return (shell(
-            shutil.which("ffmpeg"),
-            "-hide_banner", "-loglevel", "error",
+            "ffmpeg", "-hide_banner", "-loglevel", "error",
             "-i", path, "-f", "null", "-", echo=echo,
             stderr=DEVNULL, stdout=DEVNULL
         ).returncode == 0)

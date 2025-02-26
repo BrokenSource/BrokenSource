@@ -92,6 +92,7 @@ def shell(
     output: bool = False,
     Popen: bool = False,
     env: dict[str, str] = None,
+    shell: bool=False,
     confirm: bool = False,
     skip: bool = False,
     echo: bool = True,
@@ -112,16 +113,23 @@ def shell(
     if (output and Popen):
         raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
+    # Sanitize to a flat list of strings
     args = tuple(map(str, flatten(args)))
 
     # Assert command won't fail due unknown binary
-    if (not shell) and (not shutil.which(args[0])):
-        raise FileNotFoundError(log.error(f"Binary doesn't exist or was not found on PATH ({args[0]})"))
+    if not (resolved := shutil.which(binary := args[0])):
+        raise FileNotFoundError((
+            f"Executable '{binary}' not found while attempting to run {args}, "
+            "please ensure it is installed and accessible in your system's PATH, then try again."
+        ))
+
+    # Replace with unambiguous full path
+    args = tuple((resolved, *args[1:]))
 
     # Log the command being run, temp variables
     _log = (log.skip if skip else log.info)
     _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-    _log(f"{args}{_cwd}", echo=echo)
+    _log(f"Command {args}{_cwd}", echo=echo)
     if skip: return
 
     if kwargs.get("shell", False):
@@ -136,6 +144,7 @@ def shell(
 
     # Update current environ for the command only
     kwargs["env"] = os.environ | (env or {})
+    kwargs["shell"] = shell
 
     # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
@@ -143,7 +152,6 @@ def shell(
 
     if (output):
         return subprocess.check_output(args, **kwargs).decode("utf-8")
-
     if (Popen):
         return subprocess.Popen(args, **kwargs)
 

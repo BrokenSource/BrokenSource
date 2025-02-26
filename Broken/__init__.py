@@ -114,7 +114,10 @@ if Environment.exists("PYAPP"):
 # Pretty tracebacks
 if Environment.flag("RICH_TRACEBACK", 1):
     import rich.traceback
-    rich.traceback.install(width=None)
+    rich.traceback.install(
+        extra_lines=1,
+        width=None,
+    )
 
 # --------------------------- Information about the release and version -------------------------- #
 
