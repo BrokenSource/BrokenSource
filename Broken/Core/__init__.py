@@ -2,7 +2,6 @@ import contextlib
 import copy
 import enum
 import functools
-import hashlib
 import inspect
 import itertools
 import json
@@ -14,7 +13,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from collections import deque
-from collections.abc import Callable, Collection, Generator, Iterable
+from collections.abc import Callable, Collection, Generator, Hashable, Iterable
 from numbers import Number
 from pathlib import Path
 from queue import Queue
@@ -22,6 +21,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
+import xxhash
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger as log
@@ -349,20 +349,15 @@ def arguments() -> bool:
 
 def easyloop(method: Callable=None, *, period: float=0.0):
     """Wraps a method in an infinite loop called every 'period' seconds"""
-
     def decorator(method):
-
         @functools.wraps(method)
         def wrapper(*args, **kwargs):
             while True:
                 method(*args, **kwargs)
                 time.sleep(period)
-
         return wrapper
-
     if (method is None):
         return decorator
-
     return decorator(method)
 
 # ------------------------------------------------------------------------------------------------ #
@@ -439,8 +434,8 @@ class BrokenModel(BaseModel):
         ...
 
     def __hash__(self) -> int:
-        """Deterministic hash heuristic, as hash() is random seeded"""
-        return int(hashlib.sha256(self.json(full=True).encode()).hexdigest(), 16)
+        """Deterministic model hash, as hash() is random seeded"""
+        return xxhash.xxh3_64_intdigest(self.json(full=True))
 
     # Serialization
 
@@ -635,6 +630,19 @@ class BrokenCache(StaticClass):
         ) as requests:
             url = f"https://pypi.org/pypi/{package}/json"
             yield DotMap(json.loads(requests.get(url).text))
+
+    @staticmethod
+    def smarthash(object: Hashable) -> int:
+        if isinstance(object, Hashable):
+            return hash(object)
+        if isinstance(object, dict):
+            return hash(frozenset(object.items()))
+        if isinstance(object, list):
+            return hash(tuple(object))
+        if isinstance(object, set):
+            return hash(frozenset(object))
+        return id(object)
+
 
 @define
 class BrokenRelay:

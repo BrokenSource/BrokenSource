@@ -112,7 +112,7 @@ class BrokenResolution:
 
 # ------------------------------------------------------------------------------------------------ #
 
-class _PyTest:
+class __PyTest__:
     def test_round(self):
         assert BrokenResolution.round(100) == 100
         assert BrokenResolution.round(2.5) == 2

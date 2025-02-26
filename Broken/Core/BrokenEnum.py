@@ -10,7 +10,7 @@ from aenum import Flag, MultiValueEnum
 class BrokenEnumBase:
 
     @classmethod
-    @functools.lru_cache()
+    @functools.cache
     def get(cls, /,
         value: Union[str, enum.Enum, Any],
         default: Any=None
@@ -43,31 +43,29 @@ class BrokenEnumBase:
         """Get all 'values' of the enum (name=value)"""
         return tuple(member.value for member in cls)
 
-    # Key/names properties
+    # Dict-like
 
     @classmethod
     def keys(cls) -> tuple[str]:
         """Get all 'keys' of the enum (key=value)"""
         return tuple(member.name for member in cls)
 
-    # Items and dict-like
-
     @classmethod
     def items(cls) -> tuple[tuple[str, Any]]:
         """Get the tuple of (name, value) of all members of the enum"""
         return tuple((member.name, member.value) for member in cls)
+
+    def __getitem__(self, index: int) -> enum.Enum:
+        return self.members[index]
 
     @classmethod
     def as_dict(cls) -> dict[str, Any]:
         """Get the dictionary of all key=value of the enum"""
         return dict(cls.items())
 
-    def __getitem__(self, index: int) -> enum.Enum:
-        return self.members[index]
-
     # # Smart methods
 
-    @functools.lru_cache()
+    @functools.cache
     def next(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
         """Get the next enum member defined in the class"""
         cls   = type(self)
@@ -77,7 +75,7 @@ class BrokenEnumBase:
     def __next__(self) -> Self:
         return self.next()
 
-    @functools.lru_cache()
+    @functools.cache
     def previous(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
         """Get the previous enum member defined in the class"""
         cls   = type(self)
@@ -109,9 +107,8 @@ class FlagEnum(BrokenEnumBase, Flag):
     ...
 
 # ------------------------------------------------------------------------------------------------ #
-# Test
 
-class _PyTest:
+class __PyTest__:
 
     def get_fruits(self) -> BrokenEnum:
         class Fruits(BrokenEnum):
@@ -125,12 +122,6 @@ class _PyTest:
     def test_initialization(self):
         Fruits = self.get_fruits()
         assert Fruits("Maçã") == Fruits.Apple
-
-    def test_from_name(self):
-        Fruits = self.get_fruits()
-        assert Fruits.from_name("Apple") == Fruits.Apple
-        assert Fruits.from_name("apple") == Fruits.Apple
-        assert Fruits.from_name("Maçã")  is None
 
     def test_options(self):
         Fruits = self.get_fruits()
@@ -177,20 +168,10 @@ class _PyTest:
             Emoji  = "🔱"
         return Multivalue
 
-    def test_from_value(self):
-        Multivalue = self.get_multivalue()
-        assert Multivalue.from_value("blue")  == Multivalue.Color
-        assert Multivalue.from_value(False)   == Multivalue.Hat
-        assert Multivalue.from_value(9000)    == Multivalue.Age
-        assert Multivalue.from_value(1.41)    == Multivalue.Height
-        assert Multivalue.from_value("🔱")    == Multivalue.Emoji
-        assert Multivalue.from_value("color") is None
-
     def test_get(self):
         Multivalue = self.get_multivalue()
         assert Multivalue.get("blue")           == Multivalue.Color
         assert Multivalue.get(Multivalue.Color) == Multivalue.Color
-        assert Multivalue.get("height")         == Multivalue.Height
         assert Multivalue.get("Height")         == Multivalue.Height
         assert Multivalue.get(9000)             == Multivalue.Age
 

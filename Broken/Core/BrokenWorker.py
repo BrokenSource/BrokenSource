@@ -1,45 +1,70 @@
+# Some multiprocessing classes are variables
+# pyright: reportInvalidTypeForm=false
+
 from __future__ import annotations
 
-import copy
 import functools
 import inspect
+import math
 import time
 from abc import abstractmethod
-from collections.abc import Callable, Hashable, Iterable
+from collections.abc import Callable, Iterable
+from multiprocessing import Condition as ProcessCondition
 from multiprocessing import JoinableQueue as ProcessQueue
 from multiprocessing import Manager, Process
-from pathlib import Path
-from queue import Queue
 from queue import Queue as ThreadQueue
+from threading import Condition as ThreadCondition
 from threading import Lock, Thread
-from typing import Any, Generator, List, Optional, Self, TypeAlias, Union
+from time import perf_counter as now
+from typing import Any, Optional, Self, TypeAlias, Union
+from uuid import UUID, uuid4
 
-import dill
 from attrs import Factory, define, field
-from diskcache import Cache as DiskCache
 
-from Broken import flatten, log
+from Broken import log
 from Broken.Core import easyloop
-from Broken.Types import MB
 
 WorkerType: TypeAlias = Union[Thread, Process]
-"""Any stdlib parallelizable primitive"""
+"""Any stdlib concurrency primitive"""
 
 MANAGER = Manager()
 """Global multiprocessing manager"""
 
+# ------------------------------------------------------------------------------------------------ #
 
 @define(eq=False)
+class WorkerTask:
+    payload: Any
+    created: float = Factory(now)
+
+    @classmethod
+    def get(cls, object: Union[WorkerTask, Any]) -> WorkerTask:
+        if isinstance(object, WorkerTask):
+            return object
+        return cls(payload=object)
+
+    uuid: UUID = Factory(uuid4)
+
+    def __hash__(self) -> int:
+        return self.uuid.int
+
+    def __eq__(self, other: WorkerTask) -> bool:
+        return (hash(self) == hash(other))
+
+# ------------------------------------------------------------------------------------------------ #
+
+@define
 class BrokenWorker:
     """
-    A semi-complete Thread and Process manager for easy parallelization primitives, smart task
-    queueing, caching results and more.
+    A complete Thread and Process pool manager for easy parallelization primitives,
+    task queueing, inheritance, results handling, self healing and more.
 
-    References:
-    - Independently reinvented https://en.wikipedia.org/wiki/Thread_pool
+    References (Independently developed):
+    - https://en.wikipedia.org/wiki/Thread_pool
     """
 
-    # # Static utilities
+    # -------------------------------------------|
+    # Static utilities
 
     @staticmethod
     def _spawn(
@@ -61,261 +86,265 @@ class BrokenWorker:
     @classmethod
     @functools.wraps(_spawn)
     def thread(cls, *args, **kwargs) -> Thread:
+        """Easier threading.Thread() interface"""
         return cls._spawn(*args, **kwargs, _type=Thread)
 
     @classmethod
     @functools.wraps(_spawn)
     def process(cls, *args, **kwargs) -> Process:
+        """Easier multiprocessing.Process() interface"""
         return cls._spawn(*args, **kwargs, _type=Process)
-
-    # # Easy lock
 
     @staticmethod
     @functools.cache
     def easy_lock(method: Callable) -> Callable:
-        """Get a wrapper with a common threading.Lock for a method, multi-call safe"""
-
-        shared_lock = Lock()
+        """Wrap a method with a common threading.Lock"""
+        common_lock = Lock()
 
         @functools.wraps(method)
         def wrapped(*args, **kwargs) -> Any:
-            with shared_lock:
+            with common_lock:
                 return method(*args, **kwargs)
 
         return wrapped
 
-    # # Initialization
+    # -------------------------------------------|
+    # Initialization
 
-    type: WorkerType = Thread
-    """The primitive to use for parallelization"""
+    def _type_setter(self, attribute, value):
+        raise AttributeError("Worker type can't be changed after initialization")
+
+    type: WorkerType = field(default=Thread, on_setattr=_type_setter)
+    """The concurrency primitive to use, can't be changed after initialization"""
 
     size: int = field(default=1, converter=int)
-    """How many workers to keep alive"""
-
-    workers: set[WorkerType] = Factory(set)
-    """The currently alive workers"""
-
-    queue: Union[ThreadQueue, ProcessQueue] = None
-    """The list of tasks to be processed"""
-
-    @property
-    def queue_type(self) -> type[Queue]:
-        if (self.type is Thread):
-            return ThreadQueue
-        return ProcessQueue
-
-    @property
-    def diskcache_enabled(self) -> bool:
-        return (self.cache_size and self.cache_path)
-
-    @property
-    def cache_dict_type(self) -> type[dict]:
-        return (dict if (self.type is Thread) else MANAGER.dict)
+    """How many workers to keep alive executing tasks"""
 
     def __attrs_post_init__(self):
 
-        # Initialize DiskCache or dict cache
-        if (self.diskcache_enabled):
-            self.cache_data = DiskCache(
-                directory=Path(self.cache_path),
-                size_limit=int(self.cache_size)*MB,
-            )
-        else:
-            self.cache_data = self.cache_dict_type()
+        # Raise on non-generator main method implementation
+        if not inspect.isgeneratorfunction(self.main):
+            raise TypeError(f"{type(self).__name__}.{self.main.__name__}() function must 'yield' results")
 
-        # Initialize remaining items
-        self.queue = self.queue_type()
-        BrokenWorker.thread(self.keep_alive_thread)
-
-    # # Worker management
-
-    @property
-    def alive(self) -> Iterable[WorkerType]:
-        """Iterates over the alive workers"""
-        for worker in self.workers:
-            if worker.is_alive():
-                yield worker
-
-    @property
-    def still_alive(self) -> int:
-        """Believe me, I am still alive"""
-        return sum(1 for _ in self.alive)
-
-    def sanitize(self) -> None:
-        """Removes dead workers on the set"""
-        self.workers = set(self.alive)
-
-    def join_workers(self, timeout: Optional[float]=None) -> None:
-        """Waits for all workers to finish"""
-        for worker in copy.copy(self.workers):
-            worker.join(timeout)
-
-    # # Caching
-
-    cache_data: Union[dict, DiskCache] = None
-    """The cached results database"""
-
-    cache_path: Path = None
-    """(DiskCache) Path to the cache directory, disabled if None"""
-
-    cache_size: int = 500
-    """(DiskCache) Maximum size of the cache in megabytes"""
-
-    def clear_cache(self) -> None:
-        self.cache_data.clear()
-
-    # # Serde middleware for Process
-
-    def __serialize__(self, object: Any) -> Any:
-        if (self.type is Process):
-            return dill.dumps(object, recurse=True)
-        return object
-
-    def __deserialize__(self, object: Any) -> Any:
-        if (self.type is Process):
-            return dill.loads(object)
-        return object
-
-    # # Tasks
-
-    def join_tasks(self) -> None:
-        """Waits for all tasks to finish"""
-        self.queue.join()
-
-    def put(self, task: Hashable) -> Hashable:
-        """Submit a new task directly to the queue"""
-        return (self.queue.put(self.__serialize__(task)) or task)
-
-    @abstractmethod
-    def get(self, task: Hashable) -> Optional[Any]:
-        """Get the result of a task, keeping it on cache (non-blocking)"""
-        result = self.cache_data.get(hash(task), None)
-
-        # Remove errors from cache to allow re-queueing
-        if isinstance(result, Exception):
-            return self.pop(task)
-
-        return result
-
-    def get_blocking(self, task: Hashable) -> Any:
-        """Get the result of a task, keeping it on cache (waits to finish)"""
-        while (result := self.get(hash(task))) is None:
-            time.sleep(0.1)
-        return result
-
-    def pop(self, task: Hashable) -> Any:
-        """Get the result of a task, removing it from cache"""
-        return self.cache_data.pop(hash(task))
-
-    def call(self, method: Callable, *args, **kwargs) -> Hashable:
-        """Submit a new task to call a method with args and kwargs"""
-        return self.put(functools.partial(method, *args, **kwargs))
-
-    def get_smart(self, task: Hashable) -> Any:
-        """Queues the task if not on cache, returns the result (blocking)"""
-        if (result := self.get(task)) is None:
-            return self.get_blocking(self.put(task))
-        return result
-
-    def map(self, *tasks: Hashable) -> List:
-        """Puts all tasks in the queue and returns the results in order"""
-        tasks = flatten(tasks)
-
-        # Queues tasks not present in cache
-        for task, result in zip(tasks, map(self.get, tasks)):
-            if (result is None):
-                self.put(task)
-
-        # Returns the results in order
-        return list(map(self.get_blocking, tasks))
-
-    def map_call(self, method: Callable, inputs: Iterable, **kwargs) -> List:
-        """Maps a method to a list of inputs, returns the results in order"""
-        return self.map((
-            functools.partial(method, item, **kwargs)
-            for item in inputs
-        ))
-
-    # # Context
+        # Create internal structures
+        self._signal  = self.condition_type()
+        self._heal    = self.condition_type()
+        self._results = self.results_type()
+        self._queue   = self.queue_type()
+        BrokenWorker.thread(self._keep_alive)
 
     def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *ignore) -> None:
         self.close()
 
+    # -------------------------------------------|
+    # Worker management
+
+    _workers: set[WorkerType] = Factory(set)
+    """The set of spawned workers, active or not"""
+
+    @property
+    def _alive(self) -> Iterable[WorkerType]:
+        """Yields all active workers"""
+        for worker in self._workers:
+            if worker.is_alive():
+                yield worker
+
+    @property
+    def _stopped(self) -> Iterable[WorkerType]:
+        """Yields all inactive workers"""
+        for worker in self._workers:
+            if not worker.is_alive():
+                yield worker
+
+    @property
+    def _still_alive(self) -> int:
+        """Believe me, I am still alive"""
+        return sum(1 for _ in self._alive)
+
+    @property
+    def _any_alive(self) -> bool:
+        """Fast check if any worker is alive"""
+        for _ in self._alive:
+            return True
+        return False
+
+    def _sanitize(self) -> None:
+        """Removes inactive workers on the set"""
+        self._workers -= set(self._stopped)
+
+    def join(self) -> None:
+        """Waits for all pending tasks to finish processing"""
+        self._queue.join()
+
     def close(self) -> None:
-        self.join_tasks()
+        """Wait tasks to finish and stops all workers"""
+        self.join()
         self.size = 0
 
-        # Poison pill until it all ends
-        while self.still_alive:
-            while (self.queue.qsize() > 0):
-                if (not self.still_alive):
+        # Stop all workers
+        while self._any_alive:
+            while (self._queue.qsize() > 0):
+                if (not self._any_alive):
                     break
-                time.sleep(0.001)
-            self.queue.put(None)
+                time.sleep(0.005)
+            self._queue.put(None)
 
         # Avoid queue leftovers next use
-        self.queue = self.queue_type()
-        self.join_workers()
+        self._queue = self.queue_type()
 
-    # # Automation
+    # -------------------------------------------|
+    # Tasks
+
+    @property
+    def condition_type(self) -> Union[ThreadCondition, ProcessCondition]:
+        """The condition variable class compatible with worker type"""
+        if (self.type is Thread):
+            return ThreadCondition
+        return ProcessCondition
+
+    _signal: Union[ThreadCondition, ProcessCondition] = None
+    """Signaling for when tasks are done"""
+
+    _heal: Union[ThreadCondition, ProcessCondition] = None
+    """Signaling for when any worker dies"""
+
+    @property
+    def queue_type(self) -> Union[ThreadQueue, ProcessQueue]:
+        """The queue class compatible with worker type"""
+        if (self.type is Thread):
+            return ThreadQueue
+        return ProcessQueue
+
+    _queue: Union[ThreadQueue, ProcessQueue] = None
+    """List of pending tasks to be processed"""
+
+    @property
+    def results_type(self) -> type[dict]:
+        """The results container class compatible with worker type"""
+        # Warn: Must use hash(task) if Process as it pickles than __hash__
+        return (dict if (self.type is Thread) else MANAGER.dict)
+
+    _results: dict = None
+
+    def clear_results(self) -> None:
+        self._results.clear()
+
+    # Inserters
+
+    def put(self, task: Any) -> WorkerTask:
+        """Submit a new task to the queue"""
+        return (self._queue.put(task := WorkerTask.get(task)) or task)
+
+    def extend(self, *tasks: Any) -> list[WorkerTask]:
+        """Submit a list of tasks to the queue"""
+        return list(map(self.put, tasks))
+
+    def call(self, method: Callable, *args, **kwargs) -> WorkerTask:
+        """Submit a new task to call a method with args and kwargs"""
+        return self.put(functools.partial(method, *args, **kwargs))
+
+    partial = call
+
+    def map(self, method: Callable, inputs: Iterable, **kwargs) -> list[WorkerTask]:
+        """Submit tasks to call a method on each item in inputs"""
+        return list(self.call(method, item, **kwargs) for item in inputs)
+
+    # Getters
+
+    def get(self,
+        task: Union[WorkerTask, Iterable[WorkerTask]],
+        block: bool=False,
+        timeout: float=None,
+        poll: float=0.01,
+        _start: float=None,
+    ) -> Union[Any, list[Any], None, Exception, TimeoutError]:
+
+        # Internal timer for timeouts
+        _start: float = (_start or now())
+
+        # Handle multiple tasks
+        if isinstance(task, Iterable):
+            return [BrokenWorker.get(**locals()) for task in task]
+
+        key = hash(task)
+
+        # Wait until the task is done
+        while block and (key not in self._results):
+            if (now() - _start) > (timeout or math.inf):
+                return TimeoutError(task)
+            with self._signal:
+                self._signal.wait(poll)
+
+        return self._results.pop(key, None)
+
+    get_block = functools.partialmethod(get, block=True)
+
+    # -------------------------------------------|
+    # Internal stuff
+
+    def store(self, task: WorkerTask, result: Any) -> None:
+        with self._signal:
+            self._results[hash(task)] = result
+            self._signal.notify_all()
 
     @easyloop
-    def keep_alive_thread(self) -> None:
-        """Ensures 'size' workers are running the supervisor"""
-        while (self.still_alive < self.size):
-            self.workers.add(self._spawn(
-                target=self.__supervisor__,
-                _type=self.type
+    def _keep_alive(self) -> None:
+        """Ensures 'size' workers are running at any time"""
+        while (self._still_alive < self.size):
+            self._workers.add(self._spawn(
+                target=self._supervisor,
+                _type=self.type,
             ))
-        time.sleep(0.5)
+        with self._heal:
+            self._heal.wait(0.5)
+        self._sanitize()
 
-    def __supervisor__(self) -> None:
+    def _supervisor(self) -> None:
         """Automatically handle getting tasks and storing results"""
-        task: Any = None
+        task: WorkerTask = None
 
-        # Tracks new current 'task's, stops on None
-        def get_tasks() -> Generator:
+        # Tracks new current task, stops on poison
+        def iter_tasks() -> Iterable[Any]:
             nonlocal task
 
             while True:
                 try:
-                    if (task := self.queue.get(block=True)) is not None:
-                        yield (task := self.__deserialize__(task))
+                    if (task := self._queue.get(block=True)) is not None:
+                        yield task.payload
                         continue
-                    break
+                    return
                 finally:
-                    self.queue.task_done()
-
-        # Optional results are 'yielded', fail on non-generator main
-        if not inspect.isgeneratorfunction(self.main):
-            raise TypeError((
-                f"{type(self).__name__}.main() function must be a generator, "
-                "either 'yield result' or 'yield None' on the code."
-            ))
+                    self._queue.task_done()
 
         try:
-            # Wraps 'main' outputs and store results
-            for result in self.main(get_tasks()):
+            # Wrap 'main' outputs and store results
+            for result in self.main(iter_tasks()):
                 self.store(task, result)
         except GeneratorExit:
             pass
         except Exception as error:
+            log.error(f"Task {task.uuid} failed: {error}")
             self.store(task, error)
-            raise error
 
-    def store(self, task: Hashable, result: Optional[Any]) -> None:
-        if (result is not None):
-            self.cache_data[hash(task)] = result
+        with self._heal:
+            self._heal.notify_all()
 
-    # # Specific implementations
+    # -------------------------------------------|
+    # Specific implementations
 
     @abstractmethod
-    def main(self, tasks: Iterable) -> Generator:
-        """A worker gets tasks and yields optional results to be cached"""
-        log.success(f"Worker {self.type.__name__} started")
+    def main(self, tasks: Iterable[Callable]) -> Iterable[Any]:
+        """A worker get tasks and yields results, calls them by default"""
+
+        log.success(f"Callable {self.type.__name__} worker started")
 
         for task in tasks:
             yield task()
+
+# ------------------------------------------------------------------------------------------------ #
+
+class __PyTest__:
+    ...

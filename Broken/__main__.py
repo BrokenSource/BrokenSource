@@ -45,7 +45,7 @@ class ProjectLanguage(BrokenEnum):
 
 # ------------------------------------------------------------------------------------------------ #
 
-@define
+@define(eq=False)
 class ProjectManager:
     path: Path
     name: str = "Unknown"
@@ -67,7 +67,7 @@ class ProjectManager:
         self.name = self.path.name
 
     def __eq__(self, other: Self) -> bool:
-        return self.path == other.path
+        return (self.path == other.path)
 
     # # Utility Attributes
 
@@ -125,10 +125,10 @@ class ProjectManager:
 
     @property
     def _pretty_language(self) -> str:
-        if self.is_python: return f"🐍 (Python) {self.description}"
-        if self.is_nodejs: return f"🟢 (NodeJS) {self.description}"
-        if self.is_rust:   return f"🦀 (Rust  ) {self.description}"
-        if self.is_cpp:    return f"🌀 (C/C++ ) {self.description}"
+        if self.is_python: return f"🟢 [dim grey58](Python)[/] {self.description}"
+        if self.is_nodejs: return f"🟡 [dim grey58](NodeJS)[/] {self.description}"
+        if self.is_rust:   return f"🟠 [dim grey58](Rust  )[/] {self.description}"
+        if self.is_cpp:    return f"🔵 [dim grey58](C/C++ )[/] {self.description}"
         return self.description
 
     # Shorthands for project language

@@ -1,7 +1,5 @@
 # pyright: reportMissingImports=false
 import copy
-import functools
-import hashlib
 import sys
 from abc import ABC, abstractmethod
 from io import BytesIO
