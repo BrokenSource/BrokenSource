@@ -313,7 +313,7 @@ class _Directories:
                 self.PROJECT.APP_AUTHOR /
                 self.PROJECT.APP_NAME
             )
-        if (os.name == "nt"):
+        elif (os.name == "nt"):
             return Path(
                 BrokenPath.Windows.Documents() /
                 self.PROJECT.APP_AUTHOR /

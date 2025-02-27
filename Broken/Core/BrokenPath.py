@@ -544,7 +544,7 @@ class BrokenPath(StaticClass):
 
     class Windows:
         class Magic:
-            """Values got from https://learn.microsoft.com/en-us/previous-versions/windows/embedded/aa453707(v=msdn.10)"""
+            # https://learn.microsoft.com/en-us/previous-versions/windows/embedded/aa453707(v=msdn.10)
             Documents: int = 0x05
             Music:     int = 0x0D
             Video:     int = 0x0E
@@ -561,7 +561,7 @@ class BrokenPath(StaticClass):
         @staticmethod
         def get(csidl: int, *, type: Type=Type.Current) -> Path:
             if (os.name != "nt"):
-                raise RuntimeError("BrokenPath.Windows only makes sense on Windows")
+                raise RuntimeError("BrokenPath.Windows only obviously works on Windows")
             buffer = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
             ctypes.windll.shell32.SHGetFolderPathW(None, csidl, None, type.value, buffer)
             return Path(buffer.value)

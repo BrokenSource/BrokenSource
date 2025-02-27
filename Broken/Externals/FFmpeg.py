@@ -1387,11 +1387,9 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
     @staticmethod
     def loop(path: Path, *, times: int=1, output: Path=None, echo: bool=True) -> Path:
-        """Loop a video N-1 times, output to a new file or replace the original"""
+        """Loop a video N times, output to a new file or replace the original"""
         if not (path := BrokenPath.get(path, exists=True)):
             return None
-        if ((times := times - 1) <= 0):
-            return path
         BrokenFFmpeg.install()
 
         # Optional override or inline
