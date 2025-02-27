@@ -44,14 +44,14 @@ BlockType = Annotated[bool, Option("--block", "-b", " /--free", " /-f",
 # ------------------------------------------------------------------------------------------------ #
 
 @define
-class BrokenAPI:
-    api: FastAPI = Factory(FastAPI)
-    """The main FastAPI instance"""
+class BrokenServer:
+    app: FastAPI = Factory(FastAPI)
+    """The main app instance"""
 
-    host: str = DEFAULT_HOST
+    host: str = None
     """Hostname currently being used by the server"""
 
-    port: int = DEFAULT_PORT
+    port: int = None
     """Port currently being used by the server"""
 
     # -------------------------------------------|
@@ -63,7 +63,7 @@ class BrokenAPI:
 
     @property
     def openapi(self) -> dict:
-        return self.api.openapi()
+        return self.app.openapi()
 
     @property
     def openapi_json(self) -> str:
@@ -85,7 +85,7 @@ class BrokenAPI:
         async def serve():
             await uvicorn.Server(uvicorn.Config(
                 host=self.host, port=self.port,
-                app=self.api, loop="uvloop",
+                app=self.app, loop="uvloop",
                 limit_concurrency=queue,
             )).serve()
 
@@ -107,7 +107,7 @@ class BrokenAPI:
         import runpod
 
         # Use the cool features of the local server
-        BrokenAPI.launch(**locals(), block=False)
+        BrokenServer.launch(**locals(), block=False)
 
         async def wrapper(config: dict) -> dict:
             response = (await self.render(config["input"]))

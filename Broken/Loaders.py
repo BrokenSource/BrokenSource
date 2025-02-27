@@ -11,7 +11,7 @@ from PIL import Image
 from PIL.Image import Image as ImageType
 
 import Broken
-from Broken import BrokenCache
+from Broken import BrokenCache, BrokenPath
 
 if TYPE_CHECKING:
     import numpy as np
@@ -85,8 +85,9 @@ class LoadImage(BrokenLoader):
     def cache() -> Any:
         with contextlib.suppress(ImportError):
             LoadImage._cache = (LoadImage._cache or BrokenCache.requests(
-                cache_name=Broken.BROKEN.DIRECTORIES.CACHE/"LoadImage.sqlite",
-                expire_after=1800))
+                cache_name=BrokenPath.mkdir(Broken.PROJECT.DIRECTORIES.CACHE)/"requests.sqlite",
+                expire_after=1800
+            ))
         return LoadImage._cache
 
     @staticmethod

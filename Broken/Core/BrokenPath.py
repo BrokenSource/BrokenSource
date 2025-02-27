@@ -60,7 +60,7 @@ class BrokenPath(StaticClass):
 
     def copy(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
-        BrokenPath.mkdir(dst.parent, echo=False)
+        BrokenPath.mkdir(dst.parent)
         if src.is_dir():
             log.info(f"Copying Directory ({src})\n→ ({dst})", echo=echo)
             shutil.copytree(src, dst)
@@ -113,9 +113,8 @@ class BrokenPath(StaticClass):
     def mkdir(path: Path, parent: bool=False, *, echo=True) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath.get(path)
-        make = path.parent if parent else path
+        make = (path.parent if parent else path)
         if make.exists():
-            log.success(f"Directory ({make}) already exists", echo=echo)
             return path
         log.info(f"Creating directory {make}", echo=echo)
         make.mkdir(parents=True, exist_ok=True)
@@ -154,7 +153,7 @@ class BrokenPath(StaticClass):
             return virtual
 
         # Make Virtual's parent directory
-        BrokenPath.mkdir(virtual.parent, echo=False)
+        BrokenPath.mkdir(virtual.parent)
 
         # Remove old symlink if it points to a non existing directory
         if virtual.is_symlink() and (not virtual.resolve().exists()):
@@ -274,34 +273,6 @@ class BrokenPath(StaticClass):
             continue
         return str(stem)
 
-    def sha256sum(data: Union[Path, str, bytes]) -> Optional[str]:
-        """Get the sha256sum of a file, directory or bytes"""
-
-        # Nibble the bytes !
-        if isinstance(data, bytes):
-            return hashlib.sha256(data).hexdigest()
-
-        # String or Path is a valid path
-        elif (path := BrokenPath.get(data)).exists():
-            with Halo(log.info(f"Calculating sha256sum of ({path})")):
-                if path.is_file():
-                    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-                # Iterate on all files for low memory footprint
-                feed = hashlib.sha256()
-                for file in path.rglob("*"):
-                    if not file.is_file():
-                        continue
-                    with open(file, "rb") as file:
-                        while (chunk := file.read(8192)):
-                            feed.update(chunk)
-                return feed.hexdigest()
-
-        elif isinstance(data, str):
-            return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-        return
-
     def extract(
         path: Path,
         output: Path=None,
@@ -393,7 +364,7 @@ class BrokenPath(StaticClass):
                 return output
             log.warning("• Wrong Download size", echo=echo)
 
-        log.info("Downloading", echo=echo)
+        BrokenPath.mkdir(output.parent)
 
         # It is binary prefix, right? kibi, mebi, gibi, etc. as we're dealing with raw bytes
         with open(output, "wb") as file, tqdm.tqdm(
@@ -453,8 +424,7 @@ class BrokenPath(StaticClass):
             directory = Broken.BROKEN.DIRECTORIES.EXTERNALS
 
         # Download to target directory, avoiding a move/copy, be known on future calls
-        if not ARCHIVE:
-            directory = (directory/subdir/file.name)
+        directory = (directory/subdir/file.name)
 
         # Finally download the file
         file = BrokenPath.download(denum(url), directory, echo=echo)
@@ -504,7 +474,6 @@ class BrokenPath(StaticClass):
 
         # Can't recurse on non existing directories
         if (not path.exists()) and recurse:
-            log.warning(f"Not adding to PATH as directory doesn't exist ({path})", echo=echo)
             return path
 
         log.debug(f"Adding to Path (Recursively: {recurse}, Persistent: {persistent}): ({path})", echo=echo)

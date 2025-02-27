@@ -72,7 +72,7 @@ class DepthEstimatorBase(
     ABC
 ):
     _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
-        directory=(Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator"),
+        directory=BrokenPath.mkdir(Broken.PROJECT.DIRECTORIES.CACHE/"DepthEstimator"),
         size_limit=int(Environment.float("DEPTHMAP_CACHE_SIZE_MB", 50)*MiB),
     ))
     """DiskCache object for caching depth maps"""

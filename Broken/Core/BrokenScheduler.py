@@ -30,7 +30,7 @@ time.precise = precise
 
 NULL_CONTEXT = contextlib.nullcontext()
 
-@define
+@define(eq=False)
 class SchedulerTask:
 
     # # Basic
@@ -97,6 +97,9 @@ class SchedulerTask:
         if self.freewheel: self.started = time.zero
         self.last_call = (self.last_call or self.started) - self.period
         self.next_call = (self.next_call or self.started)
+
+    def __hash__(self) -> int:
+        return id(self)
 
     # # Useful properties
 

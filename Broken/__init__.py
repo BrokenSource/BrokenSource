@@ -197,7 +197,6 @@ class Tools:
 
 # ---------------------------------------- Package exports --------------------------------------- #
 
-import Broken.Resources as BrokenResources
 from Broken.Core import (
     BrokenAttribute,
     BrokenAttrs,
@@ -264,7 +263,6 @@ BROKEN = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
     APP_AUTHOR="BrokenSource",
-    RESOURCES=BrokenResources
 )
 """The main library's BrokenProject instance"""
 
