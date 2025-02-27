@@ -9,9 +9,9 @@ import tempfile
 from pathlib import Path
 
 import dotenv
-from appdirs import AppDirs
 from attr import define, field
 from halo import Halo
+from platformdirs import PlatformDirs
 from rich import print as rprint
 from rich.align import Align
 from rich.panel import Panel
@@ -230,12 +230,12 @@ class BrokenProject:
 @define(slots=False)
 class _Directories:
     PROJECT: BrokenProject
-    APP_DIRS: AppDirs = None
+    APP_DIRS: PlatformDirs = None
 
     def __attrs_post_init__(self):
         args = (self.PROJECT.APP_AUTHOR, self.PROJECT.APP_NAME)
         args = (reversed(args) if (os.name == "nt") else args)
-        self.APP_DIRS = AppDirs(*args)
+        self.APP_DIRS = PlatformDirs(*args)
 
     # # Unknown / new project directories
 
