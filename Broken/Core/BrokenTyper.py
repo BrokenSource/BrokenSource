@@ -257,10 +257,10 @@ class BrokenTyper:
     def direct_script(self) -> Self:
         """Add a direct script runner command"""
         def python(
-            script: Annotated[Path, typer.Argument(help="The Python script file to run")],
-            ctx: typer.Context,
+            script: Annotated[Path, typer.Argument(help="The Python script file to run")]=None,
+            ctx: typer.Context=None,
         ) -> None:
-            """🟢 Run a script in current python venv"""
+            """🟢 Run a script file or enter the shell"""
             shell(sys.executable, script, *ctx.args, echo=False)
         self.command(python, context=True)
         return self
