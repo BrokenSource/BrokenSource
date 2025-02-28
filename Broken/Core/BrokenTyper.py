@@ -173,19 +173,21 @@ class BrokenTyper:
         it to the 'post' method for back-communication/catching the new object instance"""
 
         # Assert object derives from BaseModel
+        # Find where to get the signature from
         if isinstance(cls, type):
             if (not issubclass(cls, BaseModel)):
-                raise TypeError(f"Class type {cls} is not a pydantic BaseModel")
+                raise TypeError(f"Class type {cls} is not a Pydantic BaseModel")
             signature = cls
         else:
             if (not isinstance(cls, BaseModel)):
-                raise TypeError(f"Class instance {cls} is not a pydantic BaseModel")
+                raise TypeError(f"Class instance {cls} is not a Pydantic BaseModel")
             signature = type(cls)
 
+        # This function is what typer calls with exahustive arguments
         def wrapper(**kwargs):
             nonlocal cls, post
 
-            # Instantiate if type
+            # Instantiate target if type
             if isinstance(cls, type):
                 cls = cls()
 
@@ -209,7 +211,7 @@ class BrokenTyper:
         wrapper.__doc__ = cls.__doc__
 
         # Note: Requires ConfigDict(use_attribute_docstrings=True)
-        # Inject docstring into typer's help
+        # Inject docstring into any typer.Option's help
         for value in cls.model_fields.values():
             for metadata in value.metadata:
                 if isinstance(metadata, OptionInfo):

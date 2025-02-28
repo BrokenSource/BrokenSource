@@ -17,6 +17,7 @@ from Broken import (
     BrokenTyper,
     denum,
     every,
+    log,
     shell,
 )
 from Broken.Externals.Upscaler import UpscalerBase
@@ -171,7 +172,7 @@ class Realesr(UpscalerNCNN_Base):
         realesrnet_x4plus       = "realesrnet_x4plus"
 
     model: Annotated[Model, Option("--model", "-m",
-        help="(🔵 Special ) Model to use for RealESRGAN")] = \
+        help="[bold blue](🔵 Special )[/] Model to use for RealESRGAN")] = \
         Field(Model.realesr_animevideov3)
 
     @staticmethod
@@ -229,7 +230,7 @@ class Upscayl(UpscalerNCNN_Base):
         UpscaylStandard = "upscayl-standard"
 
     model: Annotated[Model, Option("--model", "-m",
-        help="(🔵 Special ) Model to use for Upscayl")] = \
+        help="[bold blue](🔵 Special )[/] Model to use for Upscayl")] = \
         Field(Model.DigitalArt)
 
     @staticmethod
@@ -265,6 +266,14 @@ class Upscayl(UpscalerNCNN_Base):
         echo: bool=True,
         single_core: bool=False
     ) -> ImageType:
+
+        if (self.model in (
+            Upscayl.Model.Remacri,
+            Upscayl.Model.Ultramix,
+            Upscayl.Model.Ultrasharp,
+        )):
+            log.warning("[bold light_coral]• This upscaler model is non-commercial[/]")
+
         with self.path_image() as output:
             with self.path_image(input) as input:
                 binary = self.download()

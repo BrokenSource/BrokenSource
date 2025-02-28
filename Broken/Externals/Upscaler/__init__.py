@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import shutil
 import tempfile
@@ -11,7 +13,14 @@ from PIL.Image import Image as ImageType
 from pydantic import ConfigDict, Field
 from typer import Option
 
-from Broken import BrokenEnum, BrokenResolution, BrokenTyper, denum
+from Broken import (
+    BrokenEnum,
+    BrokenModel,
+    BrokenResolution,
+    BrokenTyper,
+    denum,
+    log,
+)
 from Broken.Externals import ExternalModelsBase
 from Broken.Loaders import LoadableImage, LoadImage
 
@@ -152,6 +161,34 @@ class UpscalerBase(ExternalModelsBase, ABC):
     def _upscale(self, image: ImageType, **config) -> ImageType:
         """The upscaler's proper implementation"""
         ...
+
+    # # Command line interface
+
+    @classmethod
+    def cli(cls, typer: BrokenTyper, name: str) -> BrokenTyper:
+
+        # Workaround to order the IO fields first
+        class InputsOutputs(BrokenModel):
+            input: Annotated[str, Option("--input", "-i")] = Field(None, exclude=True)
+            """Path of the image or URL to upscale"""
+
+            output: Annotated[Optional[Path], Option("--output", "-o")] = Field(None, exclude=True)
+            """Path to save the upscaled image, defaults to '(input)-upscaled.ext'"""
+
+        # Todo: Common "Single • multi smart IO handler" class
+        class CommandLine(cls, InputsOutputs):
+            def _post(self):
+                input = Path(self.input)
+                if (self.output is None):
+                    self.output = input.with_stem(f"{input.stem}-upscaled")
+                upscaled = self.upscale(image=input, output=self.output)
+                log.info(f"Saved upscaled image to {upscaled}")
+
+        return (typer.command(
+            target=CommandLine, name=name,
+            description=cls.__doc__,
+            post=CommandLine._post,
+        ) or typer)
 
 # ------------------------------------------------------------------------------------------------ #
 

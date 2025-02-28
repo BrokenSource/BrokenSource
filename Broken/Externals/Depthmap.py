@@ -3,6 +3,7 @@ import copy
 import sys
 from abc import ABC, abstractmethod
 from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeAlias, Union
 
 import numpy as np
@@ -18,6 +19,7 @@ import Broken
 from Broken import (
     BrokenCache,
     BrokenEnum,
+    BrokenModel,
     BrokenPath,
     BrokenResolution,
     BrokenTyper,
@@ -77,7 +79,7 @@ class DepthEstimatorBase(
     ))
     """DiskCache object for caching depth maps"""
 
-    thicken: Annotated[bool, Option("--thicken", "-t", " /--raw")] = Field(True)
+    thicken: Annotated[bool, Option("--thicken", "-t", " /--raw")] = Field(True, exclude=True)
     """Extrude the edges to mitigate artifacts in DepthFlow"""
 
     class DTypeEnum(str, BrokenEnum):
@@ -117,7 +119,6 @@ class DepthEstimatorBase(
             # Save the array as a gzip compressed numpy file
             np.save(buffer := BytesIO(), depth, allow_pickle=False)
             self._cache.set(key, gzip.compress(buffer.getvalue()))
-
         else:
             # Load the compressed gzip numpy file from cache
             depth = np.load(BytesIO(gzip.decompress(depth)))
@@ -135,6 +136,36 @@ class DepthEstimatorBase(
     @abstractmethod
     def _thicken(self, depth: np.ndarray) -> np.ndarray:
         return depth
+
+    # # Command line interface
+
+    @classmethod
+    def cli(cls, typer: BrokenTyper, name: str) -> BrokenTyper:
+
+        # Workaround to order the IO fields first
+        class InputsOutputs(BrokenModel):
+            input: Annotated[str, Option("--input", "-i")] = Field(None, exclude=True)
+            """Path of the image or URL to estimate"""
+
+            output: Annotated[Optional[Path], Option("--output", "-o")] = Field(None, exclude=True)
+            """Path to save the depthmap, defaults to '(input).depth.png'"""
+
+        # Todo: Common "Single • multi smart IO handler" class
+        class CommandLine(cls, InputsOutputs):
+            def _post(self):
+                if (self.output is None):
+                    self.output = Path(self.input).with_suffix(".depth.png")
+                log.info(f"Estimating depthmap for {self.input}")
+                depth = self.estimate(image=self.input)
+                depth = _TempHelper.normalize(depth, dtype=self.dtype)
+                Image.fromarray(depth).save(self.output)
+                log.info(f"Depthmap saved to {self.output}")
+
+        return (typer.command(
+            target=CommandLine, name=name,
+            description=cls.__doc__,
+            post=CommandLine._post,
+        ) or typer)
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -158,7 +189,7 @@ class DepthAnythingBase(DepthEstimatorBase):
         import transformers
         log.info(f"Loading Depth Estimator model ({self._huggingface_model})")
         if (self.model != self.Model.Small):
-            log.warning("[bold light_coral]• This model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
+            log.warning("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
         self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(self._huggingface_model, use_fast=False)
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)
