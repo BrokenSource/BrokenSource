@@ -69,6 +69,10 @@ class Environment:
         return Environment.bool(key, default)
 
     @staticmethod
+    def iflag(key: str, default: bool=False, /) -> bool:
+        return (not Environment.bool(key, default))
+
+    @staticmethod
     def unset(key: str, /) -> None:
         os.unsetenv(key)
 
