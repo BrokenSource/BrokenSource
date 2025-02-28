@@ -28,33 +28,27 @@ from Broken.Loaders import LoadableImage, LoadImage
 class UpscalerBase(ExternalModelsBase, ABC):
     model_config = ConfigDict(validate_assignment=True)
 
-    width: Annotated[int, Option("--width", "-w", min=0,
-        help="[bold red](🔴 Basic   )[/] Upscaled image width, automatic on height aspect ratio if 0, forced if both are set")] = \
-        Field(0, gt=-1)
+    width: Annotated[Optional[int], Option("--width", "-w", min=0)] = Field(None, gt=-1)
+    """Upscaled image width, automatic on height's aspect ratio if None"""
 
-    height: Annotated[int, Option("--height", "-h", min=0,
-        help="[bold red](🔴 Basic   )[/] Upscaled image height, automatic on width aspect ratio if 0, forced if both are set")] = \
-        Field(0, gt=-1)
+    height: Annotated[Optional[int], Option("--height", "-h", min=0)] = Field(None, gt=-1)
+    """Upscaled image height, automatic on width aspect ratio if None"""
 
-    scale: Annotated[int, Option("--scale", "-s", min=1,
-        help="[bold red](🔴 Basic   )[/] Single pass upscale factor. For precision, over-scale and force width and/or height")] = \
-        Field(2, gt=0)
+    scale: Annotated[int, Option("--scale", "-s", min=1)] = Field(2, gt=0)
+    """Upscale factor for each pass"""
 
-    passes: Annotated[int, Option("--passes", "-p", min=1,
-        help="[bold red](🔴 Basic   )[/] Number of sequential upscale passes. Gets exponentially slower and bigger images")] = \
-        Field(1, gt=0)
+    passes: Annotated[int, Option("--passes", "-p", min=1)] = Field(1, gt=0)
+    """Number of upscaling passes. Exponentially slower and larger images"""
 
     class Format(str, BrokenEnum):
         PNG = "png"
         JPG = "jpg"
 
-    format: Annotated[Format, Option("--format", "-f",
-        help="[bold red](🔴 Basic   )[/] Temporary image processing format. (PNG: Lossless, slow) (JPG: Good enough, faster)")] = \
-        Field(Format.JPG)
+    format: Annotated[Format, Option("--format", "-f")] = Field(Format.JPG)
+    """Intermediate image processing format"""
 
-    quality: Annotated[int, Option("--quality", "-q", min=0, max=100,
-        help="[bold red](🔴 Basic   )[/] Temporary image processing 'PIL.Image.save' quality used on --format")] = \
-        Field(95, ge=0, le=100)
+    quality: Annotated[int, Option("--quality", "-q", min=0, max=100)] = Field(95, ge=0, le=100)
+    """Intermediate image processing 'PIL.Image.save' quality used on --format"""
 
     def output_size(self, width: int, height: int) -> tuple[int, int]:
         """Calculate the final output size after upscaling some input size"""
@@ -71,9 +65,9 @@ class UpscalerBase(ExternalModelsBase, ABC):
         try:
             # Note: No context because NTFS only allows one fd per path
             file = Path(tempfile.NamedTemporaryFile(
-                suffix=f".{denum(self.format)}").name,
+                suffix=f".{denum(self.format)}",
                 delete=(image is None),
-            )
+            ).name)
             if image is ImageType:
                 pass
             elif isinstance(image, ImageType):
@@ -82,7 +76,8 @@ class UpscalerBase(ExternalModelsBase, ABC):
                 shutil.copy(image, file)
             yield file
         finally:
-            file.unlink()
+            with contextlib.suppress(FileNotFoundError):
+                file.unlink()
 
     def upscale(self,
         image: LoadableImage,
@@ -97,7 +92,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
             output: The output path to save or `Image` class for a Image object
 
         Returns:
-            The upscaled image as a PIL Image object if `output` is `Image`, else the output Path
+            The upscaled image as a PIL Image object if `output` is `ImageType`, else the output Path
         """
 
         # Convenience: Direct configs
@@ -206,9 +201,6 @@ class NoUpscaler(UpscalerBase):
 
     def _load_model(self):
         pass
-
-    def upscale(self, *args, **kwargs) -> ImageType:
-        return args[0]
 
     def _upscale(self, image: ImageType) -> ImageType:
         return image

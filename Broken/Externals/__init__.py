@@ -48,7 +48,6 @@ class ExternalTorchBase(BrokenModel):
 
 class ExternalModelsBase(BrokenModel, ABC):
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         validate_assignment=True
     )
 

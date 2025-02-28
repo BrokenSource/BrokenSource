@@ -24,50 +24,42 @@ from Broken.Externals.Upscaler import UpscalerBase
 
 
 class UpscalerNCNN_Base(UpscalerBase):
-    denoise: Annotated[int, Option("--denoise", "-n", min=0, max=3,
-        help="[bold yellow](🟡 Specific)[/] Denoiser intensity. Great for digital art, 'fake, uncanny' otherwise")] = \
-        Field(3, gt=-1)
 
-    tile_size: Annotated[int, Option("--tile-size", "-t", min=0,
-        help="[bold yellow](🟡 Specific)[/] Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32")] = \
-        Field(0, gt=-1)
+    denoise: Annotated[int, Option("--denoise", "-n", min=0, max=3)] = \
+        Field(3, ge=0)
+    """Denoiser intensity, great for digital art, 'fake, uncanny' otherwise"""
 
-    tta: Annotated[bool, Option("--tta", "-x",
-        help="[bold yellow](🟡 Specific)[/] Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/]")] = \
+    tile_size: Annotated[int, Option("--tile-size", "-t", min=0)] = \
+        Field(0, ge=0, exclude=True)
+    """Processing chunk size, increases VRAM and Speed, 0 is auto, must be >= 32"""
+
+    tta: Annotated[bool, Option("--tta", "-x")] = \
         Field(False)
+    """Enable test-time augmentation (Similar to SSAA) [red](8x SLOWER)[/]"""
 
-    cpu: Annotated[bool, Option("--cpu", "-c",
-        help="[bold yellow](🟡 Specific)[/] Use CPU for processing instead of the GPU [yellow](SLOW)[/]")] = \
-        Field(False)
+    cpu: Annotated[bool, Option("--cpu", "-c")] = \
+        Field(False, exclude=True)
+    """Use CPU for processing instead of the GPU [yellow](SLOW)[/]"""
 
-    gpu: Annotated[int, Option("--gpu", "-g", min=0,
-        help="[bold yellow](🟡 Specific)[/] Use the Nth GPU for processing")] = \
-        Field(0, gt=-1)
+    gpu: Annotated[int, Option("--gpu", "-g", min=0)] = \
+        Field(0, ge=0, exclude=True)
+    """Use the Nth GPU in the system for processing"""
 
-    load_threads: Annotated[int, Option("--load-threads", "-lt", min=1,
-        help="[bold green](🟢 Advanced)[bold yellow] Number of Load Threads")] \
-        = Field(1, gt=0)
+    load_threads: Annotated[int, Option("--load-threads", "-lt", min=1)] = \
+        Field(1, ge=1, exclude=True)
+    """Number of loading threads"""
 
-    proc_threads: Annotated[int, Option("--proc-threads", "-pt", min=1,
-        help="[bold green](🟢 Advanced)[bold yellow] Number of Process Threads")] \
-        = Field(2, gt=0)
+    proc_threads: Annotated[int, Option("--proc-threads", "-pt", min=1)] = \
+        Field(2, ge=1, exclude=True)
+    """Number of processing threads"""
 
-    save_threads: Annotated[int, Option("--save-threads", "-st", min=1,
-        help="[bold green](🟢 Advanced)[bold yellow] Number of Saving Threads")] \
-        = Field(2, gt=0)
+    save_threads: Annotated[int, Option("--save-threads", "-st", min=1)] = \
+        Field(2, ge=1, exclude=True)
+    """Number of saving threads"""
 
     @property
     def _lpc(self) -> str:
         return f"{self.load_threads}:{self.proc_threads}:{self.save_threads}"
-
-    def _single_core(self):
-        """Make the process only use one random core"""
-        import os
-        import random
-        import resource
-        core = random.choice(range(os.cpu_count()))
-        os.sched_setaffinity(0, {core})
-        resource.setrlimit(resource.RLIMIT_CPU, (1, 1))
 
     @field_validator("tile_size", mode="plain")
     def _validate_tile_size(cls, value):
@@ -105,13 +97,12 @@ class Waifu2x(UpscalerNCNN_Base):
     type: Annotated[Literal["waifu2x"], BrokenTyper.exclude()] = "waifu2x"
 
     class Model(str, BrokenEnum):
-        models_cunet = "models_cunet"
-        models_upconv_7_anime_style_art_rgb = "models_upconv_7_anime_style_art_rgb"
-        models_upconv_7_photo = "models_upconv_7_photo"
+        Cunet = "models_cunet"
+        Anime = "models_upconv_7_anime_style_art_rgb"
+        Photo = "models_upconv_7_photo"
 
-    model: Annotated[Model, Option("--model", "-m",
-        help="(🔵 Special ) Model to use for Waifu2x")] = \
-        Field(Model.models_cunet)
+    model: Annotated[Model, Option("--model", "-m")] = Field(Model.Cunet)
+    """The upscaling model to use"""
 
     @staticmethod
     def _download_url() -> str:
@@ -148,11 +139,11 @@ class Waifu2x(UpscalerNCNN_Base):
                     every("-n", self.denoise),
                     every("-s", self.scale),
                     every("-t", self.tile_size),
-                    "-g", self.gpu if not self.cpu else -1,
+                    "-g", (self.gpu if not self.cpu else -1),
                     "-j", self._lpc,
                     "-x"*self.tta,
                     # "-m", self.model.value, # Fixme: Doko?
-                    preexec_fn=(self._single_core if single_core else None),
+                    single_core=single_core,
                     cwd=self.download().parent,
                     stderr=DEVNULL,
                     echo=echo,
@@ -171,9 +162,8 @@ class Realesr(UpscalerNCNN_Base):
         realesrgan_x4plus_anime = "realesrgan_x4plus_anime"
         realesrnet_x4plus       = "realesrnet_x4plus"
 
-    model: Annotated[Model, Option("--model", "-m",
-        help="[bold blue](🔵 Special )[/] Model to use for RealESRGAN")] = \
-        Field(Model.realesr_animevideov3)
+    model: Annotated[Model, Option("--model", "-m")] = Field(Model.realesr_animevideov3)
+    """The upscaling model to use"""
 
     @staticmethod
     def _download_url() -> str:
@@ -208,7 +198,7 @@ class Realesr(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     stderr=DEVNULL,
-                    preexec_fn=(self._single_core if single_core else None),
+                    single_core=single_core,
                     cwd=self.download().parent,
                     echo=echo,
                 )
@@ -229,9 +219,8 @@ class Upscayl(UpscalerNCNN_Base):
         UpscaylLite     = "upscayl-lite"
         UpscaylStandard = "upscayl-standard"
 
-    model: Annotated[Model, Option("--model", "-m",
-        help="[bold blue](🔵 Special )[/] Model to use for Upscayl")] = \
-        Field(Model.DigitalArt)
+    model: Annotated[Model, Option("--model", "-m")] = Field(Model.DigitalArt)
+    """The upscaling model to use"""
 
     @staticmethod
     def _download_url() -> str:
@@ -267,6 +256,7 @@ class Upscayl(UpscalerNCNN_Base):
         single_core: bool=False
     ) -> ImageType:
 
+        # Warn non-commercial models
         if (self.model in (
             Upscayl.Model.Remacri,
             Upscayl.Model.Ultramix,
@@ -288,7 +278,7 @@ class Upscayl(UpscalerNCNN_Base):
                     "-j", self._lpc,
                     "-x"*self.tta,
                     "-n", denum(self.model) + "-4x",
-                    preexec_fn=(self._single_core if single_core else None),
+                    single_core=single_core,
                     stderr=DEVNULL,
                     echo=echo,
                 )

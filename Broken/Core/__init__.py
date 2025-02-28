@@ -96,6 +96,7 @@ def shell(
     confirm: bool = False,
     skip: bool = False,
     echo: bool = True,
+    single_core: bool=False,
     **kwargs
 ) -> Optional[Union[
     subprocess.CompletedProcess,
@@ -145,6 +146,16 @@ def shell(
     # Update current environ for the command only
     kwargs["env"] = os.environ | (env or {})
     kwargs["shell"] = shell
+
+    if single_core:
+        def _single_core(self):
+            import os
+            import random
+            import resource
+            core = random.choice(range(os.cpu_count()))
+            os.sched_setaffinity(0, {core})
+            resource.setrlimit(resource.RLIMIT_CPU, (1, 1))
+        kwargs["preexec_fn"] = _single_core
 
     # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):

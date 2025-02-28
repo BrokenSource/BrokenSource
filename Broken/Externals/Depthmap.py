@@ -99,7 +99,7 @@ class DepthEstimatorBase(
     def estimate(self,
         image: LoadableImage,
         cache: bool=True,
-    ) -> np.ndarray:
+    ) -> np.ndarray[np.float32]:
         import gzip
 
         # Uniquely identify the image and current parameters
@@ -245,7 +245,7 @@ class DepthAnythingV2(DepthAnythingBase):
 # ------------------------------------------------------------------------------------------------ #
 
 class DepthPro(DepthEstimatorBase):
-    """Configure and use DepthPro        [dim](by Apple https://github.com/apple/ml-depth-pro)[/]"""
+    """Configure and use DepthPro        [dim](by https://github.com/apple/ml-depth-pro)[/]"""
     type: Annotated[Literal["depthpro"], BrokenTyper.exclude()] = "depthpro"
 
     _model: Any = PrivateAttr(None)
