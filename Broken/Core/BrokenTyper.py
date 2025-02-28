@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import inspect
 import itertools
@@ -8,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Any, Self, Union
+from typing import Annotated, Any, Self, Union
 
 import click
 import typer
@@ -32,6 +34,7 @@ from Broken import (
     flatten,
     list_get,
     log,
+    shell,
 )
 
 # Apply custom styling to typer
@@ -231,7 +234,7 @@ class BrokenTyper:
         return app(*sys.argv[1:])
 
     @staticmethod
-    def toplevel() -> Self:
+    def toplevel() -> BrokenTyper:
         return BrokenTyper(
             help=False,
             description = (
@@ -247,6 +250,20 @@ class BrokenTyper:
             expose_value=False,
             hidden=True,
         )
+
+    # -------------------------------------------|
+    # Special top-level commands
+
+    def direct_script(self) -> Self:
+        """Add a direct script runner command"""
+        def python(
+            script: Annotated[Path, typer.Argument(help="The Python script file to run")],
+            ctx: typer.Context,
+        ) -> None:
+            """🟢 Run a script in current python venv"""
+            shell(sys.executable, script, *ctx.args, echo=False)
+        self.command(python, context=True)
+        return self
 
     # -------------------------------------------|
 
