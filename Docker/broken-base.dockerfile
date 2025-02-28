@@ -1,6 +1,5 @@
 # ------------------------------------------------------------------------------------------------ #
 # (c) MIT License, Tremeschin
-# Dockerfile v2024.12.4
 # ------------------------------------------------------------------------------------------------ #
 # General metadata and configuration
 
@@ -65,13 +64,13 @@ RUN curl -L "https://github.com/upscayl/upscayl/releases/download/v2.15.0/upscay
     mv /opt/Upscayl/resources/bin /opt/upscayl/bin && \
     rm -rf /opt/Upscayl
 
-# Install uv and create a virtual environment
+# Install uv, create and activate a virtual environment
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 ENV UV_COMPILE_BYTECODE="1"
 ENV UV_LINK_MODE="copy"
 ENV VIRTUAL_ENV="${WORKDIR}/.venv"
 ENV PATH="${WORKDIR}/.venv/bin:$PATH"
-RUN uv venv --python 3.12 "$VIRTUAL_ENV"
+RUN uv venv --python 3.13 "$VIRTUAL_ENV"
 
 # Cache depth estimator models
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -86,7 +85,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install torch=="${TORCH_VERSION}+${TORCH_FLAVOR}" \
     --index-url "https://download.pytorch.org/whl/${TORCH_FLAVOR}"
 
-# Install project dependencies (assumes uv sync was run on host)
+# Install dependencies (assumes 'uv sync --all-packages' was run on host once)
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
