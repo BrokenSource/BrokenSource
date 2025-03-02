@@ -59,7 +59,6 @@ class ExternalModelsBase(BrokenModel, ABC):
     _loaded: SameTracker = PrivateAttr(default_factory=SameTracker)
     """Keeps track of the current loaded model name, to avoid reloading"""
 
-    @BrokenWorker.easy_lock
     def load_model(self) -> Self:
         if self._loaded(self.model):
             return

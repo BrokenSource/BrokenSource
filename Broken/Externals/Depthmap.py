@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeAlias, Union
 
 import numpy as np
+import spaces
 import xxhash
 from diskcache import Cache as DiskCache
 from halo import Halo
@@ -96,6 +97,7 @@ class DepthEstimatorBase(
     def np_dtype(self) -> np.dtype:
         return getattr(np, self.dtype.value)
 
+    @spaces.GPU(duration=15)
     def estimate(self,
         image: LoadableImage,
         cache: bool=True,

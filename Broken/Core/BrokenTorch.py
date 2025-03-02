@@ -236,7 +236,6 @@ class BrokenTorch:
                 version = re.sub(r"\.dev\d{8}", "", version)
                 return TorchRelease.get(version) or version
 
-    @BrokenWorker.easy_lock
     @staticmethod
     def install(
         version: Annotated[TorchRelease,
