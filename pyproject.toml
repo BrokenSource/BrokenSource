@@ -93,7 +93,7 @@ shaderflow = [
     "glcontext~=3.0.0",
     "moderngl~=5.12.0",
     "moderngl-window~=3.1.1",
-    "imgui-bundle~=1.6.2",
+    "imgui-bundle>=1.5.2",
     "turbopipe~=1.2.2",
     "pygame~=2.6.1",
     # Audio / MIDI
@@ -133,8 +133,8 @@ dev-dependencies = [
 [tool.uv.workspace]
 members = [
     "Projects/*",
-    "Meta/*/Projects/*",
-    "Meta/*",
+    # "Meta/*/Projects/*",
+    # "Meta/*",
 ]
 
 # # Hatchling

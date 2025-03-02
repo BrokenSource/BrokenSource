@@ -84,14 +84,14 @@ if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
 # Warn if running unsupported Python versions
-if sys.version_info <= (3, 9):
+if sys.version_info < (3, 10):
     _current: str = f"{sys.version_info.major}.{sys.version_info.minor}"
     sys.stderr.write(f"Warning: Python {_current} isn't officially supported and projects may break\n")
     sys.stderr.write("→ Fix: Upgrade to at least Python 3.10 for guaranteed compatibility\n")
     sys.stderr.write("→ See status of your version: (https://endoflife.date/python)\n")
 
 # Python <= 3.10 typing fixes
-if sys.version_info <= (3, 10):
+if sys.version_info < (3, 11):
     import typing # noqa
     from typing_extensions import Self, TypeAlias
     typing.TypeAlias = TypeAlias
