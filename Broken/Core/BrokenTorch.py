@@ -205,7 +205,7 @@ class SimpleTorch(BrokenEnum):
             choice: str = Prompt.ask(
                 "\n:: What PyTorch version do you want to install?\n\n",
                 choices=list(SimpleTorch.prompt_choices()),
-                default="cpu",
+                default=("cpu" if BrokenPlatform.OnWindows else "cuda124"),
             )
             console.print()
         except KeyboardInterrupt:
