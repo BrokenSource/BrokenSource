@@ -223,22 +223,27 @@ class ProjectManager:
         target: Annotated[list[PlatformEnum],
             Option("--target", "-t",
             help="Target platforms to build binaries for"
-        )] = [BrokenPlatform.Host],
+        )]=[BrokenPlatform.Host],
+
+        python: Annotated[str,
+            Option("--python", "-p",
+            help="Python version to build the projects with"
+        )]="3.12",
 
         tarball: Annotated[bool,
             Option("--tarball", "-z",
             help="Create a compressed tarball archive for unix releases",
-        )] = False,
+        )]=False,
 
         standalone: Annotated[bool,
             Option("--standalone", "-s",
             help="(Standalone) Create self-contained distributions with all dependencies",
-        )] = False,
+        )]=False,
 
         torch: Annotated[Optional[TorchRelease],
             Option("--torch", "-r",
             help="(Standalone) Bundle a specific PyTorch version with the project"
-        )] = None,
+        )]=None,
     ) -> None:
         """
         📦 Release the Project as a distributable binary
@@ -284,7 +289,6 @@ class ProjectManager:
             BrokenManager.rust()
             BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
             BUILD_WHL: Path = BROKEN.DIRECTORIES.BUILD_WHEELS
-            PYTHON_VERSION: str = "3.12"
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
@@ -314,7 +318,7 @@ class ProjectManager:
                     if (returncode := shell(
                         sys.executable, "-m", "pip", "download", dependencies,
                         (("--platform", x) for x in target.pip_platform),
-                        "--python-version", PYTHON_VERSION,
+                        "--python-version", python,
                         "--only-binary=:all:"*(not nodeps),
                         "--no-deps"*(nodeps),
                         "--prefer-binary",
@@ -340,7 +344,7 @@ class ProjectManager:
                             continue
 
                         # Skip audioop on Python 3.13+ as it was dropped from stdlib
-                        if (PYTHON_VERSION == "3.13") and ("audioop" in dependency):
+                        if (python == "3.13") and ("audioop" in dependency):
                             continue
 
                         # Ignore platform constraints
@@ -387,7 +391,7 @@ class ProjectManager:
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
                 PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
-                PYAPP_PYTHON_VERSION=PYTHON_VERSION,
+                PYAPP_PYTHON_VERSION=python,
                 PYAPP_EXEC_MODULE=self.name,
                 PYAPP_DISTRIBUTION_EMBED=1,
                 PYAPP_PASS_LOCATION=1,

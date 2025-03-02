@@ -165,6 +165,7 @@ class SimpleTorch(BrokenEnum):
         from rich.table import Table
 
         table: Table = Table(
+            title="\n[blue][link=https://pytorch.org/]PyTorch[/link][/] is used to run deep learning models",
             header_style="bold grey42",
             border_style="dim",
             box=ROUNDED,
@@ -174,26 +175,27 @@ class SimpleTorch(BrokenEnum):
         table.add_column("GPU", style="bold")
         table.add_column("Accel")
         table.add_column("Option")
+        table.add_column("Size", style="dim", justify="right")
         table.add_column("Notes", style="dim")
 
         # Table rows
-        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda128",
+        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda128", "6.5 GB",
             "Required for [light_coral]RTX 5000+ Blackwell[/] GPUs")
-        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda124",
+        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda124", "5.0 GB",
             "Most common, doesn't need latest drivers")
 
         # Hoping one day ROCm solves their issues..
         if BrokenPlatform.OnWindows:
-            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "-",
+            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "-", "-",
                 "Not supported yet (https://pytorch.org/)")
         elif BrokenPlatform.OnLinux:
-            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "rocm",
+            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "rocm", "18.0 GB",
                 "Check GPU support, override GFX if needed")
 
-        table.add_row("[blue]Intel[/]", "[blue]XPU[/]", "xpu",
+        table.add_row("[blue]Intel[/]", "[blue]XPU[/]", "xpu", "6.0 GB",
             "Desktop Arc or Integrated Graphics")
-        table.add_row("-", "CPU", "cpu",
-            "Slow but most compatible")
+        table.add_row("-", "CPU", "cpu", "0.7 GB",
+            "Slow but most compatible, small models")
 
         # Display the table
         console = get_console()
@@ -203,7 +205,7 @@ class SimpleTorch(BrokenEnum):
             choice: str = Prompt.ask(
                 "\n:: What PyTorch version do you want to install?\n\n",
                 choices=list(SimpleTorch.prompt_choices()),
-                default="cuda124",
+                default="cpu",
             )
             console.print()
         except KeyboardInterrupt:
