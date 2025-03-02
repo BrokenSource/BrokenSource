@@ -138,6 +138,10 @@ members = [
     # "Meta/*",
 ]
 
+[tool.uv.sources]
+broken-source = {workspace=true}
+shaderflow    = {workspace=true}
+
 # # Hatchling
 
 [build-system]
