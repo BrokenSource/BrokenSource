@@ -125,7 +125,9 @@ if Environment.flag("RICH_TRACEBACK", 1):
 
 # --------------------------- Information about the release and version -------------------------- #
 
+import site
 import struct
+from pathlib import Path
 
 from Broken.Version import __version__
 
@@ -158,6 +160,9 @@ class Runtime:
     PyApp: bool = Environment.exists("PYAPP")
     """True if running as a PyApp release (https://github.com/ofek/pyapp)"""
 
+    uvx: bool = any(f"archive-v{x}" in __file__ for x in range(4))
+    """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
+
     PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
@@ -170,7 +175,7 @@ class Runtime:
     Source: bool = (not Release)
     """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-    Method: str = (Source and "Source") or (Binary and "Binary") or (PyPI and "PyPI")
+    Method: str = (uvx and "uvx") or (Source and "Source") or (Binary and "Binary") or (PyPI and "PyPI")
     """The runtime environment of the current project release (Source, Release, PyPI)"""
 
     # # Special and Containers
@@ -201,6 +206,12 @@ class Tools:
 
     pip: list[str, Path] = [python, "-m", "uv", "pip"]
     """Entry point for pip"""
+
+# ------------------------------------------------------------------------------------------------ #
+
+if Runtime.uvx:
+    VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
+    Environment.setdefault("VIRTUAL_ENV", VIRTUAL_ENV)
 
 # ---------------------------------------- Package exports --------------------------------------- #
 
