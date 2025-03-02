@@ -29,6 +29,7 @@ dependencies = [
     "diskcache~=5.6.3",
     "intervaltree~=3.1.0",
     "ordered-set~=4.1.0",
+    "dill~=0.3.9",
     "numpy",
     # Utils
     "loguru~=0.7.3",
