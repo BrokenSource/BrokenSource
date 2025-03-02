@@ -18,6 +18,10 @@ class BrokenHook(MetadataHookInterface):
                 for (x, item) in enumerate(items):
                     item = item.replace("0.0.0", version)
 
+                    # Replace git+ dependencies
+                    if ((tag := " @ git+") in item):
+                        item = f"{item.split(tag)[0]}=={version}"
+
                     # Pin versions on release binaries
                     if (os.environ.get("PYAPP_RELEASE", "0") == "1"):
                         item = item.replace("~=", "==")
