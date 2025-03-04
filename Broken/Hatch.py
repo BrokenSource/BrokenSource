@@ -1,4 +1,5 @@
 import os
+import runpy
 from pathlib import Path
 
 from hatchling.metadata.plugin.interface import MetadataHookInterface
@@ -6,29 +7,28 @@ from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 class BrokenHook(MetadataHookInterface):
     def update(self, metadata: dict) -> None:
-        if (monorepo := os.environ.get("MONOREPO_ROOT")):
-            monorepo = Path(monorepo)
+        monorepo = Path(__file__).parent.parent
 
-            # Get the version from the main package
-            exec((monorepo/"Broken"/"Version.py").read_text(), (ctx := {}))
-            version = metadata["version"] = ctx["__version__"]
+        # Get the version from the main package
+        context = runpy.run_path(monorepo/"Broken"/"Version.py")
+        version = metadata["version"] = context["__version__"]
 
-            # Replaces all list items inline
-            def patch(items: list[str]) -> None:
-                for (x, item) in enumerate(items):
-                    item = item.replace("0.0.0", version)
+        # Replaces all list items inline
+        def patch(items: list[str]) -> None:
+            for (x, item) in enumerate(items):
+                item = item.replace("0.0.0", version)
 
-                    # Replace git+ dependencies
-                    if ((tag := " @ git+") in item):
-                        item = f"{item.split(tag)[0]}=={version}"
+                # Replace git+ dependencies
+                if ((tag := " @ git+") in item):
+                    item = f"{item.split(tag)[0]}=={version}"
 
-                    # Pin versions on release binaries
-                    if (os.environ.get("PYAPP_RELEASE", "0") == "1"):
-                        item = item.replace("~=", "==")
-                        item = item.replace(">=", "==")
+                # Pin versions on release binaries
+                if (os.environ.get("PYAPP_RELEASE", "0") == "1"):
+                    item = item.replace("~=", "==")
+                    item = item.replace(">=", "==")
 
-                    items[x] = item
+                items[x] = item
 
-            # Patch all normal and optional dependencies
-            list(map(patch, metadata.get("optional-dependencies", {}).values()))
-            patch(metadata.get("dependencies", {}))
+        # Patch all normal and optional dependencies
+        list(map(patch, metadata.get("optional-dependencies", {}).values()))
+        patch(metadata.get("dependencies", {}))
