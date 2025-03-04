@@ -163,7 +163,7 @@ class Runtime:
     uvx: bool = any(f"archive-v{x}" in __file__ for x in range(4))
     """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
 
-    PyPI: bool = any((part in __file__.lower() for part in ("site-packages", "dist-packages")))
+    PyPI: bool = any((part in __file__ for part in ("site-packages", "dist-packages")))
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
     Binary: bool = (PyInstaller or Nuitka or PyApp)
@@ -210,6 +210,7 @@ class Tools:
 # ------------------------------------------------------------------------------------------------ #
 
 if Runtime.uvx:
+    # From /home/tremeschin/.cache/uv/archive-v0/7x8klaYDn8Kd0GRTY-nYr/lib/python3.12/site-packages
     VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
     Environment.setdefault("VIRTUAL_ENV", VIRTUAL_ENV)
 

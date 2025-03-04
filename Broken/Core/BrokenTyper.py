@@ -4,6 +4,7 @@ import contextlib
 import inspect
 import itertools
 import re
+import runpy
 import shlex
 import sys
 from abc import ABC, abstractmethod
@@ -435,7 +436,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
             log.warning(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
 
         # Add commands of all files, warn if none was sucessfully added
-        elif (sum(self.add_project(python=file, tag=tag) for file in search) == 0):
+        elif (sum(self.add_project(script=file, tag=tag) for file in search) == 0):
             log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
             log.warning('\n'.join(f"• {file}" for file in search))
 
@@ -447,29 +448,28 @@ class BrokenLauncher(ABC, BrokenAttrs):
             re.MULTILINE
         )
 
-    def add_project(self, python: Path, tag: str="Project") -> bool:
-        if (not python.exists()):
+    def add_project(self, script: Path, tag: str="Project") -> bool:
+        if (not script.exists()):
             return False
 
-        def wrapper(code: str, file: Path, class_name: str):
+        def wrapper(file: Path, class_name: str):
             def run(ctx: typer.Context):
-                # Note: Point of trust transfer to the file the user is running
-                exec(compile(code, file, "exec"), (namespace := {}))
-                namespace[class_name]().cli(*ctx.args)
+                # Warn: Point of trust transfer to the file the user is running
+                runpy.run_path(file)[class_name]().cli(*ctx.args)
             return run
 
         # Match all projects and their optional docstrings
-        code = python.read_text("utf-8")
+        code = script.read_text("utf-8")
         matches = list(self._regex(tag).finditer(code))
 
         # Add a command for each match
         for match in matches:
             class_name, docstring = match.groups()
             self.cli.command(
-                target=wrapper(code, python, class_name),
+                target=wrapper(script, class_name),
                 name=class_name.lower(),
                 description=(docstring or "No description provided"),
-                panel=f"📦 {tag}s at ({python})",
+                panel=f"📦 {tag}s at ({script})",
                 context=True,
                 help=False,
             )
