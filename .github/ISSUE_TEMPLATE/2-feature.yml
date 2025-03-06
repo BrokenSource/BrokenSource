@@ -1,7 +1,6 @@
 name: 💡 Create a new feedback ticket
 description: Have an idea or feedback to improve the project?
-labels:
-  - enhancement
+type: feature
 
 body:
 - type: markdown
@@ -18,7 +17,7 @@ body:
 - type: dropdown
   id: type
   attributes:
-    label: 🔘 Request type
+    label: Request type
     description: |
       - What kind of feedback are you providing?
     options:
@@ -40,7 +39,7 @@ body:
 - type: textarea
   id: description
   attributes:
-    label: 🔘 Description
+    label: Description
     description: |
       - ✅ Describe the feature you'd like to see implemented or feedback to be heard
       - **Tip:** You can provide a Python script, commands, of how the feature would work

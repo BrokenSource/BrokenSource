@@ -9,12 +9,12 @@ body:
       > - ⚠️ Please use the Discussions tab above for questions!
       > - You can also ask your question on [**Discord or Telegram**](https://brokensrc.dev/about/contact/)
 
-- type: dropdown
+- type: checkboxes
   attributes:
     label: "Please read the message above!"
     options:
-      - Ok!
-    default: 0
+      - label: Ok!
+        required: true
 
 - type: markdown
   attributes:

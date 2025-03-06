@@ -134,8 +134,8 @@ dev-dependencies = [
 [tool.uv.workspace]
 members = [
     "Projects/*",
-    # "Meta/*/Projects/*",
-    # "Meta/*",
+    "Meta/*/Projects/*",
+    "Meta/*",
 ]
 
 [tool.uv.sources]

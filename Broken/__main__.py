@@ -705,24 +705,23 @@ class BrokenManager(BrokenSingleton):
             BrokenPath.remove(path)
 
         # Fixed known blob directories
-        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_RELEASES)
-        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_BUILD)
-        BrokenPath.remove(root/".cache")
+        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_RELEASES, confirm=True)
+        BrokenPath.remove(BROKEN.DIRECTORIES.REPO_BUILD, confirm=True)
+        BrokenPath.remove(root/".cache", confirm=True)
 
     def sync(self) -> None:
         """♻️  Synchronize common resources files across all projects"""
-        root = BROKEN.DIRECTORIES.REPOSITORY
+        root = (BROKEN.DIRECTORIES.REPOSITORY)
+        dot_github = (root/".github")
 
         for project in self.projects[1:]:
             if (project.path/".github"/".nosync").exists():
                 continue
-            for file in flatten(
-                ((root/".github").glob(ext) for ext in ("*.md", "*.yml")),
-                (root/".github"/"ISSUE_TEMPLATE").glob("*.yml"),
-                (root/".github"/"hatch_build.py"),
-            ):
-                target = project.path/file.relative_to(root)
-                BrokenPath.copy(src=file, dst=target)
+            for file in BrokenPath.files(dot_github.rglob("*")):
+                target = (project.path/file.relative_to(root))
+
+                if (target).exists():
+                    BrokenPath.copy(file, target)
 
 # ------------------------------------------------------------------------------------------------ #
 

@@ -62,10 +62,10 @@ class BrokenPath(StaticClass):
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
         BrokenPath.mkdir(dst.parent)
         if src.is_dir():
-            log.info(f"Copying Directory ({src})\n→ ({dst})", echo=echo)
+            log.info(f"Copy ({src})\n→ ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
-            log.info(f"Copying File ({src})\n→ ({dst})", echo=echo)
+            log.info(f"Copy ({src})\n   → ({dst})", echo=echo)
             shutil.copy2(src, dst)
         return dst
 

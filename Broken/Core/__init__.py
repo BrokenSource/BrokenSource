@@ -129,8 +129,9 @@ def shell(
 
     # Log the command being run, temp variables
     _log = (log.skip if skip else log.info)
+    _the = ("Skip" if skip else "Call")
     _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-    _log(f"Command {args}{_cwd}", echo=echo)
+    _log(f"{_the} {args}{_cwd}", echo=echo)
     if skip: return
 
     if kwargs.get("shell", False):
