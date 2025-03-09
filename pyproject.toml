@@ -55,9 +55,8 @@ dependencies = [
     "transformers~=4.49.0",
     "ollama~=0.4.7",
     # Packaging
-    "setuptools~=75.8.1",
     "pip~=25.0.1",
-    "uv~=0.6.3",
+    "uv~=0.6.5",
 ]
 
 [project.optional-dependencies]
@@ -69,15 +68,15 @@ all = [
 ]
 website = [
     "mkdocs~=1.6.1",
-    "mkdocstrings~=0.28.2",
-    "mkdocstrings-python~=1.16.2",
+    "mkdocstrings~=0.28.3",
+    "mkdocstrings-python~=1.16.3",
     "mkdocs-gen-files~=0.5.0",
-    "mkdocs-autorefs~=1.4.0",
+    "mkdocs-autorefs~=1.4.1",
     "mkdocs-literate-nav~=0.6.1",
     "mkdocs-section-index~=0.3.9",
-    "mkdocs-material[imaging]~=9.6.6",
+    "mkdocs-material[imaging]~=9.6.7",
     "mkdocs-minify-plugin~=0.8.0",
-    "mkdocs-include-markdown-plugin~=7.1.2",
+    "mkdocs-include-markdown-plugin~=7.1.5",
     "mkdocs-site-urls~=0.2.0",
     "markdown-callouts~=0.4.0",
     "black~=25.1.0",
@@ -107,7 +106,7 @@ shaderflow = [
 gradio = [
     "fastapi~=0.115.11",
     "orjson~=3.10.11",
-    "gradio~=5.20.0",
+    "gradio~=5.20.1",
     "spaces~=0.32.0",
 ]
 cloud = [

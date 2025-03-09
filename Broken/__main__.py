@@ -575,7 +575,7 @@ class BrokenManager(BrokenSingleton):
     # ---------------------------------------------------------------------------------------------|
     # Core section
 
-    def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy Unified Website to GitHub Pages")]=False) -> None:
+    def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy to GitHub Pages")]=False) -> None:
         """📚 Serve or deploy the monorepo website"""
         if deploy:
             Environment.set("CODE_REFERENCE", 1)
@@ -675,7 +675,7 @@ class BrokenManager(BrokenSingleton):
         # Install Visual C++ Build Tools on Windows
         if (BrokenPlatform.OnWindows and build_tools):
             log.warning("You must have Microsoft Visual C++ Build Tools installed to compile Rust projects")
-            log.warning("• Broken will try installing it, you might need to restart your shell afterwards")
+            log.warning("• Will try installing it, you might need to restart your shell, good luck!")
             shell("winget", "install", "-e", "--id", "Microsoft.VisualStudio.2022.BuildTools", "--override", (
                 " --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
                 " --add Microsoft.VisualStudio.Component.Windows10SDK"

@@ -34,7 +34,8 @@ class ShutilFormat(BrokenEnum):
 
 class BrokenPath(StaticClass):
 
-    def get(*parts: Any,
+    def get(
+        *parts: Any,
         absolute: bool=True,
         exists: bool=False,
         raises: bool=False,
@@ -51,9 +52,9 @@ class BrokenPath(StaticClass):
         path = (path.expanduser().absolute() if absolute else path)
 
         # Handle existence requirements
-        if ((exists or raises) and not path.exists()):
-            if raises:
-                raise FileNotFoundError(f"Path ({path}) doesn't exist")
+        if (raises and not path.exists()):
+            raise FileNotFoundError(f"Path ({path}) doesn't exist")
+        if (exists and not path.exists()):
             return None
 
         return path
@@ -62,7 +63,7 @@ class BrokenPath(StaticClass):
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
         BrokenPath.mkdir(dst.parent)
         if src.is_dir():
-            log.info(f"Copy ({src})\n→ ({dst})", echo=echo)
+            log.info(f"Copy ({src})\n   → ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
             log.info(f"Copy ({src})\n   → ({dst})", echo=echo)
