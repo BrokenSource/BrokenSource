@@ -209,7 +209,7 @@ class SimpleTorch(BrokenEnum):
         except KeyboardInterrupt:
             exit(0)
 
-        return SimpleTorch.get(choice.upper()).value
+        return denum(SimpleTorch.get(choice.upper()))
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -267,11 +267,13 @@ class BrokenTorch:
 
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
-                version = SimpleTorch.CUDA
+                log.special("• Assuming Linux server with NVIDIA GPU")
+                version = denum(SimpleTorch.CUDA)
 
             # Fixed single version for macOS
             if BrokenPlatform.OnMacOS:
-                version = SimpleTorch.MACOS
+                log.special("• There is only one PyTorch version for macOS")
+                version = denum(SimpleTorch.MACOS)
 
             else:
                 version = SimpleTorch.prompt()

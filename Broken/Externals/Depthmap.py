@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeAlias, 
 
 import numpy as np
 import spaces
+import xxhash
 from diskcache import Cache as DiskCache
 from halo import Halo
 from PIL import Image
@@ -64,7 +65,6 @@ class _TempHelper:
 
     @staticmethod
     def image_hash(image: Union[ImageType, np.ndarray]) -> int:
-        import xxhash
         return xxhash.xxh3_64_intdigest(image.tobytes())
 
 # ------------------------------------------------------------------------------------------------ #

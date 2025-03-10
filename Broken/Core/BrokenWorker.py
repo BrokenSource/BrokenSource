@@ -219,7 +219,7 @@ class BrokenWorker:
     """List of pending tasks to be processed"""
 
     manager: Manager = Factory(Manager)
-    """Shaderd multiprocessing manager"""
+    """Shared multiprocessing manager"""
 
     @property
     def results_type(self) -> type[dict]:

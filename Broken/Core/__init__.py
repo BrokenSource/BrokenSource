@@ -247,7 +247,7 @@ def shell(
     _log(f"{_the} {args}{_cwd}", echo=echo)
     if skip: return
 
-    if kwargs.get("shell", False):
+    if (shell is True):
         args = ' '.join(args)
         log.warning((
             "Running command with (shell=True), be careful.. "
