@@ -10,13 +10,11 @@ from typing import Annotated, Iterable, Optional, Union
 from packaging.version import Version
 from typer import Option
 
-from Broken import BrokenCache, Environment, Runtime, Tools
+from Broken import BrokenCache, Environment, Runtime, Tools, log
 from Broken.Core import denum, every, shell
 from Broken.Core.BrokenEnum import BrokenEnum
-from Broken.Core.BrokenLogging import log
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenTyper import BrokenTyper
-from Broken.Core.BrokenWorker import BrokenWorker
 
 # Nightly builds are daily and it's safe-ish to use 'yesterday' as the dev version
 YESTERDAY: str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%d")
@@ -186,10 +184,10 @@ class SimpleTorch(BrokenEnum):
 
         # Hoping one day ROCm solves their issues..
         if BrokenPlatform.OnWindows:
-            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "-", "-",
+            table.add_row("[red]Radeon[/]", "[red]ROCm[/]", "-", "-",
                 "Not supported yet (https://pytorch.org/)")
         elif BrokenPlatform.OnLinux:
-            table.add_row("[red]AMD Radeon[/]", "[red]ROCm[/]", "rocm", "18.0 GB",
+            table.add_row("[red]Radeon[/]", "[red]ROCm[/]", "rocm", "18.0 GB",
                 "Check GPU support, override GFX if needed")
 
         table.add_row("[blue]Intel[/]", "[blue]XPU[/]", "xpu", "6.0 GB",

@@ -16,10 +16,9 @@ import validators
 from halo import Halo
 
 import Broken
-from Broken import Environment
+from Broken import Environment, log
 from Broken.Core import StaticClass, denum, flatten, shell
 from Broken.Core.BrokenEnum import BrokenEnum
-from Broken.Core.BrokenLogging import log
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Types import FileExtensions
 

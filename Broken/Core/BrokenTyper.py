@@ -19,9 +19,8 @@ from rich.panel import Panel
 from rich.text import Text
 from typer.models import OptionInfo
 
-from Broken import Environment, Runtime
+from Broken import Environment, Runtime, log
 from Broken.Core import apply, arguments, flatten, list_get, shell
-from Broken.Core.BrokenLogging import log
 from Broken.Core.BrokenPlatform import BrokenPlatform
 
 # Apply custom styling to typer

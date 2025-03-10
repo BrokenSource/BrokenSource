@@ -8,12 +8,10 @@ from collections import deque
 from pathlib import Path
 
 import typer
-import typer.rich_utils
 from attr import Factory, define
 
-from Broken import Environment, Runtime
+from Broken import Environment, Runtime, log
 from Broken.Core import BrokenAttrs
-from Broken.Core.BrokenLogging import log
 from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenProject import BrokenProject
 from Broken.Core.BrokenTyper import BrokenTyper

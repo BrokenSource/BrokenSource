@@ -17,9 +17,8 @@ from rich.align import Align
 from rich.panel import Panel
 
 import Broken
-from Broken import Environment, Runtime, Tools
+from Broken import BrokenLogging, Environment, Runtime, Tools, log
 from Broken.Core import BrokenCache, arguments, list_get, shell
-from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenTrackers import FileTracker

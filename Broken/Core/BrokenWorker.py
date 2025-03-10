@@ -21,8 +21,8 @@ from uuid import UUID, uuid4
 
 from attrs import Factory, define, field
 
+from Broken import log
 from Broken.Core import easyloop
-from Broken.Core.BrokenLogging import log
 
 WorkerType: TypeAlias = Union[Thread, Process]
 """Any stdlib concurrency primitive"""

@@ -221,6 +221,7 @@ from Broken.Core import (
     BrokenAttrs,
     BrokenCache,
     BrokenFluent,
+    BrokenLogging,
     BrokenModel,
     BrokenRelay,
     BrokenSingleton,
@@ -245,6 +246,7 @@ from Broken.Core import (
     install,
     limited_ratio,
     list_get,
+    log,
     multi_context,
     nearest,
     overrides,
@@ -255,7 +257,6 @@ from Broken.Core import (
 )
 from Broken.Core.BrokenEnum import BrokenEnum, FlagEnum, MultiEnum
 from Broken.Core.BrokenLauncher import BrokenLauncher
-from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import (
     ArchEnum,

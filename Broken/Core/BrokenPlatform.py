@@ -6,8 +6,8 @@ from typing import Self
 
 import distro
 
+from Broken import log
 from Broken.Core.BrokenEnum import BrokenEnum, MultiEnum
-from Broken.Core.BrokenLogging import log
 
 
 class SystemEnum(str, MultiEnum):

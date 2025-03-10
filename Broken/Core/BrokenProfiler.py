@@ -4,9 +4,8 @@ from typing import Any, Self
 
 from attrs import define
 
-from Broken import BrokenEnum, Environment
+from Broken import BrokenEnum, Environment, log
 from Broken.Core import shell
-from Broken.Core.BrokenLogging import log
 
 
 @define
