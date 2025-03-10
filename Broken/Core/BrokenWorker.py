@@ -27,9 +27,6 @@ from Broken.Core import easyloop
 WorkerType: TypeAlias = Union[Thread, Process]
 """Any stdlib concurrency primitive"""
 
-MANAGER = Manager()
-"""Global multiprocessing manager"""
-
 # ------------------------------------------------------------------------------------------------ #
 
 @define(eq=False)
@@ -221,11 +218,14 @@ class BrokenWorker:
     _queue: Union[ThreadQueue, ProcessQueue] = None
     """List of pending tasks to be processed"""
 
+    manager: Manager = Factory(Manager)
+    """Shaderd multiprocessing manager"""
+
     @property
     def results_type(self) -> type[dict]:
         """The results container class compatible with worker type"""
         # Warn: Must use hash(task) if Process as it pickles than __hash__
-        return (dict if (self.type is Thread) else MANAGER.dict)
+        return (dict if (self.type is Thread) else self.manager.dict)
 
     _results: dict = None
 
