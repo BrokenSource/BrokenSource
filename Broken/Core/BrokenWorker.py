@@ -16,13 +16,13 @@ from queue import Queue as ThreadQueue
 from threading import Condition as ThreadCondition
 from threading import Lock, Thread
 from time import perf_counter as now
-from typing import Any, Optional, Self, TypeAlias, Union
+from typing import Any, Self, TypeAlias, Union
 from uuid import UUID, uuid4
 
 from attrs import Factory, define, field
 
-from Broken import log
 from Broken.Core import easyloop
+from Broken.Core.BrokenLogging import log
 
 WorkerType: TypeAlias = Union[Thread, Process]
 """Any stdlib concurrency primitive"""

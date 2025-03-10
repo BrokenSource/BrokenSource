@@ -9,10 +9,8 @@ from attrs import Factory, define
 from fastapi import FastAPI
 from typer import Option
 
-from Broken import (
-    BrokenPlatform,
-    BrokenWorker,
-)
+from Broken.Core.BrokenPlatform import BrokenPlatform
+from Broken.Core.BrokenWorker import BrokenWorker
 
 # ------------------------------------------------------------------------------------------------ #
 

@@ -254,6 +254,7 @@ from Broken.Core import (
     tempvars,
 )
 from Broken.Core.BrokenEnum import BrokenEnum, FlagEnum, MultiEnum
+from Broken.Core.BrokenLauncher import BrokenLauncher
 from Broken.Core.BrokenLogging import BrokenLogging, log
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import (
@@ -273,7 +274,7 @@ from Broken.Core.BrokenTrackers import (
     PlainTracker,
     SameTracker,
 )
-from Broken.Core.BrokenTyper import BrokenLauncher, BrokenTyper
+from Broken.Core.BrokenTyper import BrokenTyper
 from Broken.Core.BrokenWorker import BrokenWorker
 
 # ------------------------------------------------------------------------------------------------ #
