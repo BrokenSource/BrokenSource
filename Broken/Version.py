@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-__version__ = "0.9.0.dev0"
-__all__ = ["__version__"]
 
 # Manual trigger count: 1
+__version__ = "0.9.0.dev0"
+__options__ = dict(
+    GHA_VERSION=__version__,
+    GHA_DOCKER=False,
+    GHA_PYAPP=False,
+    GHA_PYPI=False,
+    GHA_TAG=False,
+)
 
-def export(**options) -> None:
-    for key, value in options.items():
-        print(f"{key}={value}")
-
+# Export options to environment
 if (__name__ == "__main__"):
-    export(
-        GHA_VERSION=__version__,
-        GHA_DOCKER=False,
-        GHA_PYAPP=False,
-        GHA_PYPI=False,
-        GHA_TAG=False,
-    )
+    for (key, value) in __options__.items():
+        print(f"{key}={value}")

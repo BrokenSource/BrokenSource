@@ -1,9 +1,6 @@
 name: docker-release
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "Broken/Version.py"
 
 jobs:
   main:
