@@ -451,7 +451,7 @@ class ProjectManager:
                 f"{self.name.lower()}",
                 f"-{target.value}",
                 f"-v{BROKEN.VERSION}",
-                f"-{torch.flavor}" if torch else "",
+                f"-{torch.flavor}" if (torch and standalone) else "",
                 "-standalone"*standalone,
                 f"{target.extension}",
             ))
