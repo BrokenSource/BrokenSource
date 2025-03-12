@@ -13,10 +13,10 @@ services:
         TORCH_FLAVOR: ${TORCH_FLAVOR:-cpu}
 
     volumes:
-      - /usr/lib/wsl:/usr/lib/wsl
       # - ./Docker/Workspace:/root/.local/share/BrokenSource
+      - /usr/lib/wsl:/usr/lib/wsl
 
-    # "--gpus=all"
+    # Docker "--gpus all"
     deploy:
       resources:
         reservations:
@@ -24,6 +24,10 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
+
+    # Podman "--gpus all"
+    devices:
+      - nvidia.com/gpu=all
 
   # Sanity checks, assertions
 
