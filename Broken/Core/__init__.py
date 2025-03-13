@@ -58,7 +58,7 @@ def block_modules(*modules: str) -> Generator:
 
 # -------------------------------------------- Logging ------------------------------------------- #
 
-# Optimization: Don't import asyncio in sync mode
+# Optimization: Don't import asyncio, could break stuff
 if Environment.flag("LOGURU_NO_ASYNCIO", 1):
     with override_module("asyncio", DotMap(get_running_loop=lambda: None)):
         from loguru import logger as log

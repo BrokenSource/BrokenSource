@@ -90,76 +90,77 @@ class BrokenWebsite:
         if (not path.exists()):
             return
 
-        match type:
-            case Directory.Root:
-                for license in files(path.glob("license*")):
-                    self.write(self.website/license.name, license.read_text())
+        if (type == Directory.Root):
+            for license in files(path.glob("license*")):
+                self.write(self.website/license.name, license.read_text())
 
-                self.write(path=self.website/"index.md",
-                    content='\n'.join((
-                        "---",
-                        f"title: '{self.name}'",
-                        "template: home.html",
-                        "---\n",
-                        (path/"readme.md").read_text()
+            self.write(path=self.website/"index.md",
+                content='\n'.join((
+                    "---",
+                    f"title: '{self.name}'",
+                    "template: home.html",
+                    "---\n",
+                    (path/"readme.md").read_text()
+            )))
+
+        # Raw copy contents
+        elif (type == Directory.Website):
+            if (self.package.name == "Broken"):
+                return
+            for file in files(path.rglob("*")):
+                self.write(
+                    path=self.website/file.relative_to(path),
+                    content=file.read_bytes()
+                )
+
+        # Raw copy resources
+        elif (type == Directory.Resources):
+            for file in files(path.rglob("*")):
+                script = parts(self.website/"resources"/file.relative_to(path), lower)
+                self.write(path=script, content=file.read_bytes())
+
+        # Raw copy examples
+        elif (type == Directory.Examples):
+            for file in files(path.rglob("*")):
+                script = parts(self.website/"examples"/file.relative_to(path), lower)
+                self.write(path=script, content=file.read_text())
+
+        # Write the Code Reference
+        elif (type == Directory.Package):
+            for file in path.rglob("*.py"):
+                # (File    ) "/home/tremeschin/Code/Broken/Externals/FFmpeg.py"
+                # (Relative) "Externals/FFmpeg.py"
+                # (Markdown) "externals/ffmpeg.md"
+                # (Source  ) "externals/ffmpeg.py"
+                # (Module  ) "Broken/Externals/FFmpeg.py"
+                # (Package ) "Broken.Externals.FFmpeg"
+                relative: Path = file.relative_to(path)
+                markdown: Path = parts(relative.with_suffix(".md"), lower)
+                source:   Path = parts(relative, lower)
+                module:   Path = file.relative_to(path.parent)
+                package:  str  = '.'.join(parts(module, path2package).parts)
+
+                # Write raw .py file for reference
+                self.write(Path("code", self.website, source), file.read_text())
+
+                # Note: Code reference takes a bit to generate
+                reference = Path("code", self.website, markdown)
+
+                if (not Environment.flag("CODE_REFERENCE", 0)):
+                    self.write(path=reference, content='!!! failure "**Missing**: Code reference generation disabled"')
+                    continue
+
+                # Write code reference with mkdocstrings
+                self.write(path=reference, content='\n'.join((
+                    "---",
+                    f"title: '{module.stem}'",
+                    f"description: 'Code reference for the {module} file of the {self.name} project'",
+                    "---",
+                    "",
+                    f"# <b>File: <a href='{self.repository}/blob/main/{module}' target='_blank'>`{module}`</a></b>",
+                    "",
+                    f"::: {package}",
                 )))
-
-            # Raw copy contents
-            case Directory.Website:
-                if (self.package.name == "Broken"):
-                    return
-                for file in files(path.rglob("*")):
-                    self.write(self.website/file.relative_to(path),
-                        file.read_bytes())
-
-            # Raw copy resources
-            case Directory.Resources:
-                for file in files(path.rglob("*")):
-                    script = parts(self.website/"resources"/file.relative_to(path), lower)
-                    self.write(path=script, content=file.read_bytes())
-
-            # Raw copy examples
-            case Directory.Examples:
-                for file in files(path.rglob("*")):
-                    script = parts(self.website/"examples"/file.relative_to(path), lower)
-                    self.write(path=script, content=file.read_text())
-
-            # Write the Code Reference
-            case Directory.Package:
-                for file in path.rglob("*.py"):
-                    # (File    ) "/home/tremeschin/Code/Broken/Externals/FFmpeg.py"
-                    # (Relative) "Externals/FFmpeg.py"
-                    # (Markdown) "externals/ffmpeg.md"
-                    # (Source  ) "externals/ffmpeg.py"
-                    # (Module  ) "Broken/Externals/FFmpeg.py"
-                    # (Package ) "Broken.Externals.FFmpeg"
-                    relative: Path = file.relative_to(path)
-                    markdown: Path = parts(relative.with_suffix(".md"), lower)
-                    source:   Path = parts(relative, lower)
-                    module:   Path = file.relative_to(path.parent)
-                    package:  str  = '.'.join(parts(module, path2package).parts)
-
-                    # Write raw .py file for reference
-                    self.write(Path("code", self.website, source), file.read_text())
-
-                    # Note: Code reference takes a bit to generate
-                    reference = Path("code", self.website, markdown)
-
-                    if (not Environment.flag("CODE_REFERENCE", 0)):
-                        self.write(path=reference, content='!!! failure "**Missing**: Code reference generation disabled"')
-                        continue
-
-                    # Write code reference with mkdocstrings
-                    self.write(path=reference, content='\n'.join((
-                        "---",
-                        f"title: '{module.stem}'",
-                        f"description: 'Code reference for the {module} file of the {self.name} project'",
-                        "---",
-                        "",
-                        f"# <b>File: <a href='{self.repository}/blob/main/{module}' target='_blank'>`{module}`</a></b>",
-                        "",
-                        f"::: {package}",
-                    )))
 
 
     def write(self, path: Path, content: Union[str, bytes]):

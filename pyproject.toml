@@ -62,25 +62,9 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    "broken-source[website]",
     "broken-source[shaderflow]",
     "broken-source[gradio]",
     "broken-source[cloud]",
-]
-website = [
-    "mkdocs~=1.6.1",
-    "mkdocstrings~=0.29.0",
-    "mkdocstrings-python~=1.16.5",
-    "mkdocs-gen-files~=0.5.0",
-    "mkdocs-autorefs~=1.4.1",
-    "mkdocs-literate-nav~=0.6.1",
-    "mkdocs-section-index~=0.3.9",
-    "mkdocs-material[imaging]~=9.6.7",
-    "mkdocs-minify-plugin~=0.8.0",
-    "mkdocs-include-markdown-plugin~=7.1.5",
-    "mkdocs-site-urls~=0.2.0",
-    "markdown-callouts~=0.4.0",
-    "black~=25.1.0",
 ]
 shaderflow = [
     "watchdog~=6.0.0",
@@ -125,11 +109,24 @@ python-preference = "only-managed"
 compile-bytecode = true
 dev-dependencies = [
     "broken-source[all]",
-
+    # Website
+    "mkdocs~=1.6.1",
+    "mkdocstrings~=0.29.0",
+    "mkdocstrings-python~=1.16.5",
+    "mkdocs-gen-files~=0.5.0",
+    "mkdocs-autorefs~=1.4.1",
+    "mkdocs-literate-nav~=0.6.1",
+    "mkdocs-section-index~=0.3.9",
+    "mkdocs-material[imaging]~=9.6.7",
+    "mkdocs-minify-plugin~=0.8.0",
+    "mkdocs-include-markdown-plugin~=7.1.5",
+    "mkdocs-site-urls~=0.2.0",
+    "markdown-callouts~=0.4.0",
+    "black~=25.1.0",
     # Development and Utilities
     "pytest-sugar~=1.0.0",
     "zstandard~=0.23.0",
-
+    "hatchling~=1.27.0",
     # Profiling
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",

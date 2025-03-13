@@ -1,13 +1,14 @@
 # -------------------------------- General fixes, quality of life -------------------------------- #
 
-import os
 import time
 
 time.zero = time.perf_counter()
 """Precise time at which the program started since last boot"""
 
 time.absolute = (lambda: time.perf_counter() - time.zero)
-"""Precise time at which the program has been running for"""
+"""Precise time since the program started running"""
+
+import os # noqa
 
 class Environment:
     """Utilities for managing environment variables"""
@@ -110,6 +111,10 @@ Environment.setdefault("__GL_YIELD", "USLEEP")
 # macOS: Enable CPU fallback for PyTorch unsupported operations in native MPS
 # https://pytorch.org/docs/stable/mps_environment_variables.html
 Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
+
+# Make telemetries opt-in
+Environment.setdefault("HF_HUB_DISABLE_TELEMETRY", 1)
+Environment.setdefault("DO_NOT_TRACK", 1)
 
 # Replace argv[0] being "-c" to PyApp's managed python
 if Environment.exists("PYAPP"):
@@ -256,6 +261,7 @@ from Broken.Core import (
     log,
     multi_context,
     nearest,
+    override_module,
     overrides,
     pop_fill,
     shell,
