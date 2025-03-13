@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import textwrap
 import time
 from abc import ABC, abstractmethod
 from collections import deque
@@ -21,28 +22,50 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
+import rich
 from attrs import Factory, define, field
 from dotmap import DotMap
 from pydantic import BaseModel, ConfigDict, Field
+
+from Broken import Environment, Runtime
 
 if TYPE_CHECKING:
     import requests
     import requests_cache
 
+# ------------------------------------------------------------------------------------------------ #
+
+@contextlib.contextmanager
+def override_module(name: str, mock: Any) -> Generator:
+    try:
+        original = sys.modules.pop(name, None)
+        sys.modules[name] = mock
+        yield None
+    finally:
+        sys.modules[name] = original
+
+@contextlib.contextmanager
+def block_modules(*modules: str) -> Generator:
+    with contextlib.ExitStack() as stack:
+        for module in modules:
+            ctx = override_module(module, None)
+            stack.enter_context(ctx)
+        yield None
+
 # -------------------------------------------- Logging ------------------------------------------- #
 
-import textwrap
+# Optimization: Don't import asyncio in sync mode
+if Environment.flag("LOGURU_NO_ASYNCIO", 1):
+    with override_module("asyncio", DotMap(get_running_loop=lambda: None)):
+        from loguru import logger as log
 
-import rich
 from loguru import logger as log
-
-from Broken import Environment, Runtime
 
 # Don't log contiguous long paths
 console = rich.get_console()
 console.soft_wrap = True
 
-class BrokenLogging():
+class BrokenLogging:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "__instance__"):
             self = super().__new__(cls)
@@ -262,7 +285,7 @@ def shell(
     kwargs["shell"] = shell
 
     if single_core:
-        def _single_core(self):
+        def _single_core():
             import os
             import random
             import resource
@@ -327,22 +350,6 @@ def tempvars(**variables: str) -> Generator:
         log.info(f"Restoring environment variables: {tuple(variables.keys())}")
         os.environ.clear()
         os.environ.update(original)
-
-
-@contextlib.contextmanager
-def block_modules(*modules: str) -> Generator:
-    """Pretend a module isn't installed"""
-    state = sys.modules.copy()
-    try:
-        for module in flatten(modules):
-            sys.modules[module] = None
-        yield None
-    finally:
-        for module in modules:
-            if (module in state):
-                sys.modules[module] = state[module]
-                continue
-            del sys.modules[module]
 
 
 def smartproxy(object: Any) -> Any:
@@ -492,6 +499,7 @@ def easyloop(method: Callable=None, *, period: float=0.0):
     if (method is None):
         return decorator
     return decorator(method)
+
 
 # ------------------------------------------------------------------------------------------------ #
 # Classes

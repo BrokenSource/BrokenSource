@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import functools
 import inspect
 import itertools
 import shlex
@@ -14,9 +15,6 @@ import typer
 import typer.rich_utils
 from attr import Factory, define
 from pydantic import BaseModel
-from rich import get_console
-from rich.panel import Panel
-from rich.text import Text
 from typer.models import OptionInfo
 
 from Broken import Environment, Runtime, log
@@ -30,7 +28,6 @@ typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
 typer.rich_utils.DEFAULT_STRING = "(default: {})"
 typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
 
-console = get_console()
 
 @define
 class BrokenTyper:
@@ -232,6 +229,7 @@ class BrokenTyper:
         ).should_shell()
 
     @staticmethod
+    @functools.cache
     def exclude() -> typer.Option:
         return typer.Option(
             parser=(lambda type: type),
@@ -268,6 +266,9 @@ class BrokenTyper:
         return self
 
     def shell_welcome(self) -> None:
+        from rich.console import console
+        from rich.panel import Panel
+        from rich.text import Text
         console.print(Panel(
             title="Tips",
             title_align="left",

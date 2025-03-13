@@ -115,13 +115,15 @@ Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 if Environment.exists("PYAPP"):
     sys.argv[0] = sys.executable
 
-# Pretty tracebacks
+# Pretty tracebacks, smart lazy installing
 if Environment.flag("RICH_TRACEBACK", 1):
-    import rich.traceback
-    rich.traceback.install(
-        extra_lines=1,
-        width=None,
-    )
+    def _lazy_hook(type, value, traceback):
+        import rich.traceback
+        rich.traceback.install(
+            extra_lines=1,
+            width=None,
+        )(type, value, traceback)
+    sys.excepthook = _lazy_hook
 
 # Fix for Pydantic use_attribute_docstrings
 if (sys.platform == "darwin"):

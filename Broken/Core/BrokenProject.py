@@ -8,13 +8,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-import dotenv
 from attr import define, field
-from halo import Halo
 from platformdirs import PlatformDirs
 from rich import print as rprint
-from rich.align import Align
-from rich.panel import Panel
 
 import Broken
 from Broken import BrokenLogging, Environment, Runtime, Tools, log
@@ -69,11 +65,13 @@ class BrokenProject:
 
         # Load dotenv files in common directories
         for path in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            dotenv.load_dotenv(path, override=True)
+            __import__("dotenv").load_dotenv(path, override=True)
 
     def welcome(self) -> None:
         import pyfiglet # noqa
         from Broken import BrokenTorch
+        from rich.align import Align
+        from rich.panel import Panel
         torch = BrokenTorch.version()
         ascii = pyfiglet.figlet_format(self.APP_NAME)
         ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
@@ -202,6 +200,7 @@ class BrokenProject:
                 )
                 print()
                 if (answer == "delete"):
+                    from halo import Halo
                     with Halo(f"Deleting unused version v{version.name}.."):
                         shutil.rmtree(version, ignore_errors=True)
                 if (answer == "keep"):

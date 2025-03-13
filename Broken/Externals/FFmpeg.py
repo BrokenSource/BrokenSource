@@ -3,7 +3,6 @@ from __future__ import annotations
 import functools
 import io
 import re
-import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from collections import deque
@@ -41,6 +40,7 @@ class FFmpegModuleBase(BrokenModel, ABC):
     model_config = ConfigDict(
         use_attribute_docstrings=True,
         validate_assignment=True,
+        defer_build=True,
     )
 
     @abstractmethod

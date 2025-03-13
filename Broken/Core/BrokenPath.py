@@ -11,9 +11,6 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import click
-import tqdm
-import validators
-from halo import Halo
 
 import Broken
 from Broken import Environment, log
@@ -136,16 +133,7 @@ class BrokenPath(StaticClass):
         os.chdir(cwd)
 
     def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
-        """
-        Symlink [virtual] -> [real], `virtual` being the symlink file and `real` the true path
-
-        Args:
-            virtual (Path): Symlink path (file)
-            real (Path): Target path (real path)
-
-        Returns:
-            None if it fails, else `virtual` Path
-        """
+        """Symlink 'virtual' file to -> 'real' true path"""
         log.info(f"Symlinking ({virtual})\n→ ({real})", echo=echo)
 
         # Return if already symlinked
@@ -220,16 +208,17 @@ class BrokenPath(StaticClass):
 
         import zstandard as zstd
 
-        with Halo(log.info(f"Compressing ({path}) → ({output})", echo=echo)):
-            with open(output, "wb") as compressed:
-                cctx = zstd.ZstdCompressor(level=3, threads=-1)
-                with cctx.stream_writer(compressed) as compressor:
-                    with tarfile.open(fileobj=compressor, mode="w|") as tar:
-                        if path.is_dir():
-                            for file in path.rglob("*"):
-                                tar.add(file, arcname=file.relative_to(path))
-                        else:
-                            tar.add(path, arcname=path.name)
+        log.info(f"Compressing ({path}) → ({output})", echo=echo)
+
+        with open(output, "wb") as compressed:
+            cctx = zstd.ZstdCompressor(level=3, threads=-1)
+            with cctx.stream_writer(compressed) as compressor:
+                with tarfile.open(fileobj=compressor, mode="w|") as tar:
+                    if path.is_dir():
+                        for file in path.rglob("*"):
+                            tar.add(file, arcname=file.relative_to(path))
+                    else:
+                        tar.add(path, arcname=path.name)
         if remove:
             BrokenPath.remove(path, echo=echo)
 
@@ -241,13 +230,14 @@ class BrokenPath(StaticClass):
 
         import tarfile
 
-        with Halo(log.info(f"Compressing ({path}) → ({output})", echo=echo)):
-            with tarfile.open(output, "w:gz") as tar:
-                if path.is_dir():
-                    for file in path.rglob("*"):
-                        tar.add(file, arcname=file.relative_to(path))
-                else:
-                    tar.add(path, arcname=path.name)
+        log.info(f"Compressing ({path}) → ({output})", echo=echo)
+
+        with tarfile.open(output, "w:gz") as tar:
+            if path.is_dir():
+                for file in path.rglob("*"):
+                    tar.add(file, arcname=file.relative_to(path))
+            else:
+                tar.add(path, arcname=path.name)
         if remove:
             BrokenPath.remove(path, echo=echo)
 
@@ -299,8 +289,7 @@ class BrokenPath(StaticClass):
         else:
             # Show progress as this might take a while on slower IOs
             log.info(f"Extracting ({path})\n→ ({output})", echo=echo)
-            with Halo("Extracting archive.."):
-                shutil.unpack_archive(path, output)
+            shutil.unpack_archive(path, output)
             extract_flag.touch()
 
         return output
@@ -320,6 +309,7 @@ class BrokenPath(StaticClass):
         Note: If the output is a directory, the url's file name will be appended to it
         Note: The output will default to Broken Project's Download directory
         """
+        import validators
 
         # Link must be valid
         if not validators.url(url):
@@ -365,6 +355,7 @@ class BrokenPath(StaticClass):
             log.warning("• Wrong Download size", echo=echo)
 
         BrokenPath.mkdir(output.parent)
+        import tqdm
 
         # It is binary prefix, right? kibi, mebi, gibi, etc. as we're dealing with raw bytes
         with open(output, "wb") as file, tqdm.tqdm(

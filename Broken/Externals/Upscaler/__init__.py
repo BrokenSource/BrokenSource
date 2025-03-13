@@ -26,7 +26,9 @@ from Broken.Loaders import LoadableImage, LoadImage
 
 
 class UpscalerBase(ExternalModelsBase, ABC):
-    model_config = ConfigDict(validate_assignment=True)
+    model_config = ConfigDict(
+        validate_assignment=True,
+    )
 
     width: Annotated[Optional[int], Option("--width", "-w", min=0)] = Field(None, gt=-1)
     """Upscaled image width, automatic on height's aspect ratio if None"""
