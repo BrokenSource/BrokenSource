@@ -17,10 +17,11 @@ class BrokenHook(MetadataHookInterface):
         def patch(items: list[str]) -> None:
             for (x, item) in enumerate(items):
                 item = item.replace("0.0.0", version)
+                item = item.replace(" ", "")
 
                 # Replace git+ dependencies
-                if ((tag := "git+") in item):
-                    item = item.replace(" ", "").split(tag)[0]
+                if ((git := "@git+") in item):
+                    item = item.split(git)[0]
                     item = f"{item}=={version}"
 
                 # Pin versions on release binaries

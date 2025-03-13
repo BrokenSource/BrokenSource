@@ -237,7 +237,7 @@ class ProjectManager:
 
         standalone: Annotated[bool,
             Option("--standalone", "-s",
-            help="(Standalone) Create self-contained distributions with all dependencies",
+            help="(Standalone) Create self-contained distributions, implies --embed",
         )]=False,
 
         torch: Annotated[Optional[TorchRelease],
@@ -388,6 +388,8 @@ class ProjectManager:
 
             # Pyapp configuration
             Environment.update(
+                PYAPP_APP_AUTHOR="BrokenSource",
+                PYAPP_APP_NAME="Versions",
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
                 PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
