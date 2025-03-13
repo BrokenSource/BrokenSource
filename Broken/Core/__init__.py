@@ -38,11 +38,15 @@ if TYPE_CHECKING:
 @contextlib.contextmanager
 def override_module(name: str, mock: Any) -> Generator:
     try:
-        original = sys.modules.pop(name, None)
+        exist = (name in sys.modules)
+        saved = sys.modules.get(name)
         sys.modules[name] = mock
         yield None
     finally:
-        sys.modules[name] = original
+        if (not exist):
+            del sys.modules[name]
+            return
+        sys.modules[name] = saved
 
 @contextlib.contextmanager
 def block_modules(*modules: str) -> Generator:
