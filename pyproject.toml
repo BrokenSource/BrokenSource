@@ -29,6 +29,7 @@ dependencies = [
     "diskcache~=5.6.3",
     "intervaltree~=3.1.0",
     "ordered-set~=4.1.0",
+    "scipy~=1.15.2",
     "dill~=0.3.9",
     "numpy",
     # Utils
@@ -87,7 +88,6 @@ shaderflow = [
     # Math
     "numpy-quaternion==2024.0.7",
     "opensimplex~=0.4.5.1",
-    "scipy~=1.15.2",
     # OpenGL
     "glfw~=2.8.0",
     "glcontext~=3.0.0",
