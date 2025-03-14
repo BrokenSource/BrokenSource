@@ -391,6 +391,8 @@ class ProjectManager:
 
                         EXTRA |= {file}
 
+            from importlib.metadata import version
+
             # Pyapp configuration
             Environment.update(
                 PYAPP_APP_AUTHOR="BrokenSource",
@@ -402,6 +404,7 @@ class ProjectManager:
                 PYAPP_PYTHON_VERSION=python,
                 PYAPP_EXEC_MODULE=self.name,
                 PYAPP_PASS_LOCATION=1,
+                PYAPP_UV_VERSION=version('uv'),
                 PYAPP_UV_EMBED=int(embed),
                 PYAPP_UV_ENABLED=1,
             )

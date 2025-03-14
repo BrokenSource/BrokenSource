@@ -280,7 +280,7 @@ class BrokenWorker:
 
         return self._results.pop(key, None)
 
-    get_block = functools.partialmethod(get, block=True)
+    get_blocking = functools.partialmethod(get, block=True)
 
     # -------------------------------------------|
     # Internal stuff

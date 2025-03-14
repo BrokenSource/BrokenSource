@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Annotated, Any, Self, Union
 
 import click
+import rich
 import typer
 import typer.rich_utils
 from attr import Factory, define
@@ -266,9 +267,9 @@ class BrokenTyper:
         return self
 
     def shell_welcome(self) -> None:
-        from rich.console import console
         from rich.panel import Panel
         from rich.text import Text
+        console = rich.get_console()
         console.print(Panel(
             title="Tips",
             title_align="left",

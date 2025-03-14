@@ -168,13 +168,15 @@ class BrokenProject:
         # ---------------------------------------------------------------------------------------- #
 
         def manage_install(version: Path):
+            from packaging.version import InvalidVersion, Version
+
+            try:
+                Version(version.name)
+            except InvalidVersion:
+                return None
+
             tracker = FileTracker(version/"version.tracker")
             tracker.retention.days = 7
-
-            # Non-linux users running executables are unlikely to be developers or
-            # regurarly use Python projects with uv, qol save disk space
-            if (not BrokenPlatform.OnLinux) and (tracker.first):
-                shell(Tools.uv, "cache", "clean")
 
             # Skip in-use versions
             if (not tracker.trigger()):
