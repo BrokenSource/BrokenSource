@@ -307,11 +307,7 @@ class _Directories:
                 self.PROJECT.APP_NAME
             )
         elif (os.name == "nt"):
-            return Path(
-                BrokenPath.Windows.Documents() /
-                self.PROJECT.APP_AUTHOR /
-                self.PROJECT.APP_NAME
-            )
+            return Path(self.APP_DIRS.user_data_dir)
         return (
             Path(self.APP_DIRS.user_data_dir) /
             self.PROJECT.APP_NAME

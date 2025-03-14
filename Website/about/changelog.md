@@ -26,6 +26,7 @@
             - Publish images of tags `project-{latest,0.9.0}-{cpu,cu121}`
         - Support for running all projects standalone mode without the monorepo
         - Add a hatchling build hook to set versions dynamically and pin for PyApp
+        - PyApp fork now installs files on `$user_local_data/BrokenSource/Versions`
         - Heavy code simplifications and refactoring throughout the codebase
         - Improved import times across the board
     === "DepthFlow"

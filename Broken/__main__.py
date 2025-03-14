@@ -235,6 +235,11 @@ class ProjectManager:
             help="Create a compressed tarball archive for unix releases",
         )]=False,
 
+        embed: Annotated[bool,
+            Option("--embed", "-e", " /--no-embed", "-E",
+            help="Embed Python and uv into the binary",
+        )]=True,
+
         standalone: Annotated[bool,
             Option("--standalone", "-s",
             help="(Standalone) Create self-contained distributions, implies --embed",
@@ -393,12 +398,12 @@ class ProjectManager:
                 PYAPP_PROJECT_PATH=str(MAIN),
                 PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
                 PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
+                PYAPP_DISTRIBUTION_EMBED=int(embed),
                 PYAPP_PYTHON_VERSION=python,
                 PYAPP_EXEC_MODULE=self.name,
-                PYAPP_DISTRIBUTION_EMBED=1,
                 PYAPP_PASS_LOCATION=1,
+                PYAPP_UV_EMBED=int(embed),
                 PYAPP_UV_ENABLED=1,
-                PYAPP_UV_EMBED=1,
             )
 
             # Rust configuration
@@ -423,6 +428,12 @@ class ProjectManager:
                     file.unlink()
                 for file in embed.glob("*.tar.gz"):
                     file.unlink()
+
+                # Create or clean empty files pyapp expects
+                for file in ("project", "distribution", "uv"):
+                    if (file := embed/file).exists():
+                        file.unlink()
+                    file.touch()
 
                 # Actually compile it
                 if shell(
