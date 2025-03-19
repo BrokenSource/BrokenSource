@@ -139,6 +139,7 @@ if (sys.platform == "darwin"):
 
 import site
 import struct
+from importlib.metadata import Distribution
 from pathlib import Path
 
 from Broken.Version import __version__
@@ -175,7 +176,7 @@ class Runtime:
     uvx: bool = any(f"archive-v{x}" in __file__ for x in range(4))
     """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
 
-    PyPI: bool = any((part in __file__ for part in ("site-packages", "dist-packages")))
+    PyPI: bool = (Distribution.from_name("broken-source").read_text("direct_url.json") is None)
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
     Binary: bool = (PyInstaller or Nuitka or PyApp)
