@@ -141,7 +141,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     format: Annotated[Optional[Format],
         Option("--format", "-f")] = \
-        Field("rawvideo")
+        Field("mpegts")
 
     class PixelFormat(str, BrokenEnum):
         RGB24 = "rgb24"
