@@ -28,7 +28,7 @@ typer.rich_utils.STYLE_OPTIONS_PANEL_BORDER = "bold grey42"
 typer.rich_utils.STYLE_OPTION_DEFAULT = "bold bright_black"
 typer.rich_utils.DEFAULT_STRING = "(default: {})"
 typer.rich_utils.STYLE_OPTIONS_TABLE_PADDING = (0, 1, 0, 0)
-
+console = rich.get_console()
 
 @define
 class BrokenTyper:
@@ -127,6 +127,16 @@ class BrokenTyper:
                 target = BrokenTyper.proxy(target)
                 context = True
                 help = False
+
+        # Generators must be consumed
+        if inspect.isgeneratorfunction(target):
+            _generator = target
+
+            @functools.wraps(target)
+            def wrapper(*args, **kwargs):
+                return all(_generator(*args, **kwargs))
+
+            target = wrapper
 
         # Add to known or default commands, create it
         name = name.replace("_", "-").lower()
@@ -269,7 +279,6 @@ class BrokenTyper:
     def shell_welcome(self) -> None:
         from rich.panel import Panel
         from rich.text import Text
-        console = rich.get_console()
         console.print(Panel(
             title="Tips",
             title_align="left",
