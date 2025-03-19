@@ -16,23 +16,23 @@ class SystemEnum(str, MultiEnum):
     MacOS:   str = ("macos", "darwin", "osx")
     BSD:     str = ("bsd", "freebsd", "openbsd", "netbsd")
 
-    @property
-    def extension(self) -> str:
-        if (self == self.Windows):
-            return ".exe"
-        return ".bin"
-
     def is_linux(self) -> bool:
-        return (self == self.Linux)
+        return (self is self.Linux)
 
     def is_windows(self) -> bool:
-        return (self == self.Windows)
+        return (self is self.Windows)
 
     def is_macos(self) -> bool:
-        return (self == self.MacOS)
+        return (self is self.MacOS)
 
     def is_bsd(self) -> bool:
-        return (self == self.BSD)
+        return (self is self.BSD)
+
+    @property
+    def extension(self) -> str:
+        if (self is self.Windows):
+            return ".exe"
+        return ".bin"
 
 
 class ArchEnum(str, MultiEnum):
@@ -196,7 +196,7 @@ class BrokenPlatform:
     OnOpenBSD: bool = (LinuxDistro == "openbsd")
     OnFreeBSD: bool = (LinuxDistro == "freebsd")
     OnNetBSD:  bool = (LinuxDistro == "netbsd")
-    OnBSDLike: bool = (OnFreeBSD or OnOpenBSD)
+    BSDLike:   bool = (OnFreeBSD or OnOpenBSD or OnNetBSD)
 
     @staticmethod
     def log_system_info() -> None:
@@ -213,7 +213,7 @@ class BrokenPlatform:
     try:
         Root: bool = (os.getuid() == 0)
     except AttributeError:
-        Root: bool = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        Root: bool = (ctypes.windll.shell32.IsUserAnAdmin() != 0)
 
     class DeveloperMode:
         # https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging

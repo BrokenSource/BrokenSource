@@ -4,6 +4,7 @@
 **/.venv
 **/Build
 **/Private
+**/Playground
 **/Release
 **/Workspace
 **/*.pyc

@@ -792,25 +792,7 @@ class BrokenCache(StaticClass):
 
 @define
 class BrokenRelay:
-    """
-    A utility class for sharing one-to-many callbacks in a 'observer' pattern style. Multiple
-    callabacks can be subscribed to receive the same args and kwargs when an instance of this class
-    is called. Useful cases are to avoid inheritance when sharing callbacks.
-
-    Example:
-        ```python
-        relay = BrokenRelay()
-
-        # Basic usage
-        relay.subscribe(callback1, callback2)
-        relay(*args, **kwargs) # Calls callback1 and callback2
-
-        # Can also 'inject' us to bound callables
-        window = moderngl_window(...)
-        window.key_event_func = relay
-        window.key_event_func = relay @ (camera.walk, camera.rotate)
-        ```
-    """
+    """One to many observer pattern relay for callbacks"""
     _registry: deque[Callable] = Factory(deque)
 
     def bind(self, *methods: Callable) -> Self:

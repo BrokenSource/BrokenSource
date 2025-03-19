@@ -141,7 +141,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
 
     format: Annotated[Optional[Format],
         Option("--format", "-f")] = \
-        Field(None)
+        Field("rawvideo")
 
     class PixelFormat(str, BrokenEnum):
         RGB24 = "rgb24"
@@ -154,7 +154,7 @@ class FFmpegOutputPipe(FFmpegModuleBase):
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         yield every("-f", denum(self.format))
         yield every("-pix_fmt", denum(self.pixel_format))
-        yield "-"
+        yield "pipe:1"
 
 
 FFmpegOutputType = Union[
@@ -1043,7 +1043,7 @@ class BrokenFFmpeg(BrokenModel, BrokenFluent):
 
     loglevel: Annotated[LogLevel,
         Option("--loglevel", "-log")] = \
-        Field(LogLevel.Info)
+        Field(LogLevel.Error)
 
     class HardwareAcceleration(str, BrokenEnum):
         Auto   = "auto"
