@@ -68,6 +68,7 @@
         - Add a new 'subsample' parameter for better downsampling of SSAA>2
         - Use macros for initializing structs with fixed specification from uniforms
         - Bundle the `Examples` directory into `Resources` for wheel releases
+        - Support for rendering videos "in-memory" without a named file on disk
 
 <!------------------------------------------------------------------------------------------------->
 

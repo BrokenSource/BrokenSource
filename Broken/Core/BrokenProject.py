@@ -316,6 +316,10 @@ class _Directories:
         )
 
     @property
+    def WORKSPACE_ROOT(self) -> Path:
+        return self.WORKSPACE.parent
+
+    @property
     def CONFIG(self) -> Path:
         return (self.WORKSPACE/"Config")
 

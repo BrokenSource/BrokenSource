@@ -1,5 +1,6 @@
 # pyright: reportMissingImports=false
 
+import contextlib
 import inspect
 import multiprocessing
 from abc import ABC, abstractmethod
@@ -27,12 +28,15 @@ class ExternalTorchBase(BrokenModel):
 
         if (device := Environment.get("TORCH_DEVICE")):
             return device
-        if torch.cuda.is_available():
-            return "cuda"
-        if torch.xpu.is_available():
-            return "xpu"
-        if torch.mps.is_available():
-            return "mps"
+        with contextlib.suppress(AttributeError):
+            if torch.cuda.is_available():
+                return "cuda"
+        with contextlib.suppress(AttributeError):
+            if torch.xpu.is_available():
+                return "xpu"
+        with contextlib.suppress(AttributeError):
+            if torch.mps.is_available():
+                return "mps"
         return "cpu"
 
     def load_torch(self) -> None:
