@@ -131,9 +131,7 @@ if Environment.flag("RICH_TRACEBACK", 1):
     sys.excepthook = _lazy_hook
 
 # Fix for Pydantic use_attribute_docstrings
-if (sys.platform == "darwin"):
-    from pathlib import PosixPath
-    PosixPath.endswith = (lambda self, suffix: str(self).endswith(suffix))
+Path.endswith = (lambda self, suffix: str(self).endswith(suffix))
 
 # --------------------------- Information about the release and version -------------------------- #
 
