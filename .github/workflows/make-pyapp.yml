@@ -23,5 +23,5 @@ jobs:
       - name: Upload releases
         uses: actions/upload-artifact@v4
         with:
-          name: Release
+          name: ${{matrix.os}}-release
           path: Release/*
