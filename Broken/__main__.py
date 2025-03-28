@@ -277,10 +277,6 @@ class ProjectManager:
         if (self.name == "DepthFlow"):
             torch = (torch or SimpleTorch.CPU.value)
 
-        # Non-macOS ARM builds can be unstable/not tested, disable on CI
-        if (target.arch.is_arm() and (target.system != SystemEnum.MacOS)):
-            log.warning("ARM general support is only present in macOS")
-
         # Fixme: Wait for uv's implementation of pip wheel for my own sanity
         if (standalone and target != BrokenPlatform.Host):
             log.error("Standalone releases are best built in a host matching the target platform")
@@ -475,7 +471,7 @@ class ProjectManager:
             BrokenPath.make_executable(release_path)
 
             # Release a tar.gz to keep chmod +x attributes
-            if tarball and ("windows" not in target.name):
+            if tarball and (not target.system.is_windows()):
                 release_path = BrokenPath.gzip(release_path, remove=True)
 
             log.success(f"Built Project Release at ({release_path})")
