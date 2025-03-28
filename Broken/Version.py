@@ -13,4 +13,6 @@ __options__ = dict(
 # Export options to environment
 if (__name__ == "__main__"):
     for (key, value) in __options__.items():
+        if isinstance(value, bool):
+            value = int(value)
         print(f"{key}={value}")

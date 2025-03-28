@@ -10,11 +10,12 @@ jobs:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
 
-      - name: Build wheels
+      - name: Make wheels (-publish)
+        if: ${{env.GHA_PYPI == '0'}}
         run: uv run broken pypi
 
-      - name: Publish wheels
-        if: ${{env.GHA_PYPI == 'True'}}
+      - name: Make wheels (+publish)
+        if: ${{env.GHA_PYPI == '1'}}
         run: uv run broken pypi --publish
 
       - name: Upload wheels
@@ -24,7 +25,7 @@ jobs:
           path: Build/Wheels/*
 
       - name: Create tag
-        if: ${{env.GHA_TAG == 'True'}}
+        if: ${{env.GHA_TAG == '1'}}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

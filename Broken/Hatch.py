@@ -21,8 +21,8 @@ class BrokenHook(MetadataHookInterface):
 
                 # Replace git+ dependencies
                 if ((git := "@git+") in item):
-                    item = item.split(git)[0]
-                    item = f"{item}=={version}"
+                    package = item.split(git)[0]
+                    item = f"{package}=={version}"
 
                 # Pin versions on release binaries
                 if (os.environ.get("PYAPP_RELEASE", "0") == "1"):

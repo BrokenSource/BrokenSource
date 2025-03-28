@@ -21,5 +21,5 @@ runs:
       shell: bash
 
     - name: Get workflow options
-      run: uv run python ./Broken/Version.py >> $GITHUB_ENV
+      run: uv run ./Broken/Version.py >> $GITHUB_ENV
       shell: bash
