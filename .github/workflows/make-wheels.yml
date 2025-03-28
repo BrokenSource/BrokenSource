@@ -1,0 +1,20 @@
+name: make-wheels
+on:
+  workflow_dispatch:
+
+jobs:
+  main:
+    name: Release wheels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+        name: Broken Setup
+
+      - name: Make wheels (-publish)
+        run: uv run broken pypi
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wheels
+          path: Build/Wheels/*

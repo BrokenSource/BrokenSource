@@ -98,7 +98,7 @@ cloud = [
 broken = "Broken.__main__:main"
 
 [tool.uv.pip]
-compile-bytecode = true
+compile-bytecode = false
 
 [tool.uv]
 default-groups = "all"

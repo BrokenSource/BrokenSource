@@ -1,31 +1,16 @@
-name: pypi-release
+name: make-tag
 on:
   workflow_dispatch:
 
 jobs:
   main:
-    name: Release wheels
+    name: Create git tag
     runs-on: ubuntu-latest
     steps:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
 
-      - name: Make wheels (-publish)
-        if: ${{env.GHA_PYPI == '0'}}
-        run: uv run broken pypi
-
-      - name: Make wheels (+publish)
-        if: ${{env.GHA_PYPI == '1'}}
-        run: uv run broken pypi --publish
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: Wheels
-          path: Build/Wheels/*
-
       - name: Create tag
-        if: ${{env.GHA_TAG == '1'}}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
