@@ -119,7 +119,7 @@ Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 Environment.setdefault("HF_HUB_DISABLE_TELEMETRY", 1)
 Environment.setdefault("DO_NOT_TRACK", 1)
 
-# Replace argv[0] being "-c" to PyApp's managed python
+# Replace "-c" with the managed python
 if Environment.exists("PYAPP"):
     sys.argv[0] = sys.executable
 

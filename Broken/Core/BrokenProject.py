@@ -307,11 +307,7 @@ class _Directories:
     @property
     def WORKSPACE(self) -> Path:
         if (path := Environment.get("WORKSPACE")):
-            return (
-                Path(path) /
-                self.PROJECT.APP_AUTHOR /
-                self.PROJECT.APP_NAME
-            )
+            return (Path(path) / self.PROJECT.APP_NAME)
         elif (os.name == "nt"):
             return Path(self.APP_DIRS.user_data_dir)
         return (
