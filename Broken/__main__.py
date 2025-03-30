@@ -24,7 +24,6 @@ from Broken import (
     PlatformEnum,
     Runtime,
     SimpleTorch,
-    SystemEnum,
     TorchRelease,
     __version__,
     combinations,
@@ -220,13 +219,13 @@ class ProjectManager:
     # # Python shenanigans
 
     def compile(self,
-        target: Annotated[list[PlatformEnum],
-            Option("--target", "-t",
+        platform: Annotated[PlatformEnum,
+            Option("--target", "--platform", "-t", "-p",
             help="Target platforms to build binaries for"
         )]=[BrokenPlatform.Host],
 
         python: Annotated[str,
-            Option("--python", "-p",
+            Option("--python",
             help="Python version to build the projects with"
         )]="3.12",
 
@@ -241,66 +240,48 @@ class ProjectManager:
         )]=True,
 
         standalone: Annotated[bool,
-            Option("--standalone", "-s",
+            Option("--standalone",
             help="(Standalone) Create self-contained distributions, implies --embed",
         )]=False,
 
         torch: Annotated[Optional[TorchRelease],
-            Option("--torch", "-r",
+            Option("--torch",
             help="(Standalone) Bundle a specific PyTorch version with the project"
         )]=None,
-    ) -> None:
-        """
-        📦 Release the Project as a distributable binary
+    ) -> Optional[Path]:
+        """📦 Release the Project as a distributable binary"""
 
-        Note:
-            - Requires mingw packages for Windows cross compilation from Linux
-        """
-
-        # Recurse on each target item
-        if isinstance(target, list):
-            for target in flatten(map(PlatformEnum.get_all, target)):
-                ProjectManager.compile(**locals())
-            return None
-
-        # Filter invalid host -> target combinations of all targets
-        if BrokenPlatform.OnLinux and (target.system == SystemEnum.MacOS):
-            return log.skip(f"Linux can't [italic]easily[/] compile for {target.system}")
-        elif BrokenPlatform.OnMacOS and (target.system != SystemEnum.MacOS):
+        # Filter problematic or invalid (Host -> Target) combinations
+        if BrokenPlatform.OnLinux and (platform.system.is_macos()):
+            return log.skip(f"Linux can't [italic]easily[/] compile for {platform.system}")
+        elif BrokenPlatform.OnMacOS and (not platform.system.is_macos()):
             return log.skip("macOS can only [italic]easily[/] compile for itself")
-        elif BrokenPlatform.OnWindows and (target.system != SystemEnum.Windows):
+        elif BrokenPlatform.OnWindows and (not platform.system.is_windows()):
             return log.skip("Windows can only [italic]easily[/] compile for itself")
-        elif (target == PlatformEnum.WindowsARM64):
-            return log.skip("Windows on ARM is not widely supported")
-
-        # Automatically bundle some torch on projects that needs it
-        if (self.name == "DepthFlow"):
-            torch = (torch or SimpleTorch.CPU.value)
-
-        # Fixme: Wait for uv's implementation of pip wheel for my own sanity
-        if (standalone and target != BrokenPlatform.Host):
-            log.error("Standalone releases are best built in a host matching the target platform")
-            log.error("• Awaiting implementation of (https://github.com/astral-sh/uv/issues/1681)")
-            log.error(f"• Attempted to build for '{target.value}' on '{BrokenPlatform.Host.value}'")
-            return
-
-        log.note("Building Project Release for", target)
+        elif (platform == PlatformEnum.WindowsARM64):
+            return log.skip("Windows on ARM is not supported yet")
 
         if self.is_python:
-            BrokenManager.rust()
-            BUILD_DIR: Path = BROKEN.DIRECTORIES.REPO_BUILD/"Cargo"
+            log.note("Building Project Release for", platform)
+
+            # Fixme: Wait for uv's implementation of pip wheel for my own sanity
+            if standalone and (platform != BrokenPlatform.Host):
+                log.error(f"Standalone releases are best built in a host matching the target platform")
+                log.error(f"• Awaiting implementation of (https://github.com/astral-sh/uv/issues/1681)")
+                log.error(f"• Attempted to build for '{platform.value}' on '{BrokenPlatform.Host.value}'")
+                return None
+
+            # Bundle torch on projects that use it
+            if (self.name == "DepthFlow"):
+                torch = (torch or SimpleTorch.CPU.value)
+
             BUILD_WHL: Path = BROKEN.DIRECTORIES.BUILD_WHEELS
+            BUILD_DIR: Path = BROKEN.DIRECTORIES.BUILD_CARGO
+            Environment.set("CARGO_HOME", BUILD_DIR)
 
             # Remove previous build cache for pyapp
             for path in BUILD_DIR.rglob("pyapp*"):
                 BrokenPath.remove(path)
-
-            # Write a releases env config file
-            (RELEASE_ENV := BROKEN.RESOURCES.ROOT/"Release.env").write_text('\n'.join(
-                f"{key}={value}" for key, value in dict(
-                    # Placeholder
-                ).items()
-            ))
 
             # Build wheels, find main and extra ones
             Environment.set("PYAPP_RELEASE", 1)
@@ -318,7 +299,7 @@ class ProjectManager:
                 ) -> None:
                     if (returncode := shell(
                         sys.executable, "-m", "pip", "download", dependencies,
-                        (("--platform", x) for x in target.pip_platform),
+                        (("--platform", x) for x in platform.pip_platform),
                         "--python-version", python,
                         "--only-binary=:all:"*(not nodeps),
                         "--no-deps"*(nodeps),
@@ -387,7 +368,7 @@ class ProjectManager:
 
                         EXTRA |= {file}
 
-            from importlib.metadata import version
+            from importlib.metadata import version as get_version
 
             # Pyapp configuration
             Environment.update(
@@ -400,7 +381,7 @@ class ProjectManager:
                 PYAPP_PYTHON_VERSION=python,
                 PYAPP_EXEC_MODULE=self.name,
                 PYAPP_PASS_LOCATION=1,
-                PYAPP_UV_VERSION=version('uv'),
+                PYAPP_UV_VERSION=get_version('uv'),
                 PYAPP_UV_EMBED=int(embed),
                 PYAPP_UV_ENABLED=1,
             )
@@ -410,9 +391,9 @@ class ProjectManager:
                 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=shutil.which("aarch64-linux-gnu-gcc"),
             )
 
-            # Cache Rust compilation across projects
-            Environment.set("CARGO_HOME", BUILD_DIR)
-            shell("rustup", "target", "add", target.triple)
+            # Have rust toolchain for the target
+            BrokenManager.rust()
+            shell("rustup", "target", "add", platform.triple)
 
             # Cargo warning: We're not 'installing' a utility
             BrokenPath.add_to_path(BUILD_DIR/"bin")
@@ -439,7 +420,7 @@ class ProjectManager:
                     "cargo", "install",
                     "--path", fork, "--force",
                     "--root", BUILD_DIR,
-                    "--target", target.triple,
+                    "--target", platform.triple,
                 ).returncode != 0:
                     raise RuntimeError(log.error("Failed to compile PyApp"))
             else:
@@ -447,11 +428,9 @@ class ProjectManager:
                     "cargo", "install",
                     "pyapp", "--force",
                     "--root", BUILD_DIR,
-                    "--target", target.triple,
+                    "--target", platform.triple,
                 ).returncode != 0:
                     raise RuntimeError(log.error("Failed to compile PyApp"))
-
-            RELEASE_ENV.unlink()
 
             # Find the compiled binary
             binary = next((BUILD_DIR/"bin").glob("pyapp*"))
@@ -461,20 +440,21 @@ class ProjectManager:
             # Rename the compiled binary to the final release name
             release_path = BROKEN.DIRECTORIES.REPO_RELEASES / ''.join((
                 f"{self.name.lower()}",
-                f"-{target.value}",
+                f"-{platform.value}",
                 f"-v{BROKEN.VERSION}",
                 f"-{torch.flavor}" if (torch and standalone) else "",
                 "-standalone"*standalone,
-                f"{target.extension}",
+                f"{platform.extension}",
             ))
             BrokenPath.copy(src=binary, dst=release_path)
             BrokenPath.make_executable(release_path)
 
             # Release a tar.gz to keep chmod +x attributes
-            if tarball and (not target.system.is_windows()):
+            if tarball and (not platform.system.is_windows()):
                 release_path = BrokenPath.gzip(release_path, remove=True)
 
             log.success(f"Built Project Release at ({release_path})")
+            return release_path
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -503,13 +483,16 @@ class BrokenManager(BrokenSingleton):
             self.cli.command(self.rust)
 
         with self.cli.panel("📦 Development"):
-            self.cli.command(self.compile_all, hidden=True)
             self.cli.command(self.docker)
             self.cli.command(self.website)
             self.cli.command(self.pypi)
             self.cli.command(self.upgrade)
             self.cli.command(self.clean)
             self.cli.command(self.sync)
+
+        with self.cli.panel("⚡️ Workflows"):
+            hidden = Environment.iflag("WORKFLOW_COMMANDS")
+            self.cli.command(self.workflow_pyapp, hidden=hidden)
 
         self.cli.command(self.tremeschin, hidden=True)
 
@@ -544,7 +527,7 @@ class BrokenManager(BrokenSingleton):
                 self.projects.append(project)
 
     # ---------------------------------------------------------------------------------------------|
-    # Meta Repositories
+    # Meta section
 
     def clone(self,
         repo:     Annotated[str,  Argument(help="URL of the Git Repository to Clone")],
@@ -595,16 +578,6 @@ class BrokenManager(BrokenSingleton):
         else:
             shell("mkdocs", "serve")
 
-    def compile_all(self,
-        standalone: Annotated[bool, Option("--standalone", "-s")]=False,
-    ) -> None:
-        for project in self.projects[1:]:
-            project.compile(
-                target=[PlatformEnum._AllHost],
-                standalone=standalone,
-                tarball=True,
-            )
-
     def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
         output:  Annotated[Path, Option("--output",  "-o", help="Output directory for wheels")]=BROKEN.DIRECTORIES.BUILD_WHEELS,
@@ -648,11 +621,6 @@ class BrokenManager(BrokenSingleton):
 
                 # No need for generic latest image
                 shell("docker", "rmi", latest)
-
-    def upgrade(self) -> None:
-        """📦 Temporary solution to bump pyproject versions"""
-        for project in self.projects:
-            project.update()
 
     @staticmethod
     def rust(
@@ -709,6 +677,11 @@ class BrokenManager(BrokenSingleton):
         else:
             log.info(f"Rust toolchain is already the default ({toolchain})")
 
+    def upgrade(self) -> None:
+        """📦 Temporary solution to bump pyproject versions"""
+        for project in self.projects:
+            project.update()
+
     def clean(self) -> None:
         """🧹 Remove pycaches, common blob directories"""
         root = BROKEN.DIRECTORIES.REPOSITORY
@@ -734,6 +707,17 @@ class BrokenManager(BrokenSingleton):
 
                 if (target).exists():
                     BrokenPath.copy(file, target)
+
+    # ---------------------------------------------------------------------------------------------|
+    # Workflows
+
+    def workflow_pyapp(self) -> None:
+        for project in self.projects[1:]:
+            for platform in PlatformEnum.all_host():
+                project.compile(
+                    platform=platform,
+                    tarball=True
+                )
 
 # ------------------------------------------------------------------------------------------------ #
 

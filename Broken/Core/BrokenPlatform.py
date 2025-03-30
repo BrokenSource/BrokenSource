@@ -87,6 +87,12 @@ class PlatformEnum(str, BrokenEnum):
             self.MacosARM64:   "aarch64-apple-darwin",
         }[self]
 
+    @staticmethod
+    def all_host() -> Iterable[Self]:
+        for option in PlatformEnum:
+            if (option.system == BrokenPlatform.System):
+                yield option
+
     @property
     def pip_platform(self) -> Iterable[str]:
 
@@ -122,29 +128,6 @@ class PlatformEnum(str, BrokenEnum):
             for (major, minor) in reversed(list(mac_versions())):
                 yield f"macosx_{major}_{minor}_arm64"
 
-    _AllAMD64: str = "all-amd64"
-    _AllARM64: str = "all-arm64"
-    _AllHost:  str = "all-host"
-    _All:      str = "all"
-
-    def get_all(self) -> Iterable[Self]:
-        if ("all" in self.value):
-            for option in PlatformEnum.options():
-                if ("all" in option.value):
-                    continue
-                elif (self == self._All):
-                    yield option
-                elif (self == self._AllAMD64):
-                    if (option.arch == ArchEnum.AMD64):
-                        yield option
-                elif (self == self._AllARM64):
-                    if (option.arch == ArchEnum.ARM64):
-                        yield option
-                elif (self == self._AllHost):
-                    if (option.system == BrokenPlatform.System):
-                        yield option
-        else:
-            yield self
 
 class BrokenPlatform:
     Arch: ArchEnum = ArchEnum.get(

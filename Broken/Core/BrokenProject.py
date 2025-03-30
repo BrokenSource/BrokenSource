@@ -276,6 +276,10 @@ class _Directories:
     def BUILD_WHEELS(self) -> Path:
         return (self.REPO_BUILD/"Wheels")
 
+    @property
+    def BUILD_CARGO(self) -> Path:
+        return (self.REPO_BUILD/"Cargo")
+
     # # Meta directories
 
     @property
