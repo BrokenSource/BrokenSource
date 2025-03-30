@@ -71,7 +71,7 @@ class Environment:
 
     @staticmethod
     def iflag(key: str, default: bool=False, /) -> bool:
-        return (not Environment.bool(key, default))
+        return (not Environment.flag(key, default))
 
     @staticmethod
     def unset(key: str, /) -> None:
@@ -98,6 +98,9 @@ if sys.version_info < (3, 11):
     typing.TypeAlias = TypeAlias
     typing.Self = Self
 
+# Fix weird Pydantic use_attribute_docstrings error in older Python
+Path.endswith = (lambda self, suffix: str(self).endswith(suffix))
+
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
 # https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 # Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
@@ -112,7 +115,7 @@ Environment.setdefault("__GL_YIELD", "USLEEP")
 # https://pytorch.org/docs/stable/mps_environment_variables.html
 Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 
-# Make telemetries opt-in
+# Make telemetries opt-in instead of opt-out
 Environment.setdefault("HF_HUB_DISABLE_TELEMETRY", 1)
 Environment.setdefault("DO_NOT_TRACK", 1)
 
@@ -129,9 +132,6 @@ if Environment.flag("RICH_TRACEBACK", 1):
             width=None,
         )(type, value, traceback)
     sys.excepthook = _lazy_hook
-
-# Fix for Pydantic use_attribute_docstrings
-Path.endswith = (lambda self, suffix: str(self).endswith(suffix))
 
 # --------------------------- Information about the release and version -------------------------- #
 
@@ -221,7 +221,7 @@ class Tools:
 # ------------------------------------------------------------------------------------------------ #
 
 if Runtime.uvx:
-    # From /home/tremeschin/.cache/uv/archive-v0/7x8klaYDn8Kd0GRTY-nYr/lib/python3.12/site-packages
+    # Find venv from "~/.cache/uv/archive-v0/7x8klaYDn8Kd0GRTY-nYr/lib/python3.12/site-packages"
     VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
     Environment.setdefault("VIRTUAL_ENV", VIRTUAL_ENV)
 
@@ -295,8 +295,7 @@ from Broken.Core.BrokenWorker import BrokenWorker
 BROKEN = BrokenProject(
     PACKAGE=__file__,
     APP_NAME="Broken",
-    APP_AUTHOR="BrokenSource",
-)
+    APP_AUTHOR="BrokenSource")
 """The main library's BrokenProject instance"""
 
 PROJECT: BrokenProject = BROKEN

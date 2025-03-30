@@ -96,17 +96,17 @@ class BrokenProject:
 
         import hashlib
         venv_path = Path(Environment.get("VIRTUAL_ENV"))
-        hash_file = (venv_path/"version.sha256")
+        hash_file = (venv_path/f"version-{self.APP_NAME.lower()}.sha256")
+        prev_hash = (hash_file.read_text() if hash_file.exists() else None)
         this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
-        old_hash  = (hash_file.read_text() if hash_file.exists() else None)
         hash_file.write_text(this_hash)
 
-        # Fixme (#ntfs): https://superuser.com/questions/488127
         # Fixme (#ntfs): https://unix.stackexchange.com/questions/49299
+        # Fixme (#ntfs): https://superuser.com/questions/488127
         ntfs_workaround = venv_path.with_name("0.0.0")
 
         # "If (not on the first run) and (hash differs)"
-        if (old_hash is not None) and (old_hash != this_hash):
+        if (prev_hash is not None) and (prev_hash != this_hash):
             print("-"*shutil.get_terminal_size().columns + "\n")
             log.info(f"Detected different hash for this release version [bold blue]v{self.VERSION}[/], reinstalling..")
             log.info(f"• {venv_path}")
@@ -157,8 +157,8 @@ class BrokenProject:
                     # Back to the future!
                     elif (current > latest):
                         log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
-                        log.error("[bold indian_red]• This is fine if you're running a development or pre-release version, don't worry;[/]")
-                        log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
+                        log.error(f"[bold indian_red]• This is fine if you're running a development or prerelease version, don't worry[/]")
+                        log.error(f"[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
 
         # Warn: Must not interrupt user if actions are being taken (argv)
         if Environment.flag("VERSION_CHECK", 1) and (not arguments()):
@@ -211,7 +211,7 @@ class BrokenProject:
             except KeyboardInterrupt:
                 exit(0)
 
-        # Note: Avoid interactive prompts if running with arguments
+        # Warn: Must not interrupt user if actions are being taken (argv)
         if Environment.flag("UNUSED_CHECK", 1) and (not arguments()):
             for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
                 with contextlib.suppress(Exception):
