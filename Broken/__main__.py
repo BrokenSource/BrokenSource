@@ -222,7 +222,7 @@ class ProjectManager:
         platform: Annotated[PlatformEnum,
             Option("--target", "--platform", "-t", "-p",
             help="Target platforms to build binaries for"
-        )]=[BrokenPlatform.Host],
+        )]=BrokenPlatform.Host,
 
         python: Annotated[str,
             Option("--python",

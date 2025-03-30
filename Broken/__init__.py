@@ -302,3 +302,8 @@ PROJECT: BrokenProject = BROKEN
 """The first BrokenProject initialized after (but including) BROKEN itself"""
 
 # ------------------------------------------------------------------------------------------------ #
+
+# Centralize models for easier uninstalling
+if Runtime.Binary:
+    Environment.setdefault("HF_HOME",    BROKEN.DIRECTORIES.EXTERNAL_MODELS/"HuggingFace")
+    Environment.setdefault("TORCH_HOME", BROKEN.DIRECTORIES.EXTERNAL_MODELS/"PyTorchHub")
