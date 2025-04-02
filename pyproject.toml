@@ -51,7 +51,7 @@ dependencies = [
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    "yt-dlp~=2025.3.27",
+    "yt-dlp~=2025.3.31",
     # Machine Learning
     "transformers~=4.50.2",
     "ollama~=0.4.7",
@@ -66,7 +66,7 @@ shaderflow = [
     "watchdog~=6.0.0",
     "pytimeparse2~=1.7.1",
     # Math
-    "numpy-quaternion==2024.0.7",
+    "numpy-quaternion==2024.0.8",
     "opensimplex~=0.4.5.1",
     # OpenGL
     "glfw~=2.8.0",
@@ -86,8 +86,8 @@ shaderflow = [
 gradio = [
     "fastapi~=0.115.12",
     "orjson~=3.10.16",
-    "gradio~=5.23.0",
-    "spaces~=0.34.0",
+    "gradio~=5.23.3",
+    "spaces~=0.34.1",
 ]
 cloud = [
     "modal~=0.73.55",
@@ -113,7 +113,7 @@ dev-dependencies = [
     "mkdocs-autorefs~=1.4.1",
     "mkdocs-literate-nav~=0.6.1",
     "mkdocs-section-index~=0.3.9",
-    "mkdocs-material[imaging]~=9.6.9",
+    "mkdocs-material[imaging]~=9.6.11",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-include-markdown-plugin~=7.1.5",
     "mkdocs-site-urls~=0.2.0",

@@ -10,4 +10,4 @@
 
 # ✅ Installation
 
-- There are **a couple of ways** to get started with the projects:
+- There are **multiple ways** to get started with the projects:

@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import logging
 import sys
@@ -28,6 +29,21 @@ BUILD_PROJECTS = (
 )
 
 manager = BrokenManager()
+
+# ------------------------------------------------------------------------------------------------ #
+# Fix tabbed items without a parent <h2> header
+
+from pymdownx.tabbed import TabbedTreeprocessor
+
+method = TabbedTreeprocessor.get_parent_header_slug
+
+@functools.wraps(method)
+def get_parent_header_slug(*args, **kwargs):
+    with contextlib.suppress(AttributeError):
+        return method(*args, **kwargs)
+    return ''
+
+TabbedTreeprocessor.get_parent_header_slug = get_parent_header_slug
 
 # ---------------------------------- Auxiliary pathing functions --------------------------------- #
 

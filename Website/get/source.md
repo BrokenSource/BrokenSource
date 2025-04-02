@@ -2,10 +2,7 @@
 title: Get/Source
 ---
 
-!!! success "{++The most flexible++} way to use the Projects • Latest features, bugs, fixes, highly configurable."
-    **Recommended for**: Advanced users, contributors, developers.
-
-## ⚡️ Installing
+✅ Run directly from the source code development environment:
 
 !!! abstract ""
     === ":material-microsoft: Windows"
@@ -87,30 +84,18 @@ title: Get/Source
             depthflow
             ```
 
-??? success "See what [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) and [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1) does"
+??? quote "Check what [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) and [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1) does"
     The content below is a **verbatim copy** of the current live script on this website
     === "(Windows) • get.ps1"
         <span/>
         ```powershell title="PowerShell script"
-        {% include-markdown "get.ps1" %}
+        --8<-- "get.ps1"
         ```
     === "(Linux and macOS) • get.sh"
         <span/>
         ```powershell title="Bash script"
-        {% include-markdown "get.sh" %}
+        --8<-- "get.sh"
         ```
-
-## ⭐️ Usage
-
-Go to the project tab of your interest above and see the quickstart!
-
-- You can also run the projects with: `uv run 'project'` directly
-
-!!! tip "Next time, to use the projects"
-    You just have to **Open a Terminal** on the <kbd>BrokenSource</kbd> directory and [**source the virtual environment**](https://docs.python.org/3/library/venv.html#how-venvs-work)
-
-    - For that, run `Scripts/activate.sh` if on **Linux/MacOS** or `Scripts/activate.ps1` if on **Windows**
-    - Or manually with :simple-linux: `source .venv/bin/activate` or :material-microsoft: `.venv\Scripts\Activate.ps1`
 
 ## 🚀 Upgrading
 
@@ -134,15 +119,16 @@ git pull --recurse-submodules --jobs=4
 
 ### Packages
 
-The Python tooling I'm using to orchestrate the [**Monorepo**](https://github.com/BrokenSource/BrokenSource) is [**uv**](https://docs.astral.sh/uv/)
-
-- You'll probably **only** need to know of a **single command**:
+The Python tooling I'm using to orchestrate the monorepo is [**uv**](https://docs.astral.sh/uv/)
 
 !!! note "Command: [`uv sync --all-packages`](https://docs.astral.sh/uv/)"
     This will update the venv and install any new dependencies
 
-After that, just activate the venv and you're good to go!
-
 ## ♻️ Uninstalling
 
-See the <a href="site:/get/uninstalling"><b>uninstalling</b></a> page
+Apart from deleting the `BrokenSource` folder where you cloned the code,
+
+--8<--
+include/uninstall/workspace.md
+include/uninstall/models.md
+--8<--

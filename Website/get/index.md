@@ -1,9 +1,11 @@
 ---
-title: Get/Installation
+title: Get started
 ---
 
-{% include-markdown "include/get/index.md" %}
-{% include-markdown "include/get/releases.md" %}
-{% include-markdown "include/get/pypi.md" %}
-{% include-markdown "include/get/source.md" %}
-{% include-markdown "include/get/docker.md" %}
+--8<--
+include/get/index.md
+include/get/installers.md
+include/get/wheels.md
+include/get/source.md
+include/get/docker.md
+--8<--

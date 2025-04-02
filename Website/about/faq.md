@@ -13,9 +13,9 @@ Most likely not, but maybe- I'm **very** sensitive to speeds and latencies by my
 
 Your hardware _probably_ doesn't support rendering while there are mapped buffers in OpenGL, which happens when [TurboPipe](https://github.com/BrokenSource/TurboPipe) is enabled (default). This is likely to take place on older systems (GTX <= 800) or integrated GPUs from Intel or AMD and/or hybrid systems.
 
-:material-arrow-right: To fix this, you can go to the (DepthFlow) **WebUI's Advanced** tab and disable TurboPipe, or pass the `--no-turbo` flag to the `main` **command** as in `depthflow main (...) --no-turbo`
+:material-arrow-right: Fix: disable it on the `main` **command** as in `depthflow main (...) --no-turbo`
 
-> **Sidenote**: There's no easy way to detect support for it. [Most users](https://store.steampowered.com/hwsurvey/){:target="_blank"} have a decently modern GPU and the speed gains are too good to pass on, so it's enabled by default.
+> **Sidenote**: There's no easy way to detect support for it. [Most users](https://store.steampowered.com/hwsurvey/){:target="_blank"} have a decently modern GPU and the speed gains are too good to pass on, so it's enabled by default
 
 <hr>
 

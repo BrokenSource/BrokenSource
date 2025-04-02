@@ -177,16 +177,16 @@ class Runtime:
     PyPI: bool = (Distribution.from_name("broken-source").read_text("direct_url.json") is None)
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
-    Binary: bool = (PyInstaller or Nuitka or PyApp)
+    Installer: bool = (PyInstaller or Nuitka or PyApp)
     """True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
 
-    Release: bool = (Binary or PyPI)
+    Release: bool = (Installer or PyPI)
     """True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
 
     Source: bool = (not Release)
     """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
 
-    Method: str = (uvx and "uvx") or (Source and "Source") or (Binary and "Binary") or (PyPI and "PyPI")
+    Method: str = (uvx and "uvx") or (Source and "Source") or (Installer and "Installer") or (PyPI and "PyPI")
     """The runtime environment of the current project release (Source, Release, PyPI)"""
 
     # # Special and Containers
@@ -304,6 +304,6 @@ PROJECT: BrokenProject = BROKEN
 # ------------------------------------------------------------------------------------------------ #
 
 # Centralize models for easier uninstalling
-if Runtime.Binary:
+if Runtime.Installer:
     Environment.setdefault("HF_HOME",    BROKEN.DIRECTORIES.EXTERNAL_MODELS/"HuggingFace")
     Environment.setdefault("TORCH_HOME", BROKEN.DIRECTORIES.EXTERNAL_MODELS/"PyTorchHub")

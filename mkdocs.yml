@@ -1,23 +1,22 @@
 site_name: Broken Source Software
 site_description: Unified Documentation
 site_url: https://brokensrc.dev/
-repo_url: https://github.com/BrokenSource/BrokenSource/
-edit_uri: edit/main/Website/
-repo_name: GitHub
 site_author: Tremeschin
-copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
-docs_dir: Website
+repo_url: https://github.com/BrokenSource/BrokenSource/
 site_dir: Build/Website
+docs_dir: Website
+repo_name: GitHub
+copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
 nav:
   - Home:
     - index.md
-    - Installation:
+    - Get started:
       - get/index.md
-      - 🧀 From PyPI: get/pypi.md
-      - 🔥 From Source: get/source.md
-      - 📦 From Releases: get/releases.md
-      - ☁️ Cloud/Docker: get/docker.md
-      - ♻️ Uninstalling: get/uninstalling.md
+      - 📦 Installers: get/installers.md
+      - 🧀 Wheels: get/wheels.md
+      - 🔥 Source: get/source.md
+      - 🐳 Docker: get/containers.md
+      - ☁️ Cloud: get/cloud.md
     - Special:
       - ❓ Questions: about/faq.md
       - ❤️ Sponsors: about/sponsors.md
@@ -29,56 +28,48 @@ nav:
       - 💬 Contact: about/contact.md
       - ⚖️ License: about/license.md
       - 🧾 Credits: about/credits.md
+    - Code:
+      - 📦 Package: code/broken
 
   # - News:
   #   - news/index.md
   #   - news/authors.md
 
-  - Library:
-    - broken/index.md
-    - Code reference:
-      - 📦 Package: code/broken/
-
   - DepthFlow:
     - depthflow/index.md
     - Quick start:
-      - depthflow/quick/index.md
-      - ✅ Installation: depthflow/quick/install.md
-      - 🔴 Gradio WebUI: depthflow/quick/webui.md
-      - 🟡 Command line: depthflow/quick/cli.md
-      - 🟢 Python scripts: depthflow/quick/scripts.md
-      - ☁️ Cloud/Docker: depthflow/quick/docker.md
-    - Learn:
-      - 📜 Foundations: depthflow/learn/foundations.md
-      - 🔧 Parameters: depthflow/learn/parameters.md
-    - Code reference:
+      - depthflow/quickstart/index.md
+      - ✅ Installation: depthflow/get.md
+      - 🔴 Gradio WebUI: depthflow/webui.md
+      - 🟡 Command line: depthflow/commands.md
+      - 🟢 Python scripts: depthflow/scripts.md
+    - Documentation:
+      - 🔧 Parameters: depthflow/parameters.md
+      - 📜 Foundations: depthflow/paper.md
+    - Code:
       - 📦 Package: code/depthflow/
 
   - ShaderFlow:
     - shaderflow/index.md
     - Quick start:
-      - shaderflow/quick/index.md
-      - ✅ Installation: shaderflow/quick/install.md
-      - ⭐️ Examples: shaderflow/quick/examples.md
-
-    - Learn:
-      - Core:
-        - Module: shaderflow/module.md
-        - Scene: shaderflow/scene.md
-        - Shader: shaderflow/shader.md
-        - Texture: shaderflow/texture.md
-      - Modules:
-        - Camera: shaderflow/modules/camera.md
-
-    - Code reference:
+      - ✅ Installation: shaderflow/get.md
+      - ⭐️ Examples: shaderflow/examples.md
+    - Basics:
+      - Module: shaderflow/module.md
+      - Scene: shaderflow/scene.md
+      - Shader: shaderflow/shader.md
+      - Texture: shaderflow/texture.md
+    - Modules:
+      - Camera: shaderflow/modules/camera.md
+    - Code:
       - 📦 Package: code/shaderflow/
 
   - Pianola:
     - pianola/index.md
-    - Quick start:
-      - ✅ Installation: pianola/quick/install.md
-      - ⭐️ Examples: pianola/quick/examples.md
-    - Code reference:
+    - Get started:
+      - ✅ Installation: pianola/install.md
+      - ⭐️ Examples: pianola/examples.md
+    - Code:
       - 📦 Package: code/pianola/
 
   - SpectroNote:
@@ -151,121 +142,123 @@ theme:
         name: Switch to Dark Mode
 
 plugins:
-  - blog:
-      blog_dir: "news"
-      post_url_date_format: yyyy/MM
-      draft: true
-  - social:
-      cards_layout_options:
-        font_family: Rubik
-        background_color: "#333"
-  - search
-  # - privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641
-  - autorefs
-  - site-urls
-  - literate-nav
-  - gen-files:
-      scripts:
-        - Website/make.py
-  - mkdocstrings:
-      handlers:
-        python:
-          load_external_modules: true
+  meta: {}
+  blog:
+    blog_dir: "news"
+    post_url_date_format: yyyy/MM
+    draft: true
+  social:
+    cards_layout_options:
+      font_family: Rubik
+      background_color: "#333"
+  search: {}
+  # privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641
+  autorefs: {}
+  site-urls: {}
+  literate-nav: {}
+  gen-files:
+    scripts:
+      - Website/make.py
+  mkdocstrings:
+    handlers:
+      python:
+        load_external_modules: true
 
-          # https://mkdocstrings.github.io/python/usage
-          options:
+        # https://mkdocstrings.github.io/python/usage
+        options:
 
-            # General
-            show_bases: true
-            show_source: true
+          # General
+          show_bases: true
+          show_source: true
 
-            # Headings
-            heading_level: 2
-            show_root_heading: true
-            show_root_toc_entry: true
-            show_root_full_path: true
-            show_root_members_full_path: false
-            show_object_full_path: false
-            show_category_heading: true
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
+          # Headings
+          heading_level: 2
+          show_root_heading: true
+          show_root_toc_entry: true
+          show_root_full_path: true
+          show_root_members_full_path: false
+          show_object_full_path: false
+          show_category_heading: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
 
-            # Members
-            inherited_members: false
-            members_order: "source"
-            group_by_category: false
-            show_submodules: false
-            show_labels: false
+          # Members
+          inherited_members: false
+          members_order: "source"
+          group_by_category: false
+          show_submodules: false
+          show_labels: false
 
-            # Docstrings
-            docstring_style: google
-            docstring_section_style: list
-            show_if_no_docstring: true
+          # Docstrings
+          docstring_style: google
+          docstring_section_style: list
+          show_if_no_docstring: true
 
-            # Signatures
-            annotations_path: source
-            show_signature: true
-            show_signature_annotations: true
-            signature_crossrefs: true
-            separate_signature: true
-            line_length: 60
+          # Signatures
+          annotations_path: source
+          show_signature: true
+          show_signature_annotations: true
+          signature_crossrefs: true
+          separate_signature: true
+          line_length: 60
 
-  - minify:
-      minify_html: true
-      minify_js: true
-      minify_css: true
-      htmlmin_opts:
-        remove_comments: true
-      cache_safe: true
+  minify:
+    minify_html: true
+    minify_js: true
+    minify_css: true
+    htmlmin_opts:
+      remove_comments: true
+    cache_safe: true
 
-  - include-markdown:
-      preserve_includer_indent: true
-      dedent: false
-      trailing_newlines: true
-      comments: false
-      rewrite_relative_urls: true
-      heading_offset: 0
-      recursive: true
-      # start: <!--start-->
-      # end: <!--end-->
+  include-markdown:
+    preserve_includer_indent: true
+    dedent: false
+    trailing_newlines: true
+    comments: false
+    rewrite_relative_urls: true
+    heading_offset: 0
+    recursive: true
+    # start: <!--start-->
+    # end: <!--end-->
 
 markdown_extensions:
-  - pymdownx.magiclink
-  - pymdownx.critic
-  - pymdownx.caret
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.tilde
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
-      combine_header_slug: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
-  - pymdownx.highlight:
-      auto_title: false
-      linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - toc:
-      permalink: true
-  - github-callouts
-  - md_in_html
-  - attr_list
-  - tables
-  - admonition
-  - footnotes
-  - def_list
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.arithmatex:
-      generic: true
+  pymdownx.magiclink: {}
+  pymdownx.critic: {}
+  pymdownx.caret: {}
+  pymdownx.keys: {}
+  pymdownx.mark: {}
+  pymdownx.tilde: {}
+  pymdownx.details: {}
+  pymdownx.superfences: {}
+  pymdownx.tabbed:
+    alternate_style: true
+    combine_header_slug: true
+    slugify: !!python/object/apply:pymdownx.slugs.slugify
+      kwds:
+        case: lower
+  pymdownx.highlight:
+    auto_title: false
+    linenums: true
+  pymdownx.inlinehilite: {}
+  pymdownx.snippets:
+    base_path: [Website]
+  pymdownx.superfences: {}
+  pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  toc:
+    permalink: true
+  github-callouts: {}
+  md_in_html: {}
+  attr_list: {}
+  tables: {}
+  admonition: {}
+  footnotes: {}
+  def_list: {}
+  pymdownx.tasklist:
+    custom_checkbox: true
+  pymdownx.arithmatex:
+    generic: true
 
 extra_css:
   - css/extra.css

@@ -4,7 +4,6 @@
     p  {margin-bottom: 2px !important;}
 </style>
 
-
 ⭐️ All significant or ongoing changes to the projects are documented here!
 
 - Unlisted ones may have been indirectly improved by shared code
@@ -13,8 +12,6 @@
 <hr>
 
 ### ✏️ v0.9.0 <small>Unreleased</small> {#0.9.0}
-
-:material-arrow-right: You can run this version right now [from source](site:/get/source)!
 
 !!! example ""
     === "General"
@@ -26,31 +23,33 @@
             - Publish images of tags `project-{latest,0.9.0}-{cpu,cu121}`
         - Support for running all projects standalone mode without the monorepo
         - Add a hatchling build hook to set versions dynamically and pin for PyApp
-        - PyApp fork now installs files on `$user_local_data/BrokenSource/Versions`
         - Heavy code simplifications and refactoring throughout the codebase
         - Improved import times across the board
     === "DepthFlow"
         - Overhauled the Readme and the WebUI layout and content
         - Improvements to perceptual quality of the animation presets
-        - Add a command line interface for all upscalers and depth estimators
         - Add [Upscayl](https://github.com/upscayl/upscayl) as an upscaler option
+        - Add a command line interface for all upscalers and depth estimators
         - Fixed drag and drop of files due new lazy loading logic
         - Add stretch detection math on the shader for potential fill-in with gen ai
-            - Command is `inpaint`, options `--black`, `--limit`
         - Add colors filters (sepia, grayscale, saturation, contrast, brightness)
         - Add transverse lens distortion filter (intensity, decay options)
-        - Fix base scene duration is now 5 seconds
         - Overhaul animation system to be more flexible and reliable
         - Reorganize website examples section into their own pages
-        - Cached depthmaps are now handled by `diskcache` for safer cross-process access
+        - Cached depthmaps are now handled by `diskcache` for safer cross-process
         - Refactor the shader for future include system external usage
-        - Simplify  how the ray intersections are computed with ray marching
+        - Simplify how the ray intersections are computed with ray marching
         - Fix how projection rays are calculated, as `steady`, `focus` were slightly wrong
+        - Fix base scene duration is now 5 seconds
+        - Windows binaries are now exclusive to members for a cheap price:
+            - The quality of the project is too high for a freebie now, 2k+ downloads without much support
+            - It's a soft attempt to make the development financially sustainable, might revert later
+            - They take a lot of effort to maintain and test, but are too convenient to use
     === "ShaderFlow"
         - Add an heuristic to use the headless context when exporting videos
         - Fix progress bar creation before ffmpeg command log causing a bad line
         - Fix frametimer first frame being `dt=0` instead of `1/fps`
-        - Rename `ShaderObject` to `ShaderProgram`
+        - Rename `ShaderObject` to `ShaderProgram` to better reflect ModernGL
         - Initial ground work on better metaprogramming and include system
         - Partial overhaul and simplify the `ShaderTexture` class
         - `ShaderTexture.track` is now a float ratio of the scene's resolution
@@ -69,6 +68,13 @@
         - Use macros for initializing structs with fixed specification from uniforms
         - Bundle the `Examples` directory into `Resources` for wheel releases
         - Support for rendering videos "in-memory" without a named file on disk
+        - Refactor `ExportingHelper` out of `ShaderScene.main`
+        - Properly catch FFmpeg's `stderr` and `stdout` (allows in-memory render)
+    === "PyApp Fork"
+        - Load all `*.env` files in the directory the executable is located
+        - Use `WORKSPACE` instead of `PYAPP_INSTALL_DIR_*` to match BrokenProject
+        - Add `PYAPP_APP_AUTHOR` and `PYAPP_APP_NAME` to use install subdirs
+        - Add option to embed `uv` into the binary
 
 <!------------------------------------------------------------------------------------------------->
 

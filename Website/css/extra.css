@@ -31,7 +31,6 @@ ins.critic, del.critic {
 
 /* Operating system logos */
 .os-logo {
-  margin-bottom: 0.5rem;
   vertical-align: middle;
   border-radius: 20%;
   width: 80px;
@@ -42,6 +41,14 @@ article ul ul {
   list-style-type: circle !important;}
 article ul ul ul {
   list-style-type: square !important;}
+
+/* Thinner table items */
+.slim-table > tr > td {
+  padding: 0.25em !important;
+}
+div.tabbed-block > p:empty {
+  display: none;
+}
 
 /* More material-dark looking colors than slate */
 [data-md-color-scheme=slate] {
@@ -405,3 +412,4 @@ video {
   mask-size: cover;
   animation: fadeIn 4s forwards;
 }
+

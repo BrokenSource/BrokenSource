@@ -270,7 +270,7 @@ class BrokenTyper:
     def should_shell(self) -> Self:
         self.shell = all((
             Environment.flag("REPL", 1),
-            (Runtime.Binary),
+            (Runtime.Installer),
             (not BrokenPlatform.OnLinux),
             (not arguments()),
         ))
