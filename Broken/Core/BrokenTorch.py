@@ -268,7 +268,7 @@ class BrokenTorch:
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
                 log.special("• Assuming Linux server with NVIDIA GPU")
-                version = denum(SimpleTorch.CUDA)
+                version = denum(SimpleTorch.CUDA124)
 
             # Fixed single version for macOS
             if BrokenPlatform.OnMacOS:
