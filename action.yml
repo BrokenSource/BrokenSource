@@ -4,12 +4,16 @@ description: Checkout repositories, install common dependencies
 runs:
   using: composite
   steps:
-    - name: Checkout repository
+    - name: Clone repositories
       uses: actions/checkout@v4
       with:
         repository: BrokenSource/BrokenSource
         submodules: recursive
         fetch-depth: 0
+
+    - name: Checkout main
+      run: git submodule foreach --recursive 'git checkout main || true'
+      shell: bash
 
     - name: Install uv
       uses: astral-sh/setup-uv@v3
