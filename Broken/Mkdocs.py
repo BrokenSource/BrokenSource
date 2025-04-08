@@ -1,8 +1,16 @@
-# ------------------------------------------------------------------------------------------------ #
-# Silence the site-urls plugin, it's too verbose / should be a lower level
-
 import logging
+from pathlib import Path
+from textwrap import dedent
+from typing import Union
 
+import mkdocs_gen_files
+from attrs import define, field
+
+from Broken import BROKEN, BrokenPath, BrokenPlatform
+
+MONOREPO = BROKEN.DIRECTORIES.REPO_WEBSITE
+
+# Silence the site-urls plugin, it's too verbose / should be a lower level
 logging.getLogger('mkdocs.plugins.mkdocs_site_urls').setLevel(logging.ERROR)
 
 # ------------------------------------------------------------------------------------------------ #
@@ -25,18 +33,13 @@ TabbedTreeprocessor.get_parent_header_slug = get_parent_header_slug
 
 # ------------------------------------------------------------------------------------------------ #
 
-from pathlib import Path
-
-from attrs import define, field
-
-from Broken import BROKEN, BrokenPath, BrokenPlatform
-
-MONOREPO = BROKEN.DIRECTORIES.REPO_WEBSITE
 
 @define
 class BrokenMkdocs:
 
     makefile: Path = field(converter=Path)
+
+    # # Common paths
 
     @property
     def website(self) -> Path:
@@ -47,19 +50,27 @@ class BrokenMkdocs:
         return Path(self.website.parent)
 
     @property
-    def project_name(self) -> str:
-        return self.repository.name
-
-    @property
     def symdir(self) -> Path:
         return (self.website/"Link")
 
-    def symlink_readme(self):
-        BrokenPath.symlink(
-            real=(self.repository/"readme.md"),
-            virtual=(self.website/"index.md"),
-            echo=False,
-        )
+    @property
+    def project_name(self) -> str:
+        return self.repository.name
+
+    # # Common actions
+
+    def virtual(self, path: Path, data: Union[str, bytes, Path]):
+        data = (data.read_bytes() if isinstance(data, Path) else data)
+        mode = ("wb" if isinstance(data, bytes) else "w")
+        with mkdocs_gen_files.open(path, mode) as virtual:
+            virtual.write(dedent(data))
+
+    def virtual_readme(self):
+        self.virtual(path="index.md", data='\n'.join((
+            "---", "template: home.html", "---",
+            r"<style>.md-nav {display: none}</style>",
+            (self.repository/"readme.md").read_text()
+        )))
 
     def monolink(self, path: Path, local: Path=None):
         """Symlink a path in the monorepo to a local one"""
