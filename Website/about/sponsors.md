@@ -1,7 +1,8 @@
 ---
 title: About/Sponsors
-template: home.html
 ---
+
+<div id="tsparticles"></div>
 
 Hi, I'm [**Gabriel**](https://github.com/Tremeschin){:target="_blank"}, born and currently living in **Brazil 🇧🇷**
 

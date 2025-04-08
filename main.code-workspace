@@ -1,26 +1,15 @@
 {
 	"folders": [
-		{
-			"name": "Code",
-			"path": "."
-		},
-		{
-			"name": "Insiders",
-			"path": "Meta/Insiders"
-		},
-		{
-			"name": "PyApp",
-			"path": "Build/PyApp"
-		},
-		{
-			"name": "Tremeschin",
-			"path": "Meta/Tremeschin"
-		}
+		{"name": "Code",        "path": "."},
+		{"name": "Insiders",    "path": "Meta/Insiders"},
+		{"name": "DepthFlow",   "path": "Projects/DepthFlow"},
+		{"name": "Pianola",     "path": "Projects/Pianola"},
+		{"name": "ShaderFlow",  "path": "Projects/ShaderFlow"},
+		{"name": "SpectroNote", "path": "Projects/SpectroNote"},
 	],
 
 	"extensions": {
 		"recommendations": [
-			// "ms-vscode.cpptools-extension-pack"
 			"aaron-bond.better-comments",
 			"usernamehw.errorlens",
 			"tamasfe.even-better-toml",

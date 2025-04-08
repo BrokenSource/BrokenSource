@@ -6,9 +6,11 @@ from textwrap import dedent
 from typing import Union
 
 import mkdocs_gen_files
+import yaml
 from attrs import define, field
+from dotmap import DotMap
 
-from Broken import BROKEN, BrokenPath, BrokenPlatform
+from Broken import BROKEN, BrokenPath, BrokenPlatform, apply
 
 monorepo = BROKEN.DIRECTORIES.REPO_WEBSITE
 
@@ -36,6 +38,7 @@ TabbedTreeprocessor.get_parent_header_slug = get_parent_header_slug
 class BrokenMkdocs:
 
     project: str = field()
+    """The project's main package name"""
 
     website: Path = field(converter=lambda x: Path(x).parent)
     """Send the importer's `__file__` gen-files (make.py)"""
@@ -54,6 +57,13 @@ class BrokenMkdocs:
     def examples(self) -> Path:
         return (self.repository/"Examples")
 
+    @property
+    def config(self) -> DotMap:
+        return DotMap(yaml.load(
+            stream=(self.repository/"mkdocs.yml").read_text(),
+            Loader=yaml.Loader
+        ))
+
     # # Common actions
 
     def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
@@ -67,16 +77,24 @@ class BrokenMkdocs:
 
     def virtual_readme(self):
         self.virtual(path="index.md", data='\n'.join((
-            "---", "template: home.html", "---",
+            '<div id="tsparticles"></div>',
             (self.repository/"readme.md").read_text()
         )))
 
+    def smartnav(self, nav: DotMap):
+        """If a file on the nav isn't found locally, copy it from the monorepo"""
+        if isinstance(nav, dict):
+            return apply(self.smartnav, nav.values())
+        elif isinstance(nav, list):
+            return apply(self.smartnav, nav)
+
+        if not (self.website/nav).exists():
+            if (virtual := monorepo/nav).exists():
+                self.virtual(nav, data=virtual)
+
     def __attrs_post_init__(self):
         BrokenPlatform.clear_terminal()
-
-        # Copy the monorepo website files
-        for file in BrokenPath.files(monorepo.rglob("*")):
-            self.virtual(path=file.relative_to(monorepo), data=file)
+        self.smartnav(self.config.nav)
 
         # Copy the project package files
         for file in BrokenPath.files(self.package.rglob("*")):

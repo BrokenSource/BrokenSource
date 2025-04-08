@@ -1,7 +1,6 @@
 site_author: Tremeschin
 site_dir: Build/Website
 docs_dir: Website
-repo_name: GitHub
 copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
 theme:
   name: material
@@ -43,7 +42,14 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to Dark Mode
-
+extra_javascript:
+  - javascript/mathjax.js
+  - javascript/particles.js
+  - javascript/video.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js
+extra_css:
+  - css/extra.css
 plugins:
   meta: {}
   # blog:
@@ -161,10 +167,6 @@ markdown_extensions:
     custom_checkbox: true
   pymdownx.arithmatex:
     generic: true
-
-extra_javascript:
-  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
-  - https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js
 
 extra:
   social:

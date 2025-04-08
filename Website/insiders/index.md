@@ -1,7 +1,8 @@
 ---
 title: Insiders
-template: home.html
 ---
+
+<div id="tsparticles"></div>
 
 <style>
 .md-nav__list {

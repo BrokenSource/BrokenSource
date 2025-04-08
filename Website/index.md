@@ -1,7 +1,8 @@
 ---
 title: Landing Page
-template: home.html
 ---
+
+<div id="tsparticles"></div>
 
 <div align="center">
   <a href="https://brokensrc.dev"><img src="https://github.com/BrokenSource.png" width="200" height="200"></a>
