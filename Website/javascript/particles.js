@@ -63,10 +63,11 @@ function loadParticles() {
 
 // Translate particles on scroll
 document.addEventListener('DOMContentLoaded', function() {
+  const particles = document.getElementById('tsparticles');
+  if (!particles) return;
   loadParticles();
   window.addEventListener('scroll', function() {
     const scrolled = window.pageYOffset || document.documentElement.scrollTop;
-    const particles = document.getElementById('tsparticles');
     particles.style.transform = `translateY(${-0.1*scrolled}px)`;
   });
 });

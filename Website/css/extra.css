@@ -77,16 +77,6 @@ div.tabbed-block > p:empty {
 [data-md-color-scheme=slate] .tabbed-labels::before {
   background: #555 !important}
 
-
-/* Bigger logos */
-.md-logo {
-  margin: 0rem !important;
-  padding: 0.2rem !important;
-}
-.md-logo > img {
-  height: 1.5rem !important;
-}
-
 /* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
 
 .md-main__inner {

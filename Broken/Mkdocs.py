@@ -66,6 +66,13 @@ class BrokenMkdocs:
 
     # # Common actions
 
+    def virtual_readme(self):
+        """Copy the repository readme to a root index.md"""
+        self.virtual(path="index.md", data='\n'.join((
+            '<div id="tsparticles"></div>',
+            (self.repository/"readme.md").read_text()
+        )))
+
     def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
         """Create a virtual file in the docs_dir (can be overriden by a real)"""
         if not (isinstance(data, Path) and (self.website/path).exists()):
@@ -74,12 +81,6 @@ class BrokenMkdocs:
             mode = ("wb" if isinstance(data, bytes) else "w")
             with mkdocs_gen_files.open(path, mode) as virtual:
                 virtual.write(data)
-
-    def virtual_readme(self):
-        self.virtual(path="index.md", data='\n'.join((
-            '<div id="tsparticles"></div>',
-            (self.repository/"readme.md").read_text()
-        )))
 
     def smartnav(self, nav: DotMap):
         """If a file on the nav isn't found locally, copy it from the monorepo"""
@@ -95,6 +96,11 @@ class BrokenMkdocs:
     def __attrs_post_init__(self):
         BrokenPlatform.clear_terminal()
         self.smartnav(self.config.nav)
+
+        # Copy themes and overrides folder
+        for path in ("css", "javascript"):
+            for file in BrokenPath.files(monorepo.rglob(f"{path}/*")):
+                self.virtual(path=file.relative_to(monorepo), data=file)
 
         # Copy the project package files
         for file in BrokenPath.files(self.package.rglob("*")):
