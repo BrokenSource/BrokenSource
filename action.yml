@@ -9,6 +9,7 @@ runs:
       with:
         repository: BrokenSource/BrokenSource
         submodules: recursive
+        fetch-depth: 0
 
     - name: Install uv
       uses: astral-sh/setup-uv@v3
@@ -18,6 +19,8 @@ runs:
 
     - name: Sync dependencies
       run: uv sync --all-packages
+      shell: bash
 
     - name: Get workflow options
       run: uv run python ./Broken/Version.py >> $GITHUB_ENV
+      shell: bash
