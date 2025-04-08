@@ -68,7 +68,6 @@ class BrokenMkdocs:
     def virtual_readme(self):
         self.virtual(path="index.md", data='\n'.join((
             "---", "template: home.html", "---",
-            r"<style>.md-nav {display: none}</style>",
             (self.repository/"readme.md").read_text()
         )))
 
