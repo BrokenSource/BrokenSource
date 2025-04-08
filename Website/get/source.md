@@ -128,4 +128,5 @@ Apart from deleting the `BrokenSource` folder where you cloned the code,
 --8<--
 include/uninstall/workspace.md
 include/uninstall/models.md
+include/uninstall/wheels.md
 --8<--

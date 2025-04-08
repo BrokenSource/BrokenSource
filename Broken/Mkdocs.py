@@ -1,3 +1,5 @@
+import contextlib
+import functools
 import logging
 from pathlib import Path
 from textwrap import dedent
@@ -8,16 +10,13 @@ from attrs import define, field
 
 from Broken import BROKEN, BrokenPath, BrokenPlatform
 
-MONOREPO = BROKEN.DIRECTORIES.REPO_WEBSITE
+monorepo = BROKEN.DIRECTORIES.REPO_WEBSITE
 
 # Silence the site-urls plugin, it's too verbose / should be a lower level
 logging.getLogger('mkdocs.plugins.mkdocs_site_urls').setLevel(logging.ERROR)
 
 # ------------------------------------------------------------------------------------------------ #
 # Fix tabbed items without a parent <h2> header
-
-import contextlib
-import functools
 
 from pymdownx.tabbed import TabbedTreeprocessor
 
@@ -33,37 +32,38 @@ TabbedTreeprocessor.get_parent_header_slug = get_parent_header_slug
 
 # ------------------------------------------------------------------------------------------------ #
 
-
 @define
 class BrokenMkdocs:
 
-    makefile: Path = field(converter=Path)
+    project: str = field()
+
+    website: Path = field(converter=lambda x: Path(x).parent)
+    """Send the importer's `__file__` gen-files (make.py)"""
 
     # # Common paths
-
-    @property
-    def website(self) -> Path:
-        return Path(self.makefile.parent)
 
     @property
     def repository(self) -> Path:
         return Path(self.website.parent)
 
     @property
-    def symdir(self) -> Path:
-        return (self.website/"Link")
+    def package(self) -> Path:
+        return (self.repository/self.project)
 
     @property
-    def project_name(self) -> str:
-        return self.repository.name
+    def examples(self) -> Path:
+        return (self.repository/"Examples")
 
     # # Common actions
 
-    def virtual(self, path: Path, data: Union[str, bytes, Path]):
-        data = (data.read_bytes() if isinstance(data, Path) else data)
-        mode = ("wb" if isinstance(data, bytes) else "w")
-        with mkdocs_gen_files.open(path, mode) as virtual:
-            virtual.write(dedent(data))
+    def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
+        """Create a virtual file in the docs_dir (can be overriden by a real)"""
+        if not (isinstance(data, Path) and (self.website/path).exists()):
+            data = (data.read_bytes() if isinstance(data, Path) else data)
+            data = (dedent(data) if isinstance(data, str) else data)
+            mode = ("wb" if isinstance(data, bytes) else "w")
+            with mkdocs_gen_files.open(path, mode) as virtual:
+                virtual.write(data)
 
     def virtual_readme(self):
         self.virtual(path="index.md", data='\n'.join((
@@ -72,29 +72,19 @@ class BrokenMkdocs:
             (self.repository/"readme.md").read_text()
         )))
 
-    def monolink(self, path: Path, local: Path=None):
-        """Symlink a path in the monorepo to a local one"""
-        BrokenPath.symlink(real=(MONOREPO/path),
-            virtual=(self.website/(local or path)))
-
     def __attrs_post_init__(self):
         BrokenPlatform.clear_terminal()
 
-        # Delete all previous symlinks
-        for path in self.website.rglob("*"):
-            if path.is_symlink():
-                path.unlink()
+        # Copy the monorepo website files
+        for file in BrokenPath.files(monorepo.rglob("*")):
+            self.virtual(path=file.relative_to(monorepo), data=file)
 
-        # Symlink the project package
-        # BrokenPath.symlink(
-        #     real=(self.repository/self.project_name),
-        #     virtual=(self.symdir/self.project_name),
-        #     echo=False,
-        # )
+        # Copy the project package files
+        for file in BrokenPath.files(self.package.rglob("*")):
+            self.virtual(path=file.relative_to(self.repository), data=file)
 
-        # Symlink the monorepo
-        # BrokenPath.symlink(
-        #     real=(MONOREPO),
-        #     virtual=(self.symdir/"Broken"),
-        #     echo=False,
-        # )
+        # Copy example files
+        for file in BrokenPath.files(self.examples.rglob("*")):
+            self.virtual(path=file.relative_to(self.repository), data=file)
+
+        self.virtual_readme()
