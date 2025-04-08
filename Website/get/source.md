@@ -1,6 +1,3 @@
----
-title: Get/Source
----
 
 ✅ Run directly from the source code development environment:
 

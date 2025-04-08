@@ -109,6 +109,14 @@
       --md-code-bg-color:         hsla(var(--md-hue), 0%, 12%, 1);
     }
 
+    /* Better slate header color */
+    [data-md-color-scheme=slate] {
+      .md-tabs, .md-header {
+        background-color: hsl(0, 0%, 20%);
+        background-image: none;
+      }
+    }
+
     /* Better code background color */
     [data-md-color-scheme=default] {
       --md-code-bg-color: hsla(var(--md-hue), 0%, 96%, 1);
@@ -119,6 +127,16 @@
       background: #AAA !important}
     [data-md-color-scheme=slate] .tabbed-labels::before {
       background: #555 !important}
+
+
+    /* Bigger logos */
+    .md-logo {
+      margin: 0rem !important;
+      padding: 0.2rem !important;
+    }
+    .md-logo > img {
+      height: 1.5rem !important;
+    }
 
     /* --------------- Ensure the footer is at least a viewport below the content --------------- */
 
@@ -135,42 +153,6 @@
     @media screen and (max-width: 991.98px) {
       .md-main__inner {
         min-height: calc(100vh - 115px);
-      }
-    }
-
-    /* ------------- Shiny metallic headers, rip material but I promise it's subtle ------------- */
-
-    @keyframes MetallicSweep {
-      0%   {background-position: -1000px 0px;}
-      100% {background-position: 1000px 0px;}
-    }
-
-    .md-tabs, .md-header {
-      background-size: 2000px 100px;
-      background-image: linear-gradient(
-        45deg,
-        hsl(0, 0%, 100%) 0%,
-        hsl(0, 0%, 95%) 20%,
-        hsl(0, 0%, 90%) 40%,
-        hsl(0, 0%, 90%) 60%,
-        hsl(0, 0%, 95%) 80%,
-        hsl(0, 0%, 100%) 100%
-      );
-    }
-
-    .md-header {
-      animation: MetallicSweep 8s linear infinite;
-    }
-
-    .md-tabs {
-      animation: MetallicSweep 8s linear infinite -0.1s;
-    }
-
-    [data-md-color-scheme=slate] {
-      .md-tabs, .md-header {
-        /* We don't have HDR to use metallic sweep 🙁 */
-        background-color: hsl(0, 0%, 20%);
-        background-image: none;
       }
     }
 

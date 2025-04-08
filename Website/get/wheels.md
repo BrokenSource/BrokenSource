@@ -1,6 +1,3 @@
----
-title: Get/PyPI
----
 
 <style>
     /* More well-defined cards */

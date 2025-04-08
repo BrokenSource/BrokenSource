@@ -38,6 +38,7 @@
 		// Hidden files on explorer
 		"files.exclude": {
 			"**/__pycache__": true,
+			"**/.cache": true,
 			".stfolder": true,
 			".nomedia": true,
 		},

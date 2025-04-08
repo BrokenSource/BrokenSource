@@ -1,6 +1,3 @@
----
-title: Get/Installers
----
 
 ✅ Download executables for all platforms:
 

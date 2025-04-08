@@ -38,7 +38,7 @@ theme:
         name: Switch to Light Mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white
+      primary: indigo
       accent: light-blue
       toggle:
         icon: material/weather-night
@@ -61,7 +61,6 @@ plugins:
   # privacy # Fixme: https://github.com/squidfunk/mkdocs-material/discussions/3641
   autorefs: {}
   site-urls: {}
-  literate-nav: {}
   mkdocstrings:
     handlers:
       python:
@@ -162,6 +161,10 @@ markdown_extensions:
     custom_checkbox: true
   pymdownx.arithmatex:
     generic: true
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js
 
 extra:
   social:

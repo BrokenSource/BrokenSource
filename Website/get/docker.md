@@ -1,6 +1,3 @@
----
-title: Get/Containers
----
 
 <!-- Todo: Overhaul section wip -->
 <!--

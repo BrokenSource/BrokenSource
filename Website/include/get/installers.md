@@ -1,7 +1,8 @@
+
 ### 📦 From Installers
 
 <div class="hover-pop" markdown>
-<a href="site:/get/installers" target="_blank">
+<a href="site:/get/installers">
 !!! example "**The most convenient** way to use the projects <span style="float: right;"><small>⭐️⭐️⭐️</small></span>"
     - **Double click and run**, everything's managed for you
     - {++Portable executables++} made for all platforms
