@@ -29,7 +29,7 @@ nav:
       - ⚖️ License: about/license.md
       - 🧾 Credits: about/credits.md
     - Code:
-      - 📦 Package: code/broken
+      - 📦 Package: code/broken/
 
   # - News:
   #   - news/index.md
@@ -143,10 +143,10 @@ theme:
 
 plugins:
   meta: {}
-  blog:
-    blog_dir: "news"
-    post_url_date_format: yyyy/MM
-    draft: true
+  # blog:
+  #   blog_dir: "news"
+  #   post_url_date_format: yyyy/MM
+  #   draft: true
   social:
     cards_layout_options:
       font_family: Rubik
@@ -259,9 +259,6 @@ markdown_extensions:
     custom_checkbox: true
   pymdownx.arithmatex:
     generic: true
-
-extra_css:
-  - css/extra.css
 
 extra_javascript:
   - javascript/video.js
