@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Manual trigger count: 1
-__version__ = "0.9.0.dev0"
+__version__ = "0.9.0.dev1"
 __options__ = dict(
     GHA_VERSION=__version__,
 )
