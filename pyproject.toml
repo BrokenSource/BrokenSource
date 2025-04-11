@@ -92,7 +92,7 @@ gradio = [
 ]
 cloud = [
     "modal~=0.73.55",
-    "runpod~=1.7.8",
+    "runpod~=1.7.9",
 ]
 
 [project.scripts]
