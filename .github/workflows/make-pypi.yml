@@ -6,6 +6,9 @@ jobs:
   main:
     name: Release wheels
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
