@@ -87,7 +87,7 @@ shaderflow = [
 gradio = [
     "fastapi~=0.115.12",
     "orjson~=3.10.16",
-    "gradio^=5.22.0",
+    "gradio<=5.22.0",
     "spaces~=0.34.2",
 ]
 cloud = [
