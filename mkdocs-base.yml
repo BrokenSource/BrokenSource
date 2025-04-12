@@ -50,6 +50,8 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js
 extra_css:
   - css/extra.css
+docs_exclude:
+  - make.py
 plugins:
   meta: {}
   # blog:

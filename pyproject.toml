@@ -14,8 +14,8 @@ path = "Broken/Version.py"
 name         = "broken-source"
 description  = "🚀 Broken Source Software Main Library"
 authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
-readme       = "readme.md"
 dynamic      = ["version"]
+readme       = "readme.md"
 license      = "AGPL-3.0"
 requires-python = ">=3.10"
 dependencies = [
@@ -67,7 +67,7 @@ shaderflow = [
     "watchdog~=6.0.0",
     "pytimeparse2~=1.7.1",
     # Math
-    "numpy-quaternion==2024.0.8",
+    "numpy-quaternion>=2024.0.8",
     "opensimplex~=0.4.5.1",
     # OpenGL
     "glfw~=2.8.0",
@@ -87,7 +87,7 @@ shaderflow = [
 gradio = [
     "fastapi~=0.115.12",
     "orjson~=3.10.16",
-    "gradio~=5.24.0",
+    "gradio^=5.22.0",
     "spaces~=0.34.2",
 ]
 cloud = [

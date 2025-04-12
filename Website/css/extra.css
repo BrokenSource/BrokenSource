@@ -77,6 +77,28 @@ div.tabbed-block > p:empty {
 [data-md-color-scheme=slate] .tabbed-labels::before {
   background: #555 !important}
 
+/* Custom footer layer  */
+.footer-extra-layer {
+  color: var(--md-footer-fg-color--light);
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.5rem 0;
+  width: 100%;
+} .footer-extra-layer a {
+  text-decoration: underline;
+} .md-footer {
+  box-shadow: 0 0px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Zoom and saturate whole hover elements */
+.hover-pop {
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+} .hover-pop:hover {
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.01);
+  filter: saturate(200%);
+}
+
 /* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
 
 .md-main__inner {
