@@ -4,6 +4,7 @@
 **/.venv
 **/Build
 **/Private
+**/Projects
 **/Playground
 **/Release
 **/Workspace

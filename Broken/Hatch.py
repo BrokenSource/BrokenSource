@@ -25,7 +25,7 @@ class BrokenHook(MetadataHookInterface):
                     item = f"{package}=={version}"
 
                 # Pin versions on release binaries
-                if (os.environ.get("PYAPP_RELEASE", "0") == "1"):
+                if (os.environ.get("PYAKET_RELEASE", "0") == "1"):
                     item = item.replace("~=", "==")
                     item = item.replace(">=", "==")
 

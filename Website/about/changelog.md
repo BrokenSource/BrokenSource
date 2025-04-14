@@ -15,14 +15,14 @@
 
 !!! example ""
     === "General"
-        - Bump managed and pyapp binaries Python to 3.13
+        - Bump managed and Pyaket binaries Python to 3.13
         - Added support for Intel Macs and Linux Arm builds to the releases
         - Fix FFmpeg automatic downloads on macOS (missing chmod)
         - Many improvements on the Docker images, and publish them on GHCR
             - Vulkan now works inside docker for upscayl and ncnn upscalers
             - Publish images of tags `project-{latest,0.9.0}-{cpu,cu121}`
         - Support for running all projects standalone mode without the monorepo
-        - Add a hatchling build hook to set versions dynamically and pin for PyApp
+        - Add a hatchling build hook to set versions dynamically and pin for Pyaket
         - Heavy code simplifications and refactoring throughout the codebase
         - Improved import times across the board
     === "DepthFlow"
@@ -70,11 +70,6 @@
         - Support for rendering videos "in-memory" without a named file on disk
         - Refactor `ExportingHelper` out of `ShaderScene.main`
         - Properly catch FFmpeg's `stderr` and `stdout` (allows in-memory render)
-    === "PyApp Fork"
-        - Load all `*.env` files in the directory the executable is located
-        - Use `WORKSPACE` instead of `PYAPP_INSTALL_DIR_*` to match BrokenProject
-        - Add `PYAPP_APP_AUTHOR` and `PYAPP_APP_NAME` to use install subdirs
-        - Add option to embed `uv` into the binary
 
 <!------------------------------------------------------------------------------------------------->
 

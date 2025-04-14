@@ -99,24 +99,6 @@ div.tabbed-block > p:empty {
   filter: saturate(200%);
 }
 
-/* ----------------- Ensure the footer is at least a viewport below the content ----------------- */
-
-.md-main__inner {
-  min-height: calc(100vh - 150px);
-}
-
-@media screen and (min-width: 992px) {
-  .md-main__inner {
-    min-height: calc(100vh - 115px);
-  }
-}
-
-@media screen and (max-width: 991.98px) {
-  .md-main__inner {
-    min-height: calc(100vh - 115px);
-  }
-}
-
 /* ------------------------------------------------------------------------------------------ */
 
 /* https://squidfunk.github.io/mkdocs-material/reference/admonitions/#classic-admonitions */

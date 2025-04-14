@@ -53,7 +53,7 @@ class BrokenProject:
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Root and not Runtime.Docker):
                     log.warning("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
-                self._pyapp_management()
+                self._pyaket_management()
                 Broken.PROJECT = self
 
         # Convenience symlink the project's workspace
@@ -86,52 +86,13 @@ class BrokenProject:
             )),
         ))
 
-    def _pyapp_management(self) -> None:
+    def _pyaket_management(self) -> None:
 
         # Skip if not executing within a binary release
-        if not (executable := Environment.get("PYAPP")):
+        if not Environment.get("PYAKET"):
             return None
 
-        # ---------------------------------------------------------------------------------------- #
-
-        import hashlib
         venv_path = Path(Environment.get("VIRTUAL_ENV"))
-        hash_file = (venv_path/f"version-{self.APP_NAME.lower()}.sha256")
-        prev_hash = (hash_file.read_text() if hash_file.exists() else None)
-        this_hash = hashlib.sha256(open(executable, "rb").read()).hexdigest()
-        hash_file.write_text(this_hash)
-
-        # Fixme (#ntfs): https://unix.stackexchange.com/questions/49299
-        # Fixme (#ntfs): https://superuser.com/questions/488127
-        ntfs_workaround = venv_path.with_name("0.0.0")
-
-        # "If (not on the first run) and (hash differs)"
-        if (prev_hash is not None) and (prev_hash != this_hash):
-            print("-"*shutil.get_terminal_size().columns + "\n")
-            log.info(f"Detected different hash for this release version [bold blue]v{self.VERSION}[/], reinstalling..")
-            log.info(f"• {venv_path}")
-
-            if BrokenPlatform.OnWindows:
-                BrokenPath.remove(ntfs_workaround)
-                venv_path.rename(ntfs_workaround)
-                try:
-                    rprint("\n[bold orange3 blink](Warning)[/] Please, reopen this executable to continue! Press Enter to exit..", end='')
-                    input()
-                except KeyboardInterrupt:
-                    pass
-                exit(0)
-            else:
-                shell(executable, "self", "restore", stdout=subprocess.DEVNULL)
-                print("\n" + "-"*shutil.get_terminal_size().columns + "\n")
-                try:
-                    sys.exit(shell(executable, sys.argv[1:], echo=False).returncode)
-                except KeyboardInterrupt:
-                    exit(0)
-
-        # Note: Remove before unused version checking
-        BrokenPath.remove(ntfs_workaround, echo=False)
-
-        # ---------------------------------------------------------------------------------------- #
 
         if (not arguments()):
             self.welcome()
@@ -157,8 +118,8 @@ class BrokenProject:
                     # Back to the future!
                     elif (current > latest):
                         log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
-                        log.error(f"[bold indian_red]• This is fine if you're running a development or prerelease version, don't worry[/]")
-                        log.error(f"[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
+                        log.error("[bold indian_red]• This is fine if you're running a development or prerelease version, don't worry[/]")
+                        log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
 
         # Warn: Must not interrupt user if actions are being taken (argv)
         if Environment.flag("VERSION_CHECK", 1) and (not arguments()):

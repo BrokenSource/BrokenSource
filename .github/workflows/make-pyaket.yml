@@ -1,4 +1,4 @@
-name: make-pyapp
+name: make-pyaket
 on:
   workflow_dispatch:
 
@@ -18,7 +18,7 @@ jobs:
         run: sudo apt install -y gcc-aarch64-linux-gnu
 
       - name: Compile projects
-        run: uv run broken workflow-pyapp
+        run: uv run broken workflow-pyaket
 
       - name: Upload releases
         uses: actions/upload-artifact@v4

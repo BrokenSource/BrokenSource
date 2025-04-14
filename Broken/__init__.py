@@ -119,10 +119,6 @@ Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 Environment.setdefault("HF_HUB_DISABLE_TELEMETRY", 1)
 Environment.setdefault("DO_NOT_TRACK", 1)
 
-# Replace "-c" with the managed python
-if Environment.exists("PYAPP"):
-    sys.argv[0] = sys.executable
-
 # Pretty tracebacks, smart lazy installing
 if Environment.flag("RICH_TRACEBACK", 1):
     def _lazy_hook(type, value, traceback):
@@ -162,14 +158,8 @@ class Runtime:
 
     # # Runtime environments
 
-    PyInstaller: bool = bool(getattr(sys, "frozen", False))
-    """True if running from a PyInstaller binary build (https://github.com/pyinstaller/pyinstaller)"""
-
-    Nuitka: bool = ("__compiled__" in globals())
-    """True if running from a Nuitka binary build (https://github.com/Nuitka/Nuitka)"""
-
-    PyApp: bool = Environment.exists("PYAPP")
-    """True if running as a PyApp release (https://github.com/ofek/pyapp)"""
+    Pyaket: bool = Environment.exists("PYAKET")
+    """True if running as a Pyaket release (https://github.com/BrokenSource/Pyaket)"""
 
     uvx: bool = any(f"archive-v{x}" in __file__ for x in range(4))
     """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
@@ -177,11 +167,11 @@ class Runtime:
     PyPI: bool = (Distribution.from_name("broken-source").read_text("direct_url.json") is None)
     """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
 
-    Installer: bool = (PyInstaller or Nuitka or PyApp)
-    """True if running from any executable build (PyInstaller, Nuitka, PyApp)"""
+    Installer: bool = (Pyaket)
+    """True if running from any executable build"""
 
     Release: bool = (Installer or PyPI)
-    """True if running from any static final release build (PyInstaller, Nuitka, PyApp, PyPI)"""
+    """True if running from any immutable final release build (Installer, PyPI)"""
 
     Source: bool = (not Release)
     """True if running directly from the source code (https://brokensrc.dev/get/source/)"""

@@ -104,6 +104,13 @@ class BrokenTyper:
         if (default and self.default):
             raise ValueError("Only one default command can be set")
 
+        # Proxy Typer objects
+        if isinstance(target, type(self)):
+            target = target.app
+        if isinstance(target, typer.Typer):
+            target = BrokenTyper.proxy(target)
+            context, help = (True, False)
+
         # Add a default indicator
         description = ''.join((
             (description or target.__doc__ or "No help provided"),
@@ -125,8 +132,7 @@ class BrokenTyper:
         if inspect.isfunction(target):
             if not inspect.signature(target).parameters:
                 target = BrokenTyper.proxy(target)
-                context = True
-                help = False
+                context, help = (True, False)
 
         # Generators must be consumed
         if inspect.isgeneratorfunction(target):

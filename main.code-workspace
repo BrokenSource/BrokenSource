@@ -27,7 +27,6 @@
 		// Hidden files on explorer
 		"files.exclude": {
 			"**/__pycache__": true,
-			"**/.cache": true,
 			".stfolder": true,
 			".nomedia": true,
 		},
@@ -51,7 +50,6 @@
 			// Rust
 			"Rust": "src",
 			"Cargo": "tools",
-			"PyApp": "tools",
 			".cargo": "config",
 
 			// Python
@@ -91,17 +89,14 @@
 			"Broken":      "src",
 			"Meta":        "context",
 			"Insiders":    "secure",
-			"Ardmin":      "tools",
 			"DepthFlow":   "tools",
-			"PhasorFlow":  "tools",
-			"QuadSnap":    "tools",
 			"ShaderFlow":  "tools",
 			"Archium":     "tools",
 			"Upscalin":    "tools",
+			"Pyaket":      "tools",
 			"Pianola":     "tools",
 			"SpectroNote": "tools",
 			"FastCutter":  "tools",
-			"Modpanel":    "tools",
 			"TurboPipe":   "tools",
 			"Factorium":   "tools",
 

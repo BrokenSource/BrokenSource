@@ -32,447 +32,12 @@ from Broken import (
     log,
     shell,
 )
+from Broken.Manager.Project import ProjectManager
 
-# ------------------------------------------------------------------------------------------------ #
-
-class ProjectLanguage(BrokenEnum):
-    Unknown = "unknown"
-    Python  = "python"
-    NodeJS  = "nodejs"
-    Rust    = "rust"
-    CPP     = "cpp"
-
-# ------------------------------------------------------------------------------------------------ #
-
-@define(eq=False)
-class ProjectManager:
-    path: Path
-    name: str = "Unknown"
-    cli: BrokenTyper = None
-
-    # # Main entry point
-
-    def main(self, ctx: Context) -> None:
-        self.cli = BrokenTyper(help=False)
-        self.cli.command(self.update)
-        self.cli.command(self.compile)
-        self.cli.command(self.run, context=True)
-        with BrokenPath.pushd(self.path, echo=False):
-            self.cli(*ctx.args)
-
-    # # Initialization
-
-    def __attrs_post_init__(self):
-        self.name = self.path.name
-
-    def __eq__(self, other: Self) -> bool:
-        return (self.path == other.path)
-
-    # # Utility Attributes
-
-    @property
-    def version(self) -> str:
-        import arrow
-        now = arrow.utcnow().format("YYYY.M.D")
-        return self.config.setdefault("version", now)
-
-    @property
-    def description(self) -> str:
-        description = ""
-
-        # Read Python's pyproject.toml
-        if (config := self.path/"pyproject.toml").exists():
-            description = (
-                toml.loads(config.read_text())
-                .get("project", {})
-                .get("description", "")
-            )
-
-        # Read Rust's Cargo.toml
-        elif (config := self.path/"Cargo.toml").exists():
-            description = (
-                toml.loads(config.read_text())
-                .get("package", {})
-                .get("description", "")
-            )
-
-        return description
-
-    @property
-    def languages(self) -> set[ProjectLanguage]:
-        languages = set()
-
-        # Best attempts to detect language
-        if (self.path/"pyproject.toml").exists():
-            languages.add(ProjectLanguage.Python)
-        elif (self.path/"Cargo.toml").exists():
-            languages.add(ProjectLanguage.Rust)
-        elif (self.path/"meson.build").exists():
-            languages.add(ProjectLanguage.CPP)
-        else:
-            languages.add(ProjectLanguage.Unknown)
-
-        return languages
-
-    @property
-    def pyproject(self) -> DotMap:
-        return DotMap(toml.loads((self.path/"pyproject.toml").read_text()))
-
-    @property
-    def cargo_toml(self) -> DotMap:
-        return DotMap(toml.loads((self.path/"Cargo.toml").read_text()))
-
-    @property
-    def _pretty_language(self) -> str:
-        if self.is_python: return f"🟢 [dim grey58](Python)[/] {self.description}"
-        if self.is_nodejs: return f"🟡 [dim grey58](NodeJS)[/] {self.description}"
-        if self.is_rust:   return f"🟠 [dim grey58](Rust  )[/] {self.description}"
-        if self.is_cpp:    return f"🔵 [dim grey58](C/C++ )[/] {self.description}"
-        return self.description
-
-    # Shorthands for project language
-
-    @property
-    def is_known(self) -> bool:
-        return ProjectLanguage.Unknown not in self.languages
-    @property
-    def is_python(self) -> bool:
-        return ProjectLanguage.Python in self.languages
-    @property
-    def is_nodejs(self) -> bool:
-        return ProjectLanguage.NodeJS in self.languages
-    @property
-    def is_rust(self) -> bool:
-        return ProjectLanguage.Rust in self.languages
-    @property
-    def is_cpp(self) -> bool:
-        return ProjectLanguage.CPP in self.languages
-
-    # # Commands
-
-    def update(self) -> None:
-        """✨ Update this project's dependencies"""
-        if self.is_python:
-            outdated = shell("uv", "pip", "list", "--outdated", "--format=json", output=True)
-            pyproject = (self.path/"pyproject.toml").read_text("utf8")
-
-            # Replaces any package version of '~=', '>=', '^=' with latest
-            for package in map(DotMap, json.loads(outdated)):
-                pyproject = re.sub(
-                    rf'({re.escape(package.name)}(?:\[[^\]]+\])?\s*(?:~=|>=|\^))\s*([^\"]*)"',
-                    rf'\g<1>{package.latest_version}"',
-                    pyproject
-                )
-
-            # Write changes
-            (self.path/"pyproject.toml").write_text(pyproject, "utf8")
-            shell("uv", "sync", "--all-packages")
-
-        if self.is_nodejs:
-            shell("pnpm", "update")
-        if self.is_rust:
-            shell("cargo", "update")
-        if self.is_cpp:
-            log.error("C++ projects are not supported yet")
-
-    def run(self, ctx: Context,
-        loop:  Annotated[bool, Option("--loop",  help="Press Enter after each run to run again")]=False,
-        clear: Annotated[bool, Option("--clear", help="Clear terminal before running")]=False,
-        debug: Annotated[bool, Option("--debug", help="Debug mode for Rust projects")]=False,
-    ) -> None:
-        """🔥 Run this project with all arguments that follow"""
-
-        while True:
-            BrokenPlatform.clear_terminal() if clear else None
-
-            if self.is_python:
-                log.info(f"Hey! Just type '{self.name.lower()}' to run the project directly, it's faster 😉")
-                return
-
-            elif self.is_rust:
-                raise RuntimeError(log.error("Rust projects are not supported yet"))
-                _status = shell(
-                    "cargo", "run",
-                    "--bin", self.name,
-                    ["--profile", "release"] if not debug else [],
-                    "--features", self.rust_features,
-                    "--", ctx.args
-                )
-
-            elif self.is_cpp:
-                BUILD_DIR = BROKEN.DIRECTORIES.REPO_BUILD/self.name
-                if shell("meson", BUILD_DIR, "--reconfigure", "--buildtype", "release").returncode != 0:
-                    exit(log.error(f"Could not build project ({self.name})") or 1)
-                if shell("ninja", "-C", BUILD_DIR).returncode != 0:
-                    exit(log.error(f"Could not build project ({self.name})") or 1)
-                binary = next(BUILD_DIR.glob(f"{self.name.lower()}"))
-                shell(binary, ctx.args)
-
-            if not loop:
-                break
-
-            import rich.prompt
-            log.success(f"Project ({self.name}) finished successfully")
-            if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
-                break
-
-    # # Python shenanigans
-
-    def compile(self,
-        platform: Annotated[PlatformEnum,
-            Option("--target", "--platform", "-t", "-p",
-            help="Target platforms to build binaries for"
-        )]=BrokenPlatform.Host,
-
-        python: Annotated[str,
-            Option("--python",
-            help="Python version to build the projects with"
-        )]="3.12",
-
-        tarball: Annotated[bool,
-            Option("--tarball", "-z",
-            help="Create a compressed tarball archive for unix releases",
-        )]=False,
-
-        embed: Annotated[bool,
-            Option("--embed", "-e", " /--no-embed", "-E",
-            help="Embed Python and uv into the binary",
-        )]=True,
-
-        standalone: Annotated[bool,
-            Option("--standalone",
-            help="(Standalone) Create self-contained distributions, implies --embed",
-        )]=False,
-
-        torch: Annotated[Optional[TorchRelease],
-            Option("--torch",
-            help="(Standalone) Bundle a specific PyTorch version with the project"
-        )]=None,
-    ) -> Optional[Path]:
-        """📦 Release the Project as a distributable binary"""
-
-        # Filter problematic or invalid (Host -> Target) combinations
-        if BrokenPlatform.OnLinux and (platform.system.is_macos()):
-            return log.skip(f"Linux can't [italic]easily[/] compile for {platform.system}")
-        elif BrokenPlatform.OnMacOS and (not platform.system.is_macos()):
-            return log.skip("macOS can only [italic]easily[/] compile for itself")
-        elif BrokenPlatform.OnWindows and (not platform.system.is_windows()):
-            return log.skip("Windows can only [italic]easily[/] compile for itself")
-        elif (platform == PlatformEnum.WindowsARM64):
-            return log.skip("Windows on ARM is not supported yet")
-
-        if self.is_python:
-            log.note("Building Project Release for", platform)
-
-            # Fixme: Wait for uv's implementation of pip wheel for my own sanity
-            if standalone and (platform != BrokenPlatform.Host):
-                log.error(f"Standalone releases are best built in a host matching the target platform")
-                log.error(f"• Awaiting implementation of (https://github.com/astral-sh/uv/issues/1681)")
-                log.error(f"• Attempted to build for '{platform.value}' on '{BrokenPlatform.Host.value}'")
-                return None
-
-            # Bundle torch on projects that use it
-            if (self.name == "DepthFlow"):
-                torch = (torch or SimpleTorch.CPU.value)
-
-            BUILD_WHL: Path = BROKEN.DIRECTORIES.BUILD_WHEELS
-            BUILD_DIR: Path = BROKEN.DIRECTORIES.BUILD_CARGO
-            Environment.set("CARGO_HOME", BUILD_DIR)
-
-            # Remove previous build cache for pyapp
-            for path in BUILD_DIR.rglob("pyapp*"):
-                BrokenPath.remove(path)
-
-            # Build wheels, find main and extra ones
-            Environment.set("PYAPP_RELEASE", 1)
-            WHEELS = BrokenManager().pypi(all=True)
-            MAIN   = next(WHEELS.glob("broken_source*"))
-            EXTRA  = set(WHEELS.glob("*.whl")) - {MAIN}
-
-            if (standalone):
-
-                # Fixme: Improve this with (https://github.com/astral-sh/uv/issues/1681)
-                def fetch_wheel(
-                    dependencies: Union[str, list[str]],
-                    index: Optional[str]=None,
-                    nodeps: bool=True,
-                ) -> None:
-                    if (returncode := shell(
-                        sys.executable, "-m", "pip", "download", dependencies,
-                        (("--platform", x) for x in platform.pip_platform),
-                        "--python-version", python,
-                        "--only-binary=:all:"*(not nodeps),
-                        "--no-deps"*(nodeps),
-                        "--prefer-binary",
-                        every("--index", index),
-                        "--dest", BUILD_WHL,
-                    ).returncode) != 0:
-                        log.error(f"Failed to download dependency ({dependencies})")
-                        exit(returncode)
-
-                from concurrent.futures import ThreadPoolExecutor
-
-                with ThreadPoolExecutor(max_workers=10) as pool:
-                    for dependency in filter(None, shell(
-                        "uv", "export", "--all-packages",
-                        "--format", "requirements-txt",
-                        "--no-editable", "--no-hashes",
-                        "--no-header", "--no-dev",
-                        output=True
-                    ).splitlines()):
-
-                        # Skip editable packages
-                        if (dependency.startswith(".")):
-                            continue
-
-                        # Skip audioop on Python 3.13+ as it was dropped from stdlib
-                        if (python == "3.13") and ("audioop" in dependency):
-                            continue
-
-                        # Ignore platform constraints
-                        dependency = dependency.split(";")[0]
-
-                        pool.submit(fetch_wheel, dependency)
-
-                # Add all dependencies wheels and sdists to the extra list
-                EXTRA |= set(BUILD_WHL.glob("*.whl")) - (EXTRA | {MAIN})
-                EXTRA |= set(BUILD_WHL.glob("*.tar.gz"))
-
-                # Why PyTorch can't be normal?
-                if bool(torch):
-
-                    # Help the linker deal with 3.2 GB Torch CUDA binaries..
-                    Environment.append("RUSTFLAGS", "-C code-model=large")
-
-                    fetch_wheel(
-                        dependencies=torch.packages,
-                        index=torch.index,
-                        nodeps=False
-                    )
-
-                    # Remove new duplicate and list them on extra wheels
-                    for file in set(BUILD_WHL.iterdir()) - (EXTRA | {MAIN}):
-
-                        # Note: Need case insensitive enabled due shit like this:
-                        # - https://pypi.org/project/Jinja2/3.1.4/#jinja2-3.1.4-py3-none-any.whl
-                        # - https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl
-                        duplicates = list(BUILD_WHL.glob(
-                            pattern=f"{file.name.split("-")[0]}-*",
-                            case_sensitive=False
-                        ))
-
-                        if len(duplicates) > 1:
-                            log.info(f"Removing duplicate: {file}")
-                            file.unlink()
-                            continue
-
-                        EXTRA |= {file}
-
-            from importlib.metadata import version as get_version
-
-            # Pyapp configuration
-            Environment.update(
-                PYAPP_APP_AUTHOR="BrokenSource",
-                PYAPP_APP_NAME="Versions",
-                PYAPP_PROJECT_PATH=str(MAIN),
-                PYAPP_EXTRA_WHEELS=";".join(map(str, EXTRA)),
-                PYAPP_PIP_EXTRA_ARGS=("--no-deps"*standalone),
-                PYAPP_DISTRIBUTION_EMBED=int(embed),
-                PYAPP_PYTHON_VERSION=python,
-                PYAPP_EXEC_MODULE=self.name,
-                PYAPP_PASS_LOCATION=1,
-                PYAPP_UV_VERSION=get_version('uv'),
-                PYAPP_UV_EMBED=int(embed),
-                PYAPP_UV_ENABLED=1,
-            )
-
-            # Rust configuration
-            Environment.update(
-                CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=shutil.which("aarch64-linux-gnu-gcc"),
-            )
-
-            # Have rust toolchain for the target
-            BrokenManager.rust()
-            shell("rustup", "target", "add", platform.triple)
-
-            # Cargo warning: We're not 'installing' a utility
-            BrokenPath.add_to_path(BUILD_DIR/"bin")
-
-            if (_PYAPP_FORK := True):
-                if not (fork := BROKEN.DIRECTORIES.REPO_BUILD/"PyApp").exists():
-                    shell("git", "clone", "https://github.com/BrokenSource/PyApp", fork, "-b", "custom")
-                embed = (fork/"src"/"embed")
-
-                # Remove previous embeddings if any
-                for file in embed.glob("*.whl"):
-                    file.unlink()
-                for file in embed.glob("*.tar.gz"):
-                    file.unlink()
-
-                # Create or clean empty files pyapp expects
-                for file in ("project", "distribution", "uv"):
-                    if (file := embed/file).exists():
-                        file.unlink()
-                    file.touch()
-
-                # Actually compile it
-                if shell(
-                    "cargo", "install",
-                    "--path", fork, "--force",
-                    "--root", BUILD_DIR,
-                    "--target", platform.triple,
-                ).returncode != 0:
-                    raise RuntimeError(log.error("Failed to compile PyApp"))
-            else:
-                if shell(
-                    "cargo", "install",
-                    "pyapp", "--force",
-                    "--root", BUILD_DIR,
-                    "--target", platform.triple,
-                ).returncode != 0:
-                    raise RuntimeError(log.error("Failed to compile PyApp"))
-
-            # Find the compiled binary
-            binary = next((BUILD_DIR/"bin").glob("pyapp*"))
-            log.info(f"Compiled Pyapp binary at ({binary})")
-            BrokenPath.make_executable(binary)
-
-            # Rename the compiled binary to the final release name
-            release_path = BROKEN.DIRECTORIES.REPO_RELEASES / ''.join((
-                f"{self.name.lower()}",
-                f"-{platform.value}",
-                f"-v{BROKEN.VERSION}",
-                f"-{torch.flavor}" if (torch and standalone) else "",
-                "-standalone"*standalone,
-                f"{platform.extension}",
-            ))
-            BrokenPath.copy(src=binary, dst=release_path)
-            BrokenPath.make_executable(release_path)
-
-            # Release a tar.gz to keep chmod +x attributes
-            if tarball and (not platform.system.is_windows()):
-                release_path = BrokenPath.gzip(release_path, remove=True)
-
-            log.success(f"Built Project Release at ({release_path})")
-            return release_path
-
-# ------------------------------------------------------------------------------------------------ #
 
 @define
-class BrokenManager(BrokenSingleton):
-    projects: list[ProjectManager] = Factory(list)
-
-    cli: BrokenTyper = Factory(lambda: BrokenTyper(description=(
-        "🚀 Broken Source Software Monorepo development manager script\n\n"
-        "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
-    )))
-
-    @property
-    def python_projects(self) -> list[ProjectManager]:
-        return list(filter(lambda project: project.is_python, self.projects))
-
+class BrokenManager(ProjectManager):
     def __attrs_post_init__(self) -> None:
-        self.projects.append(broken := ProjectManager(BROKEN.DIRECTORIES.REPOSITORY))
         self.find_projects(BROKEN.DIRECTORIES.REPO_PROJECTS)
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
@@ -480,54 +45,23 @@ class BrokenManager(BrokenSingleton):
             self.cli.command(BrokenTorch.install)
             self.cli.command(self.insiders)
             self.cli.command(self.clone)
-            self.cli.command(self.rust)
 
         with self.cli.panel("📦 Development"):
             self.cli.command(self.docker)
-            self.cli.command(self.website)
             self.cli.command(self.pypi)
             self.cli.command(self.upgrade)
             self.cli.command(self.clean)
             self.cli.command(self.sync)
 
-        with self.cli.panel("⚡️ Workflows"):
-            hidden = Environment.iflag("WORKFLOW_COMMANDS")
-            self.cli.command(self.workflow_pyapp, hidden=hidden)
-
         self.cli.command(self.tremeschin, hidden=True)
 
-        for project in self.projects:
-            self.cli.command(
-                target=project.main,
-                name=project.name.lower(),
-                description=project._pretty_language,
-                panel=f"🔥 Projects at [bold]({project.path.parent})[/]",
-                hidden=(project is broken),
-                context=True,
-                help=False,
-            )
-
-    def find_projects(self, path: Path, max_depth: int=1) -> None:
-        if (not path.exists()):
-            return
-        if (max_depth <= 0):
-            return
-
-        # Special directories that could contain projects
-        if (projects := path/"Projects").exists():
-            self.find_projects(projects, 1)
-
-        # Note: Avoid hidden, workspace, recursion
-        for directory in (path := BrokenPath.get(path)).iterdir():
-            if directory.is_file():
-                continue
-            if directory.is_symlink() or directory.is_dir():
-                self.find_projects(directory, max_depth - 1)
-            if (project := ProjectManager(directory)).is_known:
-                self.projects.append(project)
+        self.cli.description = (
+            "🚀 Broken Source Software Monorepo development manager script\n\n"
+            "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
+        )
 
     # ---------------------------------------------------------------------------------------------|
-    # Meta section
+    # Core section
 
     def clone(self,
         repo:     Annotated[str,  Argument(help="URL of the Git Repository to Clone")],
@@ -569,14 +103,6 @@ class BrokenManager(BrokenSingleton):
 
     # ---------------------------------------------------------------------------------------------|
     # Core section
-
-    def website(self, deploy: Annotated[bool, Option("--deploy", "-d", help="Deploy to GitHub Pages")]=False) -> None:
-        """📚 Serve or deploy the monorepo website"""
-        if deploy:
-            Environment.set("CODE_REFERENCE", 1)
-            shell("mkdocs", "gh-deploy", "--force")
-        else:
-            shell("mkdocs", "serve")
 
     def pypi(self,
         publish: Annotated[bool, Option("--publish", "-p", help="Publish the wheel to PyPI")]=False,
@@ -622,61 +148,6 @@ class BrokenManager(BrokenSingleton):
                 # No need for generic latest image
                 shell("docker", "rmi", latest)
 
-    @staticmethod
-    def rust(
-        toolchain:   Annotated[str,  Option("--toolchain",   "-t", help="(Any    ) Rust toolchain to use (stable, nightly)")]="stable",
-        build_tools: Annotated[bool, Option("--build-tools", "-b", help="(Windows) Install Visual C++ Build Tools")]=True,
-    ):
-        """🦀 Installs rustup and a rust toolchain"""
-        import requests
-
-        # Actions has its own workflow setup
-        if (Runtime.GitHub):
-            return
-
-        # Install rustup based on platform
-        if not shutil.which("rustup"):
-            log.info("Rustup wasn't found, will install it")
-
-            if BrokenPlatform.OnWindows:
-                shell("winget", "install", "-e", "--id", "Rustlang.Rustup")
-            elif BrokenPlatform.OnUnix:
-                shell("sh", "-c", requests.get("https://sh.rustup.rs").text, "-y", echo=False)
-
-            # If rustup isn't found, ask user to restart shell
-            BrokenPath.add_to_path(Path.home()/".cargo"/"bin")
-
-            if not BrokenPath.which("rustup"):
-                log.warning("Rustup was likely installed but wasn't found adding '~/.cargo/bin' to Path")
-                log.warning("• Maybe you changed the CARGO_HOME or RUSTUP_HOME environment variables")
-                log.warning("• Please restart your shell for Rust toolchain to be on PATH")
-                exit(0)
-
-        # Install Visual C++ Build Tools on Windows
-        if (BrokenPlatform.OnWindows and build_tools):
-            log.warning("You must have Microsoft Visual C++ Build Tools installed to compile Rust projects")
-            log.warning("• Will try installing it, you might need to restart your shell, good luck!")
-            shell("winget", "install", "-e", "--id", "Microsoft.VisualStudio.2022.BuildTools", "--override", (
-                " --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-                " --add Microsoft.VisualStudio.Component.Windows10SDK"
-                " --add Microsoft.VisualStudio.Component.Windows11SDK.22000"
-                "--wait --passive"
-            ))
-
-        class RustToolchain(BrokenEnum):
-            Stable  = "stable"
-            Nightly = "nightly"
-
-        toolchain = RustToolchain.get(toolchain).value
-
-        # Install or select the correct toolchain
-        for line in shell("rustup", "toolchain", "list", output=True, echo=False).split("\n"):
-            if ("no installed" in line) or (("default" in line) and (line.split("-")[0] != toolchain)):
-                log.info(f"Defaulting Rust toolchain to ({toolchain})")
-                shell("rustup", "default", toolchain)
-        else:
-            log.info(f"Rust toolchain is already the default ({toolchain})")
-
     def upgrade(self) -> None:
         """📦 Temporary solution to bump pyproject versions"""
         for project in self.projects:
@@ -699,7 +170,7 @@ class BrokenManager(BrokenSingleton):
         root = (BROKEN.DIRECTORIES.REPOSITORY)
         dot_github = (root/".github")
 
-        for project in self.projects[1:]:
+        for project in self.projects:
             if (project.path/".github"/".nosync").exists():
                 continue
             for file in BrokenPath.files(dot_github.rglob("*")):
@@ -708,11 +179,8 @@ class BrokenManager(BrokenSingleton):
                 if (target).exists():
                     BrokenPath.copy(file, target)
 
-    # ---------------------------------------------------------------------------------------------|
-    # Workflows
-
-    def workflow_pyapp(self) -> None:
-        for project in self.projects[1:]:
+    def workflow_pyaket(self) -> None:
+        for project in self.projects:
             for platform in PlatformEnum.all_host():
                 project.compile(
                     platform=platform,
@@ -723,7 +191,8 @@ class BrokenManager(BrokenSingleton):
 
 def main():
     with BrokenProfiler("BROKEN"):
-        BrokenManager().cli(*sys.argv[1:])
+        manager = BrokenManager()
+        manager.cli(*sys.argv[1:])
 
 if __name__ == "__main__":
     main()
