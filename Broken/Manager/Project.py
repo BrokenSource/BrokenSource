@@ -206,7 +206,7 @@ class ProjectManager:
     def find_projects(self, path: Path, depth: int=2):
         if (depth <= 0):
             return
-        for path in Path(path).iterdir():
+        for path in (path, *Path(path).iterdir()):
             name = path.name
 
             if path.is_file():
