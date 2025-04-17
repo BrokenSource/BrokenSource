@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import textwrap
 import time
 from abc import ABC, abstractmethod
@@ -768,10 +769,10 @@ class BrokenCache(StaticClass):
     @staticmethod
     @contextlib.contextmanager
     def package_info(package: str) -> Generator[DotMap, None, None]:
-        venv_path = Path(os.getenv("VIRTUAL_ENV"))
+        base = Environment.get("VIRTUAL_ENV", Path(tempfile.gettempdir()))
 
         with BrokenCache.requests(
-            cache_name=(venv_path/"pypi-info.cache"),
+            cache_name=(base/"pypi-info.cache"),
             expire_after=3600,
         ) as requests:
             url = f"https://pypi.org/pypi/{package}/json"

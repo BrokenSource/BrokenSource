@@ -6,7 +6,6 @@ theme:
   name: material
   custom_dir: Website/overrides
   font:
-    text: Rubik
     code: Cascadia Code
   icon:
     annotation: material/plus-circle-outline
@@ -149,6 +148,7 @@ markdown_extensions:
   pymdownx.highlight:
     auto_title: false
     linenums: true
+    pygments_lang_class: true
   pymdownx.inlinehilite: {}
   pymdownx.snippets:
     base_path: [Website]

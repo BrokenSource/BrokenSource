@@ -60,7 +60,7 @@ class BrokenMkdocs:
     @property
     def config(self) -> DotMap:
         return DotMap(yaml.load(
-            stream=(self.repository/"mkdocs.yml").read_text(),
+            stream=(self.repository/"mkdocs.yml").read_text("utf-8"),
             Loader=yaml.Loader
         ))
 
@@ -70,7 +70,7 @@ class BrokenMkdocs:
         """Copy the repository readme to a root index.md"""
         self.virtual(path="index.md", data='\n'.join((
             '<div id="tsparticles"></div>',
-            (self.repository/"readme.md").read_text()
+            (self.repository/"readme.md").read_text("utf-8")
         )))
 
     def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
