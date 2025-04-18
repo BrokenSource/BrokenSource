@@ -10,3 +10,6 @@
 [submodule "Projects/SpectroNote"]
 	path = Projects/SpectroNote
 	url  = https://github.com/BrokenSource/SpectroNote
+[submodule "Projects/Pyaket"]
+	path = Projects/Pyaket
+	url  = https://github.com/BrokenSource/Pyaket

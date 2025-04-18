@@ -29,7 +29,7 @@ dependencies = [
     "validators~=0.34.0",
     "diskcache~=5.6.3",
     "ordered-set~=4.1.0",
-    "dill~=0.3.9",
+    "dill~=0.4.0",
     "numpy",
     # Utils
     "loguru~=0.7.3",
@@ -67,7 +67,7 @@ shaderflow = [
     "opensimplex~=0.4.5.1",
     "scipy~=1.15.2",
     # OpenGL
-    "glfw~=2.8.0",
+    "glfw~=2.9.0",
     "glcontext~=3.0.0",
     "moderngl~=5.12.0",
     "moderngl-window~=3.1.1",
@@ -85,7 +85,7 @@ gradio = [
     "fastapi~=0.115.12",
     "orjson~=3.10.16",
     "gradio<=5.22.0",
-    "spaces~=0.34.2",
+    "spaces~=0.35.0",
 ]
 cloud = [
     "modal~=0.73.55",
