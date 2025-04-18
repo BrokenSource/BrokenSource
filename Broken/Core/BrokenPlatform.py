@@ -6,7 +6,7 @@ from typing import Self
 
 import distro
 
-from Broken import log
+from Broken import Environment, log
 from Broken.Core.BrokenEnum import BrokenEnum, MultiEnum
 
 
@@ -63,6 +63,10 @@ class PlatformEnum(str, BrokenEnum):
     MacosAMD64:   str = "macos-amd64"
     MacosARM64:   str = "macos-arm64"
 
+    @staticmethod
+    def from_parts(system: SystemEnum, arch: ArchEnum) -> "PlatformEnum":
+        return PlatformEnum(f"{system.value}-{arch.value}")
+
     @property
     def system(self) -> SystemEnum:
         return SystemEnum(self.value.split("-")[0])
@@ -79,8 +83,8 @@ class PlatformEnum(str, BrokenEnum):
     def triple(self) -> str:
         """Get the Rust target triple"""
         return {
-            self.WindowsAMD64: "x86_64-pc-windows-" + ("msvc" if BrokenPlatform.OnWindows else "gnu"),
-            self.WindowsARM64: "aarch64-pc-windows-" + ("msvc" if BrokenPlatform.OnWindows else "gnullvm"),
+            self.WindowsAMD64: "x86_64-pc-windows-"  + ("msvc" if Environment.flag("MSVC") else "gnu"),
+            self.WindowsARM64: "aarch64-pc-windows-" + ("msvc" if Environment.flag("MSVC") else "gnullvm"),
             self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
             self.LinuxARM64:   "aarch64-unknown-linux-gnu",
             self.MacosAMD64:   "x86_64-apple-darwin",
@@ -138,8 +142,7 @@ class BrokenPlatform:
         platform.system().lower())
     """The current machine's operating system"""
 
-    Host: PlatformEnum = PlatformEnum.get(
-        f"{System.value}-{Arch.value}")
+    Host: PlatformEnum = PlatformEnum.from_parts(System, Arch)
     """The current machine's full platform"""
 
     # Primary platforms
