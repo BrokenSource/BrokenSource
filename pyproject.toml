@@ -88,7 +88,7 @@ gradio = [
     "spaces~=0.35.0",
 ]
 cloud = [
-    "modal~=0.73.55",
+    "modal~=0.74.12",
     "runpod~=1.7.9",
 ]
 staging = [

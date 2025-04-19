@@ -20,6 +20,8 @@ class Environment:
     def set(key: str, value: str | None, /) -> None:
         if (value is not None):
             os.environ[key] = str(value)
+        elif (key in os.environ):
+            del os.environ[key]
 
     @staticmethod
     def append(key: str, value: str | None, /, pad: str=" ") -> None:

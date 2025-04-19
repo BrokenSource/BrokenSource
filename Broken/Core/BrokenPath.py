@@ -68,7 +68,7 @@ class BrokenPath(StaticClass):
 
     def move(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
-        log.info(f"Moving ({src})\n→ ({dst})", echo=echo)
+        log.info(f"Moving ({src})\n     → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 

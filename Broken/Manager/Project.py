@@ -189,10 +189,10 @@ class CodeProject:
 
 # ------------------------------------------------------------------------------------------------ #
 
-BIG_DIRECTORIES = {
+SKIP_DIRECTORIES = {
     "venv", ".venv","__pycache__",
     "node_modules", "build", "dist",
-    ".git", "build", "dist"
+    ".git", "build", "dist",
 }
 
 @define
@@ -213,7 +213,7 @@ class ProjectManager:
                 continue
 
             # Recurse on good directories
-            if (name.lower() in BIG_DIRECTORIES):
+            if (name.lower() in SKIP_DIRECTORIES):
                 continue
             elif name.startswith("."):
                 continue

@@ -215,7 +215,8 @@ class BrokenTyper:
         for value in cls.model_fields.values():
             for metadata in value.metadata:
                 if isinstance(metadata, OptionInfo):
-                    metadata.help = (metadata.help or value.description)
+                    if (help := (metadata.help or value.description)):
+                        metadata.help = help.split("\n")[0]
 
         return wrapper
 

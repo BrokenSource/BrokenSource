@@ -312,12 +312,14 @@ def shell(
 
 
 def apply(
-    callback: Callable,
+    callback: Iterable[Callable],
     iterable: Iterable, *,
     cast: Callable = list
 ) -> Collection:
-    """Applies a callback to all items of an iterable, returning a $cast of the results"""
-    return cast(map(callback, iterable))
+    """Applies a callable chain to all items of an iterable, returning casted results"""
+    for part in flatten(callback):
+        iterable = map(part, iterable)
+    return cast(iterable)
 
 
 def denum(item: Union[enum.Enum, Any]) -> Any:
