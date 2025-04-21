@@ -50,7 +50,7 @@ dependencies = [
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
     # Packaging
-    "setuptools~=78.1.0", # pretty_midi
+    "setuptools", # pretty_midi
     "pip~=25.0.1",
     "uv>=0.6.10",
     # Others

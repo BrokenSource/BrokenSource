@@ -1,34 +1,20 @@
-import itertools
-import json
-import re
-import shutil
 import sys
 from pathlib import Path
-from typing import Annotated, Optional, Self, Union
+from typing import Annotated
 
-import toml
-from attr import Factory, define
-from dotmap import DotMap
-from typer import Argument, Context, Option
+from attr import define
+from typer import Argument, Option
 
 from Broken import (
     BROKEN,
-    BrokenEnum,
     BrokenPath,
-    BrokenPlatform,
     BrokenProfiler,
-    BrokenSingleton,
     BrokenTorch,
-    BrokenTyper,
     Environment,
     PlatformEnum,
-    Runtime,
-    SimpleTorch,
-    TorchRelease,
+    Tools,
     __version__,
     combinations,
-    every,
-    flatten,
     log,
     shell,
 )
@@ -95,6 +81,7 @@ class BrokenManager(ProjectManager):
     def insiders(self):
         """💎 Clone the Insiders repository (WIP, No content)"""
         self.clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
+        shell(Tools.uv, "sync", "--all-packages")
 
     def tremeschin(self):
         Tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")

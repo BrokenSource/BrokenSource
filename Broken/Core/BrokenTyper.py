@@ -337,10 +337,10 @@ class BrokenTyper:
         self.app.info.help = (self.description or "No help provided for this CLI")
         sys.argv[1:] = apply(str, flatten(args))
 
-        for index in itertools.count(0):
+        for cycle in itertools.count(0):
 
             # On subsequent runs, prompt for command
-            if (self.shell) and (index > 0):
+            if (self.shell) and (cycle > 0):
                 if not self.shell_prompt():
                     return
 
@@ -373,11 +373,11 @@ class BrokenTyper:
                 return
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
-            if (index == 0) and arguments():
+            if (cycle == 0) and arguments():
                 return
 
             # Pretty welcome message on the first 'empty' run
-            if (index == 0):
+            if (cycle == 0):
                 self.shell_welcome()
 
             # The args were "consumed"
