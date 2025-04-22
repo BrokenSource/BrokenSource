@@ -29,6 +29,11 @@ ins.critic, del.critic {
   text-decoration: none;
 }
 
+/* Closer title to main logo */
+.md-header__title {
+  margin-left: 0 !important;
+}
+
 /* Operating system logos */
 .os-logo {
   vertical-align: middle;
