@@ -771,7 +771,7 @@ class BrokenCache(StaticClass):
     @staticmethod
     @contextlib.contextmanager
     def package_info(package: str) -> Generator[DotMap, None, None]:
-        base = Environment.get("VIRTUAL_ENV", Path(tempfile.gettempdir()))
+        base = Path(Environment.get("VIRTUAL_ENV", tempfile.gettempdir()))
 
         with BrokenCache.requests(
             cache_name=(base/"pypi-info.cache"),

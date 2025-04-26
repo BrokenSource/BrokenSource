@@ -40,7 +40,6 @@ class TorchRelease(str, BrokenEnum):
     TORCH_270_MACOS    = "2.7.0"
     TORCH_270_CPU      = "2.7.0+cpu"
     TORCH_270_CUDA_118 = "2.7.0+cu118"
-    TORCH_270_CUDA_124 = "2.7.0+cu124"
     TORCH_270_CUDA_126 = "2.7.0+cu126"
     TORCH_270_CUDA_128 = "2.7.0+cu128"
     TORCH_270_ROCM_624 = "2.7.0+rocm6.2.4"
@@ -101,6 +100,8 @@ class TorchRelease(str, BrokenEnum):
     @property
     @functools.lru_cache
     def is_nightly(self) -> bool:
+        if self.number < Version("2.8.0"):
+            return False
         with BrokenCache.package_info("torch") as package:
             return (Version(package.info.version) < self.number)
 
