@@ -21,16 +21,38 @@ Your hardware _probably_ doesn't support rendering while there are mapped buffer
 
 ### **Q:** Rendered videos are black {#black-videos}
 
-This seems to be a problem in hybrid Windows systems, that is, a system that has both an integrated and dedicated GPU. While rendering in live mode in either GPU should work, OpenGL or Windows seems to have issues reading the rendered frames data from a GPU that is not the primary one. To fix this, you can try the following:
+This seems to be a problem in hybrid systems, that is, a system that has both an integrated and dedicated GPU. While rendering in live mode in either GPU should work, OpenGL or Windows seems to have issues reading the rendered frames data from a GPU that is not the primary one.
 
-- **NVIDIA**: Go to the NVIDIA Control Panel, _"Manage 3D settings"_, find either the System's Python if running from PyPI, or a `pyaket` if running From Releases, and select the dedicated GPU as the preferred one.
-
-<sup><b>Note:</b> I don't have an hybrid system, so this setting doesn't show in the screenshot below.</sup>
-
-<img src="https://github.com/user-attachments/assets/2b0bb178-6248-4109-aff6-975427e5d8bf"></img>
+See the next question [#wrong-gpu](#wrong-gpu) for a fix.
 
 ### **Q:** Wrong GPU being used for rendering {#wrong-gpu}
 
-See this [related question](#black-videos) for changing the preferred GPU in NVIDIA systems.
+ShaderFlow says which GPU is being used for rendering:
 
-<sup><b>Help:</b> What are the instructions for AMD and Intel GPUs?</sup>
+```log
+│DepthFlow├┤...│ Initializing scene 'DepthScene' with backend WindowBackend.GLFW
+│DepthFlow├┤...│ OpenGL Renderer: NVIDIA GeForce RTX 3060/PCIe/SSE2
+```
+
+However, Hybrid Systems (Multiple GPUs) may be using the "wrong" one. This can cause issues such as black videos, low performance, artifacts, corrupted frames, etc:
+
+```log
+│DepthFlow├┤...│ Initializing scene 'DepthScene' with backend WindowBackend.GLFW
+│DepthFlow├┤...│ OpenGL Renderer: Intel(R) RaptorLake-S Mobile Graphics Controller
+```
+
+:material-arrow-right: Fixing this highly depends on your platform:
+
+<br>
+
+:material-microsoft: **Windows** with NVIDIA <small>• thanks to [@stephanedebove](https://github.com/BrokenSource/DepthFlow/issues/83#issuecomment-2832210216)</small>
+
+- Open the NVIDIA Control Panel, go to <kbd>Manage 3D Settings</kbd> → <kbd>Global Settings</kbd>
+- Under <kbd>Preferred Graphics Processor</kbd> select <kbd>High-performance NVIDIA processor</kbd>
+- Apply the changes, run depthflow/shaderflow again
+
+<br>
+
+:octicons-question-16: **Others** (any)
+
+<sup><b>Help needed:</b> What are the instructions here?</sup>
