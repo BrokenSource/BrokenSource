@@ -442,7 +442,6 @@ class BrokenPath(StaticClass):
         path: Path,
         *,
         recurse: bool=False,
-        persistent: bool=False,
         prepend: bool=True,
         echo: bool=True
     ) -> Path:
@@ -451,7 +450,6 @@ class BrokenPath(StaticClass):
 
         Args:
             recurse: Also add all subdirectories of the given path
-            persistent: Use 'userpath' package to add to the Shell's or Registry PATH
             preferential: Prepends the path for less priority on system binaries
 
         Returns:
@@ -467,7 +465,7 @@ class BrokenPath(StaticClass):
         if (not path.exists()) and recurse:
             return path
 
-        log.debug(f"Adding to Path (Recursively: {recurse}, Persistent: {persistent}): ({path})", echo=echo)
+        log.debug(f"Adding to Path (Recursively: {recurse}): ({path})", echo=echo)
 
         for other in list(path.rglob("*") if recurse else []) + [path]:
 
@@ -478,18 +476,14 @@ class BrokenPath(StaticClass):
                 continue
 
             # Actual logic
-            if persistent:
-                import userpath
-                userpath.append(str(other))
+            if prepend:
+                log.debug(f"• Prepending: ({other})", echo=echo)
+                Environment.set("PATH", str(other) + os.pathsep + Environment.get("PATH"))
+                sys.path.insert(0, str(other))
             else:
-                if prepend:
-                    log.debug(f"• Prepending: ({other})", echo=echo)
-                    Environment.set("PATH", str(other) + os.pathsep + Environment.get("PATH"))
-                    sys.path.insert(0, str(other))
-                else:
-                    log.debug(f"• Appending: ({other})", echo=echo)
-                    Environment.set("PATH", Environment.get("PATH") + os.pathsep + str(other))
-                    sys.path.append(str(other))
+                log.debug(f"• Appending: ({other})", echo=echo)
+                Environment.set("PATH", Environment.get("PATH") + os.pathsep + str(other))
+                sys.path.append(str(other))
 
         return original
 
