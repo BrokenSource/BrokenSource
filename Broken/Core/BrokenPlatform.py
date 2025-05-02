@@ -152,7 +152,7 @@ class BrokenPlatform:
     OnBSD:     bool = (System == SystemEnum.BSD)
 
     # Distro IDs: https://distro.readthedocs.io/en/latest/
-    LinuxDistro: str = distro.id()
+    LinuxDistro: str = (distro.id() if OnLinux else "")
 
     # Family of platforms
     OnUnix: bool = (OnLinux or OnMacOS or OnBSD)

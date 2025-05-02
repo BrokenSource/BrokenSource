@@ -1,9 +1,9 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 /* Justify all text */
-.md-typeset p, ul {
+/* .md-typeset p, ul {
   text-align: justify
-}
+} */
 
 /* Slightly more compact lines, shouldn't hurt readability */
 .md-typeset {

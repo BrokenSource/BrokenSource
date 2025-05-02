@@ -6,6 +6,7 @@ theme:
   name: material
   custom_dir: Website/overrides
   font:
+    text: Roboto
     code: Cascadia Code
   icon:
     annotation: material/plus-circle-outline
