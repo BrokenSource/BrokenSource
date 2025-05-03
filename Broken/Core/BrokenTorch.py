@@ -139,12 +139,12 @@ class TorchRelease(str, BrokenEnum):
 
 class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
-    CPU     = TorchRelease.TORCH_260_CPU
-    MACOS   = TorchRelease.TORCH_260_MACOS
-    CUDA124 = TorchRelease.TORCH_260_CUDA_124
+    CPU     = TorchRelease.TORCH_270_CPU
+    MACOS   = TorchRelease.TORCH_270_MACOS
+    CUDA124 = TorchRelease.TORCH_270_CUDA_126
     CUDA128 = TorchRelease.TORCH_270_CUDA_128
-    ROCM    = TorchRelease.TORCH_260_ROCM_624
-    XPU     = TorchRelease.TORCH_260_XPU
+    ROCM    = TorchRelease.TORCH_270_ROCM_630
+    XPU     = TorchRelease.TORCH_270_XPU
 
     @classmethod
     def prompt_choices(cls) -> Iterable[str]:
@@ -180,8 +180,8 @@ class SimpleTorch(BrokenEnum):
         # Table rows
         table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda128", "6.5 GB",
             "Required for [light_coral]RTX 5000+ Blackwell[/] GPUs")
-        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda124", "5.0 GB",
-            "Most common, doesn't need latest drivers")
+        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", "cuda126", "5.0 GB",
+            "More common, doesn't need latest drivers")
 
         # Hoping one day ROCm solves their issues..
         if BrokenPlatform.OnWindows:
@@ -204,7 +204,7 @@ class SimpleTorch(BrokenEnum):
             choice: str = Prompt.ask(
                 "\n:: What PyTorch version do you want to install?\n\n",
                 choices=list(SimpleTorch.prompt_choices()),
-                default=("cpu" if BrokenPlatform.OnWindows else "cuda124"),
+                default=("cpu" if BrokenPlatform.OnWindows else "cpu"),
             )
             console.print()
         except KeyboardInterrupt:
