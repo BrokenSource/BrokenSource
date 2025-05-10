@@ -63,8 +63,8 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
                     continue
                 for site_packages in site.getsitepackages():
                     if (pycudnn := Path(site_packages)/f"nvidia/cudnn/lib/{target}").exists():
-                        log.warning(f"Running FasterWhisper might fail, as ({libcudnn}) doesn't exist")
-                        log.warning(f"• Luckily, we can copy it from {pycudnn}")
+                        log.warn(f"Running FasterWhisper might fail, as ({libcudnn}) doesn't exist")
+                        log.warn(f"• Luckily, we can copy it from {pycudnn}")
                         shell("sudo", "cp", pycudnn, libcudnn, confirm=True)
                         break
                 else:

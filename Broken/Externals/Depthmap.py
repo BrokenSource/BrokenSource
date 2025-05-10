@@ -191,7 +191,7 @@ class DepthAnythingBase(DepthEstimatorBase):
         import transformers
         log.info(f"Loading Depth Estimator model ({self._huggingface_model})")
         if (self.model != self.Model.Small):
-            log.warning("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
+            log.warn("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
         self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(self._huggingface_model, use_fast=False)
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)
@@ -351,7 +351,7 @@ class Marigold(DepthEstimatorBase):
         from diffusers import DiffusionPipeline
 
         log.info("Loading Depth Estimator model (Marigold)")
-        log.warning("Note: Use FP16 for CPU, but it's VERY SLOW")
+        log.warn("Note: Use FP16 for CPU, but it's VERY SLOW")
         self._model = BrokenCache.lru(DiffusionPipeline.from_pretrained)(
             "prs-eth/marigold-depth-lcm-v1-0",
             custom_pipeline="marigold_depth_estimation",

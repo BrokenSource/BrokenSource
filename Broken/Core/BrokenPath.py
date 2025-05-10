@@ -352,7 +352,7 @@ class BrokenPath(StaticClass):
                 return output
             if (len(output.read_bytes()) == expected_size):
                 return output
-            log.warning("• Wrong Download size", echo=echo)
+            log.warn("• Wrong Download size", echo=echo)
 
         BrokenPath.mkdir(output.parent)
         import tqdm
@@ -377,7 +377,7 @@ class BrokenPath(StaticClass):
             log.error(f"File ({output}) was not downloaded correctly ({output.stat().st_size} != {expected_size})", echo=echo)
             return
 
-        log.success(f"Downloaded file ({output}) from ({url})", echo=echo)
+        log.ok(f"Downloaded file ({output}) from ({url})", echo=echo)
         return output
 
     def redirect(url: str) -> str:

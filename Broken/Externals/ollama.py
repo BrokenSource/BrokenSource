@@ -20,7 +20,7 @@ class BrokenOllama(ExternalModelsBase):
         if bool(shutil.which("ollama")):
             return
 
-        log.warning("Ollama binary [green]'ollama'[/] wasn't found on PATH, installing..")
+        log.warn("Ollama binary [green]'ollama'[/] wasn't found on PATH, installing..")
 
         if BrokenPlatform.OnMacOS:
             raise RuntimeError("Ollama installaion on macOS is untested, please get it at their website")
@@ -30,11 +30,11 @@ class BrokenOllama(ExternalModelsBase):
             url = "https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip"
 
         elif BrokenPlatform.OnLinux:
-            log.warning("")
-            log.warning("The installation on Linux is slightly non-trivial, and it's better to use their official script")
-            log.warning("• Please, get it at their website https://ollama.com/download/linux")
-            log.warning("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[/]")
-            log.warning("• Alternatively, install from your distro's package manager")
+            log.warn("")
+            log.warn("The installation on Linux is slightly non-trivial, and it's better to use their official script")
+            log.warn("• Please, get it at their website https://ollama.com/download/linux")
+            log.warn("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[/]")
+            log.warn("• Alternatively, install from your distro's package manager")
             exit(0)
 
         BrokenPath.get_external(url)

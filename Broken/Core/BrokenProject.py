@@ -52,7 +52,7 @@ class BrokenProject:
         if (project := getattr(Broken, "PROJECT", None)):
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Root and not Runtime.Docker):
-                    log.warning("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
+                    log.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
                 self._pyaket_management()
                 Broken.PROJECT = self
 
@@ -149,7 +149,7 @@ class BrokenProject:
 
             from rich.prompt import Prompt
 
-            log.warning((
+            log.warn((
                 f"The version [bold green]v{version.name}[/] of the projects "
                 f"hasn't been used for {tracker.sleeping}, unninstall it to save space!"
                 f"\n[bold bright_black]• Files at: {version}[/]"

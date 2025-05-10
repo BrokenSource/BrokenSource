@@ -339,7 +339,7 @@ class BrokenWorker:
     def main(self, tasks: Iterable[Callable]) -> Iterable[Any]:
         """A worker get tasks and yields results, calls them by default"""
 
-        log.success(f"Callable {self.type.__name__} worker started")
+        log.ok(f"Callable {self.type.__name__} worker started")
 
         for task in tasks:
             yield task()

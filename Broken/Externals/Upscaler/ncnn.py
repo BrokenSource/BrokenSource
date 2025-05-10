@@ -266,7 +266,7 @@ class Upscayl(UpscalerNCNN_Base):
             Upscayl.Model.Ultramix,
             Upscayl.Model.Ultrasharp,
         )):
-            log.warning("[bold light_coral]• This upscaler model is non-commercial[/]")
+            log.warn("[bold light_coral]• This upscaler model is non-commercial[/]")
 
         with self.path_image() as output:
             with self.path_image(input) as input:

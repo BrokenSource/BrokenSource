@@ -96,15 +96,15 @@ class BrokenLogging:
 
         # Simpler logging for non UTF or workflows
         if Runtime.GitHub or Environment.flag("SIMPLE_LOGGING", 0):
-            return ("[{project}][{time}][{level:7}] {message}").format(**data)
+            return ("[{project}][{time}][{level:5}] {message}").format(**data)
 
         elif Environment.flag("PLAIN_LOGGING", 0):
-            return ("[{level:7}] {message}").format(**data)
+            return ("[{level:5}] {message}").format(**data)
 
         return (
             f"│[dodger_blue3]{self.project()}[/]├"
             "┤[green]{time}[/]├"
-            "┤[{level.icon}]{level:7}[/{level.icon}]│ "
+            "┤[{level.icon}]{level:5}[/{level.icon}]│ "
             "▸ {message}"
         ).format(**data)
 
@@ -136,18 +136,17 @@ class BrokenLogging:
         )
         self._make_level("TRACE", None, "dark_turquoise")
         self._make_level("DEBUG", None, "turquoise4")
-        self._make_level("INFO", None, "bright_white")
-        self._make_level("NOTE", 25, "bright_blue")
-        self._make_level("SPECIAL", 25, "bright_blue")
-        self._make_level("TIP", 25, "dark_cyan")
-        self._make_level("SUCCESS", None, "green")
-        self._make_level("MINOR", 25, "grey42")
-        self._make_level("SKIP", 25, "grey42")
-        self._make_level("FIXME", 25, "cyan")
-        self._make_level("TODO", 25, "dark_blue")
-        self._make_level("WARNING", None, "yellow")
+        self._make_level("INFO",  None, "bright_white")
+        self._make_level("NOTE",  25,   "bright_blue")
+        self._make_level("TIP",   25,   "dark_cyan")
+        self._make_level("OK",    25,   "green")
+        self._make_level("MINOR", 25,   "grey42")
+        self._make_level("SKIP",  25,   "grey42")
+        self._make_level("FIXME", 25,   "cyan")
+        self._make_level("TODO",  25,   "dark_blue")
+        self._make_level("WARN",  25,   "yellow")
         self._make_level("ERROR", None, "red")
-        self._make_level("CRITICAL", None, "red")
+        self._make_level("CRIT",  25,   "red")
 
     def _make_level(self, level: str, loglevel: int=0, color: str=None) -> None:
         """Create or update a loglevel `.{name.lower()}` on the logger"""
@@ -277,7 +276,7 @@ def shell(
 
     if (shell is True):
         args = ' '.join(args)
-        log.warning((
+        log.warn((
             "Running command with (shell=True), be careful.. "
             "Consider using (confirm=True)"*(not confirm)
         ))

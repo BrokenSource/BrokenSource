@@ -85,7 +85,7 @@ class TorchRelease(str, BrokenEnum):
         return "torchvision"
 
     def install(self, reinstall: bool=False) -> subprocess.CompletedProcess:
-        log.special(f"Installing PyTorch version ({self.value})")
+        log.info(f"Installing PyTorch version ({self.value})")
         return shell(
             Tools.pip, "install", self.packages,
             every("--index-url", self.index),
@@ -261,28 +261,28 @@ class BrokenTorch:
         if (exists_ok and (installed or "torch" in sys.argv)):
             return None
 
-        log.special(f"Currently installed PyTorch version: {denum(installed)}")
+        log.info(f"Currently installed PyTorch version: {denum(installed)}")
 
         # Ask interactively if no flavor was provided
         if not (version := TorchRelease.get(version)):
 
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
-                log.special("• Assuming Linux server with NVIDIA GPU")
+                log.info("• Assuming Linux server with NVIDIA GPU")
                 version = denum(SimpleTorch.CUDA124)
 
             # Fixed single version for macOS
             if BrokenPlatform.OnMacOS:
-                log.special("• There is only one PyTorch version for macOS")
+                log.info("• There is only one PyTorch version for macOS")
                 version = denum(SimpleTorch.MACOS)
 
             else:
                 version = SimpleTorch.prompt()
 
         if (installed == version) and (not reinstall):
-            log.special("• Requested torch version matches current one!")
+            log.info("• Requested torch version matches current one!")
             if version.is_nightly:
-                log.special("• Use '--reinstall' to force a nightly update")
+                log.info("• Use '--reinstall' to force a nightly update")
             return
 
         version.install(reinstall=reinstall)

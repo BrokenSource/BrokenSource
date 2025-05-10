@@ -330,7 +330,7 @@ class BrokenTyper:
             Send sys.argv[1:] if running directly from user input
         """
         if (not self.commands):
-            log.warning("No commands were added to the Typer app")
+            log.warn("No commands were added to the Typer app")
             return None
 
         # Minor pre-processing
@@ -360,7 +360,7 @@ class BrokenTyper:
             except SystemExit:
                 log.trace(f"Skipping SystemExit on {type(self)}")
             except KeyboardInterrupt:
-                log.success(f"{type(self)} exit KeyboardInterrupt")
+                log.ok(f"{type(self)} exit KeyboardInterrupt")
             except Exception as error:
                 if (not self.shell):
                     raise error

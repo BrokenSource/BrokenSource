@@ -183,7 +183,7 @@ class CodeProject:
                 break
 
             import rich.prompt
-            log.success(f"Project ({self.name}) finished successfully")
+            log.ok(f"Project ({self.name}) finished successfully")
             if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                 break
 

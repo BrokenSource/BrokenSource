@@ -68,12 +68,12 @@ class BrokenLauncher(ABC, BrokenAttrs):
 
         # No files were scanned
         if (len(search) == 0):
-            log.warning(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
+            log.warn(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
 
         # Add commands of all files, warn if none was sucessfully added
         elif (sum(self.add_project(script=file, tag=tag) for file in search) == 0):
-            log.warning(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
-            log.warning('\n'.join(f"• {file}" for file in search))
+            log.warn(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
+            log.warn('\n'.join(f"• {file}" for file in search))
 
     def _regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
