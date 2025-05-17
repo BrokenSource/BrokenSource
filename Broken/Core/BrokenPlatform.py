@@ -2,7 +2,7 @@ import ctypes
 import os
 import platform
 from collections.abc import Iterable
-from typing import Self
+from typing import Optional, Self
 
 import distro
 
@@ -79,17 +79,16 @@ class PlatformEnum(str, BrokenEnum):
     def extension(self) -> str:
         return self.system.extension
 
-    @property
-    def triple(self) -> str:
+    def triple(self, msvc: bool=Environment.flag("MSVC")) -> Optional[str]:
         """Get the Rust target triple"""
         return {
-            self.WindowsAMD64: "x86_64-pc-windows-"  + ("msvc" if Environment.flag("MSVC") else "gnu"),
-            self.WindowsARM64: "aarch64-pc-windows-" + ("msvc" if Environment.flag("MSVC") else "gnullvm"),
+            self.WindowsAMD64: "x86_64-pc-windows-"  + ("msvc" if msvc else "gnu"),
+            self.WindowsARM64: "aarch64-pc-windows-" + ("msvc" if msvc else "gnullvm"),
             self.LinuxAMD64:   "x86_64-unknown-linux-gnu",
             self.LinuxARM64:   "aarch64-unknown-linux-gnu",
             self.MacosAMD64:   "x86_64-apple-darwin",
             self.MacosARM64:   "aarch64-apple-darwin",
-        }[self]
+        }.get(self, None)
 
     @staticmethod
     def all_host() -> Iterable[Self]:

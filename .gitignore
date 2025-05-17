@@ -12,7 +12,6 @@
 
 # Non-syncthing
 **/.stfolder
-**/.ignore
 **/.nomedia
 **/*.env
 **/Meta

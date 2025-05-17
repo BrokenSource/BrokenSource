@@ -15,6 +15,7 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenTyper,
+    __version__,
     log,
     shell,
 )
@@ -99,6 +100,7 @@ class CodeProject:
     def __attrs_post_init__(self) -> None:
         self.cli.command(self.mkdocs)
         self.cli.command(self.update)
+        self.cli.command(self.compile)
         self.cli.command(self.run)
 
         # Add known project languages
@@ -186,6 +188,17 @@ class CodeProject:
             log.ok(f"Project ({self.name}) finished successfully")
             if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                 break
+
+    def compile(self) -> Path:
+        from Pyaket import PyaketProject
+        pyaket = PyaketProject()
+        pyaket.app.name     = self.name
+        pyaket.app.author   = "BrokenSource"
+        pyaket.app.version  = __version__
+        pyaket.entry.script = self.name
+        pyaket.uv.bundle    = True
+        pyaket.build(all=True)
+        pyaket.compile(output=BROKEN.DIRECTORIES.REPO_RELEASES)
 
 # ------------------------------------------------------------------------------------------------ #
 

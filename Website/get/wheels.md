@@ -1,3 +1,6 @@
+---
+icon: material/language-python
+---
 
 <style>
     /* More well-defined cards */

@@ -1,12 +1,10 @@
 {
 	"folders": [
-		{"name": "Code",        "path": "."},
-		{"name": "Insiders",    "path": "Meta/Insiders"},
-		{"name": "DepthFlow",   "path": "Projects/DepthFlow"},
-		{"name": "Pianola",     "path": "Projects/Pianola"},
-		{"name": "Pyaket",      "path": "Projects/Pyaket"},
 		{"name": "ShaderFlow",  "path": "Projects/ShaderFlow"},
-		{"name": "SpectroNote", "path": "Projects/SpectroNote"},
+		{"name": "DepthFlow",   "path": "Projects/DepthFlow"},
+		{"name": "Insiders",    "path": "Meta/Insiders"},
+		{"name": "Pyaket",      "path": "Projects/Pyaket"},
+		{"name": "Code",        "path": "."},
 	],
 
 	"extensions": {

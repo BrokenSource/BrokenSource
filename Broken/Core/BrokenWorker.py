@@ -125,7 +125,7 @@ class BrokenWorker:
 
         # Create internal structures
         self._signal  = self.condition_type()
-        self._heal    = self.condition_type()
+        self._phoenix = self.condition_type()
         self._results = self.results_type()
         self._queue   = self.queue_type()
         BrokenWorker.thread(self._keep_alive)
@@ -205,8 +205,8 @@ class BrokenWorker:
     _signal: Union[ThreadCondition, ProcessCondition] = None
     """Signaling for when tasks are done"""
 
-    _heal: Union[ThreadCondition, ProcessCondition] = None
-    """Signaling for when any worker dies"""
+    _phoenix: Union[ThreadCondition, ProcessCondition] = None
+    """Signaling for when any worker stops and needs to be replaced"""
 
     @property
     def queue_type(self) -> Union[ThreadQueue, ProcessQueue]:
@@ -298,8 +298,8 @@ class BrokenWorker:
                 target=self._supervisor,
                 _type=self.type,
             ))
-        with self._heal:
-            self._heal.wait(0.5)
+        with self._phoenix:
+            self._phoenix.wait(0.5)
         self._sanitize()
 
     def _supervisor(self) -> None:
@@ -329,8 +329,8 @@ class BrokenWorker:
             log.error(f"Task {task.uuid} failed: {error}")
             self.store(task, error)
 
-        with self._heal:
-            self._heal.notify_all()
+        with self._phoenix:
+            self._phoenix.notify_all()
 
     # -------------------------------------------|
     # Specific implementations

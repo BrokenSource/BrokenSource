@@ -1,5 +1,6 @@
 ---
 title: About/Contact
+icon: material/chat-processing-outline
 ---
 
 <div class="grid cards" markdown>
@@ -21,13 +22,10 @@ title: About/Contact
 
 -   :fontawesome-solid-envelope:{.lg .middle} **Email**
     <p>Get in touch directly and privately</p>
-    <ul><li>Business and Formal</li></ul>
+    <ul><li>Business or Traditional</li></ul>
     [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:contact@brokensrc.dev)
 
 </div>
 
 !!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"
-    Feel free to talk in any of the Languages:
-
-    - 🇧🇷 **Portuguese**: My native language
-    - 🇺🇸 **English**: Too much internet..
+    Feel free to talk in any of the Languages: 🇧🇷 🇺🇸

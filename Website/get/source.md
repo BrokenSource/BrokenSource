@@ -1,3 +1,6 @@
+---
+icon: material/git
+---
 
 ✅ Run directly from the source code development environment:
 
@@ -80,19 +83,6 @@
             shaderflow
             depthflow
             ```
-
-??? quote "Check what [`get.sh`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.sh) and [`get.ps1`](https://github.com/BrokenSource/BrokenSource/blob/main/Website/get.ps1) does"
-    The content below is a **verbatim copy** of the current live script on this website
-    === "(Windows) • get.ps1"
-        <span/>
-        ```powershell title="PowerShell script"
-        --8<-- "get.ps1"
-        ```
-    === "(Linux and macOS) • get.sh"
-        <span/>
-        ```powershell title="Bash script"
-        --8<-- "get.sh"
-        ```
 
 ## 🚀 Upgrading
 

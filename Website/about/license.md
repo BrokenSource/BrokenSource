@@ -1,5 +1,5 @@
 ---
-title: About/License
+icon: material/license
 ---
 
 <div markdown annotate style="text-align: justify">

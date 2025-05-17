@@ -39,7 +39,7 @@
         === "Intel Macs"
             <table id="macos-amd64"><tbody class="slim-table"/></table>
 
-<sup>:material-arrow-right: **Note**: You can [contact me](site:/about/contact) for a free copy of a paid executable if you have a valid or altruistic reason!</sup>
+<sup>:material-arrow-right: ❤️ **Note**: You can [contact me](site:/about/contact) for a free copy of a paid executable if you have a valid or altruistic reason!</sup>
 
 <script>
   const download_icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`
@@ -48,13 +48,6 @@
     const extension = {windows: 'exe', linux: 'tar.gz', macos: 'tar.gz'}[platform];
     const filename = `${project.toLowerCase()}-${platform}-${architecture}-${version}.${extension}`
 
-    // Create the project name left button
-    const filename_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
-    const filename_div = Object.assign(document.createElement('div'), {
-      innerHTML: `📦 <b>File</b>: <code>${filename}</code>`,
-    });
-    filename_cell.appendChild(filename_div)
-
     // Create the big clickable download button users love
     const download_cell = Object.assign(document.createElement('td'), {style: 'width: 50%'});
     const download_link = Object.assign(document.createElement('a'), {
@@ -62,12 +55,11 @@
     })
     download_cell.appendChild(download_link)
 
-
     if (enabled && !members) {
-      download_link.innerHTML = `${download_icon} Free ${version}`
+      download_link.innerHTML = `${download_icon} Download Free ${version}`
       download_link.href = `https://github.com/BrokenSource/${project}/releases/download/${version}/${filename}`
     } else if (enabled && members) {
-      download_link.innerHTML = `${download_icon} Cheap ${version}`
+      download_link.innerHTML = `${download_icon} Download Cheap ${version}`
       download_link.href = "https://www.patreon.com/tremeschin/membership"
     } else {
       download_link.classList.add('md-button--disabled')
@@ -81,7 +73,6 @@
     // Append to the table if it exists
     const table = document.querySelector(`#${platform}-${architecture} tbody`)
     if (table) {table.appendChild(row)}
-    if (table) {table.appendChild(filename_cell)}
   }
 </script>
 

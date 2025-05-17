@@ -1,3 +1,6 @@
+---
+icon: material/cloud
+---
 
 <b><span class="the">C</span>loud providers</b> are a great way to run the projects without the need of a powerful machine, to have a dedicated server for it, or scale up the usage. Naturally, there are a lot of providers to rent hardware from, with quirks and differences between them.
 
