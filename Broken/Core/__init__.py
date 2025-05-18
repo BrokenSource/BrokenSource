@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
 import rich
-from attrs import Factory, define, field
+from attr import Factory, define, field
 from dotmap import DotMap
 from pydantic import BaseModel, ConfigDict, Field
 

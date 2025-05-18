@@ -1,5 +1,6 @@
 # -------------------------------- General fixes, quality of life -------------------------------- #
 
+import os
 import time
 
 time.zero = time.perf_counter()
@@ -8,7 +9,6 @@ time.zero = time.perf_counter()
 time.absolute = (lambda: time.perf_counter() - time.zero)
 """Precise time since the program started running"""
 
-import os # noqa
 
 class Environment:
     """Utilities for managing environment variables"""
@@ -270,7 +270,6 @@ from Broken.Core.BrokenPlatform import (
 )
 from Broken.Core.BrokenProfiler import BrokenProfiler
 from Broken.Core.BrokenProject import BrokenProject
-from Broken.Core.BrokenResolution import BrokenResolution
 from Broken.Core.BrokenScheduler import BrokenScheduler, SchedulerTask
 from Broken.Core.BrokenTorch import BrokenTorch, SimpleTorch, TorchRelease
 from Broken.Core.BrokenTrackers import (

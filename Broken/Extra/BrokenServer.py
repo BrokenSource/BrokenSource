@@ -5,7 +5,7 @@ from base64 import b64encode
 from typing import Annotated
 
 import uvicorn
-from attrs import Factory, define
+from attr import Factory, define
 from fastapi import FastAPI
 from typer import Option
 

@@ -7,7 +7,7 @@ from typing import Union
 
 import mkdocs_gen_files
 import yaml
-from attrs import define, field
+from attr import define, field
 from dotmap import DotMap
 
 from Broken import BROKEN, BrokenPath, BrokenPlatform, apply

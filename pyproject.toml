@@ -21,69 +21,42 @@ requires-python = ">=3.10"
 dependencies = [
     # Data Structures
     "attrs~=25.3.0",
-    "intervaltree~=3.1.0",
     "pydantic~=2.11.3",
     "dotmap~=1.3.30",
-    "toml~=0.10.2",
-    "pyyaml~=6.0.2",
-    "orjson~=3.10.18",
-    "aenum~=3.1.15",
     "validators~=0.35.0",
-    "diskcache~=5.6.3",
-    "ordered-set~=4.1.0",
-    "dill~=0.4.0",
-    "numpy",
+    "aenum~=3.1.15",
     # Utils
     "loguru~=0.7.3",
-    "platformdirs~=4.3.8",
-    "rich~=13.9.4",
-    "arrow~=1.3.0",
-    "distro~=1.9.0",
     "typer~=0.15.1",
-    "tqdm~=4.67.1",
-    "python-dotenv~=1.1.0",
-    "cachetools~=5.5.2",
-    "pyfiglet~=1.0.2",
-    "halo~=0.0.31",
+    "rich~=13.9.4",
     "xxhash~=3.5.0",
-    "pillow",
+    "platformdirs~=4.3.8",
+    "distro~=1.9.0",
+    "packaging",
     # Internet
     "requests-cache~=1.2.1",
     "requests~=2.32.3",
-    # Packaging
-    "setuptools", # pretty_midi
-    "uv~=0.7.5",
-    "pip",
-]
-
-[dependency-groups]
-dev = [
-    "broken-source[extra]",
-    # Website and documentation
-    "mkdocs~=1.6.1",
-    "mkdocstrings~=0.29.0",
-    "mkdocstrings-python~=1.16.10",
-    "mkdocs-gen-files~=0.5.0",
-    "mkdocs-autorefs~=1.4.1",
-    "mkdocs-section-index~=0.3.10",
-    "mkdocs-material[imaging]~=9.6.11",
-    "mkdocs-minify-plugin~=0.8.0",
-    "mkdocs-include-markdown-plugin~=7.1.5",
-    "mkdocs-site-urls~=0.2.0",
-    "markdown-callouts~=0.4.0",
-    "black~=25.1.0",
-    # Development and Utilities
-    "pytest-sugar~=1.0.0",
-    "zstandard~=0.23.0",
-    "hatchling~=1.27.0",
-    # Profiling
-    "snakeviz~=2.2.2",
-    "tuna~=0.5.11",
 ]
 
 [project.optional-dependencies]
+extra = [
+    "pillow",
+    "numpy",
+    # Data structures
+    "intervaltree~=3.1.0",
+    "cachetools~=5.5.2",
+    "diskcache~=5.6.3",
+    # Utils
+    "halo~=0.0.31",
+    "tqdm~=4.67.1",
+    "dill~=0.4.0",
+    "uv~=0.7.5",
+]
 shaderflow = [
+    "broken-source[extra]",
+    "ordered-set~=4.1.0",
     "watchdog~=6.0.0",
+    # "pygame~=2.6.1", # Todo: Joystick
     "pytimeparse2~=1.7.1",
     "thefuzz~=0.22.1",
     # Math
@@ -97,7 +70,6 @@ shaderflow = [
     "moderngl-window~=3.1.1",
     "imgui-bundle>=1.5.2",
     "turbopipe~=1.2.2",
-    "pygame~=2.6.1",
     # Audio / MIDI
     "soundcard~=0.4.4",
     "pyfluidsynth~=1.3.4",
@@ -108,13 +80,37 @@ shaderflow = [
 gradio = [
     "transformers~=4.51.1",
     "fastapi~=0.115.12",
-    "spaces~=0.35.0",
-    # Note: Avoid 5.24 ~ 5.27, bad previews
+    "spaces~=0.36.0",
+    # Note: Avoid 5.24 ~ 5.27
     "gradio~=5.29.0",
 ]
-extra = [
-    "yt-dlp~=2025.4.30",
+
+[dependency-groups]
+dev = [
+    # Website and documentation
+    "mkdocs~=1.6.1",
+    "mkdocstrings~=0.29.0",
+    "mkdocstrings-python~=1.16.10",
+    "mkdocs-gen-files~=0.5.0",
+    "mkdocs-autorefs~=1.4.1",
+    "mkdocs-section-index~=0.3.10",
+    "mkdocs-material[imaging]~=9.6.11",
+    "mkdocs-minify-plugin~=0.8.0",
+    "mkdocs-site-urls~=0.2.0",
+    "markdown-callouts~=0.4.0",
+    "black~=25.1.0",
+    # Management only for now
+    "pyyaml~=6.0.2",
+    "toml~=0.10.2",
+    # Build system and testing
+    "pytest-sugar~=1.0.0",
+    "hatchling~=1.27.0",
+    # Profiling tools
+    "snakeviz~=2.2.2",
+    "tuna~=0.5.11",
+    # Staging
     "ollama~=0.4.8",
+    "yt-dlp~2025.4.30",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",
 ]
@@ -142,8 +138,6 @@ members = [
 broken-source = {workspace=true}
 shaderflow    = {workspace=true}
 depthflow     = {workspace=true}
-pianola       = {workspace=true}
-spectronote   = {workspace=true}
 
 # # Hatchling
 
@@ -172,7 +166,7 @@ ignore = [
     "E402", # Late/runtime imports are ok for torch
     "E701", # Rarely, this looks better than new line
     "E731", # Lambdas can be more readable at times
-    "E741", # Don't tell the Electrical Engineers
+    "E741", # Don't tell the electrical engineers
 ]
 
 # Tests

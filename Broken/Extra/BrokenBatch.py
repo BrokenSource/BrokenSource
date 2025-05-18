@@ -1,12 +1,12 @@
 # Todo: My brain melts trying to work in this file and thinking
-# how similar it is to Broken.Loaders, perhaps unite them?
+# how similar it is to Broken.Extra.BrokenLoaders, perhaps unite them?
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Iterable
 from os import PathLike
 from pathlib import Path
 from typing import Any, Self
 
-from attrs import define, field
+from attr import define, field
 
 from Broken import flatten
 from Broken.Core.BrokenPath import BrokenPath

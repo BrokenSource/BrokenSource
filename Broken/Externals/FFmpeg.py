@@ -13,7 +13,7 @@ from typing import Annotated, Generator, Literal, Optional, Self, TypeAlias, Uni
 
 import numpy as np
 import typer
-from attrs import define
+from attr import define
 from halo import Halo
 from pydantic import ConfigDict, Field, field_validator
 from typer import Option

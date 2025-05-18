@@ -22,14 +22,14 @@ from Broken import (
     BrokenEnum,
     BrokenModel,
     BrokenPath,
-    BrokenResolution,
     BrokenTyper,
     Environment,
     install,
     log,
 )
 from Broken.Externals import ExternalModelsBase, ExternalTorchBase
-from Broken.Loaders import LoadableImage, LoadImage
+from Broken.Extra.BrokenLoaders import LoadableImage, LoadImage
+from Broken.Extra.BrokenResolution import BrokenResolution
 from Broken.Types import MiB
 
 if TYPE_CHECKING:

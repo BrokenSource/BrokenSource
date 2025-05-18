@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterable
 from threading import Lock
 from typing import Any, Optional, Self
 
-from attrs import Factory, define, field
+from attr import Factory, define, field
 
 # ------------------------------------------------------------------------------------------------ #
 

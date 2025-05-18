@@ -16,13 +16,13 @@ from typer import Option
 from Broken import (
     BrokenEnum,
     BrokenModel,
-    BrokenResolution,
     BrokenTyper,
     denum,
     log,
 )
 from Broken.Externals import ExternalModelsBase
-from Broken.Loaders import LoadableImage, LoadImage
+from Broken.Extra.BrokenLoaders import LoadableImage, LoadImage
+from Broken.Extra.BrokenResolution import BrokenResolution
 
 
 class UpscalerBase(ExternalModelsBase, ABC):

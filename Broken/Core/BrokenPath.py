@@ -200,30 +200,6 @@ class BrokenPath(StaticClass):
         )
         return output
 
-    def zstd(path: Path, output: Path=None, *, remove: bool=False, echo: bool=True) -> Path:
-        output = BrokenPath.get(output or path).with_suffix(".zst")
-        path   = BrokenPath.get(path)
-
-        import tarfile
-
-        import zstandard as zstd
-
-        log.info(f"Compressing ({path}) → ({output})", echo=echo)
-
-        with open(output, "wb") as compressed:
-            cctx = zstd.ZstdCompressor(level=3, threads=-1)
-            with cctx.stream_writer(compressed) as compressor:
-                with tarfile.open(fileobj=compressor, mode="w|") as tar:
-                    if path.is_dir():
-                        for file in path.rglob("*"):
-                            tar.add(file, arcname=file.relative_to(path))
-                    else:
-                        tar.add(path, arcname=path.name)
-        if remove:
-            BrokenPath.remove(path, echo=echo)
-
-        return output
-
     def gzip(path: Path, output: Path=None, *, remove: bool=False, echo: bool=True) -> Path:
         output = BrokenPath.get(output or path).with_suffix(".tar.gz")
         path   = BrokenPath.get(path)

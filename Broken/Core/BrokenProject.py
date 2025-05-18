@@ -3,18 +3,16 @@ from __future__ import annotations
 import contextlib
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 from attr import define, field
 from platformdirs import PlatformDirs
-from rich import print as rprint
 
 import Broken
-from Broken import BrokenLogging, Environment, Runtime, Tools, log
-from Broken.Core import BrokenCache, arguments, list_get, shell
+from Broken import BrokenLogging, Environment, Runtime, log
+from Broken.Core import BrokenCache, arguments, list_get
 from Broken.Core.BrokenPath import BrokenPath
 from Broken.Core.BrokenPlatform import BrokenPlatform
 from Broken.Core.BrokenTrackers import FileTracker
@@ -63,29 +61,6 @@ class BrokenProject:
                 real=self.DIRECTORIES.WORKSPACE, echo=False
             )
 
-        # Load dotenv files in common directories
-        for path in self.DIRECTORIES.REPOSITORY.glob("*.env"):
-            __import__("dotenv").load_dotenv(path, override=True)
-
-    def welcome(self) -> None:
-        import pyfiglet # noqa
-        from Broken import BrokenTorch
-        from rich.align import Align
-        from rich.panel import Panel
-        torch = BrokenTorch.version()
-        ascii = pyfiglet.figlet_format(self.APP_NAME)
-        ascii = '\n'.join((x for x in ascii.split('\n') if x.strip()))
-        rprint(Panel(
-            Align.center(ascii + "\n"),
-            subtitle=''.join((
-                "[bold dim]📦 "
-                f"Version {self.VERSION} ",
-                f"• Python {sys.version.split()[0]} ",
-                f"• Torch {torch.value} " if torch else "",
-                "📦[/]",
-            )),
-        ))
-
     def _pyaket_management(self) -> None:
 
         # Skip if not executing within a binary release
@@ -93,9 +68,6 @@ class BrokenProject:
             return None
 
         venv_path = Path(Environment.get("VIRTUAL_ENV"))
-
-        if (not arguments()):
-            self.welcome()
 
         def check_new_version():
             from packaging.version import Version
@@ -137,7 +109,6 @@ class BrokenProject:
                 return None
 
             tracker = FileTracker(version/"version.tracker")
-            tracker.retention.days = 7
 
             # Skip in-use versions
             if (not tracker.trigger()):
@@ -163,9 +134,8 @@ class BrokenProject:
                 )
                 print()
                 if (answer == "delete"):
-                    from halo import Halo
-                    with Halo(f"Deleting unused version v{version.name}.."):
-                        shutil.rmtree(version, ignore_errors=True)
+                    log.info(f"Deleting unused version v{version.name}..")
+                    shutil.rmtree(version, ignore_errors=True)
                 if (answer == "keep"):
                     log.minor("Keeping the version for now, will check again later!")
                     return tracker.update()

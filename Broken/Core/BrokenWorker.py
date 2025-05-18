@@ -19,7 +19,7 @@ from time import perf_counter as now
 from typing import Any, Self, TypeAlias, Union
 from uuid import UUID, uuid4
 
-from attrs import Factory, define, field
+from attr import Factory, define, field
 
 from Broken import log
 from Broken.Core import easyloop

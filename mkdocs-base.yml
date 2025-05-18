@@ -120,17 +120,6 @@ plugins:
       remove_comments: true
     cache_safe: true
 
-  include-markdown:
-    preserve_includer_indent: true
-    dedent: false
-    trailing_newlines: true
-    comments: false
-    rewrite_relative_urls: true
-    heading_offset: 0
-    recursive: true
-    # start: <!--start-->
-    # end: <!--end-->
-
 markdown_extensions:
   pymdownx.magiclink: {}
   pymdownx.critic: {}

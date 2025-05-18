@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Self
 
-from attrs import define
+from attr import define
 
 from Broken import BrokenEnum, Environment, log
 from Broken.Core import shell

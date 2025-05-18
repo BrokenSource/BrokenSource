@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated, Self
 
 import toml
-from attrs import Factory, define, field
+from attr import Factory, define, field
 from dotmap import DotMap
 from typer import Context, Option
 
