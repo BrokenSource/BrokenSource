@@ -164,9 +164,11 @@ class BrokenPlatform:
     UbuntuLike:  bool = (OnUbuntu or OnDebian or OnMint or OnRaspberry)
 
     # Arch Linux family
-    OnArch:    bool = (LinuxDistro == "arch")
-    OnManjaro: bool = (LinuxDistro == "manjaro")
-    ArchLike:  bool = (OnArch or OnManjaro)
+    OnArch:      bool = (LinuxDistro == "arch")
+    OnManjaro:   bool = (LinuxDistro == "manjaro")
+    OnCachyOS:   bool = (LinuxDistro == "cachyos")
+    OnEndeavour: bool = (LinuxDistro == "endeavouros")
+    ArchLike:    bool = (OnArch or OnManjaro or OnCachyOS or OnEndeavour)
 
     # RedHat family
     OnFedora:   bool = (LinuxDistro == "fedora")
@@ -182,6 +184,16 @@ class BrokenPlatform:
     OnFreeBSD: bool = (LinuxDistro == "freebsd")
     OnNetBSD:  bool = (LinuxDistro == "netbsd")
     BSDLike:   bool = (OnFreeBSD or OnOpenBSD or OnNetBSD)
+
+    # ------------------------------------------ #
+
+    Wayland: bool = (Environment.get("XDG_SESSION_TYPE") == "wayland")
+    """Check if the current session is Wayland (False on non-linux)"""
+
+    X11: bool = (Environment.get("XDG_SESSION_TYPE") == "x11")
+    """Check if the current session is X11 (False on non-linux)"""
+
+    # ------------------------------------------ #
 
     @staticmethod
     def log_system_info() -> None:

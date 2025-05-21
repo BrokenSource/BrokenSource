@@ -1,4 +1,3 @@
-import warnings
 from math import pi as PI
 from pathlib import Path
 from typing import TypeAlias, Union
@@ -6,9 +5,6 @@ from typing import TypeAlias, Union
 from pydantic import HttpUrl
 
 PydanticImage = Union[str, Path, HttpUrl]
-
-# Ignore mostly NumPy warnings
-warnings.filterwarnings("ignore")
 
 # Custom types and utilities
 Unchanged: TypeAlias = None
