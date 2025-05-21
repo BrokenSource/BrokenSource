@@ -51,7 +51,6 @@ class BrokenProject:
             if (project is Broken.BROKEN):
                 if (BrokenPlatform.Root and not Runtime.Docker):
                     log.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
-                self._pyaket_management()
                 Broken.PROJECT = self
 
         # Convenience symlink the project's workspace
@@ -60,96 +59,6 @@ class BrokenProject:
                 virtual=self.DIRECTORIES.REPOSITORY/"Workspace",
                 real=self.DIRECTORIES.WORKSPACE, echo=False
             )
-
-    def _pyaket_management(self) -> None:
-
-        # Skip if not executing within a binary release
-        if not Environment.get("PYAKET"):
-            return None
-
-        venv_path = Path(Environment.get("VIRTUAL_ENV"))
-
-        def check_new_version():
-            from packaging.version import Version
-
-            # Skip development binaries, as they aren't on PyPI
-            if (current := Version(self.VERSION)).is_prerelease:
-                return None
-
-            with contextlib.suppress(Exception):
-                with BrokenCache.package_info(self.APP_NAME.lower()) as package:
-                    latest = Version(package.info.version)
-
-                    # Newer version available
-                    if (current < latest):
-                        log.minor((
-                            f"A newer version of the project [bold blue]v{latest}[/] is available! "
-                            f"Get it at https://brokensrc.dev/get/releases/ (Current: v{current})"
-                        ))
-
-                    # Back to the future!
-                    elif (current > latest):
-                        log.error(f"[bold indian_red]For whatever reason, the current version [bold blue]v{self.VERSION}[/] is newer than the latest [bold blue]v{latest}[/][/]")
-                        log.error("[bold indian_red]• This is fine if you're running a development or prerelease version, don't worry[/]")
-                        log.error("[bold indian_red]• Otherwise, it was likely recalled for whatever reason, consider downgrading![/]")
-
-        # Warn: Must not interrupt user if actions are being taken (argv)
-        if Environment.flag("VERSION_CHECK", 1) and (not arguments()):
-            with contextlib.suppress(Exception):
-                check_new_version()
-
-        # ---------------------------------------------------------------------------------------- #
-
-        def manage_install(version: Path):
-            from packaging.version import InvalidVersion, Version
-
-            try:
-                Version(version.name)
-            except InvalidVersion:
-                return None
-
-            tracker = FileTracker(version/"version.tracker")
-
-            # Skip in-use versions
-            if (not tracker.trigger()):
-                return None
-
-            # Late-update current tracker
-            if (version == venv_path):
-                return tracker.update()
-
-            from rich.prompt import Prompt
-
-            log.warn((
-                f"The version [bold green]v{version.name}[/] of the projects "
-                f"hasn't been used for {tracker.sleeping}, unninstall it to save space!"
-                f"\n[bold bright_black]• Files at: {version}[/]"
-            ))
-
-            try:
-                answer = Prompt.ask(
-                    prompt="\n:: Choose an action:",
-                    choices=("keep", "delete"),
-                    default="delete",
-                )
-                print()
-                if (answer == "delete"):
-                    log.info(f"Deleting unused version v{version.name}..")
-                    shutil.rmtree(version, ignore_errors=True)
-                if (answer == "keep"):
-                    log.minor("Keeping the version for now, will check again later!")
-                    return tracker.update()
-            except KeyboardInterrupt:
-                exit(0)
-
-        # Warn: Must not interrupt user if actions are being taken (argv)
-        if Environment.flag("UNUSED_CHECK", 1) and (not arguments()):
-            for version in (x for x in venv_path.parent.glob("*") if x.is_dir()):
-                with contextlib.suppress(Exception):
-                    manage_install(version)
-
-    def uninstall(self) -> None:
-        ...
 
 # ------------------------------------------------------------------------------------------------ #
 
