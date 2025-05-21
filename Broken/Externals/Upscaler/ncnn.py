@@ -5,7 +5,6 @@ from pathlib import Path
 from subprocess import DEVNULL
 from typing import Annotated, Literal
 
-import spaces
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import Field, field_validator
@@ -126,7 +125,6 @@ class Waifu2x(UpscalerNCNN_Base):
             raise ValueError(f"Denoise must be one of {allowed} for Waifu2x")
         return value
 
-    @spaces.GPU(duration=10)
     def _upscale(self,
         input: ImageType, *,
         echo: bool=True,
@@ -182,7 +180,6 @@ class Realesr(UpscalerNCNN_Base):
             raise ValueError(f"Scale must be one of {allowed} for RealESRGAN")
         return value
 
-    @spaces.GPU(duration=10)
     def _upscale(self,
         input: ImageType, *,
         echo: bool=True,
@@ -253,7 +250,6 @@ class Upscayl(UpscalerNCNN_Base):
             raise ValueError(f"Denoise must be one of {allowed} for Upscayl")
         return value
 
-    @spaces.GPU(duration=10)
     def _upscale(self,
         input: ImageType, *,
         echo: bool=True,
