@@ -50,7 +50,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.7.6",
+    "uv~=0.7.7",
 ]
 shaderflow = [
     "broken-source[extra]",
@@ -78,10 +78,10 @@ shaderflow = [
     "mido~=1.3.3",
 ]
 gradio = [
-    "transformers~=4.52.2",
+    "transformers~=4.52.3",
     "fastapi~=0.115.12",
     # Note: Avoid 5.24 ~ 5.27
-    "gradio~=5.30.0",
+    "gradio~=5.31.0",
 ]
 
 [dependency-groups]
@@ -110,7 +110,7 @@ dev = [
     "tuna~=0.5.11",
     # Staging
     "ollama~=0.4.8",
-    "yt-dlp~=2025.4.30",
+    "yt-dlp~=2025.5.22",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",
 ]
