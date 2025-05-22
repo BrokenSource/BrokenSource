@@ -56,20 +56,20 @@ https://github.com/orgs/BrokenSource/packages
 
 
 
-<a href="https://www.docker.com" target="_blank"><b><span class="the">D</span>ocker</b></a> is a platform for containerization of software, easy deployment and scalability. Basic usage is relatively simple, and most Linux knowledge can be applied to it. The main problem for running the projects on Docker is getting OpenGL acceleration to work, as the focus of it are compute workloads (CUDA, ML) or services (Jellyfin, NextCloud, APIs, etc).
+<a href="https://www.docker.com"><b><span class="the">D</span>ocker</b></a> is a platform for containerization of software, easy deployment and scalability. Basic usage is relatively simple, and most Linux knowledge can be applied to it. The main problem for running the projects on Docker is getting OpenGL acceleration to work, as the focus of it are compute workloads (CUDA, ML) or services (Jellyfin, NextCloud, APIs, etc).
 
 There are *quite a lot* of combinations in hardware[^1], platform and intention to use it, and guides like this can only go so far, and focuses on getting OpenGL working.
 
 [^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
 
 ??? warning "**Docker can't open native GUIs** on the Host OS • The intended usage are:"
-    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com){:target="_blank"}
-    - Serving and acessing a [**Gradio**](https://www.gradio.app){:target="_blank"} web page
+    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com)
+    - Serving and acessing a [**Gradio**](https://www.gradio.app) web page
     - Isolation, security or **Headless** usage
 
 ### ⚡️ Installing
 
-- (Windows) Install [**WSL2**](https://learn.microsoft.com/en-us/windows/wsl/install){:target="_blank"}, default Ubuntu 22.04 distro is fine
+- (Windows) Install [**WSL2**](https://learn.microsoft.com/en-us/windows/wsl/install), default Ubuntu 22.04 distro is fine
     ```powershell title="PowerShell"
     wsl --install
     ```
@@ -78,21 +78,21 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 
 <hr>
 
-- Install [**Docker Desktop**](chttps://www.docker.com/products/docker-desktop/){:target="_blank"} for your platform or Package Manager
-    - **Linux users** might only want [**Docker Engine**](https://wiki.archlinux.org/title/Docker){:target="_blank"}, per bloat and licensing model
+- Install [**Docker Desktop**](chttps://www.docker.com/products/docker-desktop/) for your platform or Package Manager
+    - **Linux users** might only want [**Docker Engine**](https://wiki.archlinux.org/title/Docker), per bloat and licensing model
     - **Windows**: Enable `Settings > Resources > WSL Integration > Default distro`
 
 <hr>
 
-- (Linux) You might need to install [**Docker Compose**](https://docs.docker.com/compose/){:target="_blank"} if you distro splits it
+- (Linux) You might need to install [**Docker Compose**](https://docs.docker.com/compose/) if you distro splits it
 
 <hr>
 
-- (NVIDIA) Install the [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt){:target="_blank"} for your Distro
+- (NVIDIA) Install the [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt) for your Distro
     - I don't have to say _"Have NVIDIA Drivers installed"_, on the **host system**, do I?
     - **Windows**: Follow the `apt` instructions on the link above, inside WSL
 
-!!! warning "**DO NOT INSTALL NVIDIA OR DISPLAY DRIVERS (MESA) ON THE WSL DISTRO [**PER NVIDIA DOCS**](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#step-1-install-nvidia-driver-for-gpu-support){:target="_blank"}**"
+!!! warning "**DO NOT INSTALL NVIDIA OR DISPLAY DRIVERS (MESA) ON THE WSL DISTRO [**PER NVIDIA DOCS**](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#step-1-install-nvidia-driver-for-gpu-support)**"
 
 <hr>
 
@@ -105,11 +105,11 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 
 <hr>
 
-- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual){:target="_blank"} page, until `uv sync`
+- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual) page, until `uv sync`
 
 ### 🚀 Context
 
-Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
+Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml) file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile) with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
 
 ??? tip "Have enough RAM and don't want to hurt your SSD's TBW?"
     Edit or create the file `sudo nano /etc/docker/daemon.json` and add:
@@ -120,29 +120,29 @@ Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://gi
     }
     ```
 
-Most Projects uses [**ModernGL**](https://github.com/moderngl/moderngl){:target="_blank"} for interfacing with OpenGL, that renders the Shaders. The Context creation is handled by [**glcontext**](https://github.com/moderngl/glcontext){:target="_blank"}, which selects the proper platform's API to use
+Most Projects uses [**ModernGL**](https://github.com/moderngl/moderngl) for interfacing with OpenGL, that renders the Shaders. The Context creation is handled by [**glcontext**](https://github.com/moderngl/glcontext), which selects the proper platform's API to use
 
 <h3>What to avoid</h3>
 
 **Long story short**, we want to avoid _at maximum_ using [**x11**](https://en.wikipedia.org/wiki/X.Org_Server) inside Docker {>>and even on native Linux !<<}. The code is feature-frozen but with many technical debts, requires a real _"Display"_ for Graphics APIs (OpenGL, Vulkan) to even work, and there is no headless mode
 
-- One might think that prepending the commands with [**xvfb-run**](https://en.wikipedia.org/wiki/Xvfb){:target="_blank"} could work, but this will always use [**Software Rendering**](https://en.wikipedia.org/wiki/Software_rendering){:target="_blank"}, {>>which happens entirely on the CPU - a fraction of the speed of a GPU<<}. So, we {==want to avoid *xvfb* at all costs==}
+- One might think that prepending the commands with [**xvfb-run**](https://en.wikipedia.org/wiki/Xvfb) could work, but this will always use [**Software Rendering**](https://en.wikipedia.org/wiki/Software_rendering), {>>which happens entirely on the CPU - a fraction of the speed of a GPU<<}. So, we {==want to avoid *xvfb* at all costs==}
 
-This isn't an issue _per se_ when running natively, as OpenGL Contexts created on a live Desktop Environment _WILL_ have GPU Acceleration via [**GLX**](https://en.wikipedia.org/wiki/GLX){:target="_blank"}, provided by the current driver. Or EGL itself, if we're running [**Wayland**](https://wayland.freedesktop.org/){:target="_blank"}
+This isn't an issue _per se_ when running natively, as OpenGL Contexts created on a live Desktop Environment _WILL_ have GPU Acceleration via [**GLX**](https://en.wikipedia.org/wiki/GLX), provided by the current driver. Or EGL itself, if we're running [**Wayland**](https://wayland.freedesktop.org/)
 
 <hr>
 
 <h3>Why we want EGL</h3>
 
-Luckily, **Khronos Group** developed [**EGL**](https://en.wikipedia.org/wiki/EGL_(API)), and **NVIDIA** the [**libglvnd**](https://github.com/NVIDIA/libglvnd){:target="_blank"} libraries. Together, EGL provides context creation directly on OpenGL without relying on WGL/CGL/GLX, so we can have **true GPU accelerated headless contexts**, and libglvnd a vender-neutral dispatch for so
+Luckily, **Khronos Group** developed [**EGL**](https://en.wikipedia.org/wiki/EGL_(API)), and **NVIDIA** the [**libglvnd**](https://github.com/NVIDIA/libglvnd) libraries. Together, EGL provides context creation directly on OpenGL without relying on WGL/CGL/GLX, so we can have **true GPU accelerated headless contexts**, and libglvnd a vender-neutral dispatch for so
 
-**Well, not so fast.** That is, if the available devices are GPUs themselves. It is well known that NVIDIA provides their own Proprietary Drivers and firmware for their GPUs, with shared libraries {>>(`.so` files on Linux, `.dll` on Windows)<<} pointing to their driver's libraries; while AMD and Intel GPUs on Linux runs the Godly [**Mesa Project**](https://www.mesa3d.org/){:target="_blank"}. {==Mesa always at least provides `llvmpipe` device, which is a Software Rendering fallback device==}
+**Well, not so fast.** That is, if the available devices are GPUs themselves. It is well known that NVIDIA provides their own Proprietary Drivers and firmware for their GPUs, with shared libraries {>>(`.so` files on Linux, `.dll` on Windows)<<} pointing to their driver's libraries; while AMD and Intel GPUs on Linux runs the Godly [**Mesa Project**](https://www.mesa3d.org/). {==Mesa always at least provides `llvmpipe` device, which is a Software Rendering fallback device==}
 
 <hr>
 
 <h3>Native Linux vs WSL</h3>
 
-Now, here's where it gets tricky. Docker is running a virtualized Linux machine always, but inside a _pseudo-native Linux_ in WSL (three layers lol). The previously installed [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt){:target="_blank"} deals with both cases slightly differently:
+Now, here's where it gets tricky. Docker is running a virtualized Linux machine always, but inside a _pseudo-native Linux_ in WSL (three layers lol). The previously installed [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt) deals with both cases slightly differently:
 
 - **On Windows**, the NVIDIA drivers used are from the Host (Windows itself), _"redirected"_ to WSL. The wrapped binaries are found at `/usr/lib/wsl` on the WSL distro, provided by the container toolkit {>>This is why no drivers should be installed on WSL<<}. The `llvmpipe` device _can be_ a pointer to `d3d12.so` file with actual GPU Acceleration
 
@@ -208,7 +208,7 @@ docker-compose run --build glinfo
 
 If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 
-!!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile){:target="_blank"} and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml){:target="_blank"} files"
+!!! success "For reference, here's the final [**Base Dockerfile**](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile) and [**docker-compose.yml**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml) files"
 
 ### ⭐️ Usage
 

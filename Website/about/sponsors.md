@@ -4,13 +4,13 @@ title: About/Sponsors
 
 <div id="tsparticles"></div>
 
-Hi, I'm [**Gabriel**](https://github.com/Tremeschin){:target="_blank"}, born and currently living in **Brazil 🇧🇷**
+Hi, I'm [**Gabriel**](https://github.com/Tremeschin), born and currently living in **Brazil 🇧🇷**
 
 While my major is **electrical engineering** - as I always loved applied maths, I've been developing **open source** software in most of my free time ever since 2020. In fact, I've got so good at it, that following the engineering career path would be a {==wasted potential==}.
 
 > :material-arrow-right: **I'm still early in life**. This work is what's left of me that didn't get lost in the way; I don't plan on stopping anytime, truly I'm overwhelmed with ideas and new projects to work on!
 
-You might have noticed the incompatibility of _"free software"_ and _"career"_. Companies often promote *"open source [loss leader](https://en.wikipedia.org/wiki/Loss_leader){:target="_blank"}"* projects that doesn't hurt their main revenue and gain customers, while community projects are funded by the community itself, which is my case.
+You might have noticed the incompatibility of _"free software"_ and _"career"_. Companies often promote *"open source [loss leader](https://en.wikipedia.org/wiki/Loss_leader)"* projects that doesn't hurt their main revenue and gain customers, while community projects are funded by the community itself, which is my case.
 
 > ⭐️ I would 100% heartwarmingly do all of this for free, but your support lets me keep going!
 
@@ -27,17 +27,17 @@ _**You** are the society deciding if I can do this for a living!_
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub Sponsors**
 
-    - ⭐️ Access to the [**Insiders**](site:/insiders){:target="_blank"} program
+    - ⭐️ Access to the [**Insiders**](site:/insiders) program
     - <small>Lowest fees, _preferred method_</small>
 
-    [:octicons-arrow-right-24:{.lg .middle} **💠 Support me**](https://github.com/sponsors/Tremeschin){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg .middle} **💠 Support me**](https://github.com/sponsors/Tremeschin)
 
 -   :fontawesome-brands-patreon:{.lg .middle} **Patreon**
 
-    - ❌ **No access** to the [**Insiders**](site:/insiders){:target="_blank"}
+    - ❌ **No access** to the [**Insiders**](site:/insiders)
     - <small>Alternative, occasional posts</small>
 
-    [:octicons-arrow-right-24:{.lg.middle} **💠 Support me**](https://www.patreon.com/Tremeschin){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg.middle} **💠 Support me**](https://www.patreon.com/Tremeschin)
 
 </div>
 
@@ -55,7 +55,7 @@ _**You** are the society deciding if I can do this for a living!_
 
 ### What you get?
 
-Apart from the already existing exclusive features of the [**Insiders**](site:/insiders){:target="_blank"} program, you'll get:
+Apart from the already existing exclusive features of the [**Insiders**](site:/insiders) program, you'll get:
 
 - 💎 _**Prioritized** support and feature requests[^features]:_ You have shown to value my time. I'd help everyone individually if possible, but I have to prioritize living, coding and additionally providing technical support on problems _you_ might face or features _you'd_ want!
 
@@ -67,7 +67,7 @@ Apart from the already existing exclusive features of the [**Insiders**](site:/i
 
 - ⭐️ _**Early access** to new features:_ You'll get to test new features before they're released to the public, and provide feedback on them. This might include new ShaderFlow modules, new integrations, even new projects I'm working on!
 
-- 📦 _**Exclusive content**:_ Better explained in the [**Insiders**](site:/insiders){:target="_blank"} page itself; this might include premium ShaderFlow scenes, automated video farm tools, custom scripts for you.
+- 📦 _**Exclusive content**:_ Better explained in the [**Insiders**](site:/insiders) page itself; this might include premium ShaderFlow scenes, automated video farm tools, custom scripts for you.
 
 - 🌵 _[**Bounties**](#bounty-hunting) program_: Contribute to target supporting goals for features to be available for all the community or for the development to start!
 
@@ -81,12 +81,12 @@ There are lots of ideas that I'd like to implement, but haven't had the time, in
 
 <small><b>Note:</b> This list is subject to change; achieving such goals may take some time or be unpractical to implement, which can only be seen after starting the work. As such, I'll do my best to keep feasible, self-judged goals here.</small>
 
-- [ ] Offline portable binary releases [**DepthFlow #54**](https://github.com/BrokenSource/DepthFlow/issues/54){:target="_blank"}
+- [ ] Offline portable binary releases [**DepthFlow #54**](https://github.com/BrokenSource/DepthFlow/issues/54)
 
 - [ ] Text rendering module in ShaderFlow, allowing for lyrics, subtitles, and more.
 
 #### Low priority
 
-- [ ] Continue the development of [**SpectroNote #1**](https://github.com/BrokenSource/SpectroNote/issues/1){:target="_blank"}
+- [ ] Continue the development of [**SpectroNote #1**](https://github.com/BrokenSource/SpectroNote/issues/1)
 
-- [ ] Better spectrograms with Reassignment method [**SpectroNote #2**](https://github.com/BrokenSource/SpectroNote/issues/2){:target="_blank"}
+- [ ] Better spectrograms with Reassignment method [**SpectroNote #2**](https://github.com/BrokenSource/SpectroNote/issues/2)

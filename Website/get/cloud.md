@@ -18,7 +18,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Amazon EC2
 
 !!! example ""
-    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://aws.amazon.com/ec2/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (5.0/5.0)</span> • Works out of the box™</b></div>
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://aws.amazon.com/ec2/">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (5.0/5.0)</span> • Works out of the box™</b></div>
 
     - Simply chose [`AWS Deep Learning AMI GPU PyTorch 2.4 (Ubuntu 22.04)`](https://aws.amazon.com/releasenotes/aws-deep-learning-ami-gpu-pytorch-2-4-ubuntu-22-04/) or similar!
     - No extra configuration needed, install the projects and continue
@@ -29,7 +29,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 #### Pods
 
 !!! example ""
-    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (4.8/5.0)</span> • Minor fixes within user's reach</b></div>
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️⭐️ (4.8/5.0)</span> • Minor fixes within user's reach</b></div>
 
     - Rent any pod with Nvidia GPUs (L4/T4 or cheapest should be enough)
     - Template: `runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04`
@@ -46,12 +46,12 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 
     - Install the projects and continue as usual
 
-    For more context, see this [GitHub comment](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774){:target="_blank"} of mine.
+    For more context, see this [GitHub comment](https://github.com/akatz-ai/ComfyUI-Depthflow-Nodes/issues/8#issuecomment-2409098774) of mine.
 
 #### Serverless
 
 !!! example ""
-    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/" target="_blank">Website</a><span style="float: right;">(?/5.0)</span> • Unknown</b></div>
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://runpod.io/">Website</a><span style="float: right;">(?/5.0)</span> • Unknown</b></div>
 
     Unknown.
 
@@ -59,7 +59,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Google Cloud
 
 !!! example ""
-    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://cloud.google.com/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️<span style="font-size: 15px;">☆</span> (4.5/5.0)</span> • Minor changes needed</b></div>
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://cloud.google.com/">Website</a><span style="float: right;">⭐️⭐️⭐️⭐️<span style="font-size: 15px;">☆</span> (4.5/5.0)</span> • Minor changes needed</b></div>
 
     Goes mostly smooth by following the base dockerfiles, reportedly works with GPU Acceleration.
 
@@ -67,7 +67,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Modal
 
 !!! example ""
-    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://modal.com/" target="_blank">Website</a><span style="float: right;">⭐️⭐️⭐️<span style="font-size: 15px;">☆☆</span> (3.0/5.0)</span> • Major changes needed + support ticket</b></div>
+    > <div><b>✅ &nbsp; #notsponsored • 🌐 <a href="https://modal.com/">Website</a><span style="float: right;">⭐️⭐️⭐️<span style="font-size: 15px;">☆☆</span> (3.0/5.0)</span> • Major changes needed + support ticket</b></div>
 
     - **You must** ask their support team to move your workspace to an older runner of theirs, as the newer ones don't expose `graphics` capabilities to Docker containers, failing to use the GPU.
 
@@ -79,7 +79,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Google Colab
 
 !!! example ""
-    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://colab.research.google.com/" target="_blank">Website</a><span style="float: right;">⭐️<span style="font-size: 15px;">☆☆☆☆</span> (1.0/5.0)</span> • No GPU acceleration</b></div>
+    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://colab.research.google.com/">Website</a><span style="float: right;">⭐️<span style="font-size: 15px;">☆☆☆☆</span> (1.0/5.0)</span> • No GPU acceleration</b></div>
 
     - **⚠️ Important**: Colab [**disallows**](https://research.google.com/colaboratory/intl/en-GB/faq.html#disallowed-activities) WebUI usage in their free plan.
 
@@ -91,7 +91,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Replicate
 
 !!! example ""
-    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/" target="_blank">Website</a><span style="float: right;"><span style="font-size: 15px;">☆☆☆☆☆</span> (0.0/5.0)</span> • No OpenGL and Pydantic version conflict</b></div>
+    > <div><b>❌ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/">Website</a><span style="float: right;"><span style="font-size: 15px;">☆☆☆☆☆</span> (0.0/5.0)</span> • No OpenGL and Pydantic version conflict</b></div>
 
     - I am using [Pydantic](https://docs.pydantic.dev/latest/) version 2 for at least a couple of months, but they're stuck on v1.0 in `cog` and injecting on the environment for a good while, making it a dependency conflict hard to solve at runtime.
 
@@ -103,7 +103,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Inferless
 
 !!! example ""
-    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/" target="_blank">Website</a><span style="float: right;">?/5.0</span> • No OpenGL acceleration?</b></div>
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://inferless.com/">Website</a><span style="float: right;">?/5.0</span> • No OpenGL acceleration?</b></div>
 
     A community member reportedly ran it basing off my main [dockerfile](https://github.com/BrokenSource/BrokenSource/blob/main/Docker/base.dockerfile), and OpenGL acceleration didn't work.
 
@@ -113,7 +113,7 @@ Getting OpenGL GPU acceleration to work is the trickiest part; if it's not liste
 ### Beam Cloud
 
 !!! example ""
-    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/" target="_blank">Website</a><span style="float: right;">?/5.0</span></b></div>
+    > <div><b>❓ &nbsp; #notsponsored • 🌐 <a href="https://beam.cloud/">Website</a><span style="float: right;">?/5.0</span></b></div>
 
     It's been a while since I tried it, but don't remember getting it to work.
 
@@ -123,6 +123,6 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 [^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
 
 ??? warning "**Docker can't open native GUIs** on the Host OS • The intended usage are:"
-    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com){:target="_blank"}
-    - Serving and acessing a [**Gradio**](https://www.gradio.app){:target="_blank"} web page
+    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com)
+    - Serving and acessing a [**Gradio**](https://www.gradio.app) web page
     - Isolation, security or **Headless** usage

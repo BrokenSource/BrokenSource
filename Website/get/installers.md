@@ -1,19 +1,11 @@
 
-✅ Download executables for all platforms:
-
 !!! abstract ""
     === ":material-microsoft: Windows"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/windows.svg">
           <div>
-            <b>Note:</b> Executables are <b><a target="_blank" href="https://pyaket.dev">safe</a></b> and <b><a target="_blank" href="https://github.com/BrokenSource/BrokenSource/actions">auditable</a></b>, but might trigger false antivirus alerts
-            <code>
-              [<a target="_blank" href="https://pyaket.dev">1</a>]
-              [<a target="_blank" href="https://news.ycombinator.com/item?id=19330062">2</a>]
-              [<a target="_blank" href="https://www.reddit.com/r/csharp/comments/qh546a/do_we_really_need_to_buy_a_certificate_for_a/">3</a>]
-              [<a target="_blank" href="https://github.com/pyinstaller/pyinstaller/issues/6754#issuecomment-1100821249">4</a>]
-            </code>
-            <div><small><b>I will not</b> destroy my reputation by distributing malware, and I don't have money for code signing</small></div>
+            <b>Note:</b> Executables are <b><a href="https://pyaket.dev/faq/windows">safe</a></b> and <b><a href="https://github.com/BrokenSource/BrokenSource/actions">auditable</a></b>, but might trigger false antivirus alerts
+            <div><small><b>I will not</b> destroy my reputation by distributing malware, code signing is infeasible.</small></div>
           </div>
         </div>
         === "x86-64"
@@ -39,7 +31,7 @@
         === "Intel Macs"
             <table id="macos-amd64"><tbody class="slim-table"/></table>
 
-<sup>:material-arrow-right: ❤️ **Note**: You can [contact me](site:/about/contact) for a free copy of a paid executable if you have a valid or altruistic reason!</sup>
+<sup>:material-arrow-right: ❤️ **Note**: You can [contact me](site:/about/contact) for a free copy of a paid executable with a valid or altruistic reason!</sup>
 
 <script>
   const download_icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`

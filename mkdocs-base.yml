@@ -1,7 +1,7 @@
 site_author: Tremeschin
 site_dir: Build/Website
 docs_dir: Website
-copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/" target="_blank">Tremeschin</a> 🇧🇷
+copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/">Tremeschin</a> 🇧🇷
 theme:
   name: material
   custom_dir: Website/overrides

@@ -8,17 +8,17 @@ icon: material/chat-processing-outline
 -   :fontawesome-brands-discord:{.lg .middle} **Discord**
     <p>Largest community, fastest responses</p>
     <ul><li>Priority sponsors support</li></ul>
-    [:octicons-arrow-right-24:{.lg .middle} **Join Server**](https://discord.gg/KjqvcYwRHm){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg .middle} **Join Server**](https://discord.gg/KjqvcYwRHm)
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub**
     <p>Officialize your Requests or Issues</p>
     <ul><li>One repository per project</li></ul>
-    [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories?q=sort%3Astars){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg .middle} **All Projects**](https://github.com/orgs/BrokenSource/repositories?q=sort%3Astars)
 
 -   :fontawesome-brands-telegram:{.lg .middle} **Telegram**
     <p>Also an option if you prefer over others!</p>
     <ul><li>Larger uploads can be useful</li></ul>
-    [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource){:target="_blank"}
+    [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource)
 
 -   :fontawesome-solid-envelope:{.lg .middle} **Email**
     <p>Get in touch directly and privately</p>

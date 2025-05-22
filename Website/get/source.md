@@ -2,8 +2,6 @@
 icon: material/git
 ---
 
-✅ Run directly from the source code development environment:
-
 !!! abstract ""
     === ":material-microsoft: Windows"
         <div align="center">
@@ -83,33 +81,6 @@ icon: material/git
             shaderflow
             depthflow
             ```
-
-## 🚀 Upgrading
-
-### Repositories
-
-The installation script should've **initialized** and set all [**submodules**](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to the **main branch**:
-
-```bash title="Command"
-git submodule foreach --recursive 'git checkout main || true'
-```
-
-After that, you can [**pull**](https://git-scm.com/docs/git-pull) the latest changes of all [**repositories**](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) with:
-
-```bash title="Command"
-git pull --recurse-submodules --jobs=4
-```
-
-!!! tip "If you have any local changes"
-    - **Keep them**: Add [**`--rebase`**](https://git-scm.com/docs/git-rebase) to the command above
-    - **Delete them**: Add `--force` to the command above
-
-### Packages
-
-The Python tooling I'm using to orchestrate the monorepo is [**uv**](https://docs.astral.sh/uv/)
-
-!!! note "Command: [`uv sync --all-packages`](https://docs.astral.sh/uv/)"
-    This will update the venv and install any new dependencies
 
 ## ♻️ Uninstalling
 

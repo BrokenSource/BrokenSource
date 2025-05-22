@@ -3,7 +3,7 @@
         <tbody class="slim-table">
             <tr>
                 <td style="width: 20%">:material-microsoft: Windows</td>
-                <td><kbd>C:\\\\Users\\(...)\\.cache\\{huggingface,transformers,torch}</kbd></td>
+                <td><kbd>C:\\Users\\(...)\\.cache\\{huggingface,transformers,torch}</kbd></td>
             </tr>
             <tr>
                 <td>:simple-apple: MacOS</td>

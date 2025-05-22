@@ -6,7 +6,7 @@ icon: material/license
 
 !!! heart "Let's keep it simple, short and fair!"
 
-All projects have their own licenses. Code is often [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0){:target="_blank"} and shaders [**CC BY-SA 4.0**](https://creativecommons.org/licenses/by-sa/4.0/deed.en){:target="_blank"}, but you must always look at the project's repository and website page for proper details!
+All projects have their own licenses. Code is often [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0) and shaders [**CC BY-SA 4.0**](https://creativecommons.org/licenses/by-sa/4.0/deed.en), but you must always look at the project's repository and website page for proper details!
 
 - **I only ask** to not abuse my years of work, {++✅ let's grow together++}
 - **For my integrity**[^integrity], I may change this page at any time
@@ -19,7 +19,7 @@ All projects have their own licenses. Code is often [**AGPLv3**](https://www.tld
 
 There are **no restrictions** on **private** use of any Software. {>>(personal projects, friends)<<}
 
-- No strings attached! It's [**free and open source software**](https://en.wikipedia.org/wiki/Free_and_open-source_software){:target="_blank"}.
+- No strings attached! It's [**free and open source software**](https://en.wikipedia.org/wiki/Free_and_open-source_software).
 - Be creative and have fun, study and modify as you like.
 
 !!! note "**Note:** Monetizing online content counts as [**commercial use**](#commercial-use)."
@@ -39,15 +39,15 @@ Non-profit educational use is **strongly** encouraged! {>>(academic, teaching)<<
 - It is my desire and goal for you to use the tools commercially!
 
 !!! heart annotate "Fairness makes the difference"
-    ✨ **If you valued** my work, [**donate**](site:about/sponsors){:target="_blank"} an amount that reflects how much it was **essential to your success** ✨
+    ✨ **If you valued** my work, [**donate**](site:about/sponsors) an amount that reflects how much it was **essential to your success** ✨
 
     - These tools took years to learn and develop; and always ongoing improvements and maintenance
     - **Remember**: I provide professional, high quality tools for free (1)
 
 1.  You have **locally run, free alternatives** for:
-    - Services like [**ImmersityAI**](https://www.immersity.ai/){:target="_blank"}: $0.50 per video
-    - Services like [**Specterr**](https://specterr.com/pricing/){:target="_blank"}: $75.00 per month
-    - [**Synthesia**](https://synthesiagame.com/){:target="_blank"}: One time $40.00 payment
+    - Services like [**ImmersityAI**](https://www.immersity.ai/): $0.50 per video
+    - Services like [**Specterr**](https://specterr.com/pricing/): $75.00 per month
+    - [**Synthesia**](https://synthesiagame.com/): One time $40.00 payment
 
 ### 🔵 Business
 
@@ -60,7 +60,7 @@ Non-profit educational use is **strongly** encouraged! {>>(academic, teaching)<<
 
 ## Code license
 
-The license of choice is the [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0){:target="_blank"}. It's a strong copyleft[^copyleft] license that ensures the software remains **free and open source** for all users • commercial use is allowed.
+The license of choice is the [**AGPLv3**](https://www.tldrlegal.com/license/gnu-affero-general-public-license-v3-agpl-3-0). It's a strong copyleft[^copyleft] license that ensures the software remains **free and open source** for all users • commercial use is allowed.
 
 [^copyleft]: It's the opposite of _copyright!_ ba dum tss 😅
 
@@ -72,7 +72,7 @@ This choice can be controversial, here's my thoughts:
 - ShaderFlow and derived projects can easily be hosted as a **SaaS**. The "Affero" clause ensures no bad actors can take advantage of the software without contributing back.
 - It can be a blocker for some businesses, get in touch for further discussion.
 
-**I plan on relicensing to [MIT](https://www.tldrlegal.com/license/mit-license){:target="_blank"} in the future**, the [**contributions**](#contributions) terms are a step towards that.
+**I plan on relicensing to [MIT](https://www.tldrlegal.com/license/mit-license) in the future**, the [**contributions**](#contributions) terms are a step towards that.
 
 - Some of my projects like [**TurboPipe**](https://github.com/BrokenSource/TurboPipe) are under **MIT**, and I use many packages under it!
 - [**Support**](site:/about/sponsors) my work to achieve that faster, I believe the projects can be successful and sustainable in the future, just unsure on the amount of support in this early era 😅

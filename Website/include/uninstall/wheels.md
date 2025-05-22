@@ -6,7 +6,7 @@
             <tbody class="slim-table">
                 <tr>
                     <td style="width: 20%">:material-microsoft: Windows</td>
-                    <td><kbd>C:\\\\Users\\(...)\\AppData\\Local\\uv</kbd></td>
+                    <td><kbd>C:\\Users\\(...)\\AppData\\Local\\uv</kbd></td>
                 </tr>
                 <tr>
                     <td>:simple-apple: MacOS</td>
@@ -24,7 +24,7 @@
             <tbody class="slim-table">
                 <tr>
                     <td style="width: 20%">:material-microsoft: Windows</td>
-                    <td><kbd>C:\\\\Users\\(...)\\AppData\\Local\\pip</kbd></td>
+                    <td><kbd>C:\\Users\\(...)\\AppData\\Local\\pip</kbd></td>
                 </tr>
                 <tr>
                     <td>:simple-apple: MacOS</td>
@@ -42,7 +42,7 @@
             <tbody class="slim-table">
                 <tr>
                     <td style="width: 20%">:material-microsoft: Windows</td>
-                    <td><kbd>C:\\\\Users\\(...)\\AppData\\Local\\pypoetry</kbd></td>
+                    <td><kbd>C:\\Users\\(...)\\AppData\\Local\\pypoetry</kbd></td>
                 </tr>
                 <tr>
                     <td>:simple-apple: MacOS</td>
@@ -60,7 +60,7 @@
             <tbody class="slim-table">
                 <tr>
                     <td style="width: 20%">:material-microsoft: Windows</td>
-                    <td><kbd>C:\\\\Users\\(...)\\AppData\\Local\\pdm</kbd></td>
+                    <td><kbd>C:\\Users\\(...)\\AppData\\Local\\pdm</kbd></td>
                 </tr>
                 <tr>
                     <td>:simple-apple: MacOS</td>

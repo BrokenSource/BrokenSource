@@ -15,7 +15,7 @@ Your hardware _probably_ doesn't support rendering while there are mapped buffer
 
 :material-arrow-right: Fix: disable it on the `main` **command** as in `depthflow main (...) --no-turbo`
 
-> **Sidenote**: There's no easy way to detect support for it. [Most users](https://store.steampowered.com/hwsurvey/){:target="_blank"} have a decently modern GPU and the speed gains are too good to pass on, so it's enabled by default
+> **Sidenote**: There's no easy way to detect support for it. [Most users](https://store.steampowered.com/hwsurvey/) have a decently modern GPU and the speed gains are too good to pass on, so it's enabled by default
 
 <hr>
 

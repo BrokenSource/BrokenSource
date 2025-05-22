@@ -7,17 +7,16 @@ nav:
   - Home:
     - index.md
     - Special:
-      - ❓ Questions: about/faq.md
-      - ❤️ Sponsors: about/sponsors.md
-      - 🐳 Docker: get/containers.md
-      - ☁️ Cloud: get/cloud.md
+      - Questions: about/faq.md
+      - Sponsors: about/sponsors.md
+      - Docker: get/containers.md
+      - Cloud: get/cloud.md
     - About:
-      - 🛠️ Contribuing: about/contributing.md
-      - 🪵 Changelog: about/changelog.md
-      - 🧭 Roadmap: https://github.com/orgs/BrokenSource/projects/2
-      - 💬 Contact: about/contact.md
-      - ⚖️ License: about/license.md
-      - 🧾 Credits: about/credits.md
+      - Changelog: about/changelog.md
+      - Roadmap: https://github.com/orgs/BrokenSource/projects/2
+      - Contact: about/contact.md
+      - License: about/license.md
+      - Credits: about/credits.md
   - Insiders:
     - insiders/index.md
 theme:
