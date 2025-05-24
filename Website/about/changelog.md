@@ -1,3 +1,7 @@
+---
+icon: material/file-document-edit
+---
+
 <style>
     ul {margin-top:    2px !important;}
     li {margin-bottom: 2px !important;}

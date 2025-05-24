@@ -2,8 +2,6 @@
 icon: material/road-variant
 ---
 
-Redirecting to https://github.com/orgs/BrokenSource/projects/2
-
-<script>
-  window.location.replace("https://github.com/orgs/BrokenSource/projects/2")
-</script>
+<a class="md-button md-button--primary md-button--stretch" href="https://github.com/orgs/BrokenSource/projects/2">
+    Click here to see the Roadmap on GitHub Projects
+</a>

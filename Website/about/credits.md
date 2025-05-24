@@ -1,5 +1,6 @@
 ---
 title: About/Credits
+icon: material/recycle
 ---
 
 !!! warning "🚧 Work in Progress 🚧"
