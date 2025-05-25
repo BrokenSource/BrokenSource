@@ -2,6 +2,7 @@
 
 import os
 import time
+from pathlib import Path
 
 time.zero = time.perf_counter()
 """Precise time at which the program started since last boot"""
@@ -9,55 +10,42 @@ time.zero = time.perf_counter()
 time.absolute = (lambda: time.perf_counter() - time.zero)
 """Precise time since the program started running"""
 
-
 class Environment:
     """Utilities for managing environment variables"""
 
     def __new__(cls) -> None:
         raise TypeError(f"{cls.__name__} class cannot be instantiated")
 
-    @staticmethod
-    def set(key: str, value: str | None, /) -> None:
+    def get(key: str, default: str=None) -> str:
+        return os.getenv(key, default)
+
+    def set(key: str, value: str | None) -> None:
         if (value is not None):
             os.environ[key] = str(value)
-        elif (key in os.environ):
-            del os.environ[key]
+            return
+        Environment.pop(key)
 
-    @staticmethod
-    def append(key: str, value: str | None, /, pad: str=" ") -> None:
-        if (key not in os.environ):
-            Environment.set(key, value)
-        elif (value is not None):
-            os.environ[key] += pad + str(value)
-
-    @staticmethod
-    def setdefault(key: str, value: str | None, /) -> None:
+    def setdefault(key: str, value: str | None) -> None:
         if (value is not None):
             os.environ.setdefault(key, str(value))
 
-    @staticmethod
+    def pop(key: str) -> str:
+        return os.environ.pop(key, None)
+
     def update(**values: str | None) -> None:
         for key, value in values.items():
             Environment.set(key, value)
 
-    @staticmethod
-    def get(key: str, default: str=None, /) -> str:
-        return os.getenv(key, default)
-
-    @staticmethod
-    def exists(key: str, /) -> bool:
+    def exists(key: str) -> bool:
         return (key in os.environ)
 
-    @staticmethod
-    def int(key: str, default: int=0, /) -> int:
+    def int(key: str, default: int=0) -> int:
         return int(os.getenv(key, default))
 
-    @staticmethod
-    def float(key: str, default: float=1.0, /) -> float:
+    def float(key: str, default: float=1.0) -> float:
         return float(os.getenv(key, default))
 
-    @staticmethod
-    def bool(key: str, default: bool=False, /) -> bool:
+    def bool(key: str, default: bool=False) -> bool:
         value = str(os.getenv(key, default)).lower()
 
         if value in ("1", "true", "yes", "on"):
@@ -67,31 +55,36 @@ class Environment:
 
         raise ValueError(f"Invalid boolean value for environment variable '{key}': {value}")
 
-    @staticmethod
-    def flag(key: str, default: bool=False, /) -> bool:
+    def flag(key: str, default: bool=False) -> bool:
         return Environment.bool(key, default)
 
-    @staticmethod
-    def iflag(key: str, default: bool=False, /) -> bool:
+    def iflag(key: str, default: bool=False) -> bool:
         return (not Environment.flag(key, default))
 
-    @staticmethod
-    def unset(key: str, /) -> None:
-        os.unsetenv(key)
+    # # System PATH
+
+    def _abs_path(x: Path) -> Path:
+        return Path(x).expanduser().resolve().absolute()
+
+    def path() -> list[Path]:
+        return list(Path(x) for x in os.getenv("PATH", "").split(os.pathsep) if x)
+
+    def in_path(path: Path) -> bool:
+        return (Environment._abs_path(path) in Environment.path())
+
+    def add_to_path(path: Path, prepend: bool=True) -> None:
+        path = Environment._abs_path(path)
+        Environment.set("PATH", ''.join((
+            f"{path}{os.pathsep}" * (prepend),
+            Environment.get('PATH'),
+            f"{os.pathsep}{path}" * (not prepend),
+        )))
 
 import sys
-from pathlib import Path
 
 # Keep the repository clean of cache files by writing them to .venv
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
-
-# Warn if running unsupported Python versions
-if sys.version_info < (3, 10):
-    _current: str = f"{sys.version_info.major}.{sys.version_info.minor}"
-    sys.stderr.write(f"Warning: Python {_current} isn't officially supported and projects may break\n")
-    sys.stderr.write("→ Fix: Upgrade to at least Python 3.10 for guaranteed compatibility\n")
-    sys.stderr.write("→ See status of your version: (https://endoflife.date/python)\n")
 
 # Python <= 3.10 typing fixes
 if sys.version_info < (3, 11):
@@ -192,9 +185,6 @@ class Runtime:
     WSL: bool = Path("/usr/lib/wsl/lib").exists()
     """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
 
-    ZeroGPU: bool = Environment.bool("SPACES_ZERO_GPU")
-    """True if running inside a HuggingFace's ZeroGPU space (https://huggingface.co/docs/hub/spaces-zerogpu)"""
-
     Interactive: bool = sys.stdout.isatty()
     """True if running in an interactive terminal session (user can input)"""
 
@@ -214,8 +204,8 @@ class Tools:
 
 if Runtime.uvx:
     # Find venv from "~/.cache/uv/archive-v0/7x8klaYDn8Kd0GRTY-nYr/lib/python3.12/site-packages"
-    VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
-    Environment.setdefault("VIRTUAL_ENV", VIRTUAL_ENV)
+    _VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
+    Environment.setdefault("VIRTUAL_ENV", _VIRTUAL_ENV)
 
 # ---------------------------------------- Package exports --------------------------------------- #
 
@@ -291,10 +281,3 @@ BROKEN = BrokenProject(
 
 PROJECT: BrokenProject = BROKEN
 """The first BrokenProject initialized after (but including) BROKEN itself"""
-
-# ------------------------------------------------------------------------------------------------ #
-
-# Centralize models for easier uninstalling
-if Runtime.Installer:
-    Environment.setdefault("HF_HOME",    BROKEN.DIRECTORIES.EXTERNAL_MODELS/"HuggingFace")
-    Environment.setdefault("TORCH_HOME", BROKEN.DIRECTORIES.EXTERNAL_MODELS/"PyTorchHub")

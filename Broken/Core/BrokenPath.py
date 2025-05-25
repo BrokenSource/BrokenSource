@@ -400,68 +400,20 @@ class BrokenPath(StaticClass):
         if ARCHIVE:
             file = BrokenPath.extract(file, echo=echo)
 
-        return BrokenPath.add_to_path(path=file, recurse=True, echo=echo)
+        for item in file.rglob("*"):
+            if item.is_dir():
+                Environment.add_to_path(item)
+
+        return file
 
     def which(name: str) -> Optional[Path]:
         BrokenPath.update_externals_path()
         return BrokenPath.get(shutil.which(name))
 
     def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
-        path = (path or Broken.BROKEN.DIRECTORIES.EXTERNALS)
-        return BrokenPath.add_to_path(path, recurse=True, echo=echo)
-
-    def on_path(path: Path) -> bool:
-        """Check if a path is on PATH, works with symlinks"""
-        return (Path(path) in map(Path, Environment.get("PATH", "").split(os.pathsep)))
-
-    def add_to_path(
-        path: Path,
-        *,
-        recurse: bool=False,
-        prepend: bool=True,
-        echo: bool=True
-    ) -> Path:
-        """
-        Add a path, recursively or not, to System's Path or this Python process's Path
-
-        Args:
-            recurse: Also add all subdirectories of the given path
-            preferential: Prepends the path for less priority on system binaries
-
-        Returns:
-            The Path argument itself
-        """
-        original = path = BrokenPath.get(path)
-
-        if (path.is_file()):
-            path = path.parent
-            recurse = False
-
-        # Can't recurse on non existing directories
-        if (not path.exists()) and recurse:
-            return path
-
-        log.debug(f"Adding to Path (Recursively: {recurse}): ({path})", echo=echo)
-
-        for other in list(path.rglob("*") if recurse else []) + [path]:
-
-            # Skip conditions
-            if other.is_file():
-                continue
-            if BrokenPath.on_path(other):
-                continue
-
-            # Actual logic
-            if prepend:
-                log.debug(f"• Prepending: ({other})", echo=echo)
-                Environment.set("PATH", str(other) + os.pathsep + Environment.get("PATH"))
-                sys.path.insert(0, str(other))
-            else:
-                log.debug(f"• Appending: ({other})", echo=echo)
-                Environment.set("PATH", Environment.get("PATH") + os.pathsep + str(other))
-                sys.path.append(str(other))
-
-        return original
+        for item in (path := (path or Broken.BROKEN.DIRECTORIES.EXTERNALS)).rglob("*"):
+            if item.is_dir(): Environment.add_to_path(item)
+        return path
 
     @staticmethod
     def directories(path: Union[Path, Iterable]) -> Iterable[Path]:

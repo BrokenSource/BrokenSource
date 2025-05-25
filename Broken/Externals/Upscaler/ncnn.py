@@ -15,6 +15,7 @@ from Broken import (
     BrokenPath,
     BrokenPlatform,
     BrokenTyper,
+    Environment,
     denum,
     every,
     log,
@@ -234,8 +235,8 @@ class Upscayl(UpscalerNCNN_Base):
 
     def download(self) -> Path:
         if BrokenPlatform.OnLinux:
-            BrokenPath.add_to_path("/opt/Upscayl/resources/bin") # Ubuntu package
-            BrokenPath.add_to_path("/opt/upscayl/bin") # Arch Linux
+            Environment.add_to_path("/opt/Upscayl/resources/bin") # Ubuntu package
+            Environment.add_to_path("/opt/upscayl/bin") # Arch Linux
         return UpscalerNCNN_Base.download(self)
 
     @field_validator("scale", mode="plain")
