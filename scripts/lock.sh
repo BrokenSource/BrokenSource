@@ -1,5 +1,15 @@
 #!/bin/bash
 cd "$(dirname "$0")/.."
-sed -i 's/"meta/# "meta/' pyproject.toml
+
+# Sync all but private packages
+sed -i 's/"meta/# "meta/g' pyproject.toml
 uv sync --all-packages
-sed -i 's/# "meta/"meta/' pyproject.toml
+sed -i 's/# "meta/"meta/g' pyproject.toml
+
+# Stage current lock, do not track changes
+git update-index --no-assume-unchanged uv.lock
+git add uv.lock
+git update-index --assume-unchanged uv.lock
+
+# Sync private packages
+uv sync --all-packages

@@ -25,9 +25,9 @@ class BrokenHook(MetadataHookInterface):
                     item = f"{package}=={version}"
 
                 # Pin versions on release binaries
-                if (os.environ.get("PYAKET_RELEASE", "0") == "1"):
-                    item = item.replace("~=", "==")
-                    item = item.replace(">=", "==")
+                if (os.getenv("PYAKET_RELEASE", "0") == "1"):
+                    for pin in ("~=", ">=", "<="):
+                        item = item.replace(pin, "==")
 
                 items[x] = item
 

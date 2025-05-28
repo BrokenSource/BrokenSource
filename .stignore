@@ -1,7 +1,6 @@
-
 # [Syncthing](https://syncthing.net/) Ignore file
-# Nested use: `#include BrokenSource/.stignore`
-# Or un-stage .stignore removal in git
+# Nested use: `#include BrokenSource/.stignore`,
+#   or un-stage .stignore removal in git
 
 # Common
 **/.cache
