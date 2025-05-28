@@ -1,15 +1,15 @@
 [submodule "Projects/DepthFlow"]
-	path = Projects/DepthFlow
+	path = projects/DepthFlow
 	url  = https://github.com/BrokenSource/DepthFlow
 [submodule "Projects/Pianola"]
-	path = Projects/Pianola
+	path = projects/Pianola
 	url  = https://github.com/BrokenSource/Pianola
+[submodule "Projects/Pyaket"]
+	path = projects/Pyaket
+	url  = https://github.com/BrokenSource/Pyaket
 [submodule "Projects/ShaderFlow"]
-	path = Projects/ShaderFlow
+	path = projects/ShaderFlow
 	url  = https://github.com/BrokenSource/ShaderFlow
 [submodule "Projects/SpectroNote"]
-	path = Projects/SpectroNote
+	path = projects/SpectroNote
 	url  = https://github.com/BrokenSource/SpectroNote
-[submodule "Projects/Pyaket"]
-	path = Projects/Pyaket
-	url  = https://github.com/BrokenSource/Pyaket

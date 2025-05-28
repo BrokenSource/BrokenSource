@@ -1,9 +1,8 @@
 {
 	"folders": [
-		{"name": "ShaderFlow",  "path": "Projects/ShaderFlow"},
-		{"name": "DepthFlow",   "path": "Projects/DepthFlow"},
-		{"name": "Insiders",    "path": "Meta/Insiders"},
-		{"name": "Pyaket",      "path": "Projects/Pyaket"},
+		{"name": "ShaderFlow",  "path": "projects/ShaderFlow"},
+		{"name": "DepthFlow",   "path": "projects/DepthFlow"},
+		{"name": "Pyaket",      "path": "projects/Pyaket"},
 		{"name": "Code",        "path": "."},
 	],
 
@@ -35,96 +34,73 @@
 		"editor.minimap.maxColumn": 100,
 
 		// Custom icons assossiations
+		"material-icon-theme.folders.associations": {
+			".cargo":      "config",
+			".venvs":      "python",
+			"about":       "other",
+			"archium":     "tools",
+			"blog":        "log",
+			"blueprints":  "tools",
+			"broken":      "src",
+			"cargo":       "tools",
+			"cloud":       "aws",
+			"community":   "shared",
+			"default":     "examples",
+			"depthflow":   "tools",
+			"externals":   "core",
+			"factorium":   "tools",
+			"fastcutter":  "tools",
+			"ffmpeg":      "core",
+			"fork":        "less",
+			"fragment":    "shader",
+			"get":         "download",
+			"insiders":    "secure",
+			"learn":       "other",
+			"loaders":     "core",
+			"meta":        "context",
+			"midis":       "audio",
+			"news":        "log",
+			"optional":    "include",
+			"overrides":   "other",
+			"papers":      "log",
+			"pianola":     "tools",
+			"profile":     "admin",
+			"pyaket":      "tools",
+			"quick":       "other",
+			"rust":        "src",
+			"scenes":      "core",
+			"shaderflow":  "tools",
+			"soundfonts":  "audio",
+			"spectronote": "tools",
+			"staging":     "temp",
+			"tremeschin":  "home",
+			"turbopipe":   "tools",
+			"upscaler":    "core",
+			"upscalin":    "tools",
+			"user":        "home",
+			"vertex":      "shader",
+			"wheels":      "python",
+			"workspace":   "container",
+		},
 		"material-icon-theme.files.associations": {
 			".stignore": "credits"
-		},
-		"material-icon-theme.folders.associations": {
-
-			// Common website directories
-			"Overrides": "other",
-			"Learn": "other",
-			"Quick": "other",
-			"Cloud": "aws",
-
-			// Rust
-			"Rust": "src",
-			"Cargo": "tools",
-			".cargo": "config",
-
-			// Python
-			".venvs": "python",
-			"Wheels": "python",
-			"Imgui":  "tools",
-
-			// Project's Workspace
-			"Workspace":  "container",
-			"Externals":  "core",
-			"Scenes":     "core",
-			"User":       "home",
-			"Premium":    "admin",
-			"Default":    "examples",
-			"Community":  "shared",
-			"Prompts":    "log",
-			"Papers":     "log",
-			"Staging":    "temp",
-			"Midis":      "audio",
-			"Midi":       "audio",
-			"SoundFonts": "audio",
-			"Profile":    "admin",
-			"Fork":       "less",
-			"Vectron":    "core",
-
-			// Website
-			"get":   "download",
-			"blog":  "log",
-			"news":  "log",
-			"about": "other",
-
-			// Shaders
-			"Fragment": "shader",
-			"Vertex":   "shader",
-
-			// Projects
-			"Broken":      "src",
-			"Meta":        "context",
-			"Insiders":    "secure",
-			"DepthFlow":   "tools",
-			"ShaderFlow":  "tools",
-			"Archium":     "tools",
-			"Upscalin":    "tools",
-			"Pyaket":      "tools",
-			"Pianola":     "tools",
-			"SpectroNote": "tools",
-			"FastCutter":  "tools",
-			"TurboPipe":   "tools",
-			"Factorium":   "tools",
-
-			// Sub-packages of Broken
-			"FFmpeg":   "core",
-			"Loaders":  "core",
-			"Upscaler": "core",
-			"Optional": "include",
-
-			// Personal
-			"Tremeschin": "home",
-			"Blueprints": "tools",
 		},
 
 		// Better comments colors
 		"better-comments.tags": [
+			{"tag": "//",           "color": "#98C379"},
+			{"tag": "debug",        "color": "#FCC203"},
 			{"tag": "error",        "color": "#FF2D00"},
 			{"tag": "fixme",        "color": "#3498DB"},
-			{"tag": "warn",         "color": "#FCC203"},
-			{"tag": "todo",         "color": "#FF8C00"},
-			{"tag": "note",         "color": "#584576"},
-			{"tag": "//",           "color": "#98C379"},
-			{"tag": "nice",         "color": "#00FF00"},
-			{"tag": "idea",         "color": "#B10DC9"},
 			{"tag": "hack",         "color": "#FF2D00"},
+			{"tag": "idea",         "color": "#B10DC9"},
 			{"tag": "info",         "color": "#3498DB"},
-			{"tag": "debug",        "color": "#FCC203"},
+			{"tag": "nice",         "color": "#00FF00"},
+			{"tag": "note",         "color": "#584576"},
+			{"tag": "optimization", "color": "#3498DB"},
+			{"tag": "todo",         "color": "#FF8C00"},
+			{"tag": "warn",         "color": "#FCC203"},
 			{"tag": "workaround",   "color": "#3498DB"},
-			{"tag": "optimization", "color": "#3498DB"}
 		],
 
 		// It's not like screens are small anymore
@@ -137,11 +113,6 @@
 			{
 				"label": "get-insiders",
 				"command": ["uv", "run", "broken", "insiders"],
-				"type": "shell",
-			},
-			{
-				"label": "mkdocs-serve",
-				"command": ["uv", "run", "mkdocs", "serve"],
 				"type": "shell",
 			},
 		]

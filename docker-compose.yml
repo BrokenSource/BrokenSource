@@ -7,13 +7,13 @@ services:
     pull_policy: never
     build:
       context: .
-      dockerfile: Docker/broken-base.dockerfile
+      dockerfile: docker/broken-base.dockerfile
       args:
         TORCH_VERSION: ${TORCH_VERSION:-2.6.0}
         TORCH_FLAVOR: ${TORCH_FLAVOR:-cpu}
 
     volumes:
-      # - ./Docker/Workspace:/root/.local/share/BrokenSource
+      # - ./docker/workspace:/root/.local/share/brokensrc
       - /usr/lib/wsl:/usr/lib/wsl
 
     # Docker "--gpus all"
@@ -26,8 +26,8 @@ services:
               count: all
 
     # Podman "--gpus all"
-    devices:
-      - nvidia.com/gpu=all
+    # devices:
+    #   - nvidia.com/gpu=all
 
   # Sanity checks, assertions
 
@@ -36,7 +36,7 @@ services:
     pull_policy: never
     build:
       context: .
-      dockerfile: Docker/glinfo.dockerfile
+      dockerfile: docker/glinfo.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -48,7 +48,7 @@ services:
     pull_policy: never
     build:
       context: .
-      dockerfile: Docker/shaderflow.dockerfile
+      dockerfile: docker/shaderflow.dockerfile
     depends_on:
       - broken-base
     <<: *common
@@ -58,7 +58,7 @@ services:
     pull_policy: never
     build:
       context: .
-      dockerfile: Docker/depthflow.dockerfile
+      dockerfile: docker/depthflow.dockerfile
     depends_on:
       - broken-base
     ports:

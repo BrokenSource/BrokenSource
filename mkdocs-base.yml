@@ -1,10 +1,10 @@
 site_author: Tremeschin
-site_dir: Build/Website
-docs_dir: Website
+site_dir: build/website
+docs_dir: website
 copyright: © CC BY-SA 4.0, <a href="https://github.com/Tremeschin/">Tremeschin</a> 🇧🇷
 theme:
   name: material
-  custom_dir: Website/overrides
+  custom_dir: website/overrides
   font:
     text: Roboto
     code: Cascadia Code
@@ -60,7 +60,7 @@ plugins:
   #   draft: true
   gen-files:
     scripts:
-      - Website/make.py
+      - website/make.py
   social:
     cards_layout_options:
       font_family: Rubik
@@ -141,7 +141,7 @@ markdown_extensions:
     linenums: false
   pymdownx.inlinehilite: {}
   pymdownx.snippets:
-    base_path: [Website]
+    base_path: [website]
   pymdownx.superfences: {}
   pymdownx.emoji:
     emoji_index: !!python/name:material.extensions.emoji.twemoji

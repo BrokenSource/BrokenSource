@@ -2,16 +2,15 @@
 # Common
 **/.cache
 **/.venv
-**/Build
-**/Private
-**/Playground
-**/Release
-**/Workspace
+**/build
+**/private
+**/target
+**/release
+**/workspace
 **/*.pyc
-**/*.lock
 
 # Non-syncthing
 **/.stfolder
 **/.nomedia
 **/*.env
-**/Meta
+**/meta

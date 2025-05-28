@@ -19,3 +19,4 @@ jobs:
 
       - name: Make Website
         run: uv run mkdocs gh-deploy --force --no-history
+        # working-directory: projects/${{github.event.repository.name}}

@@ -3,20 +3,20 @@
 **/.cache
 **/.venv
 **/.git
-**/Build
-**/Private
-**/Release
-**/Workspace
+**/build
+**/private
+**/release
+**/target
+**/workspace
 **/*.pyc
 
 # Non-syncthing
 **/.stfolder
 **/.nomedia
 **/*.env
-**/Meta
+**/meta
 
 # Docker
-**/.github
 **/.vscode
 **/.dockerfile
-**/Website
+**/website

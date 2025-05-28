@@ -6,11 +6,11 @@
 # Common
 **/.cache
 **/.venv
-**/Build
-**/Release
-**/Workspace
+**/build
+**/release
+**/target
+**/workspace
 **/*.pyc
-**/*.lock
 
 # Syncthing
 **/node_modules
