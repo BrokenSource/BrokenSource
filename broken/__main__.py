@@ -17,7 +17,6 @@ from broken import (
     log,
     shell,
 )
-from broken.core.profiler import profiler
 from broken.manager import ProjectManager
 
 
@@ -174,7 +173,6 @@ class BrokenManager(ProjectManager):
 
 # ------------------------------------------------------------------------------------------------ #
 
-@profiler("broken")
 def main():
     manager = BrokenManager()
     manager.cli(*sys.argv[1:])

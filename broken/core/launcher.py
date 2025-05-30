@@ -12,7 +12,6 @@ from attr import Factory, define
 
 from broken import Environment, Runtime, log
 from broken.core import BrokenAttrs
-from broken.core.profiler import profiler
 from broken.core.project import BrokenProject
 from broken.core.typerx import BrokenTyper
 
@@ -25,9 +24,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
     def __post__(self):
         self.cli.should_shell()
         self.cli.description = self.PROJECT.ABOUT
-
-        with profiler(self.PROJECT.APP_NAME):
-            self.main()
+        self.main()
 
     @abstractmethod
     def main(self) -> None:
