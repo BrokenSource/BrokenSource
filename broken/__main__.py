@@ -8,7 +8,6 @@ from typer import Argument, Option
 from broken import (
     BROKEN,
     BrokenPath,
-    BrokenProfiler,
     BrokenTorch,
     Environment,
     PlatformEnum,
@@ -18,6 +17,7 @@ from broken import (
     log,
     shell,
 )
+from broken.core.profiler import profiler
 from broken.manager import ProjectManager
 
 
@@ -174,10 +174,10 @@ class BrokenManager(ProjectManager):
 
 # ------------------------------------------------------------------------------------------------ #
 
+@profiler("broken")
 def main():
-    with BrokenProfiler("BROKEN"):
-        manager = BrokenManager()
-        manager.cli(*sys.argv[1:])
+    manager = BrokenManager()
+    manager.cli(*sys.argv[1:])
 
 if __name__ == "__main__":
     main()

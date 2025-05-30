@@ -11,11 +11,11 @@ nav:
     - Contact: about/contact.md
     - License: about/license.md
   # - Projects:
-    # - ShaderFlow: ...
+  #   - ShaderFlow: projects/shaderflow.md
   # - Questions: about/faq.md
   # - Sponsors: about/sponsors.md
-  - Insiders:
-    - insiders/index.md
+  # - Insiders:
+  #   - insiders/index.md
 theme:
   logo: resources/images/broken.png
   favicon: resources/images/broken.png

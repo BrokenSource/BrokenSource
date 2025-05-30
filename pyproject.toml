@@ -50,7 +50,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.7.7",
+    "uv~=0.7.9",
 ]
 shaderflow = [
     "broken-source[extra]",
@@ -109,8 +109,8 @@ dev = [
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
     # Staging
-    "ollama~=0.4.8",
     "yt-dlp~=2025.5.22",
+    "ollama~=0.5.0",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",
 ]

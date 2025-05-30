@@ -357,10 +357,13 @@ class BrokenTyper:
                 self.prehook()
                 self.app(sys.argv[1:])
                 self.posthook()
+
             except SystemExit:
                 log.trace(f"Skipping SystemExit on {type(self)}")
+
             except KeyboardInterrupt:
                 log.ok(f"{type(self)} exit KeyboardInterrupt")
+
             except Exception as error:
                 if (not self.shell):
                     raise error

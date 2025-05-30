@@ -1,63 +1,60 @@
+import contextlib
 import tempfile
 from pathlib import Path
 from typing import Any, Self
 
-from attr import define
+from attr import define, field
 
-from broken import BrokenEnum, Environment, log
+from broken import Environment
 from broken.core import shell
 
 
 @define
-class BrokenProfiler:
-    name: str = "NONE"
-
-    class Profiler(BrokenEnum):
-        cprofile      = "cprofile"
-        # imports       = "imports"
-        # pyinstrument  = "pyinstrument"
-
-    profiler: Profiler = Profiler.cprofile
+class profiler:
+    name: str = field(converter=str.upper)
 
     @property
-    def label(self) -> str:
+    def _name(self) -> str:
         return self.name.upper()
-
-    def __attrs_post_init__(self):
-        profiler = Environment.get(f"{self.label}_PROFILER", self.profiler)
-        self.profiler = self.Profiler.get(profiler)
 
     @property
     def enabled(self) -> bool:
-        return Environment.flag(f"{self.label}_PROFILE", 0)
+        return Environment.flag(f"{self._name}_PROFILE", 0)
+
+    @property
+    def profiler(self) -> str:
+        return Environment.get(f"{self._name}_PROFILER", "cprofile").lower()
 
     @property
     def output(self) -> Path:
-        return Path(tempfile.gettempdir())/f"{self.label}.prof"
+        return Path(tempfile.gettempdir())/f"{self._name}.prof"
 
-    __profiler__: Any = None
+    _profiler: Any = None
+
+    def __call__(self, method) -> Any:
+        def wrapper(*a, **k):
+            with self:
+                return method(*a, **k)
+        return wrapper
 
     def __enter__(self) -> Self:
         if (not self.enabled):
             pass
-        elif (self.profiler == self.Profiler.cprofile):
-            log.trace("Profiling with cProfile")
+        elif (self.profiler == "cprofile"):
             import cProfile
-            self.__profiler__ = cProfile.Profile()
-            self.__profiler__.enable()
+            self._profiler = cProfile.Profile()
+            self._profiler.enable()
+        else:
+            raise ValueError(f"Unknown profiler: {self.profiler}")
         return self
 
     def __exit__(self, *args) -> None:
         if (not self.enabled):
             return None
-
-        if (self.profiler == self.Profiler.cprofile):
-            log.trace("Finishing cProfile")
-            output = self.output.with_suffix(".prof")
-            self.__profiler__.disable()
-            self.__profiler__.dump_stats(output)
-            try:
-                shell("snakeviz", output)
-            except KeyboardInterrupt:
-                pass
-            output.unlink()
+        if (self.profiler == "cprofile"):
+            self._profiler.disable()
+            self._profiler.dump_stats(self.output)
+            with contextlib.suppress(KeyboardInterrupt):
+                shell("snakeviz", self.output)
+            with contextlib.suppress(Exception):
+                self.output.unlink()

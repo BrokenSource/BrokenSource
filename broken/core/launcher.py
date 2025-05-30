@@ -12,7 +12,7 @@ from attr import Factory, define
 
 from broken import Environment, Runtime, log
 from broken.core import BrokenAttrs
-from broken.core.profiler import BrokenProfiler
+from broken.core.profiler import profiler
 from broken.core.project import BrokenProject
 from broken.core.typerx import BrokenTyper
 
@@ -26,7 +26,7 @@ class BrokenLauncher(ABC, BrokenAttrs):
         self.cli.should_shell()
         self.cli.description = self.PROJECT.ABOUT
 
-        with BrokenProfiler(self.PROJECT.APP_NAME):
+        with profiler(self.PROJECT.APP_NAME):
             self.main()
 
     @abstractmethod
