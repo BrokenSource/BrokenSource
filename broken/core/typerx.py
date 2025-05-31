@@ -241,7 +241,7 @@ class BrokenTyper:
         return BrokenTyper(
             help=False,
             description = (
-                "[bold orange3]Note:[/] The default command is implicit when args are directly passed\n\n"
+                "[bold orange3]Note:[/] The default command is implicit when no other is given directly\n\n"
                 "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
             )
         ).should_shell()

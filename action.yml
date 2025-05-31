@@ -23,4 +23,4 @@ runs:
       run: uv sync --all-packages
 
     - name: Get workflow options
-      run: uv run python ./Broken/Version.py >> $GITHUB_ENV
+      run: uv run ./broken/version.py >> $GITHUB_ENV
