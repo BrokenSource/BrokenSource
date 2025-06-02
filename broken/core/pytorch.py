@@ -141,7 +141,7 @@ class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
     CPU     = TorchRelease.TORCH_270_CPU
     MACOS   = TorchRelease.TORCH_270_MACOS
-    CUDA124 = TorchRelease.TORCH_270_CUDA_126
+    CUDA126 = TorchRelease.TORCH_270_CUDA_126
     CUDA128 = TorchRelease.TORCH_270_CUDA_128
     ROCM    = TorchRelease.TORCH_270_ROCM_630
     XPU     = TorchRelease.TORCH_270_XPU
