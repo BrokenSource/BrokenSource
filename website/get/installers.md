@@ -1,6 +1,6 @@
 
 !!! danger "The v0.8 executables are old <small>(October 2024)</small>, prefer [wheels](site:/get/wheels) until a [new release](https://github.com/BrokenSource/BrokenSource/issues/27) is made."
-    Months of improvements and changes were made ever since
+    Months of improvements and changes were made ever since, sorry for the inconvenience.
 
 !!! abstract ""
     === ":material-microsoft: Windows"

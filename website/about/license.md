@@ -15,7 +15,7 @@ All projects have their own licenses. Code is often [**AGPLv3**](https://www.tld
 
 ## Usage
 
-### 🔴 Personal
+### Personal
 
 There are **no restrictions** on **private** use of any Software. {>>(personal projects, friends)<<}
 
@@ -24,37 +24,34 @@ There are **no restrictions** on **private** use of any Software. {>>(personal p
 
 !!! note "**Note:** Monetizing online content counts as [**commercial use**](#commercial-use)."
 
-### 🟡 Educational
+### Educational
 
 Non-profit educational use is **strongly** encouraged! {>>(academic, teaching)<<}
 
 - My long term goal is to learn and have fun with technology.
 - Share your knowledge and inspire others.
 
-### 🟢 Commercial
+### Commercial
 
-**Here's the dilema:** {==If I were against commercial use, I wouldn't use it myself as a user==}
+:material-arrow-right: **Here's the dilema:** {==If I were against commercial use, I wouldn't use it myself as a user.==}
 
-- My mission is to empower you, and make awesome tools to the world.
-- It is my desire and goal for you to use the tools commercially!
+But at the same time, the development must be financially sustainable to make sense. For that reason, commercial usage requires an appropriate [sponsorship](https://github.com/sponsors/Tremeschin/) tier, which is a small fraction of the revenue you generate with the software. No need to pay upfront, do your thing and then come back to support the project if you've found success with it!
 
-!!! heart annotate "Fairness makes the difference"
-    ✨ **If you valued** my work, [**donate**](site:about/sponsors) an amount that reflects how much it was **essential to your success** ✨
+- These tools took years to learn and develop; ongoing improvements and maintenance
+- **Remember**: I provide professional, high quality tools for cheap (1)
+{.annotate}
 
-    - These tools took years to learn and develop; and always ongoing improvements and maintenance
-    - **Remember**: I provide professional, high quality tools for free (1)
+    1.  You have **locally run, free alternatives** for:
+        - Services like [**ImmersityAI**](https://www.immersity.ai/): $0.50 per video
+        - Services like [**Specterr**](https://specterr.com/pricing/): $75.00 per month
+        - [**Synthesia**](https://synthesiagame.com/): One time $40.00 payment
 
-1.  You have **locally run, free alternatives** for:
-    - Services like [**ImmersityAI**](https://www.immersity.ai/): $0.50 per video
-    - Services like [**Specterr**](https://specterr.com/pricing/): $75.00 per month
-    - [**Synthesia**](https://synthesiagame.com/): One time $40.00 payment
-
-### 🔵 Business
+### Business
 
 **Interested** in powering your current or future business, need support in anything?
 
-- ⭐️ **Join Forces**: I miss the infra and marketing, {++you now have the product++}
-- 🚀 [**Get in touch**](site:about/contact) with me, let's shred the competition together!
+- **Join Forces**: I miss the infra and marketing, {++you now have the product++}
+- [**Get in touch**](site:about/contact) with me, let's shred the competition together!
 
 <br>
 

@@ -12,7 +12,7 @@ icon: material/file-document-edit
 !!! example ""
     - Cooking!
 
-### 📦 v0.9.0 <small>Jine 2, 2025</small> {#0.9.0}
+### 📦 v0.9.0 <small>June 2, 2025</small> {#0.9.0}
 
 !!! success ""
     - Fix FFmpeg automatic downloads on macOS (missing chmod)

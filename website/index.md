@@ -5,32 +5,13 @@ title: Landing Page
 <div id="tsparticles"></div>
 
 <div align="center">
-  <a href="https://brokensrc.dev"><img src="https://github.com/BrokenSource.png" width="200" height="200"></a>
-  <h1 style="margin-top: 0">Broken Source Software</h1>
-  I'm an <b>Open-Source Developer</b> dedicated on making <b>Useful Niched Software</b>
-  <h6>My mission is simple: Give as much power to all my users as possible</h6>
+  <h1>🚧 Under Maintenance 🚧</h1>
 </div>
-!!! success "🚀 **Convenience:** You're probably looking for the [**Installation Guide**](get/index.md)"
 
-## ✅ Suggestions
+:material-arrow-right: I'm currently splitting the website into multiple parts, one subdomain for each project, then find a way to link them all together and overhaul the landing page - things might be _broken!_
 
-⭐️ Learn about my projects:
+- [x] Don't worry, the previous content is being migrated over, with new links below.
 
-- [**DepthFlow**](site:/depthflow): Images to → 3D parallax effect video
-- [**ShaderFlow**](site:/shaderflow): Audio reactive shader render engine
-- [**Pianola**](site:/pianola): World's smoothest piano roll, spring physics
-- [**SpectroNote**](site:/spectronote): Unlock a hidden perfect pitch in you
-
-<hr>
-
-💬 Join the [**Community**](site:/about/contact) servers on **Discord** and **Telegram**
-
-<hr>
-
-❤️ [**Join my Sponsors**](site:/about/sponsors), so I can continue **Open Source** work
-
-<hr>
-
-⚖️ Learn about my [**Copyleft Licensing**](site:/about/license) and intentions
-
-<hr>
+- [**DepthFlow**](https://depth.brokensrc.dev/): Images to → 3D parallax effect video.
+- [**ShaderFlow**](https://shaders.brokensrc.dev): Audio reactive shader render engine.
+- [**Pianola**](https://pianola.brokensrc.dev): World's smoothest piano roll, spring physics.

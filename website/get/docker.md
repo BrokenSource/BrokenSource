@@ -6,6 +6,15 @@ icon: material/docker
 <!--
 <b><span class="the">D</span>ocker</b> is a platform for containerization of software, easy deployment and scalability. The main problem for running the projects on Docker is getting OpenGL acceleration to work, as the focus of it are compute workloads or services.
 
+There are *quite a lot* of combinations in hardware[^1], platform and intention to use it, and guides like this can only go so far, and focuses on getting OpenGL working.
+
+[^1]: Untested on AMD Radeon, Intel iGPU, Intel ARC. Your mileage may vary, here be dragons !
+
+??? warning "**Docker can't open native GUIs** on the Host OS • The intended usage are:"
+    - Implementing a backend _e.g._ with [**FastAPI**](https://fastapi.tiangolo.com)
+    - Serving and acessing a [**Gradio**](https://www.gradio.app) web page
+    - Isolation, security or **Headless** usage
+
 ## Installation
 
 ### Docker
