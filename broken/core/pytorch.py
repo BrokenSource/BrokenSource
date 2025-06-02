@@ -220,8 +220,10 @@ class BrokenTorch:
     def docker() -> Iterable[TorchRelease]:
         """Versions to build docker images for"""
         # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
-        yield TorchRelease.TORCH_260_CUDA_124
-        yield TorchRelease.TORCH_260_CPU
+        # We'll target newest cuda versions for the latest consumer GPUs, even if servers
+        # are often on older versions, as they can start off 'cpu' and override torch
+        yield TorchRelease.TORCH_270_CUDA_128
+        yield TorchRelease.TORCH_270_CPU
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
