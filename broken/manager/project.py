@@ -217,6 +217,8 @@ class ProjectManager:
     projects: set[CodeProject] = Factory(set)
 
     def find_projects(self, path: Path, depth: int=2):
+        if not path.exists():
+            return
         if (depth <= 0):
             return
         for path in (path, *Path(path).iterdir()):
