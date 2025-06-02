@@ -56,8 +56,8 @@ class BrokenTyper:
     """No args is help"""
 
     credits: str = (
-        f"• Made by [green][link=https://github.com/Tremeschin]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
-        "[italic grey53]→ Consider [blue][link=https://brokensrc.dev/about/sponsors/]Supporting[/link][/blue] my work [red]:heart:[/]"
+        f"• Made by [green][link=https://github.com/Tremeschin/]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
+        "[italic grey53]→ Consider [blue][link=https://github.com/sponsors/Tremeschin/]Supporting[/link][/blue] my work [red]:heart:[/]"
     )
 
     def __attrs_post_init__(self):

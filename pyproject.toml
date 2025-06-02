@@ -1,11 +1,11 @@
 [project.urls]
-GitHub    = "https://github.com/BrokenSource/BrokenSource"
-Changelog = "https://brokensrc.dev/about/changelog"
-Funding   = "https://brokensrc.dev/about/sponsors"
-Contact   = "https://brokensrc.dev/about/contact"
-Download  = "https://brokensrc.dev/get/releases"
-Docs      = "https://brokensrc.dev/broken"
-Homepage  = "https://brokensrc.dev"
+Funding   = "https://github.com/sponsors/Tremeschin/"
+GitHub    = "https://github.com/BrokenSource/BrokenSource/"
+Changelog = "https://brokensrc.dev/about/changelog/"
+Contact   = "https://brokensrc.dev/about/contact/"
+Download  = "https://brokensrc.dev/get/releases/"
+Docs      = "https://brokensrc.dev/broken/"
+Homepage  = "https://brokensrc.dev/"
 
 [tool.hatch.version]
 path = "broken/version.py"
