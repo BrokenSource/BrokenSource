@@ -68,10 +68,11 @@ class BrokenMkdocs:
 
     def virtual_readme(self):
         """Copy the repository readme to a root index.md"""
-        self.virtual(path="index.md", data='\n'.join((
-            '<div id="tsparticles"></div>',
-            (self.repository/"readme.md").read_text("utf-8")
-        )))
+        if not (self.website/"index.md").exists():
+            self.virtual(path="index.md", data='\n'.join((
+                '<div id="tsparticles"></div>',
+                (self.repository/"readme.md").read_text("utf-8")
+            )))
 
     def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
         """Create a virtual file in the docs_dir (can be overriden by a real)"""
