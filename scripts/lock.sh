@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 
 # Sync all but private packages
 sed -i 's/"meta/# "meta/g' pyproject.toml
-uv sync --all-packages
+uv sync --all-packages --upgrade
 # uv export --all-packages --no-dev -o pylock.toml > /dev/null
 # uv export --all-packages --no-dev -o requirements.txt --no-annotate --no-hashes > /dev/null
 sed -i 's/# "meta/"meta/g' pyproject.toml
