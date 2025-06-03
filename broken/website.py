@@ -70,6 +70,7 @@ class BrokenMkdocs:
         """Copy the repository readme to a root index.md"""
         if not (self.website/"index.md").exists():
             self.virtual(path="index.md", data='\n'.join((
+                '---', 'title: Home', '---',
                 '<div id="tsparticles"></div>',
                 (self.repository/"readme.md").read_text("utf-8")
             )))
