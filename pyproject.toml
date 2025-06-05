@@ -51,7 +51,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.7.9",
+    "uv~=0.7.11",
 ]
 shaderflow = [
     "broken-source[extra]",
@@ -82,7 +82,7 @@ gradio = [
     "transformers~=4.52.4",
     "fastapi~=0.115.12",
     # Note: Avoid 5.24 ~ 5.27
-    "gradio~=5.32.1",
+    "gradio~=5.33.0",
 ]
 
 [dependency-groups]

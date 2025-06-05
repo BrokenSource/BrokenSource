@@ -7,16 +7,10 @@ services:
       context: .
       dockerfile: docker/broken-base.dockerfile
       args: &args
-        FEATURE_OPENGL:   ${FEATURE_OPENGL:-0}
-        FEATURE_VULKAN:   ${FEATURE_VULKAN:-0}
-        FEATURE_PULSE:    ${FEATURE_PULSE:-0}
-        FEATURE_FFMPEG:   ${FEATURE_FFMPEG:-0}
-        FEATURE_UPSCAYL:  ${FEATURE_UPSCAYL:-0}
-        FEATURE_DEPTHMAP: ${FEATURE_DEPTHMAP:-0}
-        FEATURE_TORCH:    ${FEATURE_TORCH:-0}
-        TORCH_VERSION:    ${TORCH_VERSION:-2.7.0}
-        TORCH_FLAVOR:     ${TORCH_FLAVOR:-cpu}
-        EDITABLE:         ${EDITABLE:-0}
+        TORCH_VERSION: ${TORCH_VERSION:-2.7.0}
+        TORCH_FLAVOR:  ${TORCH_FLAVOR:-cpu}
+        EDITABLE:      ${EDITABLE:-0}
+
     volumes:
       # - ./docker/workspace:/root/.local/share/BrokenSource
       - /usr/lib/wsl:/usr/lib/wsl
@@ -31,8 +25,8 @@ services:
               count: all
 
     # Podman "--gpus all"
-    # devices:
-    #   - nvidia.com/gpu=all
+    devices:
+      - nvidia.com/gpu=all
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -40,6 +34,9 @@ services:
     image: broken-base:pyaket
     build:
       args:
+        UV_SYNC: "--package pyaket"
+        FEATURE_COMPILER: 1
+        FEATURE_RUST:     1
         <<: *args
       <<: *build
 
@@ -47,7 +44,7 @@ services:
     image: pyaket:latest
     pull_policy: never
     build:
-      dockerfile: projects/Pyaket/dockerfile
+      dockerfile: docker/pyaket.dockerfile
     depends_on:
       - _pyaket
 
@@ -76,6 +73,7 @@ services:
     image: broken-base:shaderflow
     build:
       args:
+        UV_SYNC: "--package shaderflow"
         FEATURE_OPENGL: 1
         FEATURE_PULSE:  1
         FEATURE_FFMPEG: 1
@@ -97,6 +95,7 @@ services:
     build:
       dockerfile: docker/broken-base.dockerfile
       args:
+        UV_SYNC: "--package depthflow"
         FEATURE_OPENGL:   1
         FEATURE_VULKAN:   1
         FEATURE_PULSE:    1
