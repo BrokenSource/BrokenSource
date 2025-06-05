@@ -3,6 +3,7 @@
 **/.cache
 **/.venv
 **/build
+**/dist
 **/private
 **/target
 **/release

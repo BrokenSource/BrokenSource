@@ -1,4 +1,4 @@
-FROM broken-base
+FROM broken-base:glinfo
 LABEL org.opencontainers.image.title="OpenGL Diagnosis"
 RUN apt install -y mesa-utils xvfb
 CMD echo "-------------------------------------------------------------------------------" && \

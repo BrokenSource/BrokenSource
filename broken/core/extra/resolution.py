@@ -8,7 +8,7 @@ from broken import log
 class BrokenResolution:
 
     @staticmethod
-    def round(*numbers: Number, multiple: int=2) -> Union[int, tuple[int, ...]]:
+    def nearest(*numbers: Number, multiple: int=2) -> Union[int, tuple[int, ...]]:
         """Round to the nearest multiple of 2, returns a single value or a tuple of values"""
         values = tuple(max(multiple, multiple*round(value/multiple)) for value in numbers)
         return (values[0] if (len(values) == 1) else values)
@@ -107,18 +107,18 @@ class BrokenResolution:
             width  = min(width,  max_width or math.inf)
             height = min(height, max_height or math.inf)
 
-        return cls.round(width*scale, height*scale, multiple=multiple)
+        return cls.nearest(width*scale, height*scale, multiple=multiple)
 
 # ------------------------------------------------------------------------------------------------ #
 
 class __PyTest__:
     def test_round(self):
-        assert BrokenResolution.round(100) == 100
-        assert BrokenResolution.round(2.5) == 2
-        assert BrokenResolution.round(3.2) == 4
-        assert BrokenResolution.round(1920, 1080)   == (1920, 1080)
-        assert BrokenResolution.round(1921, 1080.0) == (1920, 1080)
-        assert BrokenResolution.round(1921.5, 1080) == (1922, 1080)
+        assert BrokenResolution.nearest(100) == 100
+        assert BrokenResolution.nearest(2.5) == 2
+        assert BrokenResolution.nearest(3.2) == 4
+        assert BrokenResolution.nearest(1920, 1080)   == (1920, 1080)
+        assert BrokenResolution.nearest(1921, 1080.0) == (1920, 1080)
+        assert BrokenResolution.nearest(1921.5, 1080) == (1922, 1080)
 
     def test_keep_nothing(self):
         assert BrokenResolution.fit(old=(1920, 1080)) == (1920, 1080)

@@ -6,6 +6,7 @@
 **/.cache
 **/.venv
 **/build
+**/dist
 **/release
 **/target
 **/workspace

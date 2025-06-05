@@ -4,6 +4,7 @@
 **/.venv
 **/.git
 **/build
+**/dist
 **/private
 **/release
 **/target
