@@ -288,6 +288,7 @@ def shell(
     kwargs["env"] = os.environ | (env or {})
     kwargs["shell"] = shell
 
+    # Inject preexec_fn to use a random core
     if single_core:
         def _single_core():
             import os
@@ -302,12 +303,13 @@ def shell(
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
         log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
+    # Actually run the command
     if (output):
         return subprocess.check_output(args, **kwargs).decode("utf-8")
     if (Popen):
         return subprocess.Popen(args, **kwargs)
-
-    return subprocess.run(args, **kwargs)
+    else:
+        return subprocess.run(args, **kwargs)
 
 
 def apply(

@@ -12,7 +12,10 @@ services:
         EDITABLE:      ${EDITABLE:-0}
 
     volumes:
-      # - ./docker/workspace:/root/.local/share/BrokenSource
+      - ./docker/workspace:/root/.local/share/BrokenSource
+      - ./docker/app:/app
+
+      # Nvidia drivers on Windows
       - /usr/lib/wsl:/usr/lib/wsl
 
     # Docker "--gpus all"

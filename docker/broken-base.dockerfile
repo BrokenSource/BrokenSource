@@ -75,18 +75,10 @@ FROM opengl-${FEATURE_OPENGL} AS vulkan-1
         /usr/share/vulkan/icd.d/nvidia_icd.json
 
 # ------------------------------------------------------------------------------------------------ #
-# Build essential and MinGW toolchain
-
-FROM vulkan-${FEATURE_VULKAN} AS compiler-0
-FROM vulkan-${FEATURE_VULKAN} AS compiler-1
-    RUN apt install -y build-essential
-    RUN apt install -y mingw-w64
-
-# ------------------------------------------------------------------------------------------------ #
 # Rust toolchain and common targets
 
-FROM compiler-${FEATURE_COMPILER} AS rust-0
-FROM compiler-${FEATURE_COMPILER} AS rust-1
+FROM vulkan-${FEATURE_VULKAN} AS rust-0
+FROM vulkan-${FEATURE_VULKAN} AS rust-1
     RUN apt install -y curl
     RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
     ENV PATH="/root/.cargo/bin:$PATH"
@@ -98,10 +90,18 @@ FROM compiler-${FEATURE_COMPILER} AS rust-1
     RUN rustup target add aarch64-apple-darwin
 
 # ------------------------------------------------------------------------------------------------ #
+# Build essential and MinGW toolchain
+
+FROM rust-${FEATURE_RUST} AS compiler-0
+FROM rust-${FEATURE_RUST} AS compiler-1
+    RUN apt install -y build-essential
+    RUN apt install -y gcc-mingw-w64-x86-64
+
+# ------------------------------------------------------------------------------------------------ #
 # SoundCard needs libpulse.so and server
 
-FROM rust-${FEATURE_RUST} AS pulse-0
-FROM rust-${FEATURE_RUST} AS pulse-1
+FROM compiler-${FEATURE_COMPILER} AS pulse-0
+FROM compiler-${FEATURE_COMPILER} AS pulse-1
     RUN apt install -y pulseaudio && \
         adduser root pulse-access
 
@@ -194,4 +194,3 @@ FROM monorepo-${FEATURE_MONOREPO} AS development-1
 # Finished image
 
 FROM development-${EDITABLE} AS final
-
