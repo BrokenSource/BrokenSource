@@ -3,7 +3,6 @@ INCLUDE ./docker/include/base.dockerfile
 INCLUDE ./docker/include/uv.dockerfile
 INCLUDE ./docker/include/opengl.dockerfile
 INCLUDE ./docker/include/vulkan.dockerfile
-INCLUDE ./docker/include/pulse.dockerfile
 INCLUDE ./docker/include/ffmpeg.dockerfile
 INCLUDE ./docker/include/upscayl.dockerfile
 INCLUDE ./docker/include/depthmap.dockerfile
