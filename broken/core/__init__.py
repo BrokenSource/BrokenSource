@@ -486,6 +486,13 @@ def install(*,
 
 def combinations(**options: Any) -> Iterable[DotMap]:
     """Returns a dictionary of key='this' of itertools.product"""
+
+    # Replace non-iterable None to yield None
+    for key, value in options.items():
+        if not bool(value):
+            options[key] = [None]
+
+    # Main implementation
     for items in itertools.product(*options.values()):
         yield DotMap(zip(options.keys(), items))
 

@@ -1,6 +1,6 @@
 services:
 
-  broken-base: &common
+  _common: &common
     image: broken-base:local
     pull_policy: never
     build: &build
@@ -12,8 +12,6 @@ services:
         EDITABLE:      ${EDITABLE:-0}
 
     volumes:
-      - ./docker/workspace:/root/.local/share/BrokenSource
-      - ./docker/app:/app
 
       # Nvidia drivers on Windows
       - /usr/lib/wsl:/usr/lib/wsl
@@ -33,88 +31,38 @@ services:
 
 # ------------------------------------------------------------------------------------------------ #
 
-  _pyaket:
-    image: broken-base:pyaket
-    build:
-      args:
-        UV_SYNC: "--package pyaket"
-        FEATURE_COMPILER: 1
-        FEATURE_RUST:     1
-        <<: *args
-      <<: *build
-
-  pyaket:
-    image: pyaket:latest
-    pull_policy: never
-    build:
-      dockerfile: docker/pyaket.dockerfile
-    depends_on:
-      - _pyaket
-
-# ------------------------------------------------------------------------------------------------ #
-
-  _glinfo:
-    image: broken-base:glinfo
-    build:
-      args:
-        FEATURE_OPENGL:   1
-        FEATURE_MONOREPO: 0
-        <<: *args
-      <<: *build
-
   glinfo:
-    image: glinfo:latest
+    image: glinfo:local
     build:
       dockerfile: docker/glinfo.dockerfile
-    depends_on:
-      - _glinfo
+      args:
+        <<: *args
     <<: *common
 
-# ------------------------------------------------------------------------------------------------ #
-
-  _shaderflow:
-    image: broken-base:shaderflow
+  pyaket:
+    image: pyaket:local
     build:
+      dockerfile: docker/pyaket.dockerfile
       args:
-        UV_SYNC: "--package shaderflow"
-        FEATURE_OPENGL: 1
-        FEATURE_PULSE:  1
-        FEATURE_FFMPEG: 1
+        UV_SYNC: "--package pyaket"
         <<: *args
-      <<: *build
 
   shaderflow:
-    image: shaderflow:latest
+    image: shaderflow:local
     build:
       dockerfile: docker/shaderflow.dockerfile
-    depends_on:
-      - _shaderflow
+      args:
+        UV_SYNC: "--package shaderflow"
+        <<: *args
     <<: *common
 
-# ------------------------------------------------------------------------------------------------ #
-
-  _depthflow:
-    image: broken-base:depthflow
-    build:
-      dockerfile: docker/broken-base.dockerfile
-      args:
-        UV_SYNC: "--package depthflow"
-        FEATURE_OPENGL:   1
-        FEATURE_VULKAN:   1
-        FEATURE_PULSE:    1
-        FEATURE_FFMPEG:   1
-        FEATURE_UPSCAYL:  1
-        FEATURE_DEPTHMAP: 1
-        FEATURE_TORCH:    1
-        <<: *args
-      <<: *build
-
   depthflow:
-    image: depthflow:latest-${TORCH_FLAVOR:-cpu}
+    image: depthflow:local
     build:
       dockerfile: docker/depthflow.dockerfile
-    depends_on:
-      - _depthflow
+      args:
+        UV_SYNC: "--package depthflow"
+        <<: *args
     ports:
       - "7860:7860"
       - "8000:8000"

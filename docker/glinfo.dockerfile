@@ -1,4 +1,9 @@
-FROM broken-base:glinfo
+# syntax=devthefuture/dockerfile-x@sha256:263815a4cfdbfdd302e6c7f5d4147e43004f456b0566ac300bf8ae468a9458b1
+INCLUDE ./docker/include/base.dockerfile
+INCLUDE ./docker/include/opengl.dockerfile
+
+# ------------------------------------------------------------------------------------------------ #
+
 LABEL org.opencontainers.image.title="OpenGL Diagnosis"
 RUN apt install -y mesa-utils xvfb
 CMD echo "-------------------------------------------------------------------------------" && \

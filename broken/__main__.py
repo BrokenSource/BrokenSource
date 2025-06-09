@@ -2,13 +2,16 @@ import sys
 from pathlib import Path
 from typing import Annotated
 
+import yaml
 from attr import define
+from dotmap import DotMap
 from typer import Argument, Option
 
 from broken import (
     BROKEN,
     BrokenPath,
     BrokenTorch,
+    denum,
     Environment,
     PlatformEnum,
     Tools,
@@ -103,36 +106,46 @@ class BrokenManager(ProjectManager):
 
     def docker(self,
         push:  Annotated[bool, Option("--push",  "-p", help="Push built images to GHCR")]=False,
-        clean: Annotated[bool, Option("--clean", "-c", help="Remove local images after pushing")]=False,
+        clean: Annotated[bool, Option("--clean", "-c", help="Remove local built images")]=False,
+        regex: Annotated[str,  Option("--regex", "-r", help="Filter images by regex match")]="",
     ) -> None:
         """🐳 Build and push docker images for all projects"""
         from broken.core.pytorch import BrokenTorch
+        import re
 
-        for build in combinations(
-            base_image=["ubuntu:24.04"],
-            torch=BrokenTorch.docker(),
-        ):
-            # Warn: Must use same env vars as in docker-compose.yml
-            Environment.set("BASE_IMAGE",    build.base_image)
-            Environment.set("TORCH_VERSION", build.torch.number)
-            Environment.set("TORCH_FLAVOR",  build.torch.flavor)
-            shell("docker", "compose", "build")
+        # Read the monorepo docker compose file
+        compose: Path = (BROKEN.DIRECTORIES.REPOSITORY/"docker-compose.yml")
+        compose: dict = DotMap(yaml.safe_load(compose.read_text()))
 
-            # Assumes all dockerfiles were built by docker compose, fails ok otherwise
-            for dockerfile in BROKEN.DIRECTORIES.REPO_DOCKER.glob("*.dockerfile"):
-                image:  str = dockerfile.stem
-                latest: str = f"{image}:latest"
-                flavor: str = build.torch.flavor
+        # Iterate on all specified images
+        for image, data in compose.services.items():
+            local: str = f"{image}:local"
 
-                # Tag a latest and versioned flavored images, optional push
-                for tag in (f"latest-{flavor}", f"{__version__}-{flavor}"):
-                    final: str = f"ghcr.io/brokensource/{image}:{tag}"
-                    shell("docker", "tag",  latest, final)
-                    shell("docker", "push", final,  skip=(not push))
-                    shell("docker", "rmi",  final,  skip=(not clean))
+            # Filter wanted images
+            if image.startswith("_"):
+                continue
+            elif not re.match(regex, image):
+                continue
 
-                # No need for generic latest image
-                shell("docker", "rmi", latest)
+            # Iterate on multiple releases
+            for build in combinations(
+                torch=list(BrokenTorch.docker())*(image in ["depthflow"]),
+            ):
+                # Note: Must use same as in images ARGs
+                Environment.set("TORCH_FLAVOR", build.torch and build.torch.flavor)
+
+                # Complex build the final image name
+                final = '-'.join(filter(None, (
+                    f"ghcr.io/brokensource/{image}:{__version__}",
+                    (build.torch and build.torch.flavor),
+                )))
+
+                # Compose build doesn't follow depends_on, but the gods have sent us a trick!
+                shell("docker", "compose", "build", image)
+                shell("docker", "tag",  local, final)
+                shell("docker", "push", final, skip=(not push))
+                shell("docker", "rmi",  final, skip=(not clean))
+                shell("docker", "rmi",  local, skip=(not clean))
 
     def upgrade(self) -> None:
         """📦 Temporary solution to bump pyproject versions"""
