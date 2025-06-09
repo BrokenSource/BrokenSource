@@ -12,8 +12,5 @@ jobs:
       - uses: BrokenSource/BrokenSource@main
         name: Broken Setup
 
-      - name: Login to ghcr.io
-        run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{github.actor}} --password-stdin
-
       - name: Build and push images
         run: uv run broken docker --push --clean --regex depthflow

@@ -132,7 +132,8 @@ class BrokenManager(ProjectManager):
                 torch=list(BrokenTorch.docker())*(image in ["depthflow"]),
             ):
                 # Note: Must use same as in images ARGs
-                Environment.set("TORCH_FLAVOR", build.torch and build.torch.flavor)
+                Environment.set("TORCH_FLAVOR",  build.torch and build.torch.flavor)
+                Environment.set("TORCH_VERSION", build.torch and build.torch.number)
 
                 # Complex build the final image name
                 final = '-'.join(filter(None, (
