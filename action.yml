@@ -14,9 +14,6 @@ runs:
       run: git submodule foreach --recursive 'git checkout main || true'
       shell: bash
 
-    - name: Login to ghcr.io
-      run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{github.actor}} --password-stdin
-
     - name: Install uv
       uses: astral-sh/setup-uv@v6
       with:

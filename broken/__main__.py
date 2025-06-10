@@ -138,6 +138,7 @@ class BrokenManager(ProjectManager):
                 # Note: Must use same as in images ARGs
                 Environment.set("TORCH_FLAVOR",  build.torch and build.torch.flavor)
                 Environment.set("TORCH_VERSION", build.torch and build.torch.number)
+                Environment.set("COMPOSE_BAKE", "true")
 
                 # Complex build the final image name
                 final = '-'.join(filter(None, (
