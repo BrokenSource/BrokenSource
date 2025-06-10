@@ -1,23 +1,22 @@
 services:
 
-  _common: &common
-    image: broken-base:local
+  common: &common
     pull_policy: never
     build: &build
       context: .
-      dockerfile: docker/broken-base.dockerfile
+      dockerfile: docker/include/base.dockerfile
       args: &args
         TORCH_VERSION: ${TORCH_VERSION:-2.7.1}
         TORCH_FLAVOR:  ${TORCH_FLAVOR:-cpu}
         EDITABLE:      ${EDITABLE:-0}
 
-    volumes:
+    volumes: &volumes
 
       # Nvidia drivers on Windows
       - /usr/lib/wsl:/usr/lib/wsl
 
     # Docker "--gpus all"
-    deploy:
+    deploy: &deploy
       resources:
         reservations:
           devices:
@@ -26,7 +25,7 @@ services:
               count: all
 
     # Podman "--gpus all"
-    devices:
+    devices: &devices
       - nvidia.com/gpu=all
 
 # ------------------------------------------------------------------------------------------------ #

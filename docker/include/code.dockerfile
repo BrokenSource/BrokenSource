@@ -17,8 +17,11 @@ ARG EDITABLE="0"
 # RUN --mount=type=cache,target=/root/.cache/uv \
 #     uv sync --inexact --no-dev --all-extras ${UV_SYNC}
 
+
 # Clone the latest commited code
-RUN apt install -y git
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt install -y git
 RUN git clone --recurse-submodules --jobs 4 "${REPOSITORY}" ./clone && \
     cp -r ./clone/. . && rm -rf ./clone && \
     git submodule foreach --recursive 'git checkout main || true' && \

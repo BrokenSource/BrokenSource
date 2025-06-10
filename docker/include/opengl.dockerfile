@@ -15,7 +15,9 @@ ENV LD_LIBRARY_PATH="/usr/lib/wsl/lib"
 ENV WINDOW_BACKEND="headless"
 
 # Add libEGL ICD loaders and libraries
-RUN apt install -y libglvnd0 libglvnd-dev libegl1-mesa-dev && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt install -y libglvnd0 libglvnd-dev libegl1-mesa-dev && \
     mkdir -p /usr/share/glvnd/egl_vendor.d && \
     echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}' > \
     /usr/share/glvnd/egl_vendor.d/10_nvidia.json

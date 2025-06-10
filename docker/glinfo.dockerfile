@@ -5,7 +5,9 @@ INCLUDE ./docker/include/opengl.dockerfile
 # ------------------------------------------------------------------------------------------------ #
 
 LABEL org.opencontainers.image.title="OpenGL Diagnosis"
-RUN apt install -y mesa-utils xvfb
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt install -y mesa-utils xvfb --no-install-recommends --no-install-suggests
 CMD echo "-------------------------------------------------------------------------------" && \
     echo "Make sure you are running docker with '--gpus all' or defining it on compose"    && \
     echo "-------------------------------------------------------------------------------" && \

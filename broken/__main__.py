@@ -11,6 +11,7 @@ from broken import (
     BROKEN,
     BrokenPath,
     BrokenTorch,
+    Runtime,
     denum,
     Environment,
     PlatformEnum,
@@ -117,6 +118,9 @@ class BrokenManager(ProjectManager):
         compose: Path = (BROKEN.DIRECTORIES.REPOSITORY/"docker-compose.yml")
         compose: dict = DotMap(yaml.safe_load(compose.read_text()))
 
+        # Optimization: Parallel build images
+        shell("docker", "compose", "build", skip=bool(regex) or Runtime.GitHub)
+
         # Iterate on all specified images
         for image, data in compose.services.items():
             local: str = f"{image}:local"
@@ -144,9 +148,9 @@ class BrokenManager(ProjectManager):
                 # Compose build doesn't follow depends_on, but the gods have sent us a trick!
                 shell("docker", "compose", "build", image)
                 shell("docker", "tag",  local, final)
+                shell("docker", "rmi",  local)
                 shell("docker", "push", final, skip=(not push))
                 shell("docker", "rmi",  final, skip=(not clean))
-                shell("docker", "rmi",  local, skip=(not clean))
 
     def upgrade(self) -> None:
         """📦 Temporary solution to bump pyproject versions"""
