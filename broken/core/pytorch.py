@@ -190,24 +190,20 @@ class SimpleTorch(BrokenEnum):
         table.add_column("Size", style="dim", justify="right")
         table.add_column("Notes", style="dim")
 
-        # Table rows
-        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.value.flavor, "6.5 GB",
-            "Latest consumer GPUs, recommended option")
-        table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.value.flavor, "4.8 GB",
-            "For older drivers, mainly servers")
-
-        # Hoping one day ROCm solves their issues..
+        # Note: Sizes are the total size after installing (1) on an empty environment, and may vary across versions slightly.
+        # (1): `uv pip install torch --index-url https://download.pytorch.org/whl/{flavor} --python-platform {linux,windows}`
         if BrokenPlatform.OnWindows:
-            table.add_row("[red]Radeon[/]", "[red]ROCm[/]", "-", "-",
-                "Not supported yet (https://pytorch.org/)")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.value.flavor, "5.9 GB", "Latest consumer GPUs, recommended option")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.value.flavor, "5.5 GB", "For older drivers, mainly servers")
+            table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   "-",                                   "-", "Not supported yet (https://pytorch.org/)")
+            table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.value.flavor,     "3.5 GB", "Desktop Arc or Integrated Graphics")
+            table.add_row("-",                "CPU",            SimpleTorch.CPU.value.flavor,     "1.3 GB", "Slow but most compatible, small models")
         elif BrokenPlatform.OnLinux:
-            table.add_row("[red]Radeon[/]", "[red]ROCm[/]", SimpleTorch.ROCM.value.flavor, "18.0 GB",
-                "Check GPU support, override GFX if needed")
-
-        table.add_row("[blue]Intel[/]", "[blue]XPU[/]", SimpleTorch.XPU.value.flavor, "6.0 GB",
-            "Desktop Arc or Integrated Graphics")
-        table.add_row("-", "CPU", "cpu", "0.7 GB",
-            "Slow but most compatible, small models")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.value.flavor, "6.5 GB", "Latest consumer GPUs, recommended option")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.value.flavor, "5.5 GB", "For older drivers, mainly servers")
+            table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   SimpleTorch.ROCM.value.flavor,   "23.3 GB", "Check GPU support, override GFX if needed")
+            table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.value.flavor,     "3.0 GB", "Desktop Arc or Integrated Graphics")
+            table.add_row("-",                "CPU",            SimpleTorch.CPU.value.flavor,     "0.7 GB", "Slow but most compatible, small models")
 
         # Display the table
         console = get_console()

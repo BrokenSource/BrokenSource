@@ -1,5 +1,5 @@
 
-# FFmpeg for video/audio processing
+# Get a BtbN release, bonus points it comes with FFprobe
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt install -y curl tar xz-utils
