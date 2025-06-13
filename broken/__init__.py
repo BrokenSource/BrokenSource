@@ -14,7 +14,7 @@ class Environment:
     """Utilities for managing environment variables"""
 
     def __new__(cls) -> None:
-        raise TypeError(f"{cls.__name__} class cannot be instantiated")
+        raise TypeError(f"{cls.__name__} class shouldn't be instantiated")
 
     def get(key: str, default: str=None) -> str:
         return os.getenv(key, default)
