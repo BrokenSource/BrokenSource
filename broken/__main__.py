@@ -38,9 +38,9 @@ class BrokenManager(ProjectManager):
         with self.cli.panel("📦 Development"):
             self.cli.command(self.docker)
             self.cli.command(self.pypi)
-            self.cli.command(self.upgrade)
             self.cli.command(self.clean)
             self.cli.command(self.sync)
+            self.cli.command(self.link)
 
         self.cli.command(self.tremeschin, hidden=True)
 
@@ -153,11 +153,6 @@ class BrokenManager(ProjectManager):
                 shell("docker", "push", final, skip=(not push))
                 shell("docker", "rmi",  final, skip=(not clean))
 
-    def upgrade(self) -> None:
-        """📦 Temporary solution to bump pyproject versions"""
-        for project in self.projects:
-            project.update()
-
     def clean(self) -> None:
         """🧹 Remove pycaches, common blob directories"""
         root = BROKEN.DIRECTORIES.REPOSITORY
@@ -181,6 +176,10 @@ class BrokenManager(ProjectManager):
             for file in BrokenPath.files(dot_github.rglob("*")):
                 if (target := (project.path/file.relative_to(root))).exists():
                     BrokenPath.copy(file, target)
+
+    def link(self, path: Path) -> None:
+        """🔗 Link a project to the meta directory"""
+        BrokenPath.symlink(virtual=BROKEN.DIRECTORIES.REPO_META, real=path)
 
     def workflow_pyaket(self) -> None:
         for project in self.projects:

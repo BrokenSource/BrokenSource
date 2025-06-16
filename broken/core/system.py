@@ -133,12 +133,10 @@ class PlatformEnum(str, BrokenEnum):
 
 
 class BrokenPlatform:
-    Arch: ArchEnum = ArchEnum.get(
-        platform.machine().lower())
+    Arch: ArchEnum = ArchEnum.get(platform.machine().lower())
     """The current machine's architecture"""
 
-    System: SystemEnum = SystemEnum.get(
-        platform.system().lower())
+    System: SystemEnum = SystemEnum.get(platform.system().lower())
     """The current machine's operating system"""
 
     Host: PlatformEnum = PlatformEnum.from_parts(System, Arch)
