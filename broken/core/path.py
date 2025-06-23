@@ -4,7 +4,6 @@ import functools
 import itertools
 import os
 import shutil
-import sys
 from collections.abc import Generator, Iterable
 from enum import Enum
 from pathlib import Path

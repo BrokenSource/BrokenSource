@@ -1,9 +1,9 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2025.5.28
+# Script version: 2025.6.23
 
 # This function reloads the "PATH" environment variable so that we can
-# find newly installed applications without re-executing the script.
+# find newly installed applications without re-executing the script
 function Reload-Path {
     $wingetPath  = $env:LocalAppData + "\Microsoft\WindowsApps"
     $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
@@ -11,20 +11,21 @@ function Reload-Path {
     $env:Path    = $machinePath + ";" + $userPath + ";" + $wingetPath
 }
 
-# Option to continue normally even on errors
+# Common function to ask the user to continue or exit
 function Ask-Continue {
     echo "`nPress Enter to continue normally, or Ctrl+C to exit"
     Read-Host
 }
 
-# Consistency in showing steps
+# Common function to separate steps in the output
 function Print-Step {
     echo "`n:: $args`n"
 }
 
-# This function immediately exits if Winget is found, else it tries to install it with
-# the official Microsoft docs 'Add-AppxPackage' method. If it still fails, it tries
-# to download the Appx package (.msibundle) and install it directly.
+# This function immediately exits if Winget is installed - Microsoft's official package manager.
+# - Most likely, you already have it on your system. As such, this function rarely runs fully
+# - Otherwise, it tries to install it with the official Microsoft docs 'Add-AppxPackage' method
+# - Still failing, it downloads the Appx package (.msibundle) to a temp file and install it
 function Have-Winget {
     Reload-Path
 
@@ -45,7 +46,7 @@ function Have-Winget {
         Print-Step "Downloading Winget installer, might take a while.."
 
         # Why tf does disabling progress bar yields 50x faster downloads????? https://stackoverflow.com/a/43477248
-        $msi="https://github.com/microsoft/winget-cli/releases/download/v1.10.340/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        $msi="https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         $tempFile = [System.IO.Path]::GetTempPath() + "\winget.msixbundle"
         $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -Uri $msi -OutFile $tempFile
@@ -67,6 +68,7 @@ function Have-Winget {
     }
 }
 
+# Ensure git is installed - to download the repository's code
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Print-Step "Git was not found, installing with Winget"
     Have-Winget
@@ -85,6 +87,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     winget upgrade --id Git.Git
 }
 
+# Ensure uv is installed - to manage python and its dependencies
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
     Print-Step "uv was not found, installing with Winget"
     Have-Winget
@@ -105,7 +108,7 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 
 # # Clone the Repositories, Install Python Dependencies on venv and Spawn a new Shell
 
-# Skip cloning
+# Skip cloning if already inside the repository
 if (-not (Test-Path -Path "broken")) {
     Print-Step "Cloning BrokenSource Repository and all Submodules"
     git clone https://github.com/BrokenSource/BrokenSource --recurse-submodules --jobs 4
