@@ -34,7 +34,6 @@ class BrokenProject:
     RESOURCES: _Resources = None
 
     def __attrs_post_init__(self):
-        BrokenLogging.set_project(self.APP_NAME)
 
         # Print version information and quit if requested
         if (list_get(sys.argv, 1) in ("--version", "-V")):
@@ -50,6 +49,7 @@ class BrokenProject:
             if (project is broken.BROKEN):
                 if (BrokenPlatform.Root and not Runtime.Docker):
                     log.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
+                BrokenLogging.set_project(self.APP_NAME)
                 broken.PROJECT = self
 
         # Convenience symlink the project's workspace
@@ -277,11 +277,11 @@ class _Resources:
 
     @property
     def ICON_PNG(self) -> Path:
-        return (self.IMAGES/f"logo.png")
+        return (self.IMAGES/"logo.png")
 
     @property
     def ICON_ICO(self) -> Path:
-        return (self.IMAGES/f"logo.ico")
+        return (self.IMAGES/"logo.ico")
 
     # # Shaders section
 
