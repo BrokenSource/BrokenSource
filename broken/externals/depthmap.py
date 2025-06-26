@@ -27,43 +27,13 @@ from broken import (
 )
 from broken.core.extra.loaders import LoadableImage, LoadImage
 from broken.core.extra.resolution import BrokenResolution
+from broken.core.vectron import Vectron
 from broken.externals import ExternalModelsBase, ExternalTorchBase
 from broken.types import MiB
 
 if TYPE_CHECKING:
     import diffusers
     import torch
-
-# ------------------------------------------------------------------------------------------------ #
-
-# Fixme: Better place?
-class _TempHelper:
-
-    @staticmethod
-    def normalize(
-        array: np.ndarray,
-        dtype: np.dtype=np.float32,
-        min: Optional[float]=None,
-        max: Optional[float]=None,
-    ) -> np.ndarray:
-
-        # Get the dtype information
-        info = (np.iinfo(dtype) if np.issubdtype(dtype, np.integer) else np.finfo(dtype))
-
-        # Optionally override target dtype min and max
-        min = (info.min if (min is None) else min)
-        max = (info.max if (max is None) else max)
-
-        # Work with float64 as array might be low precision
-        return np.interp(
-            x=array.astype(np.float64),
-            xp=(np.min(array), np.max(array)),
-            fp=(min, max),
-        ).astype(dtype)
-
-    @staticmethod
-    def image_hash(image: Union[ImageType, np.ndarray]) -> int:
-        return xxhash.xxh3_64_intdigest(image.tobytes())
 
 # ------------------------------------------------------------------------------------------------ #
 
@@ -103,7 +73,7 @@ class DepthEstimatorBase(
 
         # Uniquely identify the image and current parameters
         image = LoadImage(image).convert("RGB")
-        key: str = f"{hash(self)}{_TempHelper.image_hash(image)}"
+        key: str = f"{hash(self)}{Vectron.image_hash(image)}"
         key: int = xxhash.xxh3_64_intdigest(key)
 
         # Estimate if not on cache
@@ -113,7 +83,7 @@ class DepthEstimatorBase(
 
             # Estimate and convert to target dtype
             depth = self._estimate(image)
-            depth = _TempHelper.normalize(depth, dtype=self.np_dtype)
+            depth = Vectron.normalize(depth, dtype=self.np_dtype)
 
             # Save the array as a gzip compressed numpy file
             np.save(buffer := BytesIO(), depth, allow_pickle=False)
@@ -123,7 +93,7 @@ class DepthEstimatorBase(
             depth = np.load(BytesIO(gzip.decompress(depth)))
 
         # Optionally thicken the depth map array
-        depth = _TempHelper.normalize(depth, dtype=np.float32, min=0, max=1)
+        depth = Vectron.normalize(depth, dtype=np.float32, min=0, max=1)
         depth = (self._thicken(depth) if self.thicken else depth)
         return depth
 
@@ -156,7 +126,7 @@ class DepthEstimatorBase(
                     self.output = Path(self.input).with_suffix(".depth.png")
                 log.info(f"Estimating depthmap for {self.input}")
                 depth = self.estimate(image=self.input)
-                depth = _TempHelper.normalize(depth, dtype=self.dtype)
+                depth = Vectron.normalize(depth, dtype=self.dtype)
                 Image.fromarray(depth).save(self.output)
                 log.info(f"Depthmap saved to {self.output}")
 
@@ -200,6 +170,8 @@ class DepthAnythingBase(DepthEstimatorBase):
             depth = self._model(**inputs).predicted_depth
         return depth.squeeze(1).cpu().numpy()[0]
 
+# ------------------------------------------------------------------------------------------------ #
+
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
     type: Annotated[Literal["depthanything"], BrokenTyper.exclude()] = "depthanything"
@@ -213,6 +185,8 @@ class DepthAnythingV1(DepthAnythingBase):
         depth = gaussian_filter(input=depth, sigma=0.3)
         depth = maximum_filter(input=depth, size=5)
         return depth
+
+# ------------------------------------------------------------------------------------------------ #
 
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
