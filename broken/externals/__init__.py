@@ -8,11 +8,8 @@ from typing import TYPE_CHECKING, Any, Self
 
 from pydantic import ConfigDict, Field, PrivateAttr
 
-from broken import (
-    BrokenModel,
-    Environment,
-    SameTracker,
-)
+from broken import BrokenModel, Environment
+from broken.core.trackers import SameTracker
 
 if TYPE_CHECKING:
     import diffusers
@@ -41,7 +38,7 @@ class ExternalTorchBase(BrokenModel):
 
     def load_torch(self) -> None:
         """Install and inject torch in the caller's globals"""
-        from broken import BrokenTorch
+        from broken.core.pytorch import BrokenTorch
         BrokenTorch.install(exists_ok=True)
         torch = __import__("torch")
         inspect.currentframe().f_back.f_globals["torch"] = torch

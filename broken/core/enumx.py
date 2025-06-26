@@ -4,14 +4,14 @@ import functools
 from typing import Any, Optional, Self, Union
 
 import attrs
-from aenum import Flag, MultiValueEnum
+from aenum import MultiValueEnum
 
 
 class BrokenEnumBase:
 
     @classmethod
     @functools.cache
-    def get(cls, /,
+    def get(cls,
         value: Union[str, enum.Enum, Any],
         default: Any=None
     ) -> Optional[Self]:
@@ -101,9 +101,6 @@ class BrokenEnum(BrokenEnumBase, enum.Enum):
     ...
 
 class MultiEnum(BrokenEnumBase, MultiValueEnum):
-    ...
-
-class FlagEnum(BrokenEnumBase, Flag):
     ...
 
 # ------------------------------------------------------------------------------------------------ #

@@ -24,9 +24,8 @@ from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
 import rich
-from attr import Factory, define, field
+from attr import Factory, define
 from dotmap import DotMap
-from pydantic import BaseModel, ConfigDict, Field
 
 from broken import Environment, Runtime
 
@@ -574,84 +573,7 @@ class BrokenAttrs:
     def __post__(self) -> None:
         ...
 
-
-class BrokenModel(BaseModel):
-    """Pydantic model utilities"""
-    model_config = ConfigDict(
-        use_attribute_docstrings=True,
-    )
-
-    def model_post_init(self, __context):
-        for cls in reversed(type(self).mro()):
-            if method := cls.__dict__.get("__post__"):
-                method(self)
-
-    def __post__(self) -> None:
-        ...
-
-    def __hash__(self) -> int:
-        """Deterministic model hash, as hash() is random seeded"""
-        import xxhash
-        return xxhash.xxh3_64_intdigest(self.json(full=True))
-
-    # Serialization
-
-    def json(self, full: bool=True) -> str:
-        return self.model_dump_json(
-            exclude_defaults=(not full),
-            exclude_none=False
-        )
-
-    def dict(self, full: bool=True) -> dict:
-        return self.model_dump(
-            exclude_defaults=(not full),
-            exclude_none=False
-        )
-
-    def schema(self) -> dict:
-        return self.model_json_schema()
-
-    # Deserialization
-
-    @classmethod
-    def load(cls, data: Union[dict, str]) -> Self:
-        if isinstance(data, dict):
-            return cls.model_validate(data)
-        elif isinstance(data, str):
-            return cls.model_validate_json(data)
-        elif isinstance(data, cls):
-            return data
-        raise ValueError(f"Can't load from value of type {type(data)}")
-
-    def update(self, **data: Union[dict, str]) -> Self:
-        for (key, value) in data.items():
-            setattr(self, key, value)
-        return self
-
-    # Dict-like utilities
-
-    def keys(self) -> Iterable[str]:
-        yield from self.dict().keys()
-
-    def values(self) -> Iterable[Any]:
-        yield from self.dict().values()
-
-    def items(self) -> Iterable[tuple[str, Any]]:
-        yield from self.dict().items()
-
-    # Special
-
-    def reset(self) -> None:
-        for key, value in self.model_fields.items():
-            setattr(self, key, value.default)
-
-
-class FrozenHash(BaseModel):
-    hash: int = Field(0, exclude=True)
-
-    def __hash__(self):
-        self.hash = (self.hash or super().__hash__())
-        return self.hash
+from broken.core.model import BrokenModel, FrozenHash
 
 
 class BrokenAttribute(StaticClass):
@@ -814,31 +736,6 @@ class BrokenRelay:
     def __call__(self, *args, **kwargs):
         for callback in self._registry:
             callback(*args, **kwargs)
-
-
-@define
-class Patch:
-    file: Path = field(converter=Path)
-    replaces: dict[str, str] = field(factory=dict)
-    _original: str = None
-
-    def __attrs_post_init__(self):
-        self._original = self.file.read_text("utf-8")
-
-    def apply(self):
-        content = self._original
-        for key, value in self.replaces.items():
-            content = content.replace(key, value)
-        self.file.write_text(content, "utf-8")
-
-    def revert(self):
-        self.file.write_text(self._original, "utf-8")
-
-    def __enter__(self):
-        self.apply()
-    def __exit__(self, *args):
-        self.revert()
-
 
 class BrokenWatchdog(ABC):
 

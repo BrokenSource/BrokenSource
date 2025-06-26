@@ -1,6 +1,5 @@
 # pyright: reportMissingImports=false
 import copy
-import sys
 from abc import ABC, abstractmethod
 from io import BytesIO
 from pathlib import Path
@@ -26,9 +25,9 @@ from broken import (
     install,
     log,
 )
-from broken.externals import ExternalModelsBase, ExternalTorchBase
 from broken.core.extra.loaders import LoadableImage, LoadImage
 from broken.core.extra.resolution import BrokenResolution
+from broken.externals import ExternalModelsBase, ExternalTorchBase
 from broken.types import MiB
 
 if TYPE_CHECKING:

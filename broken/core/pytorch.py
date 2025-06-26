@@ -10,7 +10,7 @@ from typing import Annotated, Iterable, Optional, Union
 from packaging.version import Version
 from typer import Option
 
-from broken import BrokenCache, Environment, Runtime, Tools, log
+from broken import BrokenCache, Environment, Runtime, log
 from broken.core import denum, every, shell
 from broken.core.enumx import BrokenEnum
 from broken.core.system import BrokenPlatform
@@ -99,14 +99,15 @@ class TorchRelease(str, BrokenEnum):
 
     def install(self, reinstall: bool=False) -> subprocess.CompletedProcess:
         log.info(f"Installing PyTorch version ({self.value})")
-        return shell(
-            Tools.pip, "install", self.packages,
+        return shell(sys.executable, "-m", "uv",
+            "pip", "install", self.packages,
             every("--index-url", self.index),
             "--force-reinstall"*(reinstall)
         )
 
     def uninstall(self) -> subprocess.CompletedProcess:
-        return shell(Tools.pip, "uninstall", "--quiet", self.packages)
+        return shell(sys.executable, "-m", "uv",
+            "pip", "uninstall", self.packages)
 
     # # Release types
 

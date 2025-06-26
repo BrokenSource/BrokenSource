@@ -1,6 +1,7 @@
 # -------------------------------- General fixes, quality of life -------------------------------- #
 
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -80,9 +81,7 @@ class Environment:
             f"{os.pathsep}{path}" * (not prepend),
         )))
 
-import sys
-
-# Keep the repository clean of cache files by writing them to .venv
+# Keep the repository clean of bytecode cache files
 if (_venv := Path(__file__).parent.parent/".venv").exists():
     sys.pycache_prefix = str(_venv/"pycache")
 
@@ -112,7 +111,6 @@ Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 
 # Make telemetries opt-in instead of opt-out
 Environment.setdefault("HF_HUB_DISABLE_TELEMETRY", 1)
-Environment.setdefault("DO_NOT_TRACK", 1)
 
 # Pretty tracebacks, smart lazy installing
 if Environment.flag("RICH_TRACEBACK", 1):
@@ -127,7 +125,6 @@ if Environment.flag("RICH_TRACEBACK", 1):
 # --------------------------- Information about the release and version -------------------------- #
 
 import site
-import struct
 from importlib.metadata import Distribution
 from pathlib import Path
 
@@ -139,17 +136,6 @@ class Runtime:
 
     Version: str = __version__
     """The version of the Broken library, and subsequently all projects"""
-
-    # # Bitness
-
-    Bitness: int = (struct.calcsize("P") * 8)
-    """The word size of the Python interpreter (32, 64 bits)"""
-
-    Python32: bool = (Bitness == 32)
-    """True if running on a 32-bit Python interpreter"""
-
-    Python64: bool = (Bitness == 64)
-    """True if running on a 64-bit Python interpreter"""
 
     # # Runtime environments
 
@@ -188,18 +174,6 @@ class Runtime:
     Interactive: bool = sys.stdout.isatty()
     """True if running in an interactive terminal session (user can input)"""
 
-class Tools:
-    """Shortcuts to common tools and utilities"""
-
-    python: Path = Path(sys.executable)
-    """The current Python interpreter executable"""
-
-    uv: list[str, Path] = [python, "-m", "uv"]
-    """Entry point for the uv package manager (https://github.com/astral-sh/uv)"""
-
-    pip: list[str, Path] = [python, "-m", "uv", "pip"]
-    """Entry point for pip"""
-
 # ------------------------------------------------------------------------------------------------ #
 
 if Runtime.uvx:
@@ -218,12 +192,10 @@ from broken.core import (
     BrokenModel,
     BrokenRelay,
     BrokenSingleton,
-    BrokenWatchdog,
     DictUtils,
     FrozenHash,
     LazyImport,
     Nothing,
-    Patch,
     StaticClass,
     ThreadedStdin,
     apply,
@@ -249,26 +221,11 @@ from broken.core import (
     smartproxy,
     tempvars,
 )
-from broken.core.enumx import BrokenEnum, FlagEnum, MultiEnum
-from broken.core.launcher import BrokenLauncher
+from broken.core.enumx import BrokenEnum, MultiEnum
 from broken.core.path import BrokenPath
 from broken.core.project import BrokenProject
-from broken.core.pytorch import BrokenTorch, SimpleTorch, TorchRelease
-from broken.core.scheduler import BrokenScheduler, SchedulerTask
-from broken.core.system import (
-    ArchEnum,
-    BrokenPlatform,
-    PlatformEnum,
-    SystemEnum,
-)
-from broken.core.trackers import (
-    FileTracker,
-    OnceTracker,
-    PlainTracker,
-    SameTracker,
-)
+from broken.core.system import ArchEnum, BrokenPlatform, PlatformEnum, SystemEnum
 from broken.core.typerx import BrokenTyper
-from broken.core.worker import BrokenWorker
 
 # ------------------------------------------------------------------------------------------------ #
 

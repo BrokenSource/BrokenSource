@@ -10,17 +10,15 @@ from typer import Argument, Option
 from broken import (
     BROKEN,
     BrokenPath,
-    BrokenTorch,
-    Runtime,
-    denum,
     Environment,
     PlatformEnum,
-    Tools,
+    Runtime,
     __version__,
     combinations,
     log,
     shell,
 )
+from broken.core.pytorch import BrokenTorch
 from broken.manager import ProjectManager
 
 
@@ -84,7 +82,7 @@ class BrokenManager(ProjectManager):
     def insiders(self):
         """💎 Clone the Insiders repository (WIP, No content)"""
         self.clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
-        shell(Tools.uv, "sync", "--all-packages")
+        shell(sys.executable, "-m", "uv", "sync", "--all-packages")
 
     def tremeschin(self):
         Tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")
@@ -111,8 +109,9 @@ class BrokenManager(ProjectManager):
         regex: Annotated[str,  Option("--regex", "-r", help="Filter images by regex match")]="",
     ) -> None:
         """🐳 Build and push docker images for all projects"""
-        from broken.core.pytorch import BrokenTorch
         import re
+
+        from broken.core.pytorch import BrokenTorch
 
         # Read the monorepo docker compose file
         compose: Path = (BROKEN.DIRECTORIES.REPOSITORY/"docker-compose.yml")
