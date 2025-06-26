@@ -14,13 +14,13 @@ from broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
-    BrokenTyper,
     Environment,
     denum,
     every,
     log,
     shell,
 )
+from broken.core.typerx import BrokenTyper
 from broken.externals.upscaler import UpscalerBase
 
 

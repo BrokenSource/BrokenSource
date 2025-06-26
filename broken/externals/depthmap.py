@@ -20,13 +20,13 @@ from broken import (
     BrokenEnum,
     BrokenModel,
     BrokenPath,
-    BrokenTyper,
     Environment,
     install,
     log,
 )
 from broken.core.extra.loaders import LoadableImage, LoadImage
 from broken.core.extra.resolution import BrokenResolution
+from broken.core.typerx import BrokenTyper
 from broken.core.vectron import Vectron
 from broken.externals import ExternalModelsBase, ExternalTorchBase
 from broken.types import MiB

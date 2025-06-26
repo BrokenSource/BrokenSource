@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from typer.models import OptionInfo
 
 from broken import Environment, Runtime, log
-from broken.core import apply, arguments, flatten, list_get, shell
+from broken.core import apply, flatten, list_get, shell
 from broken.core.system import BrokenPlatform
 
 # Apply custom styling to typer
@@ -279,7 +279,7 @@ class BrokenTyper:
             Environment.flag("REPL", 1),
             (Runtime.Installer),
             (not BrokenPlatform.OnLinux),
-            (not arguments()),
+            (not Environment.arguments()),
         ))
         return self
 
@@ -342,15 +342,21 @@ class BrokenTyper:
             # On subsequent runs, prompt for command
             if (self.shell) and (cycle > 0):
                 if not self.shell_prompt():
-                    return
+                    return None
 
             # Allow repl users to use the same commands as python entry point scripts,
             # like 'depthflow gradio' where 'depthflow' isn't the package __main__.py
             if (list_get(sys.argv, 1, "") == self.default):
                 sys.argv.pop(1)
 
-            # Defines a default, arguments are present, and no known commands were provided
-            if (self.default and arguments()) and all((x not in sys.argv for x in self.commands)):
+            # Insert implied default command when:
+            # - No known commands were provided
+            # - Class defines a default
+            # - Arguments are present
+            if all((
+                (self.default and Environment.arguments()),
+                all((x not in sys.argv for x in self.commands)),
+            )):
                 sys.argv.insert(1, self.default)
 
             try:
@@ -373,11 +379,11 @@ class BrokenTyper:
 
             # Exit out non-repl mode
             if (not self.shell):
-                return
+                return None
 
             # Some action was taken, like 'depthflow main -o ./video.mp4'
-            if (cycle == 0) and arguments():
-                return
+            if (cycle == 0) and Environment.arguments():
+                return None
 
             # Pretty welcome message on the first 'empty' run
             if (cycle == 0):

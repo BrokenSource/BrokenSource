@@ -20,11 +20,9 @@ from typer import Option
 
 from broken import (
     BrokenEnum,
-    BrokenFluent,
     BrokenModel,
     BrokenPath,
     BrokenPlatform,
-    BrokenTyper,
     denum,
     every,
     flatten,
@@ -32,6 +30,7 @@ from broken import (
     nearest,
     shell,
 )
+from broken.core.typerx import BrokenTyper
 from broken.types import Bytes, Hertz, Seconds
 
 # ------------------------------------------------------------------------------------------------ #
@@ -957,7 +956,7 @@ FFmpegFilterType: TypeAlias = Union[
 
 # ------------------------------------------------------------------------------------------------ #
 
-class BrokenFFmpeg(BrokenModel, BrokenFluent):
+class BrokenFFmpeg(BrokenModel):
     """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
 
     # -------------------------------------------|

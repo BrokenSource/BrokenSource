@@ -23,7 +23,7 @@ class Environment:
     def set(key: str, value: str | None) -> None:
         if (value is not None):
             os.environ[key] = str(value)
-            return
+            return None
         Environment.pop(key)
 
     def setdefault(key: str, value: str | None) -> None:
@@ -62,6 +62,11 @@ class Environment:
     def iflag(key: str, default: bool=False) -> bool:
         return (not Environment.flag(key, default))
 
+    # # Arguments
+
+    def arguments() -> bool:
+        return bool(sys.argv[1:])
+
     # # System PATH
 
     def _abs_path(x: Path) -> Path:
@@ -96,17 +101,17 @@ if sys.version_info < (3, 11):
 Path.endswith = (lambda self, suffix: str(self).endswith(suffix))
 
 # Huge CPU usage for little to no speed up on matrix multiplication of NumPy's BLAS
-# https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
+# - https://github.com/numpy/numpy/issues/18669#issuecomment-820510379
 # Warn: If using PyTorch CPU, set `torch.set_num_threads(multiprocessing.cpu_count())`
 Environment.setdefault("OMP_NUM_THREADS", 1)
 
 # NVIDIA: High CPU usage on glfw.swap_buffers when vsync is off and the GPU is wayy behind vsync
-# https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
-# https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
+# - https://forums.developer.nvidia.com/t/glxswapbuffers-gobbling-up-a-full-cpu-core-when-vsync-is-off/156635
+# - https://forums.developer.nvidia.com/t/gl-yield-and-performance-issues/27736
 Environment.setdefault("__GL_YIELD", "USLEEP")
 
 # macOS: Enable CPU fallback for PyTorch unsupported operations in native MPS
-# https://pytorch.org/docs/stable/mps_environment_variables.html
+# - https://pytorch.org/docs/stable/mps_environment_variables.html
 Environment.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", 1)
 
 # Make telemetries opt-in instead of opt-out
@@ -187,29 +192,23 @@ from broken.core import (
     BrokenAttribute,
     BrokenAttrs,
     BrokenCache,
-    BrokenFluent,
     BrokenLogging,
     BrokenModel,
     BrokenRelay,
     BrokenSingleton,
     DictUtils,
     FrozenHash,
-    LazyImport,
     Nothing,
     StaticClass,
-    ThreadedStdin,
     apply,
-    arguments,
     block_modules,
     clamp,
     combinations,
     denum,
-    easyloop,
     every,
     flatten,
     hyphen_range,
     install,
-    limited_ratio,
     list_get,
     log,
     multi_context,
@@ -225,7 +224,6 @@ from broken.core.enumx import BrokenEnum, MultiEnum
 from broken.core.path import BrokenPath
 from broken.core.project import BrokenProject
 from broken.core.system import ArchEnum, BrokenPlatform, PlatformEnum, SystemEnum
-from broken.core.typerx import BrokenTyper
 
 # ------------------------------------------------------------------------------------------------ #
 

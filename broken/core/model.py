@@ -8,7 +8,7 @@ class BrokenModel(BaseModel):
         use_attribute_docstrings=True,
     )
 
-    def model_post_init(self, __context):
+    def model_post_init(self, context: dict):
         for cls in reversed(type(self).mro()):
             if method := cls.__dict__.get("__post__"):
                 method(self)

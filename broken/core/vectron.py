@@ -7,11 +7,9 @@ from PIL.Image import Image as ImageType
 
 class Vectron:
 
-    @staticmethod
     def image_hash(image: Union[ImageType, np.ndarray]) -> int:
         return xxhash.xxh3_64_intdigest(image.tobytes())
 
-    @staticmethod
     def normalize(
         array: np.ndarray,
         dtype: np.dtype=np.float32,
@@ -58,3 +56,21 @@ class Vectron:
 
         # Return opposite effects
         return (1/a), (-b)
+
+    def limited_ratio(
+        number: Optional[float], *,
+        upper: float=None
+    ) -> Optional[tuple[int, int]]:
+        """Same as Number.as_integer_ratio but with an optional upper limit and optional return"""
+        if (number is None):
+            return None
+
+        num, den = number.as_integer_ratio()
+
+        if upper and ((den > upper) or (num > upper)):
+            normalize = upper/min(num, den)
+            num *= normalize
+            den *= normalize
+
+        return (int(num), int(den))
+

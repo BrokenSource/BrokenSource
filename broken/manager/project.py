@@ -14,11 +14,11 @@ from broken import (
     BrokenEnum,
     BrokenPath,
     BrokenPlatform,
-    BrokenTyper,
     __version__,
     log,
     shell,
 )
+from broken.core.typerx import BrokenTyper
 
 
 class ProjectLanguage(BrokenEnum):
@@ -190,7 +190,7 @@ class CodeProject:
                 break
 
     def compile(self) -> Path:
-        from Pyaket import PyaketProject
+        from pyaket import PyaketProject
         pyaket = PyaketProject()
         pyaket.app.name     = self.name
         pyaket.app.author   = "BrokenSource"

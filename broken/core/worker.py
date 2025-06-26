@@ -1,8 +1,6 @@
 # Some multiprocessing classes are variables
 # pyright: reportInvalidTypeForm=false
 
-from __future__ import annotations
-
 import functools
 import inspect
 import math
@@ -22,7 +20,6 @@ from uuid import UUID, uuid4
 from attr import Factory, define, field
 
 from broken import log
-from broken.core import easyloop
 
 WorkerType: TypeAlias = Union[Thread, Process]
 """Any stdlib concurrency primitive"""
@@ -35,7 +32,7 @@ class WorkerTask:
     created: float = Factory(now)
 
     @classmethod
-    def get(cls, object: Union[WorkerTask, Any]) -> WorkerTask:
+    def get(cls, object: Union[Self, Any]) -> Self:
         if isinstance(object, WorkerTask):
             return object
         return cls(payload=object)
@@ -45,7 +42,7 @@ class WorkerTask:
     def __hash__(self) -> int:
         return self.uuid.int
 
-    def __eq__(self, other: WorkerTask) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return (hash(self) == hash(other))
 
 # ------------------------------------------------------------------------------------------------ #
@@ -222,7 +219,7 @@ class BrokenWorker:
     """Shared multiprocessing manager"""
 
     @property
-    def results_type(self) -> type[dict]:
+    def results_type(self) -> dict:
         """The results container class compatible with worker type"""
         # Warn: Must use hash(task) if Process as it pickles than __hash__
         return (dict if (self.type is Thread) else self.manager.dict)
@@ -290,17 +287,17 @@ class BrokenWorker:
             self._results[hash(task)] = result
             self._signal.notify_all()
 
-    @easyloop
     def _keep_alive(self) -> None:
         """Ensures 'size' workers are running at any time"""
-        while (self._still_alive < self.size):
-            self._workers.add(self._spawn(
-                target=self._supervisor,
-                _type=self.type,
-            ))
-        with self._phoenix:
-            self._phoenix.wait(0.5)
-        self._sanitize()
+        while True:
+            while (self._still_alive < self.size):
+                self._workers.add(self._spawn(
+                    target=self._supervisor,
+                    _type=self.type,
+                ))
+            with self._phoenix:
+                self._phoenix.wait(0.5)
+            self._sanitize()
 
     def _supervisor(self) -> None:
         """Automatically handle getting tasks and storing results"""

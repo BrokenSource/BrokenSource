@@ -47,6 +47,7 @@ def override_module(name: str, mock: Any) -> Generator:
             return
         sys.modules[name] = saved
 
+
 @contextlib.contextmanager
 def block_modules(*modules: str) -> Generator:
     with contextlib.ExitStack() as stack:
@@ -255,7 +256,7 @@ def smartproxy(object: Any) -> Any:
 
 
 def clamp(value: float, low: float=0, high: float=1) -> float:
-    return max(low, min(value, high))
+    return min(max(low, value), high)
 
 
 def nearest(number: Number, multiple: Number, *, cast=int, operator: Callable=round) -> Number:
@@ -381,25 +382,6 @@ def combinations(**options: Any) -> Iterable[DotMap]:
         yield DotMap(zip(options.keys(), items))
 
 
-def arguments() -> bool:
-    """Returns True if any arguments are present on sys.argv"""
-    return bool(sys.argv[1:])
-
-
-def easyloop(method: Callable=None, *, period: float=0.0):
-    """Wraps a method in an infinite loop called every 'period' seconds"""
-    def decorator(method):
-        @functools.wraps(method)
-        def wrapper(*args, **kwargs):
-            while True:
-                method(*args, **kwargs)
-                time.sleep(period)
-        return wrapper
-    if (method is None):
-        return decorator
-    return decorator(method)
-
-
 # ------------------------------------------------------------------------------------------------ #
 # Classes
 
@@ -429,20 +411,6 @@ class BrokenSingleton(ABC):
         return cls.__instance__
 
 
-class BrokenFluent:
-    """Fluent-like .copy(**update) and .(**update) setter for classes"""
-
-    def __call__(self, **update) -> Self:
-        """Updates the instance with the provided kwargs"""
-        for key, value in update.items():
-            setattr(self, key, value)
-        return self
-
-    def copy(self, **update) -> Self:
-        """Returns an updated copy of this instance"""
-        return copy.deepcopy(self)(**update)
-
-
 class BrokenAttrs:
     """
     Walk over an @attrs.defined class and call __post__ on all classes in the MRO
@@ -457,6 +425,7 @@ class BrokenAttrs:
     @abstractmethod
     def __post__(self) -> None:
         ...
+
 
 from broken.core.model import BrokenModel, FrozenHash
 
@@ -622,6 +591,7 @@ class BrokenRelay:
         for callback in self._registry:
             callback(*args, **kwargs)
 
+
 class BrokenWatchdog(ABC):
 
     @abstractmethod
@@ -633,95 +603,3 @@ class BrokenWatchdog(ABC):
         """Calls __changed__ when a property changes"""
         super().__setattr__(key, value)
         self.__changed__(key, value)
-
-
-@define
-class ThreadedStdin:
-    _process: subprocess.Popen
-    _queue: Queue = Factory(factory=lambda: Queue(maxsize=10))
-    _loop: bool = True
-
-    def __attrs_post_init__(self):
-        Thread(target=self.worker, daemon=True).start()
-        self._process.stdin = self
-    def write(self, data):
-        self._queue.put(data)
-    def worker(self):
-        while self._loop:
-            self._process.stdin.write(self._queue.get())
-            self._queue.task_done()
-    def close(self):
-        self._queue.join()
-        self._loop = False
-        self._process.stdin.close()
-        while self._process.poll() is None:
-            time.sleep(0.01)
-
-
-# ------------------------------------------------------------------------------------------------ #
-# Stuff that needs a revisit
-
-def transcends(method, base, generator: bool=False):
-    """
-    Are you tired of managing and calling super().<name>(*args, **kwargs) in your methods?
-    > We have just the right solution for you!
-
-    Introducing transcends, the decorator that crosses your class's MRO and calls the method
-    with the same name as the one you are decorating. It's an automatic super() everywhere!
-    """
-    name = method.__name__
-
-    def decorator(func: Callable) -> Callable:
-        def get_targets(self):
-            for cls in type(self).mro()[:-2]:
-                if cls in (base, object):
-                    continue
-                if (target := cls.__dict__.get(name)):
-                    yield target
-
-        # Note: We can't have a `if generator` else the func becomes a Generator
-        def yields(self, *args, **kwargs):
-            for target in get_targets(self):
-                yield from target(self, *args, **kwargs)
-        def plain(self, *args, **kwargs):
-            for target in get_targets(self):
-                target(self, *args, **kwargs)
-
-        return (yields if generator else plain)
-    return decorator
-
-
-class LazyImport:
-    __import__ = copy.deepcopy(__import__)
-
-    def __init__(self, _name: str=None):
-        self._lzname_ = _name
-
-    def __load__(self) -> Any:
-        del sys.modules[self._lzname_]
-        module = LazyImport.__import__(self._lzname_)
-        sys.modules[self._lzname_] = module
-
-        # Update the caller's globals with the reloaded
-        sys._getframe(2).f_globals[self._lzname_] = module
-
-        return module
-
-    def __getattr__(self, name) -> Any:
-        return getattr(self.__load__(), name)
-
-    def __str__(self) -> str:
-        return f"{type(self).__name__}(name='{self._lzname_}')"
-
-    def __enter__(self):
-
-        @functools.wraps(LazyImport.__import__)
-        def laziest(*args):
-            module = type(self)(_name=args[0])
-            return sys.modules.setdefault(module._lzname_, module)
-
-        # Patch the import function with ours
-        __builtins__["__import__"] = laziest
-
-    def __exit__(self, *args):
-        __builtins__["__import__"] = LazyImport.__import__
