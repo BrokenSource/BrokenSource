@@ -14,8 +14,13 @@ if Environment.flag("LOGURU_NO_ASYNCIO", 1):
         get_running_loop = lambda: None
     asyncio = sys.modules.pop("asyncio", None)
     sys.modules["asyncio"] = _FakeAsyncio
+
     from loguru import logger as log
-    sys.modules["asyncio"] = asyncio
+
+    if (asyncio is not None):
+        sys.modules["asyncio"] = asyncio
+    else:
+        sys.modules.pop("asyncio")
 
 from loguru import logger as log
 
