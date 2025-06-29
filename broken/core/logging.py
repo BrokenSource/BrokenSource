@@ -12,6 +12,7 @@ from broken import Environment, Runtime
 if Environment.flag("LOGURU_NO_ASYNCIO", 1):
     class _FakeAsyncio:
         get_running_loop = lambda: None
+
     asyncio = sys.modules.pop("asyncio", None)
     sys.modules["asyncio"] = _FakeAsyncio
 
