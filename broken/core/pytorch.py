@@ -96,6 +96,7 @@ class TorchRelease(str, BrokenEnum):
     def packages(self) -> Iterable[str]:
         yield str(self.version)
         yield "torchvision"
+        yield "torchaudio"
 
     def install(self, reinstall: bool=False) -> subprocess.CompletedProcess:
         log.info(f"Installing PyTorch version ({self.value})")
