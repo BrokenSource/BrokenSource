@@ -14,7 +14,7 @@ icon: material/git
         ```
         <small><b>How it works:</b> `irm` downloads the script, `iex` executes it directly</small>
         <br>
-        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#manual) tab above!</small>
     === ":simple-linux: Linux"
         <div align="center">
             <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/linux.svg">
@@ -26,7 +26,7 @@ icon: material/git
         ```
         <small><b>How it works:</b> `curl` downloads the script, `bash` executes it directly</small>
         <br>
-        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#manual) tab above!</small>
     === ":simple-apple: MacOS"
         <div align="center">
             <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/apple.svg">
@@ -38,7 +38,7 @@ icon: material/git
         ```
         <small><b>How it works:</b> `curl` downloads the script, `bash` executes it directly</small>
         <br>
-        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#installing-manual) tab above!</small>
+        <small>:material-arrow-right: Don't want to use it? Follow the [:simple-git: Manual](#manual) tab above!</small>
     === ":simple-git: Manual"
         <div align="center"><img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/git.svg"></div>
 

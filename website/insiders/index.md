@@ -16,7 +16,7 @@ Very briefly, the **Insiders** program will be a way to {++support the developme
 
 > This **will not cannibalize any of the other projects into the "open-core" realm** or limit their features. The idea is to join the cumulative work of most projects into something greater, that is too good for commercial exploit to be a freebie, while also returning loss-leader features to the community as a whole.
 
-It will only be available to [**GitHub Sponsors**](site:/about/sponsors), starting at a modest entry level, and building up in progressive commercial usage terms. The code will be Open Source, but no distribution rights will be granted, that is, only for personal or private use. You will evidently lose access to new features and the license to use it if you leave the program.
+It will only be available to [**GitHub Sponsors**](https://github.com/sponsors/Tremeschin), starting at a modest entry level, and building up in progressive commercial usage terms. The code will be Open Source, but no distribution rights will be granted, that is, only for personal or private use. You will evidently lose access to new features and the license to use it if you leave the program.
 
 :material-arrow-right: This is also known as _sponsorware!_
 

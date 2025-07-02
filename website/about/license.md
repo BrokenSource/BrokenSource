@@ -72,7 +72,7 @@ This choice can be controversial, here's my thoughts:
 **I plan on relicensing to [MIT](https://www.tldrlegal.com/license/mit-license) in the future**, the [**contributions**](#contributions) terms are a step towards that.
 
 - Some of my projects like [**TurboPipe**](https://github.com/BrokenSource/TurboPipe) are under **MIT**, and I use many packages under it!
-- [**Support**](site:/about/sponsors) my work to achieve that faster, I believe the projects can be successful and sustainable in the future, just unsure on the amount of support in this early era 😅
+- [**Support**](https://github.com/sponsors/Tremeschin/) my work to achieve that faster, I believe the projects can be successful and sustainable in the future, just unsure on the amount of support in this early era 😅
 
 <br>
 

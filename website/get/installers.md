@@ -1,5 +1,5 @@
 
-!!! danger "The v0.8 executables are old <small>(October 2024)</small>, prefer [wheels](site:/get/wheels) until a [new release](https://github.com/BrokenSource/BrokenSource/issues/27) is made."
+!!! danger "The v0.8 executables are old <small>(October 2024)</small>, prefer [wheels](site:get/wheels) until a [new release](https://github.com/BrokenSource/BrokenSource/issues/27) is made."
     Months of improvements and changes were made ever since, sorry for the inconvenience.
 
 !!! abstract ""
@@ -34,7 +34,7 @@
         === "Intel Macs"
             <table id="macos-amd64"><tbody class="slim-table"/></table>
 
-<sup>:material-arrow-right: ❤️ **Note**: You can [contact me](site:/about/contact) for a free copy of a paid executable with a valid or altruistic reason!</sup>
+<sup>:material-arrow-right: ❤️ **Note**: You can [contact me](site:about/contact) for a free copy of a paid executable with a valid or altruistic reason!</sup>
 
 <script>
   const download_icon = `<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06z"></path></svg></span>`

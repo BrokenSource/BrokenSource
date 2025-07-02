@@ -4,7 +4,7 @@ icon: material/cloud
 
 <b><span class="the">C</span>loud providers</b> are a great way to run the projects without the need of a powerful machine, to have a dedicated server for it, or scale up the usage. Naturally, there are a lot of providers to rent hardware from, with quirks and differences between them.
 
-Getting OpenGL GPU acceleration to work is the trickiest part; if it's not listed here, you could try following the [**Docker**](site:/get/docker) page of what needs to happen. _Consider improving this!_
+Getting OpenGL GPU acceleration to work is the trickiest part; if it's not listed here, you could try following the [**Docker**](site:get/docker) page of what needs to happen. _Consider improving this!_
 
 - **Note**: When the GPU is not used in OpenGL, `llvmpipe` (CPU) device will be used. Rendering speeds will be abysmal, in the order of seconds per frame, {==**avoid at all costs**==}.
 

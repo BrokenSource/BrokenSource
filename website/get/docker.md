@@ -52,7 +52,7 @@ docker run --rm --gpus all ghcr.io/brokensource/glinfo:latest-cpu
 
 ### Building images
 
-Clone the monorepo [**from source**](site:/get/source), you can then run and build the images with:
+Clone the monorepo [**from source**](site:get/source), you can then run and build the images with:
 
 ```shell title=""
 docker compose run --rm shaderflow
@@ -114,7 +114,7 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 
 <hr>
 
-- Clone the Monorepo following the [**🔥 From Source/Manual**](site:/get/source/#installing-manual) page, until `uv sync`
+- Clone the Monorepo following the [**🔥 From Source/Manual**](site:get/source/#manual) page, until `uv sync`
 
 ### 🚀 Context
 
@@ -222,7 +222,7 @@ If everything is nominal until now, you've _probably_ got a healthy setup 🎉
 ### ⭐️ Usage
 
 !!! heart "**This page helped you?**"
-    Consider [**Joining my Sponsors**](site:/about/sponsors) and helping me continue everything !
+    Consider [**Joining my Sponsors**](https://github.com/sponsors/Tremeschin/) and helping me continue everything !
 
 <h3>All of that..</h3>
 

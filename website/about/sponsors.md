@@ -27,14 +27,14 @@ _**You** are the society deciding if I can do this for a living!_
 
 -   :fontawesome-brands-github:{.lg .middle} **GitHub Sponsors**
 
-    - ⭐️ Access to the [**Insiders**](site:/insiders) program
+    - ⭐️ Access to the [**Insiders**](site:insiders) program
     - <small>Lowest fees, _preferred method_</small>
 
     [:octicons-arrow-right-24:{.lg .middle} **💠 Support me**](https://github.com/sponsors/Tremeschin)
 
 -   :fontawesome-brands-patreon:{.lg .middle} **Patreon**
 
-    - ❌ **No access** to the [**Insiders**](site:/insiders)
+    - ❌ **No access** to the [**Insiders**](site:insiders)
     - <small>Alternative, occasional posts</small>
 
     [:octicons-arrow-right-24:{.lg.middle} **💠 Support me**](https://www.patreon.com/Tremeschin)
@@ -55,7 +55,7 @@ _**You** are the society deciding if I can do this for a living!_
 
 ### What you get?
 
-Apart from the already existing exclusive features of the [**Insiders**](site:/insiders) program, you'll get:
+Apart from the already existing exclusive features of the [**Insiders**](site:insiders) program, you'll get:
 
 - 💎 _**Prioritized** support and feature requests[^features]:_ You have shown to value my time. I'd help everyone individually if possible, but I have to prioritize living, coding and additionally providing technical support on problems _you_ might face or features _you'd_ want!
 
@@ -67,7 +67,7 @@ Apart from the already existing exclusive features of the [**Insiders**](site:/i
 
 - ⭐️ _**Early access** to new features:_ You'll get to test new features before they're released to the public, and provide feedback on them. This might include new ShaderFlow modules, new integrations, even new projects I'm working on!
 
-- 📦 _**Exclusive content**:_ Better explained in the [**Insiders**](site:/insiders) page itself; this might include premium ShaderFlow scenes, automated video farm tools, custom scripts for you.
+- 📦 _**Exclusive content**:_ Better explained in the [**Insiders**](site:insiders) page itself; this might include premium ShaderFlow scenes, automated video farm tools, custom scripts for you.
 
 - 🌵 _[**Bounties**](#bounty-hunting) program_: Contribute to target supporting goals for features to be available for all the community or for the development to start!
 
