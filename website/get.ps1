@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # (c) MIT License, Tremeschin
-# Script version: 2025.6.23
+# Script version: 2025.7.2
 
 # This function reloads the "PATH" environment variable so that we can
 # find newly installed applications without re-executing the script
@@ -65,6 +65,17 @@ function Have-Winget {
         echo "> Please get it at https://learn.microsoft.com/en-us/windows/package-manager/winget"
         echo "> Alternatively, install manually what was meant to be installed but failed"
         Ask-Continue
+    }
+}
+
+# Ensure powershell is installed (some users might not have it, somehow?)
+if (-not (Get-Command powershell -ErrorAction SilentlyContinue)) {
+    Print-Step "PowerShell was not found, installing with Winget"
+    Have-Winget
+    winget install -e --id Microsoft.PowerShell
+    Reload-Path
+    if (-not (Get-Command powershell -ErrorAction SilentlyContinue)) {
+        Print-Step "Couldn't install or find 'powershell.exe' executable"
     }
 }
 
