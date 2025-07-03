@@ -55,7 +55,7 @@ class Vectron:
         (a, b), *_ = np.linalg.lstsq(A, y)
 
         # Return opposite effects
-        return (1/a), (-b)
+        return (fill - b) / (a or 1)
 
     def limited_ratio(
         number: Optional[float], *,
