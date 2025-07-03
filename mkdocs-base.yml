@@ -54,10 +54,6 @@ exclude_docs:
   "*.py"
 plugins:
   meta: {}
-  # blog:
-  #   blog_dir: "news"
-  #   post_url_date_format: yyyy/MM
-  #   draft: true
   gen-files:
     scripts:
       - website/make.py

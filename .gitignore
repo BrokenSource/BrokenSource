@@ -2,16 +2,16 @@
 # Common
 **/.cache
 **/.venv
+**/*.pyc
 **/build
 **/dist
 **/private
-**/target
 **/release
+**/target
 **/workspace
-**/*.pyc
 
 # Non-syncthing
-**/.stfolder
 **/.nomedia
+**/.stfolder
 **/*.env
 **/meta

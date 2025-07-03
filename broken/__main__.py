@@ -40,8 +40,6 @@ class BrokenManager(ProjectManager):
             self.cli.command(self.sync)
             self.cli.command(self.link)
 
-        self.cli.command(self.tremeschin, hidden=True)
-
         self.cli.description = (
             "🚀 Broken Source Software Monorepo development manager script\n\n"
             "• Tip: run \"broken (command) --help\" for options on commands or projects ✨\n\n"
@@ -83,11 +81,6 @@ class BrokenManager(ProjectManager):
         """💎 Clone the Insiders repository (WIP, No content)"""
         self.clone("https://github.com/BrokenSource/Insiders", BROKEN.DIRECTORIES.INSIDERS)
         shell(sys.executable, "-m", "uv", "sync", "--all-packages")
-
-    def tremeschin(self):
-        Tremeschin = (BROKEN.DIRECTORIES.REPO_META/"Tremeschin")
-        self.clone("https://github.com/Tremeschin/Personal", Tremeschin)
-        self.clone("https://github.com/Tremeschin/Private",  Tremeschin/"private")
 
     # ---------------------------------------------------------------------------------------------|
     # Core section

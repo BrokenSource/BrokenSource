@@ -2,22 +2,22 @@
 # Common
 **/.cache
 **/.venv
-**/.git
+**/*.pyc
 **/build
 **/dist
 **/private
 **/release
 **/target
 **/workspace
-**/*.pyc
 
 # Non-syncthing
-**/.stfolder
 **/.nomedia
+**/.stfolder
 **/*.env
 **/meta
 
 # Docker
-**/.vscode
 **/.dockerfile
+**/.git
+**/.vscode
 **/website

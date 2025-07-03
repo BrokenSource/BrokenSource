@@ -5,13 +5,13 @@
 # Common
 **/.cache
 **/.venv
+**/*.pyc
 **/build
 **/dist
 **/release
 **/target
 **/workspace
-**/*.pyc
 
 # Syncthing
-**/node_modules
 **/.next
+**/node_modules
