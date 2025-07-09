@@ -201,6 +201,8 @@ class PillowUpscaler(UpscalerBase):
 class NoUpscaler(UpscalerBase):
     type: Annotated[Literal["none"], BrokenTyper.exclude()] = "none"
 
+    scale: int = 1
+
     def _load_model(self):
         pass
 
