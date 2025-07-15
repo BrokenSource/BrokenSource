@@ -26,9 +26,9 @@ from PIL import Image
 
 image = (
     modal.Image.from_registry("nvidia/opengl:1.2-glvnd-runtime-ubuntu22.04", add_python="3.12")
-    .run_commands("python3 -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124")
+    .run_commands("python3 -m pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cu118")
     .apt_install("ffmpeg")
-    .pip_install("depthflow==0.9.0.dev1")
+    .pip_install("depthflow==0.9.1")
     .run_commands("depthflow load-estimator")
 )
 
@@ -39,7 +39,7 @@ app = modal.App(
 
 @app.function(gpu="t4", cpu=4, memory=4096)
 def render(data: DotMap) -> bytes:
-    from depthflow.Scene import DepthScene
+    from depthflow.scene import DepthScene
     scene = DepthScene(backend="headless")
     scene.input(image=Image.open(BytesIO(data.image)))
 
