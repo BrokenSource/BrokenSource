@@ -365,7 +365,7 @@ class BrokenTyper:
                 self.posthook()
 
             except SystemExit:
-                log.trace(f"Skipping SystemExit on {type(self)}")
+                pass
 
             except KeyboardInterrupt:
                 log.ok(f"{type(self)} exit KeyboardInterrupt")

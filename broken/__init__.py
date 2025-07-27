@@ -37,6 +37,10 @@ class Environment:
         for key, value in values.items():
             Environment.set(key, value)
 
+    def updatedefault(**values: str | None) -> None:
+        for key, value in values.items():
+            Environment.setdefault(key, value)
+
     def exists(key: str) -> bool:
         return (key in os.environ)
 
