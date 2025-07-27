@@ -28,6 +28,13 @@ class SystemEnum(str, MultiEnum):
     def is_bsd(self) -> bool:
         return (self is self.BSD)
 
+    def is_unix(self) -> bool:
+        return any((
+            self.is_linux(),
+            self.is_macos(),
+            self.is_bsd(),
+        ))
+
     @property
     def extension(self) -> str:
         if (self is self.Windows):

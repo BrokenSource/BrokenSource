@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import contextlib
 import os
-import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -25,13 +23,13 @@ class BrokenProject:
 
     # App information
     APP_NAME:   str
-    APP_AUTHOR: str = "BrokenSource"
+    APP_AUTHOR: str = "brokensource"
     VERSION:    str = Runtime.Version
     ABOUT:      str = "No description provided"
 
     # Refactored functionality
     DIRECTORIES: _Directories = None
-    RESOURCES: _Resources = None
+    RESOURCES:   _Resources   = None
 
     def __attrs_post_init__(self):
 

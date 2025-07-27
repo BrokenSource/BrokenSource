@@ -52,14 +52,14 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.7.20",
+    "uv~=0.8.3",
 ]
 
 [dependency-groups]
 dev = [
     # Website and documentation
     "mkdocs~=1.6.1",
-    "mkdocstrings~=0.29.1",
+    "mkdocstrings~=0.30.0",
     "mkdocstrings-python~=1.16.12",
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.4.2",
@@ -77,7 +77,7 @@ dev = [
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
     # Staging
-    "yt-dlp~=2025.6.30",
+    "yt-dlp~=2025.7.21",
     "ollama~=0.5.1",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",

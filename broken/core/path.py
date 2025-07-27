@@ -181,8 +181,6 @@ class BrokenPath(StaticClass):
         """Make a file executable"""
         if BrokenPlatform.OnUnix:
             shell("chmod", "+x", path, echo=echo)
-        elif BrokenPlatform.OnWindows:
-            shell("attrib", "+x", path, echo=echo)
         return path
 
     def zip(path: Path, output: Path=None, *, format: ShutilFormat="zip", echo: bool=True, **options) -> Path:
