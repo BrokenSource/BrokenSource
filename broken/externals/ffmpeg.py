@@ -39,7 +39,6 @@ class FFmpegModuleBase(BrokenModel, ABC):
     model_config = ConfigDict(
         use_attribute_docstrings=True,
         validate_assignment=True,
-        defer_build=True,
     )
 
     @abstractmethod
@@ -169,7 +168,6 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     type: Annotated[Literal["h264"], BrokenTyper.exclude()] = "h264"
 
     class Preset(str, BrokenEnum):
-        None_     = None
         UltraFast = "ultrafast"
         SuperFast = "superfast"
         VeryFast  = "veryfast"
@@ -187,7 +185,6 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Preset]→ Documentation[/]"""
 
     class Tune(str, BrokenEnum):
-        None_       = None
         Film        = "film"
         Animation   = "animation"
         Grain       = "grain"
@@ -202,7 +199,6 @@ class FFmpegVideoCodecH264(FFmpegModuleBase):
     [blue link=https://trac.ffmpeg.org/wiki/Encode/H.264#Tune]→ Documentation[/]"""
 
     class Profile(str, BrokenEnum):
-        None_    = None
         Baseline = "baseline"
         Main     = "main"
         High     = "high"
@@ -263,7 +259,6 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     type: Annotated[Literal["h264-nvenc"], BrokenTyper.exclude()] = "h264-nvenc"
 
     class Preset(str, BrokenEnum):
-        None_                     = None
         HighQuality2Passes        = "slow"
         HighQuality1Pass          = "medium"
         HighPerformance1Pass      = "fast"
@@ -289,7 +284,6 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
-        None_           = None
         HighQuality     = "hq"
         LowLatency      = "ll"
         UltraLowLatency = "ull"
@@ -301,7 +295,6 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """Tune the encoder for a specific tier of performance"""
 
     class Profile(str, BrokenEnum):
-        None_    = None
         Baseline = "baseline"
         Main     = "main"
         High     = "high"
@@ -313,7 +306,6 @@ class FFmpegVideoCodecH264_NVENC(FFmpegModuleBase):
     """How many features the encoder can use, the playback device must support them"""
 
     class RateControl(str, BrokenEnum):
-        None_ = None
         ConstantQuality = "constqp"
         VariableBitrate = "vbr"
         ConstantBitrate = "cbr"
@@ -380,7 +372,6 @@ class FFmpegVideoCodecH265(FFmpegModuleBase):
     """Bitrate in kilobits per second, the higher the better quality and file size"""
 
     class Preset(str, BrokenEnum):
-        None_     = None
         UltraFast = "ultrafast"
         SuperFast = "superfast"
         VeryFast  = "veryfast"
@@ -434,7 +425,6 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
-        None_           = None
         HighQuality     = "hq"
         LowLatency      = "ll"
         UltraLowLatency = "ull"
@@ -445,7 +435,6 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         Field(Tune.HighQuality)
 
     class Profile(str, BrokenEnum):
-        None_  = None
         Main   = "main"
         Main10 = "main10"
         ReXT   = "rext"
@@ -455,16 +444,14 @@ class FFmpegVideoCodecH265_NVENC(FFmpegVideoCodecH265):
         Field(Profile.Main)
 
     class Tier(str, BrokenEnum):
-        None_ = None
-        Main  = "main"
-        High  = "high"
+        Main = "main"
+        High = "high"
 
     tier: Annotated[Optional[Tier],
         Option("--tier", "-t")] = \
         Field(Tier.High)
 
     class RateControl(str, BrokenEnum):
-        None_           = None
         ConstantQuality = "constqp"
         VariableBitrate = "vbr"
         ConstantBitrate = "cbr"
@@ -638,10 +625,10 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """How much time to spend on encoding. Slower options gives better compression"""
 
     class Tune(str, BrokenEnum):
-        HighQuality      = "hq"
-        LowLatency       = "ll"
-        UltraLowLatency  = "ull"
-        Lossless         = "lossless"
+        HighQuality     = "hq"
+        LowLatency      = "ll"
+        UltraLowLatency = "ull"
+        Lossless        = "lossless"
 
     tune: Annotated[Optional[Tune],
         Option("--tune", "-t")] = \
@@ -649,7 +636,6 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
     """Tune the encoder for a specific tier of performance"""
 
     class RateControl(str, BrokenEnum):
-        None_           = None
         ConstantQuality = "constqp"
         VariableBitrate = "vbr"
         ConstantBitrate = "cbr"
@@ -659,7 +645,6 @@ class FFmpegVideoCodecAV1_NVENC(FFmpegModuleBase):
         Field(RateControl.VariableBitrate)
 
     class Multipass(str, BrokenEnum):
-        None_    = None
         Disabled = "disabled"
         Quarter  = "qres"
         Full     = "fullres"

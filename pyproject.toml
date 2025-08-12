@@ -29,7 +29,7 @@ dependencies = [
     # Utils
     "loguru~=0.7.3",
     "typer~=0.15.4",
-    "rich~=13.9.4",
+    "rich~=14.1.0",
     "xxhash~=3.5.0",
     "platformdirs~=4.3.8",
     "validators~=0.35.0",
@@ -52,7 +52,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.8.3",
+    "uv~=0.8.9",
 ]
 
 [dependency-groups]
@@ -64,7 +64,7 @@ dev = [
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.4.2",
     "mkdocs-section-index~=0.3.10",
-    "mkdocs-material~=9.6.15",
+    "mkdocs-material~=9.6.16",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-site-urls~=0.3.0",
     "markdown-callouts~=0.4.0",
@@ -77,8 +77,8 @@ dev = [
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
     # Staging
-    "yt-dlp~=2025.7.21",
-    "ollama~=0.5.1",
+    "yt-dlp~=2025.8.11",
+    "ollama~=0.5.3",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",
 ]
@@ -110,8 +110,7 @@ compile-bytecode = false
 [tool.uv.workspace]
 members = [
     "projects/*",
-    # "meta/*/projects/*",
-    # "meta/*",
+    "meta/*",
 ]
 
 [tool.uv.sources]

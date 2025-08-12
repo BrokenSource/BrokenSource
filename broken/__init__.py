@@ -63,9 +63,6 @@ class Environment:
     def flag(key: str, default: bool=False) -> bool:
         return Environment.bool(key, default)
 
-    def iflag(key: str, default: bool=False) -> bool:
-        return (not Environment.flag(key, default))
-
     # # Arguments
 
     def arguments() -> bool:

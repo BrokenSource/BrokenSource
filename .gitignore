@@ -5,6 +5,7 @@
 **/*.pyc
 **/build
 **/dist
+**/others
 **/private
 **/release
 **/target
