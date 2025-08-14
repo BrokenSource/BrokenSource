@@ -1,0 +1,7 @@
+[workspace]
+members = ["crates/*"]
+exclude = ["projects/Pyaket/pyaket"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
