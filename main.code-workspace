@@ -3,30 +3,32 @@
 		{"name": "ShaderFlow",  "path": "projects/ShaderFlow"},
 		{"name": "DepthFlow",   "path": "projects/DepthFlow"},
 		{"name": "Pyaket",      "path": "projects/Pyaket"},
+		{"name": "Meta",        "path": "meta"},
 		{"name": "Code",        "path": "."},
 	],
 
 	"extensions": {
 		"recommendations": [
 			"aaron-bond.better-comments",
-			"usernamehw.errorlens",
-			"tamasfe.even-better-toml",
-			"geforcelegend.vscode-glsl",
-			"pkief.material-icon-theme",
-			"ms-python.vscode-pylance",
-			"ms-python.python",
 			"charliermarsh.ruff",
-			"slevesque.shader",
+			"geforcelegend.vscode-glsl",
+			"ms-python.python",
+			"ms-python.vscode-pylance",
+			"pkief.material-icon-theme",
 			"shardulm94.trailing-spaces",
+			"slevesque.shader",
+			"tamasfe.even-better-toml",
+			"usernamehw.errorlens",
 		]
 	},
 
 	"settings": {
-		// Hidden files on explorer
 		"files.exclude": {
-			"**/__pycache__": true,
-			".stfolder": true,
+			".next": true,
 			".nomedia": true,
+			".stfolder": true,
+			"**/__pycache__": true,
+			"**/node_modules": true,
 		},
 
 		// Better minimap
@@ -105,6 +107,9 @@
 
 		// It's not like screens are small anymore
 		"comment-divider.length": 100,
+
+		// Independent meson projects
+		"mesonbuild.selectRootDir": false,
 	},
 
 	"tasks": {

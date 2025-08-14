@@ -4,14 +4,12 @@
 
 # Common
 **/.cache
+**/.next
 **/.venv
 **/*.pyc
 **/build
 **/dist
+**/node*
 **/release
 **/target
 **/workspace
-
-# Syncthing
-**/.next
-**/node_modules

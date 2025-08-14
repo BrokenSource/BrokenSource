@@ -1,0 +1,12 @@
+packages:
+  - packages/*
+  - projects/*
+  - meta/*
+
+ignoredBuiltDependencies:
+  - unrs-resolver
+  - sharp
+
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - puppeteer
