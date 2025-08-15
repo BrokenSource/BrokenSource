@@ -22,19 +22,19 @@ function Print-Step {
     echo "`n:: $args`n"
 }
 
-# This function immediately exits if Winget is installed - Microsoft's official package manager.
+# This function immediately exits if WinGet is installed - Microsoft's official package manager.
 # - Most likely, you already have it on your system. As such, this function rarely runs fully
 # - Otherwise, it tries to install it with the official Microsoft docs 'Add-AppxPackage' method
 # - Still failing, it downloads the Appx package (.msibundle) to a temp file and install it
-function Have-Winget {
+function Have-WinGet {
     Reload-Path
 
-    # Early exit if Winget is already installed
+    # Early exit if WinGet is already installed
     if ((Get-Command winget -ErrorAction SilentlyContinue)) {
         return
     }
 
-    Print-Step "Installing Winget"
+    Print-Step "Installing WinGet"
 
     # Attempt via: https://learn.microsoft.com/en-us/windows/package-manager/winget/
     Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
@@ -42,8 +42,8 @@ function Have-Winget {
 
     # Attempt manual method if still not found
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        echo "Winget installation with Add-AppxPackage failed, trying 'manual' method.."
-        Print-Step "Downloading Winget installer, might take a while.."
+        echo "WinGet installation with Add-AppxPackage failed, trying 'manual' method.."
+        Print-Step "Downloading WinGet installer, might take a while.."
 
         # Why tf does disabling progress bar yields 50x faster downloads????? https://stackoverflow.com/a/43477248
         $msi="https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
@@ -58,7 +58,7 @@ function Have-Winget {
         Reload-Path
     }
 
-    # If Winget is still not available, exit
+    # If WinGet is still not available, exit
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Print-Step "Couldn't install or find 'winget' with current methods"
         echo "Either installation failure or pathing issues were encountered"
@@ -70,8 +70,8 @@ function Have-Winget {
 
 # Ensure powershell is installed (some users might not have it, somehow?)
 if (-not (Get-Command powershell -ErrorAction SilentlyContinue)) {
-    Print-Step "PowerShell was not found, installing with Winget"
-    Have-Winget
+    Print-Step "PowerShell was not found, installing with WinGet"
+    Have-WinGet
     winget install -e --id Microsoft.PowerShell
     Reload-Path
     if (-not (Get-Command powershell -ErrorAction SilentlyContinue)) {
@@ -81,8 +81,8 @@ if (-not (Get-Command powershell -ErrorAction SilentlyContinue)) {
 
 # Ensure git is installed - to download the repository's code
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Print-Step "Git was not found, installing with Winget"
-    Have-Winget
+    Print-Step "Git was not found, installing with WinGet"
+    Have-WinGet
     winget install -e --id Git.Git
     Reload-Path
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -100,8 +100,8 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 
 # Ensure uv is installed - to manage python and its dependencies
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-    Print-Step "uv was not found, installing with Winget"
-    Have-Winget
+    Print-Step "uv was not found, installing with WinGet"
+    Have-WinGet
     winget install -e --id=astral-sh.uv
     Reload-Path
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
