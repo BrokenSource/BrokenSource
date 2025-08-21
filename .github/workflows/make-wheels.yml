@@ -11,7 +11,7 @@ jobs:
         name: Broken Setup
 
       - name: Make wheels
-        run: uv build --wheel --all
+        run: uv build --wheel --package ${{github.event.repository.name}}
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4

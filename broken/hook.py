@@ -10,13 +10,12 @@ class BrokenHook(MetadataHookInterface):
         monorepo = Path(__file__).parent.parent
 
         # Get the version from the main package
-        context = runpy.run_path(monorepo/"broken/version.py")
+        context = runpy.run_path(monorepo/"broken"/"version.py")
         version = metadata["version"] = context["__version__"]
 
         # Trick to replace all list items in place
         def patch(items: list[str]) -> None:
             for (x, item) in enumerate(items):
-                item = item.replace("0.0.0", version)
                 item = item.replace(" ", "")
 
                 # Replace git+ dependencies

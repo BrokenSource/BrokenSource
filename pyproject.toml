@@ -8,7 +8,7 @@ Docs      = "https://brokensrc.dev/broken/"
 Homepage  = "https://brokensrc.dev/"
 
 [tool.hatch.metadata.hooks.custom]
-path = ".github/hatch_build.py"
+path = "broken/hook.py"
 
 [project]
 name         = "broken-source"
@@ -28,7 +28,7 @@ dependencies = [
     "toml~=0.10.2",
     # Utils
     "loguru~=0.7.3",
-    "typer~=0.15.4",
+    "typer~=0.16.1",
     "rich~=14.1.0",
     "xxhash~=3.5.0",
     "platformdirs~=4.3.8",
@@ -37,7 +37,7 @@ dependencies = [
     "packaging",
     # Internet
     "requests-cache~=1.2.1",
-    "requests~=2.32.4",
+    "requests~=2.32.5",
 ]
 
 [project.optional-dependencies]
@@ -52,7 +52,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.8.10",
+    "uv~=0.8.13",
 ]
 
 [dependency-groups]
@@ -60,24 +60,24 @@ dev = [
     # Website and documentation
     "mkdocs~=1.6.1",
     "mkdocstrings~=0.30.0",
-    "mkdocstrings-python~=1.16.12",
+    "mkdocstrings-python~=1.17.0",
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.4.2",
     "mkdocs-section-index~=0.3.10",
-    "mkdocs-material~=9.6.16",
+    "mkdocs-material~=9.6.17",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-site-urls~=0.3.0",
     "markdown-callouts~=0.4.0",
     "cairosvg~=2.8.2",
     "black~=25.1.0",
     # Build system and testing
-    "pytest-sugar~=1.0.0",
+    "pytest-sugar~=1.1.0",
     "hatchling~=1.27.0",
     # Profiling tools
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
     # Staging
-    "yt-dlp~=2025.8.11",
+    "yt-dlp~=2025.8.20",
     "ollama~=0.5.3",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",
