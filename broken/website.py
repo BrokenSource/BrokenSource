@@ -72,7 +72,7 @@ class BrokenMkdocs:
             self.virtual(path="index.md", data='\n'.join((
                 '---', 'title: Home', '---',
                 '<div id="tsparticles"></div>',
-                (self.repository/"readme.md").read_text("utf-8")
+                (self.repository/".github"/"readme.md").read_text("utf-8")
             )))
 
     def virtual(self, path: Path, data: Union[str, bytes, Path]) -> None:
