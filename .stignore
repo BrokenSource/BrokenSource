@@ -3,10 +3,10 @@
 #   or un-stage .stignore removal in git
 
 # Common
+**/__pycache__
 **/.cache
 **/.next
 **/.venv
-**/*.pyc
 **/build
 **/dist
 **/node*

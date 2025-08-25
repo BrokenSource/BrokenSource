@@ -1,9 +1,9 @@
 
 # Common
+**/__pycache__
 **/.cache
 **/.next
 **/.venv
-**/*.pyc
 **/*lock*
 **/build
 **/dist
@@ -19,3 +19,4 @@
 **/.stfolder
 **/*.env
 **/meta
+**/packages

@@ -20,10 +20,10 @@ runs:
         git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       shell: bash
 
-    - name: Install uv
+    - name: Setup uv
       uses: astral-sh/setup-uv@v6
 
-    - name: Install Rust
+    - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
 
     - name: Sync dependencies
