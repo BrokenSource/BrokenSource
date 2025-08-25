@@ -16,3 +16,6 @@
 [submodule "Projects/SpectroNote"]
 	path = projects/SpectroNote
 	url  = https://github.com/BrokenSource/SpectroNote
+[submodule "packages/Hook"]
+	path = packages/Hook
+	url = https://github.com/BrokenSource/Hook
