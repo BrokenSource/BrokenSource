@@ -44,7 +44,7 @@ extra = [
     "numpy",
     # Data structures
     "intervaltree~=3.1.0",
-    "cachetools~=6.1.0",
+    "cachetools~=6.2.0",
     "diskcache~=5.6.3",
     # Utils
     "halo~=0.0.31",
@@ -62,20 +62,20 @@ dev = [
     "mkdocs-gen-files~=0.5.0",
     "mkdocs-autorefs~=1.4.2",
     "mkdocs-section-index~=0.3.10",
-    "mkdocs-material~=9.6.17",
+    "mkdocs-material~=9.6.18",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-site-urls~=0.3.0",
     "markdown-callouts~=0.4.0",
     "cairosvg~=2.8.2",
     "black~=25.1.0",
     # Build system and testing
-    "pytest-sugar~=1.1.0",
+    "pytest-sugar~=1.1.1",
     "hatchling~=1.27.0",
     # Profiling tools
     "snakeviz~=2.2.2",
     "tuna~=0.5.11",
     # Staging
-    "yt-dlp~=2025.8.20",
+    "yt-dlp~=2025.8.22",
     "ollama~=0.5.3",
     # "modal~=0.74.12",
     # "runpod~=1.7.9",

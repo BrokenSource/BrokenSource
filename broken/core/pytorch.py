@@ -58,12 +58,21 @@ class TorchRelease(str, BrokenEnum):
     TORCH_271_ROCM_630 = "2.7.1+rocm6.3"
     TORCH_271_XPU      = "2.7.1+xpu"
     # ---------------------------------- #
+    TORCH_280_MACOS    = "2.8.0"
+    TORCH_280_CPU      = "2.8.0+cpu"
+    TORCH_280_CUDA_126 = "2.8.0+cu126"
+    TORCH_280_CUDA_128 = "2.8.0+cu128"
+    TORCH_280_CUDA_129 = "2.8.0+cu129"
+    TORCH_280_ROCM_630 = "2.8.0+rocm6.3"
+    TORCH_280_ROCM_640 = "2.8.0+rocm6.4"
+    TORCH_280_XPU      = "2.8.0+xpu"
+    # ---------------------------------- #
 
     # # Differentiators
 
     @property
     def number(self) -> Version:
-        """The number part of the version '2.6.0'"""
+        """The number part of the version eg '2.6.0'"""
         return Version(self.value.split("+")[0])
 
     @property
@@ -115,7 +124,7 @@ class TorchRelease(str, BrokenEnum):
     @property
     @functools.lru_cache
     def is_nightly(self) -> bool:
-        if self.number < Version("2.8.0"):
+        if self.number <= Version("2.8.0"):
             return False
         with BrokenCache.package_info("torch") as package:
             return (Version(package.info.version) < self.number)
@@ -154,12 +163,12 @@ class TorchRelease(str, BrokenEnum):
 
 class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
-    CPU     = TorchRelease.TORCH_271_CPU
-    MACOS   = TorchRelease.TORCH_271_MACOS
+    CPU     = TorchRelease.TORCH_280_CPU
+    MACOS   = TorchRelease.TORCH_280_MACOS
     CUDA118 = TorchRelease.TORCH_271_CUDA_118
-    CUDA128 = TorchRelease.TORCH_271_CUDA_128
-    ROCM    = TorchRelease.TORCH_271_ROCM_630
-    XPU     = TorchRelease.TORCH_271_XPU
+    CUDA128 = TorchRelease.TORCH_280_CUDA_128
+    ROCM    = TorchRelease.TORCH_280_ROCM_640
+    XPU     = TorchRelease.TORCH_280_XPU
 
     @classmethod
     def _prompt_choices(cls) -> Iterable[str]:
