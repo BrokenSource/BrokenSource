@@ -103,13 +103,11 @@
 			{"tag": "nice",         "color": "#00FF00"},
 			{"tag": "note",         "color": "#584576"},
 			{"tag": "optimization", "color": "#3498DB"},
+			{"tag": "stable",       "color": "#00FF00"},
 			{"tag": "todo",         "color": "#FF8C00"},
 			{"tag": "warn",         "color": "#FCC203"},
 			{"tag": "workaround",   "color": "#3498DB"},
 		],
-
-		// It's not like screens are small anymore
-		"comment-divider.length": 100,
 
 		// Independent meson projects
 		"mesonbuild.selectRootDir": false,
