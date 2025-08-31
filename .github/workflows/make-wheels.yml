@@ -24,8 +24,8 @@ jobs:
         run: uv build --wheel --package ${{github.event.repository.name}}
 
       - name: Publish wheels
-        if: ${{ inputs.publish }}
-        run: uv publish dist/*
+        if: ${{inputs.publish}}
+        run: uv publish
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
