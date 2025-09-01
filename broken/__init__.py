@@ -130,11 +130,12 @@ if Environment.flag("RICH_TRACEBACK", 1):
 
 # --------------------------- Information about the release and version -------------------------- #
 
+import importlib.metadata
 import site
 from importlib.metadata import Distribution
 from pathlib import Path
 
-from broken.version import __version__
+__version__ = importlib.metadata.version("broken-source")
 
 
 class Runtime:

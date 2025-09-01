@@ -22,7 +22,6 @@ class BrokenLauncher(ABC, BrokenAttrs):
     def __post__(self):
         self.cli.should_shell()
         self.cli.description = self.PROJECT.ABOUT
-        self.main()
 
     @abstractmethod
     def main(self) -> None:

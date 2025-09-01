@@ -78,8 +78,6 @@ dev = [
     # Staging
     "yt-dlp~=2025.8.27",
     "ollama~=0.5.3",
-    # "modal~=0.74.12",
-    # "runpod~=1.7.9",
 ]
 
 [project.scripts]
@@ -88,10 +86,11 @@ broken = "broken.__main__:main"
 # ---------------------------------------------------------------------------- #
 # Hatchling
 
-[tool.hatch.metadata.hooks.plugin]
 [build-system]
 requires = ["hatchling", "hook@git+https://github.com/BrokenSource/Hook/"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata.hooks.plugin]
 
 [tool.hatch.build.targets.wheel]
 packages = ["broken"]
