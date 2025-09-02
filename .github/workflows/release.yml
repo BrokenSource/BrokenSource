@@ -1,0 +1,89 @@
+name: release
+on:
+  workflow_dispatch:
+    inputs:
+      website:
+        required: true
+        type: boolean
+      wheels:
+        required: true
+        type: boolean
+      pypi:
+        required: true
+        type: boolean
+      pyaket:
+        required: true
+        type: boolean
+      tag:
+        required: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  main:
+    name: Make wheels
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: BrokenSource/BrokenSource@main
+
+      - name: Find version
+        id: metadata
+        run: |
+          echo ::set-output name=version::$(uv version --short --package ${{github.event.repository.name}})
+
+      # Website
+
+      - name: Make Website
+        if: ${{inputs.website}}
+        run: |
+          uv run --directory */${{github.event.repository.name}} \
+          mkdocs gh-deploy --force --no-history
+
+      # Wheels option
+
+      - name: Make wheels
+        if: ${{inputs.wheels || inputs.pypi}}
+        run: uv build --wheel --package ${{github.event.repository.name}}
+
+      - name: Upload wheels
+        if: ${{inputs.wheels || inputs.pypi}}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/*
+
+      # Publish option
+
+      - name: Publish wheels
+        if: ${{inputs.pypi}}
+        run: uv publish
+
+      # Pyaket binaries
+
+      - name: Make binaries
+        if: ${{inputs.pyaket}}
+        run: uv run pyaket # todo
+
+      - name: Create release
+        if: ${{inputs.pyaket}}
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release v${{steps.metadata.outputs.version}}
+          tag_name: v${{steps.metadata.outputs.version}}
+          files: |
+            dist/*.whl
+            release/*
+
+      # Make tag
+
+      - name: Create tag
+        if: ${{inputs.tag}}
+        run: |
+          git tag -a v${{steps.metadata.outputs.version}} -m "Release v${{steps.metadata.outputs.version}}"
+          git push origin v${{steps.metadata.outputs.version}}
+

@@ -13,27 +13,21 @@ from typing import Annotated, Generator, Literal, Optional, Self, TypeAlias, Uni
 
 import numpy as np
 import typer
-from attr import define
+from attrs import define
 from halo import Halo
+from loguru import logger
 from pydantic import ConfigDict, Field, field_validator
 from typer import Option
 
-from broken import (
-    BrokenEnum,
-    BrokenModel,
-    BrokenPath,
-    BrokenPlatform,
-    denum,
-    every,
-    flatten,
-    log,
-    nearest,
-    shell,
-)
-from broken.core.typerx import BrokenTyper
+from broken.enumx import BrokenEnum
+from broken.model import BrokenModel
+from broken.path import BrokenPath
+from broken.system import BrokenPlatform
+from broken.typerx import BrokenTyper
 from broken.types import Bytes, Hertz, Seconds
+from broken.utils import denum, every, flatten, nearest, shell
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class FFmpegModuleBase(BrokenModel, ABC):
     model_config = ConfigDict(
@@ -45,7 +39,7 @@ class FFmpegModuleBase(BrokenModel, ABC):
     def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
         ...
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 # Fixme: Remove workaround https://github.com/fastapi/typer/pull/429#issuecomment-2491043848
 # everywhere until PR https://github.com/fastapi/typer/pull/429 is merged
@@ -101,7 +95,7 @@ FFmpegInputType: TypeAlias = Union[
     FFmpegInputPipe,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class FFmpegOutputPath(FFmpegModuleBase):
     type: Annotated[Literal["path"], BrokenTyper.exclude()] = "path"
@@ -160,7 +154,7 @@ FFmpegOutputType = Union[
     FFmpegOutputPath,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 # Note: See full help with `ffmpeg -h encoder=h264`
 class FFmpegVideoCodecH264(FFmpegModuleBase):
@@ -734,7 +728,7 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecCopy,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class FFmpegAudioCodecAAC(FFmpegModuleBase):
     """Use the [blue][link=https://trac.ffmpeg.org/wiki/Encode/AAC]Advanced Audio Codec (AAC)[/link][/]"""
@@ -882,7 +876,7 @@ FFmpegAudioCodecType: TypeAlias = Union[
     FFmpegAudioCodecPCM,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class FFmpegFilterBase(BrokenModel, ABC):
 
@@ -939,7 +933,7 @@ FFmpegFilterType: TypeAlias = Union[
     FFmpegFilterCustom
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class BrokenFFmpeg(BrokenModel):
     """💎 Your premium FFmpeg class, serializable, sane defaults, safety"""
@@ -1344,7 +1338,7 @@ class BrokenFFmpeg(BrokenModel):
             return None
 
         if (not BrokenPlatform.OnMacOS):
-            log.info("FFmpeg wasn't found on System Path, will download a BtbN's Build")
+            logger.info("FFmpeg wasn't found on System Path, will download a BtbN's Build")
             BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
                 "ffmpeg-master-latest-",
@@ -1353,7 +1347,7 @@ class BrokenFFmpeg(BrokenModel):
                 ("-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz")
             )))
         else:
-            log.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")
+            logger.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")
             ffprobe = BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip", redirect=True)
             ffmpeg  = BrokenPath.get_external("https://evermeet.cx/ffmpeg/getrelease/zip", redirect=True)
 
@@ -1381,7 +1375,7 @@ class BrokenFFmpeg(BrokenModel):
         # Optional override or inline
         output = (output or path)
         looped = output.with_stem(f"{output.stem}-{times}-loops")
-        log.info(f"Looping video ({path}) {times}x times to ({output})", echo=echo)
+        logger.info(f"Looping video ({path}) {times}x times to ({output})", echo=echo)
 
         # Fastest way to loop a video, no re-encoding
         (BrokenFFmpeg(stream_loop=(times - 1)).quiet().copy_audio().copy_video()
@@ -1397,7 +1391,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Video Resolution of ({path})", echo=echo)
+        logger.minor(f"Getting Video Resolution of ({path})", echo=echo)
         import PIL
         return PIL.Image.open(io.BytesIO(shell(
             "ffmpeg", "-hide_banner", "-loglevel", "error",
@@ -1412,7 +1406,7 @@ class BrokenFFmpeg(BrokenModel):
             return None
         BrokenFFmpeg.install()
         (width, height) = BrokenFFmpeg.get_video_resolution(path)
-        log.minor(f"Streaming Video Frames from file ({path}) @ ({width}x{height})", echo=echo)
+        logger.minor(f"Streaming Video Frames from file ({path}) @ ({width}x{height})", echo=echo)
         ffmpeg = (BrokenFFmpeg(vsync="cfr")
             .quiet()
             .input(path=path)
@@ -1447,7 +1441,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        with Halo(log.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
+        with Halo(logger.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
             return int(re.compile(r"frame=\s*(\d+)").findall((
                 BrokenFFmpeg(vsync="cfr")
                 .input(path=path)
@@ -1460,7 +1454,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Video Duration of file ({path})", echo=echo)
+        logger.minor(f"Getting Video Duration of file ({path})", echo=echo)
         return float(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
@@ -1475,7 +1469,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Video Framerate of file ({path})", echo=echo)
+        logger.minor(f"Getting Video Framerate of file ({path})", echo=echo)
         if precise:
             A = BrokenFFmpeg.get_video_total_frames(path, echo=False)
             B = BrokenFFmpeg.get_video_duration(path, echo=False)
@@ -1497,7 +1491,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
+        logger.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
         return int(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
@@ -1512,7 +1506,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Audio Channels of file ({path})", echo=echo)
+        logger.minor(f"Getting Audio Channels of file ({path})", echo=echo)
         return int(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
@@ -1536,10 +1530,10 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        log.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
+        logger.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
         return np.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 # BrokenFFmpeg Spin-offs
 
 @define

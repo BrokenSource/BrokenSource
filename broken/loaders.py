@@ -6,17 +6,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
 
 import validators
-from attr import define
+from attrs import define
 from PIL import Image
 from PIL.Image import Image as ImageType
 
 import broken
-from broken import BrokenCache, BrokenPath
+from broken.path import BrokenPath
+from broken.utils import BrokenCache
 
 if TYPE_CHECKING:
     import numpy as np
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class BrokenLoader(ABC):
@@ -29,7 +30,7 @@ class BrokenLoader(ABC):
     def load(value: Any=None, **kwargs) -> Optional[type]:
         ...
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class LoadString(BrokenLoader):
@@ -52,7 +53,7 @@ class LoadString(BrokenLoader):
 
 LoadableString: TypeAlias = Union[str, bytes, Path]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class LoadBytes(BrokenLoader):
@@ -75,7 +76,7 @@ class LoadBytes(BrokenLoader):
 
 LoadableBytes: TypeAlias = Union[bytes, str, Path, None]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class LoadImage(BrokenLoader):
@@ -83,9 +84,11 @@ class LoadImage(BrokenLoader):
 
     @staticmethod
     def cache() -> Any:
+        from broken.project import PROJECT
+
         with contextlib.suppress(ImportError):
             LoadImage._cache = (LoadImage._cache or BrokenCache.requests(
-                cache_name=BrokenPath.mkdir(broken.PROJECT.DIRECTORIES.CACHE)/"requests.sqlite",
+                cache_name=BrokenPath.mkdir(PROJECT.DIRECTORIES.CACHE)/"requests.sqlite",
                 expire_after=1800
             ))
         return LoadImage._cache
@@ -151,4 +154,31 @@ LoadableImage: TypeAlias = Union[
     str
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
+
+"""
+# Fixme (idea)
+
+```python
+class BrokenBatch(ABC):
+    loader: BaseHandler
+    export: BaseHandler
+
+    def __iter__(self,
+        inputs: Any,
+        output: Any,
+    ) -> Iterable[tuple[Any, Path]]:
+
+        for item in flatten(inputs):
+            yield self.process(item)
+
+    # @abstractmethod
+    # def process(self, item: Any) -> tuple[Any, Path]:
+    #     ...
+
+batch = BrokenBatch(
+    loader=ImageHandler("~/Public/Images"),
+    export=VideoHandler("~/Public/Output"),
+)
+```
+"""

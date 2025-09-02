@@ -14,13 +14,14 @@ import click
 import rich
 import typer
 import typer.rich_utils
-from attr import Factory, define
+from attrs import Factory, define
+from loguru import logger
 from pydantic import BaseModel
 from typer.models import OptionInfo
 
-from broken import Environment, Runtime, log
-from broken.core import apply, flatten, list_get, shell
-from broken.core.system import BrokenPlatform
+from broken.envy import Environment, Runtime
+from broken.system import BrokenPlatform
+from broken.utils import list_get, shell
 
 # Apply custom styling to typer
 typer.rich_utils.STYLE_METAVAR = "italic grey42"
@@ -55,12 +56,16 @@ class BrokenTyper:
     naih: bool = True
     """No args is help"""
 
-    credits: str = (
-        f"• Made by [green][link=https://github.com/Tremeschin/]Tremeschin[/link][/] [yellow]{Runtime.Method} v{Runtime.Version}[/]\n\n"
-        "[italic grey53]→ Consider [blue][link=https://github.com/sponsors/Tremeschin/]Supporting[/link][/blue] my work [red]:heart:[/]"
-    )
+    version: str = "0.0.0"
+    """Version of the application"""
+
+    credits: str = None
 
     def __attrs_post_init__(self):
+        self.credits = self.credits or (
+            f"• Made by [green][link=https://github.com/Tremeschin/]Tremeschin[/link][/] [yellow]{Runtime.Method} v{self.version}[/]\n\n"
+            "[italic grey53]→ Consider [blue][link=https://github.com/sponsors/Tremeschin/]Supporting[/link][/blue] my work [red]:heart:[/]"
+        )
         self.app = typer.Typer(
             add_help_option=self.help,
             pretty_exceptions_enable=False,
@@ -233,17 +238,19 @@ class BrokenTyper:
     @staticmethod
     def simple(*commands: Callable) -> None:
         app = BrokenTyper()
-        apply(app.command, commands)
+        for item in commands:
+            app.command(item)
         return app(*sys.argv[1:])
 
     @staticmethod
-    def toplevel() -> BrokenTyper:
+    def toplevel(**options) -> BrokenTyper:
         return BrokenTyper(
             help=False,
             description = (
                 "[bold orange3]Note:[/] The default command is implicit when no other is given directly\n\n"
                 "[bold grey58]→ This means [orange3]'entry (default) (args)'[/] is the same as [orange3]'entry (args)'[/]\n"
-            )
+            ),
+            **options
         ).should_shell()
 
     @staticmethod
@@ -311,7 +318,7 @@ class BrokenTyper:
             ))
             return True
         except (click.exceptions.Abort, KeyboardInterrupt):
-            log.trace(f"{type(self)} shell prompt exit KeyboardInterrupt")
+            logger.trace(f"{type(self)} shell prompt exit KeyboardInterrupt")
         return False
 
     # -------------------------------------------|
@@ -330,12 +337,12 @@ class BrokenTyper:
             Send sys.argv[1:] if running directly from user input
         """
         if (not self.commands):
-            log.warn("No commands were added to the Typer app")
+            logger.warn("No commands were added to the Typer app")
             return None
 
         # Minor pre-processing
         self.app.info.help = (self.description or "No help provided for this CLI")
-        sys.argv[1:] = apply(str, flatten(args))
+        sys.argv[1:] = list(map(str, args))
 
         for cycle in itertools.count(0):
 
@@ -368,13 +375,13 @@ class BrokenTyper:
                 pass
 
             except KeyboardInterrupt:
-                log.ok(f"{type(self)} exit KeyboardInterrupt")
+                logger.ok(f"{type(self)} exit KeyboardInterrupt")
 
             except Exception as error:
                 if (not self.shell):
                     raise error
                 console.print_exception(); print() # noqa
-                log.error(f"{type(self)} exited with error: {repr(error)}")
+                logger.error(f"{type(self)} exited with error: {repr(error)}")
                 input("\nPress Enter to continue..")
 
             # Exit out non-repl mode

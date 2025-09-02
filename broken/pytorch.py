@@ -7,14 +7,15 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Iterable, Optional, Union
 
+from loguru import logger
 from packaging.version import Version
 from typer import Option
 
-from broken import BrokenCache, Environment, Runtime, log
-from broken.core import denum, every, shell
-from broken.core.enumx import BrokenEnum
-from broken.core.system import BrokenPlatform
-from broken.core.typerx import BrokenTyper
+from broken.enumx import BrokenEnum
+from broken.envy import Environment, Runtime
+from broken.system import BrokenPlatform
+from broken.typerx import BrokenTyper
+from broken.utils import BrokenCache, denum, every, shell
 
 # Nightly builds are daily and it's safe-ish to use 'yesterday' as the dev version
 YESTERDAY: str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%d")
@@ -108,7 +109,7 @@ class TorchRelease(str, BrokenEnum):
         yield "torchaudio"
 
     def install(self, reinstall: bool=False) -> subprocess.CompletedProcess:
-        log.info(f"Installing PyTorch version ({self.value})")
+        logger.info(f"Installing PyTorch version ({self.value})")
         return shell(sys.executable, "-m", "uv",
             "pip", "install", self.packages,
             every("--index-url", self.index),
@@ -232,7 +233,7 @@ class SimpleTorch(BrokenEnum):
 
         return denum(SimpleTorch.get(choice.upper()))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class BrokenTorch:
 
@@ -284,28 +285,28 @@ class BrokenTorch:
         if (exists_ok and (installed or "torch" in sys.argv)):
             return None
 
-        log.info(f"Currently installed PyTorch version: {denum(installed)}")
+        logger.info(f"Currently installed PyTorch version: {denum(installed)}")
 
         # Ask interactively if no flavor was provided
         if not (version := TorchRelease.get(version)):
 
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
-                log.info("• Assuming Linux server with NVIDIA GPU")
+                logger.info("• Assuming Linux server with NVIDIA GPU")
                 version = denum(SimpleTorch.CUDA124)
 
             # Fixed single version for macOS
             if BrokenPlatform.OnMacOS:
-                log.info("• There is only one PyTorch version for macOS")
+                logger.info("• There is only one PyTorch version for macOS")
                 version = denum(SimpleTorch.MACOS)
 
             else:
                 version = SimpleTorch.prompt()
 
         if (installed == version) and (not reinstall):
-            log.info("• Requested torch version matches current one!")
+            logger.info("• Requested torch version matches current one!")
             if version.is_nightly:
-                log.info("• Use '--reinstall' to force a nightly update")
+                logger.info("• Use '--reinstall' to force a nightly update")
             return
 
         version.install(reinstall=reinstall)

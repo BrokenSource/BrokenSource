@@ -8,21 +8,19 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TypeAlias, Union
 
+from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import ConfigDict, Field
 from typer import Option
 
-from broken import (
-    BrokenEnum,
-    BrokenModel,
-    denum,
-    log,
-)
-from broken.core.extra.loaders import LoadableImage, LoadImage
-from broken.core.extra.resolution import BrokenResolution
-from broken.core.typerx import BrokenTyper
+from broken.enumx import BrokenEnum
 from broken.externals import ExternalModelsBase
+from broken.loaders import LoadableImage, LoadImage
+from broken.model import BrokenModel
+from broken.resolution import BrokenResolution
+from broken.typerx import BrokenTyper
+from broken.utils import denum
 
 
 class UpscalerBase(ExternalModelsBase, ABC):
@@ -179,7 +177,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
                 if (self.output is None):
                     self.output = input.with_stem(f"{input.stem}-upscaled")
                 upscaled = self.upscale(image=input, output=self.output)
-                log.info(f"Saved upscaled image to {upscaled}")
+                logger.info(f"Saved upscaled image to {upscaled}")
 
         return (typer.command(
             target=CommandLine, name=name,
@@ -187,7 +185,7 @@ class UpscalerBase(ExternalModelsBase, ABC):
             post=CommandLine._post,
         ) or typer)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class PillowUpscaler(UpscalerBase):
     type: Annotated[Literal["pillow"], BrokenTyper.exclude()] = "pillow"
@@ -209,7 +207,7 @@ class NoUpscaler(UpscalerBase):
     def _upscale(self, image: ImageType) -> ImageType:
         return image
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 from broken.externals.upscaler.ncnn import Realesr, Upscayl, Waifu2x
 
@@ -222,4 +220,4 @@ BrokenUpscaler: TypeAlias = Union[
     Waifu2x,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #

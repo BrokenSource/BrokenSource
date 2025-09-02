@@ -2,7 +2,7 @@
 INCLUDE ./docker/include/base.dockerfile
 INCLUDE ./docker/include/opengl.dockerfile
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 LABEL org.opencontainers.image.title="OpenGL Diagnosis"
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \

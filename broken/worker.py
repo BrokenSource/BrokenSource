@@ -17,14 +17,12 @@ from time import perf_counter as now
 from typing import Any, Self, TypeAlias, Union
 from uuid import UUID, uuid4
 
-from attr import Factory, define, field
-
-from broken import log
+from attrs import Factory, define, field
 
 WorkerType: TypeAlias = Union[Thread, Process]
 """Any stdlib concurrency primitive"""
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define(eq=False)
 class WorkerTask:
@@ -45,7 +43,7 @@ class WorkerTask:
     def __eq__(self, other: Self) -> bool:
         return (hash(self) == hash(other))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class BrokenWorker:
@@ -323,7 +321,6 @@ class BrokenWorker:
         except GeneratorExit:
             pass
         except Exception as error:
-            log.error(f"Task {task.uuid} failed: {error}")
             self.store(task, error)
 
         with self._phoenix:
@@ -335,13 +332,12 @@ class BrokenWorker:
     @abstractmethod
     def main(self, tasks: Iterable[Callable]) -> Iterable[Any]:
         """A worker get tasks and yields results, calls them by default"""
-
-        log.ok(f"Callable {self.type.__name__} worker started")
+        print(f"Callable {self.type.__name__} worker started")
 
         for task in tasks:
             yield task()
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class __PyTest__:
     ...

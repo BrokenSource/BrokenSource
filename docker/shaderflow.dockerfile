@@ -6,7 +6,7 @@ INCLUDE ./docker/include/pulse.dockerfile
 INCLUDE ./docker/include/ffmpeg.dockerfile
 INCLUDE ./docker/include/code.dockerfile
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 LABEL org.opencontainers.image.title="ShaderFlow"
 LABEL org.opencontainers.image.description="Modular shader engine designed for simplicity and speed"

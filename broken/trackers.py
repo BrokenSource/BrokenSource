@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
-from attr import Factory, define, field
+from attrs import Factory, define, field
 from dotmap import DotMap
 
 if TYPE_CHECKING:

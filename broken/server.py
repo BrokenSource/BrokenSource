@@ -5,14 +5,14 @@ from base64 import b64encode
 from typing import Annotated
 
 import uvicorn
-from attr import Factory, define
+from attrs import Factory, define
 from fastapi import FastAPI
 from typer import Option
 
-from broken.core.system import BrokenPlatform
-from broken.core.worker import BrokenWorker
+from broken.system import BrokenPlatform
+from broken.worker import BrokenWorker
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class Hosts:
     LOOPBACK: str = "127.0.0.1"
@@ -22,7 +22,7 @@ class Hosts:
 DEFAULT_HOST: str = (Hosts.WILDCARD if BrokenPlatform.OnUnix else Hosts.LOOPBACK)
 DEFAULT_PORT: int = 8000
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 HostType = Annotated[str, Option("--host", "-h",
     help="Target Hostname to run the server on")]
@@ -39,7 +39,7 @@ QueueType = Annotated[int, Option("--queue", "-q", min=1,
 BlockType = Annotated[bool, Option("--block", "-b", " /--free", " /-f",
     help="Block the current thread until the server stops")]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class BrokenServer:

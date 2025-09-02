@@ -1,19 +1,19 @@
 """
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 (c) 2024, Tremeschin, MIT License
 
 Example file for running the projects / DepthFlow on [Modal](https://modal.com/). Be sure to follow
   their [User Guide](https://modal.com/docs/guide) for the initial setup (cli, tokens, etc)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 Warn: The T4 GPU seems to be the only one with OpenGL acceleration enabled on Modal by default,
   and have plenty horsepower for this project. If this/other GPUs doesn't show up as a OpenGL
   renderer ("llvmpipe" instead), you should ask the support team to enable `graphics, video`
   capabilities on your workspace. Failing to do so will render at abysmal speeds.
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 """
 
 from io import BytesIO

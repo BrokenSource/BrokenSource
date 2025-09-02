@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Annotated
 from pydantic import Field
 from typer import Option
 
-from broken import BROKEN, install
 from broken.externals import ExternalModelsBase, ExternalTorchBase
+from broken.project import BROKEN
+from broken.utils import install
 
 if TYPE_CHECKING:
     import audio_separator

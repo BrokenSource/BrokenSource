@@ -5,7 +5,7 @@ INCLUDE ./docker/include/rust.dockerfile
 INCLUDE ./docker/include/gcc.dockerfile
 INCLUDE ./docker/include/code.dockerfile
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 LABEL org.opencontainers.image.title="Pyaket"
 LABEL org.opencontainers.image.description="📦 Easy Python to → Fast Executables"

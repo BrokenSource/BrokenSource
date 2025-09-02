@@ -5,9 +5,10 @@ from collections.abc import Iterable
 from typing import Optional, Self
 
 import distro
+from loguru import logger
 
-from broken import Environment, log
-from broken.core.enumx import BrokenEnum, MultiEnum
+from broken.enumx import BrokenEnum, MultiEnum
+from broken.envy import Environment
 
 
 class SystemEnum(str, MultiEnum):
@@ -202,7 +203,7 @@ class BrokenPlatform:
 
     @staticmethod
     def log_system_info() -> None:
-        log.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
+        logger.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
 
     @staticmethod
     def clear_terminal() -> None:

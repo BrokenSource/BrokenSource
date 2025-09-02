@@ -4,11 +4,14 @@ from typing import Annotated
 
 import ollama
 from halo import Halo
+from loguru import logger
 from pydantic import Field
 from typer import Option
 
-from broken import BrokenPath, BrokenPlatform, log, shell
 from broken.externals import ExternalModelsBase
+from broken.path import BrokenPath
+from broken.system import BrokenPlatform
+from broken.utils import shell
 
 
 class BrokenOllama(ExternalModelsBase):
@@ -20,7 +23,7 @@ class BrokenOllama(ExternalModelsBase):
         if bool(shutil.which("ollama")):
             return
 
-        log.warn("Ollama binary [green]'ollama'[/] wasn't found on PATH, installing..")
+        logger.warn("Ollama binary [green]'ollama'[/] wasn't found on PATH, installing..")
 
         if BrokenPlatform.OnMacOS:
             raise RuntimeError("Ollama installaion on macOS is untested, please get it at their website")
@@ -30,11 +33,11 @@ class BrokenOllama(ExternalModelsBase):
             url = "https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip"
 
         elif BrokenPlatform.OnLinux:
-            log.warn("")
-            log.warn("The installation on Linux is slightly non-trivial, and it's better to use their official script")
-            log.warn("• Please, get it at their website https://ollama.com/download/linux")
-            log.warn("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[/]")
-            log.warn("• Alternatively, install from your distro's package manager")
+            logger.warn("")
+            logger.warn("The installation on Linux is slightly non-trivial, and it's better to use their official script")
+            logger.warn("• Please, get it at their website https://ollama.com/download/linux")
+            logger.warn("• Hint: run [green]'curl -fsSL https://ollama.com/install.sh | sh'[/]")
+            logger.warn("• Alternatively, install from your distro's package manager")
             exit(0)
 
         BrokenPath.get_external(url)

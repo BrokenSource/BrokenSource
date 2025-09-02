@@ -9,33 +9,30 @@ import numpy as np
 import xxhash
 from diskcache import Cache as DiskCache
 from halo import Halo
+from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import Field, PrivateAttr
 from typer import Option
 
-import broken
-from broken import (
-    BrokenCache,
-    BrokenEnum,
-    BrokenModel,
-    BrokenPath,
-    Environment,
-    install,
-    log,
-)
-from broken.core.extra.loaders import LoadableImage, LoadImage
-from broken.core.extra.resolution import BrokenResolution
-from broken.core.typerx import BrokenTyper
-from broken.core.vectron import Vectron
+from broken.enumx import BrokenEnum
+from broken.envy import Environment
 from broken.externals import ExternalModelsBase, ExternalTorchBase
+from broken.loaders import LoadableImage, LoadImage
+from broken.model import BrokenModel
+from broken.path import BrokenPath
+from broken.project import PROJECT
+from broken.resolution import BrokenResolution
+from broken.typerx import BrokenTyper
 from broken.types import MiB
+from broken.utils import BrokenCache, install
+from broken.vectron import Vectron
 
 if TYPE_CHECKING:
     import diffusers
     import torch
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class DepthEstimatorBase(
     ExternalTorchBase,
@@ -43,7 +40,7 @@ class DepthEstimatorBase(
     ABC
 ):
     _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
-        directory=BrokenPath.mkdir(broken.PROJECT.DIRECTORIES.CACHE/"depthmap"),
+        directory=BrokenPath.mkdir(PROJECT.DIRECTORIES.CACHE/"depthmap"),
         size_limit=int(Environment.float("DEPTHMAP_CACHE_SIZE_MB", 50)*MiB),
     ))
     """DiskCache object for caching depth maps"""
@@ -124,11 +121,11 @@ class DepthEstimatorBase(
             def _post(self):
                 if (self.output is None):
                     self.output = Path(self.input).with_suffix(".depth.png")
-                log.info(f"Estimating depthmap for {self.input}")
+                logger.info(f"Estimating depthmap for {self.input}")
                 depth = self.estimate(image=self.input)
                 depth = Vectron.normalize(depth, dtype=self.dtype)
                 Image.fromarray(depth).save(self.output)
-                log.info(f"Depthmap saved to {self.output}")
+                logger.info(f"Depthmap saved to {self.output}")
 
         return (typer.command(
             target=CommandLine, name=name,
@@ -136,7 +133,7 @@ class DepthEstimatorBase(
             post=CommandLine._post,
         ) or typer)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class DepthAnythingBase(DepthEstimatorBase):
     class Model(str, BrokenEnum):
@@ -156,9 +153,9 @@ class DepthAnythingBase(DepthEstimatorBase):
 
     def _load_model(self) -> None:
         import transformers
-        log.info(f"Loading Depth Estimator model ({self._huggingface_model})")
+        logger.info(f"Loading Depth Estimator model ({self._huggingface_model})")
         if (self.model != self.Model.Small):
-            log.warn("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
+            logger.warn("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
         self._processor = BrokenCache.lru(transformers.AutoImageProcessor.from_pretrained)(self._huggingface_model, use_fast=False)
         self._model = BrokenCache.lru(transformers.AutoModelForDepthEstimation.from_pretrained)(self._huggingface_model)
         self._model.to(self.device)
@@ -170,7 +167,7 @@ class DepthAnythingBase(DepthEstimatorBase):
             depth = self._model(**inputs).predicted_depth
         return depth.squeeze(1).cpu().numpy()[0]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class DepthAnythingV1(DepthAnythingBase):
     """Configure and use DepthAnythingV1 [dim](by https://github.com/LiheYoung/Depth-Anything)[/]"""
@@ -186,7 +183,7 @@ class DepthAnythingV1(DepthAnythingBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
@@ -215,7 +212,7 @@ class DepthAnythingV2(DepthAnythingBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class DepthPro(DepthEstimatorBase):
     """Configure and use DepthPro        [dim](by https://github.com/apple/ml-depth-pro)[/]"""
@@ -225,7 +222,7 @@ class DepthPro(DepthEstimatorBase):
     _transform: Any = PrivateAttr(None)
 
     def _load_model(self) -> None:
-        log.info("Loading Depth Estimator model (DepthPro)")
+        logger.info("Loading Depth Estimator model (DepthPro)")
         install(package="depth_pro", pypi="git+https://github.com/apple/ml-depth-pro")
 
         # Download external checkpoint model
@@ -269,7 +266,7 @@ class DepthPro(DepthEstimatorBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class ZoeDepth(DepthEstimatorBase):
     """Configure and use ZoeDepth        [dim](by https://github.com/isl-org/ZoeDepth)[/]"""
@@ -287,7 +284,7 @@ class ZoeDepth(DepthEstimatorBase):
     def _load_model(self) -> None:
         install(package="timm", pypi="timm==0.6.7", args="--no-deps")
 
-        log.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
+        logger.info(f"Loading Depth Estimator model (ZoeDepth-{self.model.value})")
         self._model = BrokenCache.lru(torch.hub.load)(
             "isl-org/ZoeDepth", f"ZoeD_{self.model.value.upper()}",
             pretrained=True, trust_repo=True
@@ -302,7 +299,7 @@ class ZoeDepth(DepthEstimatorBase):
     def _thicken(self, depth: np.ndarray) -> np.ndarray:
         return depth
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class Marigold(DepthEstimatorBase):
     """Configure and use Marigold        [dim](by https://github.com/prs-eth/Marigold)[/]"""
@@ -321,8 +318,8 @@ class Marigold(DepthEstimatorBase):
 
         from diffusers import DiffusionPipeline
 
-        log.info("Loading Depth Estimator model (Marigold)")
-        log.warn("Note: Use FP16 for CPU, but it's VERY SLOW")
+        logger.info("Loading Depth Estimator model (Marigold)")
+        logger.warn("Note: Use FP16 for CPU, but it's VERY SLOW")
         self._model = BrokenCache.lru(DiffusionPipeline.from_pretrained)(
             "prs-eth/marigold-depth-lcm-v1-0",
             custom_pipeline="marigold_depth_estimation",
@@ -347,7 +344,7 @@ class Marigold(DepthEstimatorBase):
         depth = maximum_filter(input=depth, size=5)
         return depth
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 DepthEstimator: TypeAlias = Union[
     DepthEstimatorBase,

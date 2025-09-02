@@ -6,29 +6,24 @@ from collections.abc import Callable, Iterable
 from threading import Lock
 from typing import Any, Optional, Self
 
-from attr import Factory, define, field
+from attrs import Factory, define, field
 
-# ------------------------------------------------------------------------------------------------ #
+NULL_CONTEXT = contextlib.nullcontext()
 
-def precise(sleep: float, *, error: float=0.001) -> None:
-    """A precise alternative of time.sleep(), low cpu near-end thread spin. Increases CPU usage."""
+def precise_sleep(sleep: float, *, error: float=0.001) -> None:
+    """Low cpu thread spin. Increases CPU usage."""
     start = time.perf_counter()
 
-    # Sleep close to the due time
+    # Sleep close due time, as it overshoots
     if (ahead := max(0, sleep - error)):
         time.sleep(ahead)
     else:
         return
 
-    # Spin the thread until the time is up (precise Sleep)
+    # Spin the thread until time is up
     while (time.perf_counter() - start) < sleep:
         pass
 
-time.precise = precise
-
-# ------------------------------------------------------------------------------------------------ #
-
-NULL_CONTEXT = contextlib.nullcontext()
 
 @define(eq=False)
 class SchedulerTask:
@@ -153,7 +148,7 @@ class SchedulerTask:
         # Block until due
         elif block:
             if self.precise:
-                time.precise(wait)
+                precise_sleep(wait)
             else:
                 time.sleep(wait)
 
@@ -186,7 +181,7 @@ class SchedulerTask:
         self.enabled = (not self.once)
         return self
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class BrokenScheduler:

@@ -5,20 +5,18 @@ from pathlib import Path
 from typing import Annotated, Self
 
 import toml
-from attr import Factory, define, field
+from attrs import Factory, define, field
 from dotmap import DotMap
+from loguru import logger
 from typer import Context, Option
 
-from broken import (
-    BROKEN,
-    BrokenEnum,
-    BrokenPath,
-    BrokenPlatform,
-    __version__,
-    log,
-    shell,
-)
-from broken.core.typerx import BrokenTyper
+from broken import __version__
+from broken.enumx import BrokenEnum
+from broken.path import BrokenPath
+from broken.project import BROKEN
+from broken.system import BrokenPlatform
+from broken.typerx import BrokenTyper
+from broken.utils import shell
 
 
 class ProjectLanguage(BrokenEnum):
@@ -142,7 +140,7 @@ class CodeProject:
         if self.is_rust:
             shell("cargo", "update")
         if self.is_cpp:
-            log.error("C++ projects are not supported yet")
+            logger.error("C++ projects are not supported yet")
 
     def run(self, ctx: Context,
         loop:  Annotated[bool, Option("--loop",  help="Press Enter after each run to run again")]=False,
@@ -155,11 +153,11 @@ class CodeProject:
             BrokenPlatform.clear_terminal() if clear else None
 
             if self.is_python:
-                log.info(f"Hey! Just type '{self.name.lower()}' to run the project directly, it's faster 😉")
+                logger.info(f"Hey! Just type '{self.name.lower()}' to run the project directly, it's faster 😉")
                 return
 
             elif self.is_rust:
-                raise RuntimeError(log.error("Rust projects are not supported yet"))
+                raise RuntimeError(logger.error("Rust projects are not supported yet"))
                 _status = shell(
                     "cargo", "run",
                     "--bin", self.name,
@@ -175,9 +173,9 @@ class CodeProject:
             elif self.is_cpp:
                 BUILD_DIR = (BROKEN.DIRECTORIES.REPO_BUILD/self.name)
                 if shell("meson", BUILD_DIR, "--reconfigure", "--buildtype", "release").returncode != 0:
-                    exit(log.error(f"Could not build project ({self.name})") or 1)
+                    exit(logger.error(f"Could not build project ({self.name})") or 1)
                 if shell("ninja", "-C", BUILD_DIR).returncode != 0:
-                    exit(log.error(f"Could not build project ({self.name})") or 1)
+                    exit(logger.error(f"Could not build project ({self.name})") or 1)
                 binary = next(BUILD_DIR.glob(f"{self.name.lower()}"))
                 shell(binary, ctx.args)
 
@@ -185,7 +183,7 @@ class CodeProject:
                 break
 
             import rich.prompt
-            log.ok(f"Project ({self.name}) finished successfully")
+            logger.ok(f"Project ({self.name}) finished successfully")
             if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                 break
 
@@ -200,7 +198,8 @@ class CodeProject:
         pyaket.build(all=True)
         pyaket.compile(output=BROKEN.DIRECTORIES.REPO_RELEASES)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
+
 
 SKIP_DIRECTORIES = {
     "venv", ".venv","__pycache__",

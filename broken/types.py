@@ -2,10 +2,6 @@ from math import pi as PI
 from pathlib import Path
 from typing import TypeAlias, Union
 
-from pydantic import HttpUrl
-
-PydanticImage = Union[str, Path, HttpUrl]
-
 # Custom types and utilities
 Unchanged: TypeAlias = None
 Channels:  TypeAlias = int

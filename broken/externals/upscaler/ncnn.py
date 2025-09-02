@@ -5,23 +5,19 @@ from pathlib import Path
 from subprocess import DEVNULL
 from typing import Annotated, Literal
 
+from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import Field, field_validator
 from typer import Option
 
-from broken import (
-    BrokenEnum,
-    BrokenPath,
-    BrokenPlatform,
-    Environment,
-    denum,
-    every,
-    log,
-    shell,
-)
-from broken.core.typerx import BrokenTyper
+from broken.enumx import BrokenEnum
+from broken.envy import Environment
 from broken.externals.upscaler import UpscalerBase
+from broken.path import BrokenPath
+from broken.system import BrokenPlatform
+from broken.typerx import BrokenTyper
+from broken.utils import denum, every, shell
 
 
 class UpscalerNCNN_Base(UpscalerBase):
@@ -91,7 +87,7 @@ class UpscalerNCNN_Base(UpscalerBase):
     def _load_model(self):
         self.download()
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class Waifu2x(UpscalerNCNN_Base):
     """Configure and use Waifu2x    [dim](by https://github.com/nihui/waifu2x-ncnn-vulkan)[/]"""
@@ -151,7 +147,7 @@ class Waifu2x(UpscalerNCNN_Base):
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class Realesr(UpscalerNCNN_Base):
     """Configure and use RealESRGAN [dim](by https://github.com/xinntao/Real-ESRGAN)[/]"""
@@ -205,7 +201,7 @@ class Realesr(UpscalerNCNN_Base):
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class Upscayl(UpscalerNCNN_Base):
     """Configure and use Upscayl    [dim](by https://github.com/upscayl/upscayl)[/]"""
@@ -263,7 +259,7 @@ class Upscayl(UpscalerNCNN_Base):
             Upscayl.Model.Ultramix,
             Upscayl.Model.Ultrasharp,
         )):
-            log.warn("[bold light_coral]• This upscaler model is non-commercial[/]")
+            logger.warn("[bold light_coral]• This upscaler model is non-commercial[/]")
 
         with self.path_image() as output:
             with self.path_image(input) as input:
@@ -285,4 +281,4 @@ class Upscayl(UpscalerNCNN_Base):
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #

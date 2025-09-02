@@ -7,17 +7,19 @@ from typing import Union
 
 import mkdocs_gen_files
 import yaml
-from attr import define, field
+from attrs import define, field
 from dotmap import DotMap
 
-from broken import BROKEN, BrokenPath, BrokenPlatform, apply
+from broken.path import BrokenPath
+from broken.project import BROKEN
+from broken.system import BrokenPlatform
 
 monorepo = BROKEN.DIRECTORIES.REPO_WEBSITE
 
 # Silence the site-urls plugin, it's too verbose / should be a lower level
 logging.getLogger('mkdocs.plugins.mkdocs_site_urls').setLevel(logging.ERROR)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 # Fix tabbed items without a parent <h2> header
 
 from pymdownx.tabbed import TabbedTreeprocessor
@@ -32,7 +34,7 @@ def get_parent_header_slug(*args, **kwargs):
 
 TabbedTreeprocessor.get_parent_header_slug = get_parent_header_slug
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define
 class BrokenMkdocs:
@@ -87,9 +89,11 @@ class BrokenMkdocs:
     def smartnav(self, nav: DotMap):
         """If a file on the nav isn't found locally, copy it from the monorepo"""
         if isinstance(nav, dict):
-            return apply(self.smartnav, nav.values())
+            for value in nav.values():
+                self.smartnav(value)
         elif isinstance(nav, list):
-            return apply(self.smartnav, nav)
+            for item in nav:
+                self.smartnav(item)
 
         if not (self.website/nav).exists():
             if (virtual := monorepo/nav).exists():

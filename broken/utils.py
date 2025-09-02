@@ -11,28 +11,25 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Callable, Collection, Generator, Hashable, Iterable
 from numbers import Number
 from pathlib import Path
-from queue import Queue
-from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, Self, Union
 
 import click
-from attr import Factory, define
+from attrs import Factory, define
 from dotmap import DotMap
+from loguru import logger
 
-from broken import Environment
-from broken.core.logging import BrokenLogging, log
+from broken.envy import Environment
 
 if TYPE_CHECKING:
     import requests
     import requests_cache
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @contextlib.contextmanager
 def override_module(name: str, mock: Any) -> Generator:
@@ -137,7 +134,7 @@ def shell(
         ```
     """
     if (output and Popen):
-        raise ValueError(log.error("Cannot use (output=True) and (Popen=True) at the same time"))
+        raise ValueError(logger.error("Cannot use (output=True) and (Popen=True) at the same time"))
 
     # Sanitize to a flat list of strings
     args = tuple(map(str, flatten(args)))
@@ -153,7 +150,7 @@ def shell(
     args = tuple((resolved, *args[1:]))
 
     # Log the command being run, temp variables
-    _log = (log.skip if skip else log.info)
+    _log = (logger.skip if skip else logger.info)
     _the = ("[dim]Skip" if skip else "Call")
     _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
     _log(f"{_the} {args}{_cwd}", echo=echo)
@@ -161,7 +158,7 @@ def shell(
 
     if (shell is True):
         args = ' '.join(args)
-        log.warn((
+        logger.warn((
             "Running command with (shell=True), be careful.. "
             "Consider using (confirm=True)"*(not confirm)
         ))
@@ -186,7 +183,7 @@ def shell(
 
     # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
-        log.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
+        logger.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
     # Actually run the command
     if (output):
@@ -197,29 +194,9 @@ def shell(
         return subprocess.run(args, **kwargs)
 
 
-def apply(
-    callback: Iterable[Callable],
-    iterable: Iterable, *,
-    cast: Callable = list
-) -> Collection:
-    """Applies a callable chain to all items of an iterable, returning casted results"""
-    for part in flatten(callback):
-        iterable = map(part, iterable)
-    return cast(iterable)
-
-
 def denum(item: Union[enum.Enum, Any]) -> Any:
     """De-enumerates an item: if it's an Enum, returns the value, else the item itself"""
     return (item.value if isinstance(item, enum.Enum) else item)
-
-
-def pop_fill(data: Collection, fill: type, length: int) -> Collection:
-    """Pop or fill until a data's length is met"""
-    while (len(data) > length):
-        data.pop()
-    while (len(data) < length):
-        data.append(fill())
-    return data
 
 
 @contextlib.contextmanager
@@ -237,10 +214,10 @@ def tempvars(**variables: str) -> Generator:
     original = os.environ.copy()
     os.environ.update(variables)
     try:
-        log.info(f"Setting environment variables: {tuple(variables.items())}")
+        logger.info(f"Setting environment variables: {tuple(variables.items())}")
         yield None
     finally:
-        log.info(f"Restoring environment variables: {tuple(variables.keys())}")
+        logger.info(f"Restoring environment variables: {tuple(variables.keys())}")
         os.environ.clear()
         os.environ.update(original)
 
@@ -357,7 +334,7 @@ def install(*,
     try:
         return inject_packages()
     except ImportError:
-        log.info(f"Installing packages: {package}..")
+        logger.info(f"Installing packages: {package}..")
 
     for method in (
         (sys.executable, "-m", "uv", "pip", "install"),
@@ -366,7 +343,7 @@ def install(*,
         if shell(*method, *pypi, *args).returncode == 0:
             return inject_packages()
 
-    raise RuntimeError(log.error(f"Failed to install packages: {package}"))
+    raise RuntimeError(logger.error(f"Failed to install packages: {package}"))
 
 
 def combinations(**options: Any) -> Iterable[DotMap]:
@@ -382,7 +359,7 @@ def combinations(**options: Any) -> Iterable[DotMap]:
         yield DotMap(zip(options.keys(), items))
 
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 # Classes
 
 
@@ -426,8 +403,6 @@ class BrokenAttrs:
     def __post__(self) -> None:
         ...
 
-
-from broken.core.model import BrokenModel, FrozenHash
 
 
 class BrokenAttribute(StaticClass):

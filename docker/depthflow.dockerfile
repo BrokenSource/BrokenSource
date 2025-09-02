@@ -9,7 +9,7 @@ INCLUDE ./docker/include/depthmap.dockerfile
 INCLUDE ./docker/include/torch.dockerfile
 INCLUDE ./docker/include/code.dockerfile
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 LABEL org.opencontainers.image.title="DepthFlow"
 LABEL org.opencontainers.image.description="🌊 Images to → 3D Parallax effect video. A free and open source ImmersityAI alternative"

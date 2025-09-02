@@ -2,24 +2,18 @@ import sys
 from pathlib import Path
 from typing import Annotated
 
-import yaml
-from attr import define
+from attrs import define
 from dotmap import DotMap
+from loguru import logger
 from typer import Argument, Option
 
-from broken import (
-    BROKEN,
-    BrokenPath,
-    Environment,
-    PlatformEnum,
-    Runtime,
-    __version__,
-    combinations,
-    log,
-    shell,
-)
-from broken.core.pytorch import BrokenTorch
+from broken import __version__
+from broken.envy import Environment, Runtime
 from broken.manager import ProjectManager
+from broken.path import BrokenPath
+from broken.project import BROKEN
+from broken.system import PlatformEnum
+from broken.utils import combinations, shell
 
 
 @define
@@ -29,7 +23,6 @@ class BrokenManager(ProjectManager):
         self.find_projects(BROKEN.DIRECTORIES.REPO_META)
 
         with self.cli.panel("🚀 Core"):
-            self.cli.command(BrokenTorch.install)
             self.cli.command(self.insiders)
             self.cli.command(self.clone)
 
@@ -59,7 +52,7 @@ class BrokenManager(ProjectManager):
 
         # If the path isn't a repo, use the repository name
         if (path.exists()) and (not (Path(path)/".git").exists()):
-            log.minor(f"Path {path} isn't a repository, appending the url name")
+            logger.minor(f"Path {path} isn't a repository, appending the url name")
             path = (path/Path(urlparse(str(repo).removesuffix(".git")).path).stem)
 
         # Only attempt cloning if non-existent
@@ -69,7 +62,7 @@ class BrokenManager(ProjectManager):
 
         # Not having .git is a failed clone
         if not (path/".git").exists():
-            log.error(f"Invalid repository at ({path}), perhaps try removing it")
+            logger.error(f"Invalid repository at ({path}), perhaps try removing it")
             exit(1)
 
         with BrokenPath.pushd(path, echo=False):
@@ -104,7 +97,9 @@ class BrokenManager(ProjectManager):
         """🐳 Build and push docker images for all projects"""
         import re
 
-        from broken.core.pytorch import BrokenTorch
+        import yaml
+
+        from broken.pytorch import BrokenTorch
 
         # Read the monorepo docker compose file
         compose: Path = (BROKEN.DIRECTORIES.REPOSITORY/"docker-compose.yml")
@@ -181,7 +176,7 @@ class BrokenManager(ProjectManager):
                     tarball=True
                 )
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 def main():
     manager = BrokenManager()

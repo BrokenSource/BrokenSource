@@ -1,31 +1,10 @@
-import sys
 import time
 from typing import Callable
 
 import rich
+from loguru import logger
 
-from broken import Environment, Runtime
-
-# ------------------------------------------------------------------------------------------------ #
-# Optimization: Don't import asyncio, could break stuff
-
-if Environment.flag("LOGURU_NO_ASYNCIO", 1):
-    class _FakeAsyncio:
-        get_running_loop = lambda: None
-
-    asyncio = sys.modules.pop("asyncio", None)
-    sys.modules["asyncio"] = _FakeAsyncio
-
-    from loguru import logger as log
-
-    if (asyncio is not None):
-        sys.modules["asyncio"] = asyncio
-    else:
-        sys.modules.pop("asyncio")
-
-from loguru import logger as log
-
-# ------------------------------------------------------------------------------------------------ #
+from broken.envy import Environment, Runtime
 
 # Don't log contiguous long paths
 console = rich.get_console()
@@ -71,8 +50,8 @@ class BrokenLogging:
 
     @classmethod
     def reset(cls) -> None:
-        log.remove()
-        log.add(
+        logger.remove()
+        logger.add(
             sink=cls.sink(),
             format=cls.format,
             level=Environment.get("LOGLEVEL", "INFO").upper(),
@@ -106,11 +85,11 @@ class BrokenLogging:
             if not echo:
                 return message
             for line in message.splitlines():
-                log.log(level, line)
+                logger.log(level, line)
             return message
 
         # Assign log function to logger. Workaround to set icon=color
-        log.level(level, loglevel, icon=color)
-        setattr(log, level.lower(), wrapper)
+        logger.level(level, loglevel, icon=color)
+        setattr(logger, level.lower(), wrapper)
 
 BrokenLogging.reset()

@@ -1,11 +1,12 @@
 from typing import TypeAlias, Union
 
-from broken import BrokenEnum, install
+from broken.enumx import BrokenEnum
+from broken.utils import install
 
 install(package="kokoro_onnx[gpu]", pypi="kokoro-onnx")
 install(package="misaki", pypi="misaki[ja,zh,en]")
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class _Speaker(BrokenEnum):
 
@@ -17,7 +18,7 @@ class _Speaker(BrokenEnum):
     def is_male(self) -> bool:
         return (self.value[1] == "m")
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class American(_Speaker):
     Alloy   = "af_alloy"
@@ -103,7 +104,7 @@ Speakers: TypeAlias = Union[
     Chinese,
 ]
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 # This name is so funny lol
 class BrokenKokoro:

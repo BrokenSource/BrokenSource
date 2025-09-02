@@ -1,9 +1,4 @@
-# -------------------------------- General fixes, quality of life -------------------------------- #
-
-import os
-import sys
 import time
-from pathlib import Path
 
 time.zero = time.perf_counter()
 """Precise time at which the program started since last boot"""
@@ -11,81 +6,12 @@ time.zero = time.perf_counter()
 time.absolute = (lambda: time.perf_counter() - time.zero)
 """Precise time since the program started running"""
 
-class Environment:
-    """Utilities for managing environment variables"""
+# ---------------------------------------------------------------------------- #
 
-    def __new__(cls) -> None:
-        raise TypeError(f"{cls.__name__} class shouldn't be instantiated")
+import sys
+from pathlib import Path
 
-    def get(key: str, default: str=None) -> str:
-        return os.getenv(key, default)
-
-    def set(key: str, value: str | None) -> None:
-        if (value is not None):
-            os.environ[key] = str(value)
-            return None
-        Environment.pop(key)
-
-    def setdefault(key: str, value: str | None) -> None:
-        if (value is not None):
-            os.environ.setdefault(key, str(value))
-
-    def pop(key: str) -> str:
-        return os.environ.pop(key, None)
-
-    def update(**values: str | None) -> None:
-        for key, value in values.items():
-            Environment.set(key, value)
-
-    def updatedefault(**values: str | None) -> None:
-        for key, value in values.items():
-            Environment.setdefault(key, value)
-
-    def exists(key: str) -> bool:
-        return (key in os.environ)
-
-    def int(key: str, default: int=0) -> int:
-        return int(os.getenv(key, default))
-
-    def float(key: str, default: float=1.0) -> float:
-        return float(os.getenv(key, default))
-
-    def bool(key: str, default: bool=False) -> bool:
-        value = str(os.getenv(key, default)).lower()
-
-        if value in ("1", "true", "yes", "on"):
-            return True
-        elif value in ("0", "false", "no", "off"):
-            return False
-
-        raise ValueError(f"Invalid boolean value for environment variable '{key}': {value}")
-
-    def flag(key: str, default: bool=False) -> bool:
-        return Environment.bool(key, default)
-
-    # # Arguments
-
-    def arguments() -> bool:
-        return bool(sys.argv[1:])
-
-    # # System PATH
-
-    def _abs_path(x: Path) -> Path:
-        return Path(x).expanduser().resolve().absolute()
-
-    def path() -> list[Path]:
-        return list(Path(x) for x in os.getenv("PATH", "").split(os.pathsep) if x)
-
-    def in_path(path: Path) -> bool:
-        return (Environment._abs_path(path) in Environment.path())
-
-    def add_to_path(path: Path, prepend: bool=True) -> None:
-        path = Environment._abs_path(path)
-        Environment.set("PATH", ''.join((
-            f"{path}{os.pathsep}" * (prepend),
-            Environment.get("PATH", ""),
-            f"{os.pathsep}{path}" * (not prepend),
-        )))
+from broken.envy import Environment
 
 # Keep the repository clean of bytecode cache files
 if (_venv := Path(__file__).parent.parent/".venv").exists():
@@ -128,111 +54,18 @@ if Environment.flag("RICH_TRACEBACK", 1):
         )(type, value, traceback)
     sys.excepthook = _lazy_hook
 
-# --------------------------- Information about the release and version -------------------------- #
+# Don't import asyncio in loguru, seems fine
+if Environment.flag("LOGURU_NO_ASYNCIO", 1):
+    class _fake: get_running_loop = (lambda: None)
+    original = sys.modules.pop("asyncio", None)
+    sys.modules["asyncio"] = _fake
+    import loguru
+    sys.modules["asyncio"] = original
+    if (original is None):
+        sys.modules.pop("asyncio")
+
+# ---------------------------------------------------------------------------- #
 
 import importlib.metadata
-import site
-from importlib.metadata import Distribution
-from pathlib import Path
 
 __version__ = importlib.metadata.version("broken-source")
-
-
-class Runtime:
-    """Information about the current runtime environment"""
-
-    Version: str = __version__
-    """The version of the Broken library, and subsequently all projects"""
-
-    # # Runtime environments
-
-    Pyaket: bool = Environment.exists("PYAKET")
-    """True if running as a Pyaket release (https://github.com/BrokenSource/Pyaket)"""
-
-    uvx: bool = any(f"archive-v{x}" in __file__ for x in range(4))
-    """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
-
-    PyPI: bool = (Distribution.from_name("broken-source").read_text("direct_url.json") is None)
-    """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
-
-    Installer: bool = (Pyaket)
-    """True if running from any executable build"""
-
-    Release: bool = (Installer or PyPI)
-    """True if running from any immutable final release build (Installer, PyPI)"""
-
-    Source: bool = (not Release)
-    """True if running directly from the source code (https://brokensrc.dev/get/source/)"""
-
-    Method: str = (uvx and "uvx") or (Source and "Source") or (Installer and "Installer") or (PyPI and "PyPI")
-    """The runtime environment of the current project release (Source, Release, PyPI)"""
-
-    # # Special and Containers
-
-    Docker: bool = Path("/.dockerenv").exists()
-    """True if running from a Docker container"""
-
-    GitHub: bool = Environment.exists("GITHUB_ACTIONS")
-    """True if running in a GitHub Actions CI environment (https://github.com/features/actions)"""
-
-    WSL: bool = Path("/usr/lib/wsl/lib").exists()
-    """True if running in Windows Subsystem for Linux (https://learn.microsoft.com/en-us/windows/wsl/about)"""
-
-    Interactive: bool = sys.stdout.isatty()
-    """True if running in an interactive terminal session (user can input)"""
-
-# ------------------------------------------------------------------------------------------------ #
-
-if Runtime.uvx:
-    # Find venv from "~/.cache/uv/archive-v0/7x8klaYDn8Kd0GRTY-nYr/lib/python3.12/site-packages"
-    _VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
-    Environment.setdefault("VIRTUAL_ENV", _VIRTUAL_ENV)
-
-# ---------------------------------------- Package exports --------------------------------------- #
-
-from broken.core import (
-    BrokenAttribute,
-    BrokenAttrs,
-    BrokenCache,
-    BrokenLogging,
-    BrokenModel,
-    BrokenRelay,
-    BrokenSingleton,
-    DictUtils,
-    FrozenHash,
-    Nothing,
-    StaticClass,
-    apply,
-    block_modules,
-    clamp,
-    combinations,
-    denum,
-    every,
-    flatten,
-    hyphen_range,
-    install,
-    list_get,
-    log,
-    multi_context,
-    nearest,
-    override_module,
-    overrides,
-    pop_fill,
-    shell,
-    smartproxy,
-    tempvars,
-)
-from broken.core.enumx import BrokenEnum, MultiEnum
-from broken.core.path import BrokenPath
-from broken.core.project import BrokenProject
-from broken.core.system import ArchEnum, BrokenPlatform, PlatformEnum, SystemEnum
-
-# ------------------------------------------------------------------------------------------------ #
-
-BROKEN = BrokenProject(
-    PACKAGE=__file__,
-    APP_NAME="Broken")
-"""The main library's BrokenProject instance"""
-
-PROJECT: BrokenProject = BROKEN
-"""The first BrokenProject initialized after (but including) BROKEN itself"""

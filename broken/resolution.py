@@ -2,8 +2,6 @@ import math
 from numbers import Number
 from typing import Optional, Union
 
-from broken import log
-
 
 class BrokenResolution:
 
@@ -64,8 +62,6 @@ class BrokenResolution:
         new_width, new_height = (new or (None, None))
         max_width, max_height = (max or (None, None))
 
-        log.debug(f"Fit resolution: ({old_width}, {old_height}) -> ({new_width}, {new_height})^({max_width}, {max_height}), AR {ar}")
-
         # Force or keep either component
         (width, height) = ((new_width or old_width), (new_height or old_height))
 
@@ -109,7 +105,7 @@ class BrokenResolution:
 
         return cls.nearest(width*scale, height*scale, multiple=multiple)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class __PyTest__:
     def test_round(self):

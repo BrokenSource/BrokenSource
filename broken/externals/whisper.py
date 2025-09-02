@@ -7,19 +7,16 @@ from typing import TYPE_CHECKING, Annotated, Optional, Union
 import numpy as np
 from halo import Halo
 from intervaltree import IntervalTree
+from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from typer import Option
 
-from broken import (
-    BROKEN,
-    BrokenEnum,
-    BrokenPath,
-    BrokenPlatform,
-    install,
-    log,
-    shell,
-)
+from broken.enumx import BrokenEnum
 from broken.externals import ExternalModelsBase, ExternalTorchBase
+from broken.path import BrokenPath
+from broken.project import BROKEN
+from broken.system import BrokenPlatform
+from broken.utils import install, shell
 
 if TYPE_CHECKING:
     from faster_whisper import WhisperModel
@@ -63,15 +60,15 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
                     continue
                 for site_packages in site.getsitepackages():
                     if (pycudnn := Path(site_packages)/f"nvidia/cudnn/lib/{target}").exists():
-                        log.warn(f"Running FasterWhisper might fail, as ({libcudnn}) doesn't exist")
-                        log.warn(f"• Luckily, we can copy it from {pycudnn}")
+                        logger.warn(f"Running FasterWhisper might fail, as ({libcudnn}) doesn't exist")
+                        logger.warn(f"• Luckily, we can copy it from {pycudnn}")
                         shell("sudo", "cp", pycudnn, libcudnn, confirm=True)
                         break
                 else:
                     raise RuntimeError(f"{target} not found in any site-packages")
 
         # Finally load the model
-        log.info(f"Loading OpenAI Whisper model ({self.model.value})")
+        logger.info(f"Loading OpenAI Whisper model ({self.model.value})")
 
         self._model = WhisperModel(
             model_size_or_path=self.model.value,

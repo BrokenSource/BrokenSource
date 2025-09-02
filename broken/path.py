@@ -10,13 +10,15 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import click
+from loguru import logger
 
 import broken
-from broken import Environment, log
-from broken.core import StaticClass, denum, flatten, shell
-from broken.core.enumx import BrokenEnum
-from broken.core.system import BrokenPlatform
+import broken.project
+from broken.enumx import BrokenEnum
+from broken.envy import Environment
+from broken.system import BrokenPlatform
 from broken.types import FileExtensions
+from broken.utils import StaticClass, denum, flatten, shell
 
 
 class ShutilFormat(BrokenEnum):
@@ -58,16 +60,16 @@ class BrokenPath(StaticClass):
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
         BrokenPath.mkdir(dst.parent)
         if src.is_dir():
-            log.info(f"Copy ({src})\n   → ({dst})", echo=echo)
+            logger.info(f"Copy ({src})\n   → ({dst})", echo=echo)
             shutil.copytree(src, dst)
         else:
-            log.info(f"Copy ({src})\n   → ({dst})", echo=echo)
+            logger.info(f"Copy ({src})\n   → ({dst})", echo=echo)
             shutil.copy2(src, dst)
         return dst
 
     def move(src: Path, dst: Path, *, echo=True) -> Path:
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
-        log.info(f"Moving ({src})\n     → ({dst})", echo=echo)
+        logger.info(f"Moving ({src})\n     → ({dst})", echo=echo)
         shutil.move(src, dst)
         return dst
 
@@ -77,11 +79,11 @@ class BrokenPath(StaticClass):
         if not (path := BrokenPath.get(path)).exists():
             return path
 
-        log.info(f"Removing Path ({path})", echo=echo)
+        logger.info(f"Removing Path ({path})", echo=echo)
 
         # Safety: Must not be common
         if path in (Path.cwd(), Path.home()):
-            log.error(f"Avoided catastrophic failure by not removing ({path})")
+            logger.error(f"Avoided catastrophic failure by not removing ({path})")
             exit(1)
 
         # Symlinks are safe to remove
@@ -112,7 +114,7 @@ class BrokenPath(StaticClass):
         make = (path.parent if parent else path)
         if make.exists():
             return path
-        log.info(f"Creating directory {make}", echo=echo)
+        logger.info(f"Creating directory {make}", echo=echo)
         make.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -125,15 +127,15 @@ class BrokenPath(StaticClass):
         """Change directory, then change back when done"""
         path = BrokenPath.get(path)
         cwd = os.getcwd()
-        log.minor(f"Enter directory ({path})", echo=echo)
+        logger.minor(f"Enter directory ({path})", echo=echo)
         os.chdir(path)
         yield path
-        log.minor(f"Leave directory ({path})", echo=echo)
+        logger.minor(f"Leave directory ({path})", echo=echo)
         os.chdir(cwd)
 
     def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
         """Symlink 'virtual' file to -> 'real' true path"""
-        log.info(f"Symlinking ({virtual})\n→ ({real})", echo=echo)
+        logger.info(f"Symlinking ({virtual})\n→ ({real})", echo=echo)
 
         # Return if already symlinked
         if (BrokenPath.get(virtual) == BrokenPath.get(real)):
@@ -171,7 +173,7 @@ class BrokenPath(StaticClass):
             virtual.symlink_to(real)
         except Exception as error:
             if BrokenPlatform.OnWindows:
-                log.minor("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
+                logger.minor("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
             else:
                 raise error
 
@@ -187,7 +189,7 @@ class BrokenPath(StaticClass):
         format = ShutilFormat.get(format).value
         output = BrokenPath.get(output or path).with_suffix(f".{format}")
         path   = BrokenPath.get(path)
-        log.info(f"Zipping ({path})\n→ ({output})", echo=echo)
+        logger.info(f"Zipping ({path})\n→ ({output})", echo=echo)
         BrokenPath.remove(output, echo=echo)
         shutil.make_archive(
             base_name=output.with_suffix(""),
@@ -203,7 +205,7 @@ class BrokenPath(StaticClass):
 
         import tarfile
 
-        log.info(f"Compressing ({path}) → ({output})", echo=echo)
+        logger.info(f"Compressing ({path}) → ({output})", echo=echo)
 
         with tarfile.open(output, "w:gz") as tar:
             if path.is_dir():
@@ -258,10 +260,10 @@ class BrokenPath(StaticClass):
 
         # A file to skip if it exists, created after successful extraction
         if (extract_flag := (output/"BrokenPath.extract.ok")).exists():
-            log.minor(f"Already extracted ({output})", echo=echo)
+            logger.minor(f"Already extracted ({output})", echo=echo)
         else:
             # Show progress as this might take a while on slower IOs
-            log.info(f"Extracting ({path})\n→ ({output})", echo=echo)
+            logger.info(f"Extracting ({path})\n→ ({output})", echo=echo)
             shutil.unpack_archive(path, output)
             extract_flag.touch()
 
@@ -287,35 +289,35 @@ class BrokenPath(StaticClass):
         # Link must be valid
         if not validators.url(url):
             import click
-            if not click.confirm(log.error(f"The following string doesn't look like a valid download URL on validator's eyes\n• ({url})\nContinue normally?")):
+            if not click.confirm(logger.error(f"The following string doesn't look like a valid download URL on validator's eyes\n• ({url})\nContinue normally?")):
                 return None
 
         # Default to Broken's Download directory
         if (output is None):
-            output = broken.BROKEN.DIRECTORIES.DOWNLOADS
+            output = broken.project.BROKEN.DIRECTORIES.DOWNLOADS
 
         # Append url's file name to the output path
         if (output := BrokenPath.get(output)).is_dir():
             output /= BrokenPath.url_filename(url)
 
-        log.info(f"Downloading\n• URL:  ({url})\n• Path: ({output})", echo=echo)
+        logger.info(f"Downloading\n• URL:  ({url})\n• Path: ({output})", echo=echo)
 
         # Without size check, the existence of the file is enough
         if (not size_check) and output.exists():
-            log.minor("• File exists and Size check was skipped", echo=echo)
+            logger.minor("• File exists and Size check was skipped", echo=echo)
             return None
 
         try:
             import requests
             response = requests.get(url, stream=True, headers={"Accept-Encoding": None})
         except requests.exceptions.RequestException as error:
-            log.error(f"• Failed to download: {error}", echo=echo)
+            logger.error(f"• Failed to download: {error}", echo=echo)
             # Note: Return output as it might be downloaded but we're without internet
             return output
 
         # Note: The length header is not always present, if that, just check for existence
         if not (expected_size := int(response.headers.get('content-length', 0))):
-            log.minor("The Download doesn't advertise a size, just checking for existence", echo=echo)
+            logger.minor("The Download doesn't advertise a size, just checking for existence", echo=echo)
             if output.exists():
                 return output
 
@@ -325,7 +327,7 @@ class BrokenPath(StaticClass):
                 return output
             if (len(output.read_bytes()) == expected_size):
                 return output
-            log.warn("• Wrong Download size", echo=echo)
+            logger.warn("• Wrong Download size", echo=echo)
 
         BrokenPath.mkdir(output.parent)
         import tqdm
@@ -341,16 +343,16 @@ class BrokenPath(StaticClass):
 
         # Url was invalid or something
         if (response.status_code != 200):
-            log.error(f"Failed to Download File at ({url}):", echo=echo)
-            log.error(f"• HTTP Error: {response.status_code}", echo=echo)
+            logger.error(f"Failed to Download File at ({url}):", echo=echo)
+            logger.error(f"• HTTP Error: {response.status_code}", echo=echo)
             return
 
         # Wrong downloaded and expected size
         elif (expected_size and size_check) and (output.stat().st_size != expected_size):
-            log.error(f"File ({output}) was not downloaded correctly ({output.stat().st_size} != {expected_size})", echo=echo)
+            logger.error(f"File ({output}) was not downloaded correctly ({output.stat().st_size} != {expected_size})", echo=echo)
             return
 
-        log.ok(f"Downloaded file ({output}) from ({url})", echo=echo)
+        logger.ok(f"Downloaded file ({output}) from ({url})", echo=echo)
         return output
 
     def redirect(url: str) -> str:
@@ -371,21 +373,21 @@ class BrokenPath(StaticClass):
 
         # File is some known type, move to their own external directory
         if bool(subdir):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNALS/subdir
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNALS/subdir
         elif ARCHIVE:
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_ARCHIVES
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_ARCHIVES
         elif (file.suffix in FileExtensions.Audio):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_AUDIO
         elif (file.suffix in FileExtensions.Image):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_IMAGES
         elif (file.suffix in FileExtensions.Font):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_FONTS
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_FONTS
         elif (file.suffix in FileExtensions.Soundfont):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_SOUNDFONTS
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_SOUNDFONTS
         elif (file.suffix in FileExtensions.Midi):
-            directory = broken.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNAL_MIDIS
         else:
-            directory = broken.BROKEN.DIRECTORIES.EXTERNALS
+            directory = broken.project.BROKEN.DIRECTORIES.EXTERNALS
 
         # Download to target directory, avoiding a move/copy, be known on future calls
         directory = (directory/subdir/file.name)
@@ -408,7 +410,7 @@ class BrokenPath(StaticClass):
         return BrokenPath.get(shutil.which(name))
 
     def update_externals_path(path: Path=None, *, echo: bool=True) -> Optional[Path]:
-        for item in (path := (path or broken.BROKEN.DIRECTORIES.EXTERNALS)).rglob("*"):
+        for item in (path := (path or broken.project.BROKEN.DIRECTORIES.EXTERNALS)).rglob("*"):
             if item.is_dir(): Environment.add_to_path(item)
         return path
 

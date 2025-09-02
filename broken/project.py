@@ -5,16 +5,17 @@ import sys
 import tempfile
 from pathlib import Path
 
-from attr import define, field
+from attrs import define, field
+from loguru import logger
 from platformdirs import PlatformDirs
 
 import broken
-from broken import BrokenLogging, Environment, Runtime, log
-from broken.core import list_get
-from broken.core.path import BrokenPath
-from broken.core.system import BrokenPlatform
+from broken.envy import Environment, Runtime
+from broken.logging import BrokenLogging
+from broken.system import BrokenPlatform
+from broken.utils import list_get
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define(slots=False)
 class BrokenProject:
@@ -24,7 +25,7 @@ class BrokenProject:
     # App information
     APP_NAME:   str
     APP_AUTHOR: str = "brokensource"
-    VERSION:    str = Runtime.Version
+    VERSION:    str = "0.0.0"
     ABOUT:      str = "No description provided"
 
     # Refactored functionality
@@ -44,20 +45,17 @@ class BrokenProject:
 
         # Replace with the first initialized project
         if (project := getattr(broken, "PROJECT", None)):
-            if (project is broken.BROKEN):
+            if (project is BROKEN):
                 if (BrokenPlatform.Root and not Runtime.Docker):
-                    log.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
+                    logger.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
                 BrokenLogging.set_project(self.APP_NAME)
-                broken.PROJECT = self
+                globals()["PROJECT"] = self
 
         # Convenience symlink the project's workspace
         if Runtime.Source and Environment.flag("WORKSPACE_SYMLINK", 0):
-            BrokenPath.symlink(
-                virtual=self.DIRECTORIES.REPOSITORY/"workspace",
-                real=self.DIRECTORIES.WORKSPACE, echo=False
-            )
+            (self.DIRECTORIES.REPOSITORY/"workspace").symlink_to(self.DIRECTORIES.WORKSPACE)
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define(slots=False)
 class _Directories:
@@ -230,7 +228,7 @@ class _Directories:
     def EXTERNAL_MIDIS(self) -> Path:
         return (self.EXTERNALS/"midis")
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 @define(slots=False)
 class _Resources:
@@ -302,3 +300,13 @@ class _Resources:
     @property
     def VERTEX(self) -> Path:
         return (self.SHADERS/"vertex")
+
+# ---------------------------------------------------------------------------- #
+
+BROKEN = BrokenProject(
+    PACKAGE=__file__,
+    APP_NAME="Broken")
+"""The main library's BrokenProject instance"""
+
+PROJECT: BrokenProject = BROKEN
+"""The first BrokenProject initialized after (but including) BROKEN itself"""

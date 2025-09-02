@@ -7,7 +7,7 @@ import attrs
 from aenum import MultiValueEnum
 
 
-class BrokenEnumBase:
+class _BrokenEnum:
 
     @classmethod
     @functools.cache
@@ -97,13 +97,13 @@ class BrokenEnumBase:
         """Dynamically extend the enum with a new member (name=value)"""
         raise NotImplementedError("This method is not implemented yet")
 
-class BrokenEnum(BrokenEnumBase, enum.Enum):
+class BrokenEnum(_BrokenEnum, enum.Enum):
     ...
 
-class MultiEnum(BrokenEnumBase, MultiValueEnum):
+class MultiEnum(_BrokenEnum, MultiValueEnum):
     ...
 
-# ------------------------------------------------------------------------------------------------ #
+# ---------------------------------------------------------------------------- #
 
 class __PyTest__:
 

@@ -6,16 +6,16 @@ from collections import deque
 from pathlib import Path
 
 import typer
-from attr import Factory, define
+from attrs import Factory, define
+from loguru import logger
 
-from broken import Environment, Runtime, log
-from broken.core import BrokenAttrs
-from broken.core.project import BrokenProject
-from broken.core.typerx import BrokenTyper
+from broken.envy import Environment, Runtime
+from broken.project import BrokenProject
+from broken.typerx import BrokenTyper
 
 
 @define
-class BrokenLauncher(ABC, BrokenAttrs):
+class BrokenLauncher(ABC):
     PROJECT: BrokenProject
     cli: BrokenTyper = Factory(BrokenTyper)
 
@@ -62,12 +62,12 @@ class BrokenLauncher(ABC, BrokenAttrs):
 
         # No files were scanned
         if (len(search) == 0):
-            log.warn(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
+            logger.warn(f"No Python scripts were scanned for {self.PROJECT.APP_NAME} {tag}s")
 
         # Add commands of all files, warn if none was sucessfully added
         elif (sum(self.add_project(script=file, tag=tag) for file in search) == 0):
-            log.warn(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
-            log.warn('\n'.join(f"• {file}" for file in search))
+            logger.warn(f"No {self.PROJECT.APP_NAME} {tag}s found, searched in scripts:")
+            logger.warn('\n'.join(f"• {file}" for file in search))
 
     def _regex(self, tag: str) -> re.Pattern:
         """Generates the self.regex for matching any valid Python class that contains "tag" on the
