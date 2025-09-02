@@ -20,5 +20,5 @@
 	path = packages/Hook
 	url = https://github.com/BrokenSource/Hook
 [submodule "packages/Typenaut"]
-	path = projects/Typenaut
+	path = packages/Typenaut
 	url = https://github.com/BrokenSource/Typenaut

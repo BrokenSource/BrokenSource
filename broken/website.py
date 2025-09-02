@@ -89,11 +89,9 @@ class BrokenMkdocs:
     def smartnav(self, nav: DotMap):
         """If a file on the nav isn't found locally, copy it from the monorepo"""
         if isinstance(nav, dict):
-            for value in nav.values():
-                self.smartnav(value)
+            return list(map(self.smartnav, nav.values()))
         elif isinstance(nav, list):
-            for item in nav:
-                self.smartnav(item)
+            return list(map(self.smartnav, nav))
 
         if not (self.website/nav).exists():
             if (virtual := monorepo/nav).exists():

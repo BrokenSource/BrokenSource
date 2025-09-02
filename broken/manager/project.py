@@ -120,21 +120,7 @@ class CodeProject:
     def update(self) -> None:
         """✨ Update this project's dependencies"""
         if self.is_python:
-            outdated = shell("uv", "pip", "list", "--outdated", "--format=json", output=True)
-            pyproject = (self.path/"pyproject.toml").read_text("utf8")
-
-            # Replaces any package version of '~=', '>=', '^=' with latest
-            for package in map(DotMap, json.loads(outdated)):
-                pyproject = re.sub(
-                    rf'({re.escape(package.name)}(?:\[[^\]]+\])?\s*(?:~=|>=|\^))\s*([^\"]*)"',
-                    rf'\g<1>{package.latest_version}"',
-                    pyproject
-                )
-
-            # Write changes
-            (self.path/"pyproject.toml").write_text(pyproject, "utf8")
-            shell("uv", "sync", "--all-packages")
-
+            logger.error("Awaiting implementation of https://github.com/astral-sh/uv/issues/6794")
         if self.is_nodejs:
             shell("pnpm", "update")
         if self.is_rust:
