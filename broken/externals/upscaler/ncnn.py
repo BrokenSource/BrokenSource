@@ -15,7 +15,7 @@ from broken.enumx import BrokenEnum
 from broken.envy import Environment
 from broken.externals.upscaler import UpscalerBase
 from broken.path import BrokenPath
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.typerx import BrokenTyper
 from broken.utils import denum, every, shell
 
@@ -81,7 +81,7 @@ class UpscalerNCNN_Base(UpscalerBase):
         BrokenPath.update_externals_path()
         if (binary := shutil.which(self._binary_name())):
             return BrokenPath.get(binary)
-        EXECUTABLE = self._binary_name() + (".exe"*BrokenPlatform.OnWindows)
+        EXECUTABLE = self._binary_name() + (".exe"*Host.OnWindows)
         return BrokenPath.make_executable(next(BrokenPath.get_external(self._download_url()).rglob(EXECUTABLE)))
 
     def _load_model(self):
@@ -104,7 +104,7 @@ class Waifu2x(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag = ("https://github.com/nihui/waifu2x-ncnn-vulkan/releases/download", "20220728")
-        return f"{release}/{tag}/waifu2x-ncnn-vulkan-{tag}-{BrokenPlatform.System.replace('linux', 'ubuntu')}.zip"
+        return f"{release}/{tag}/waifu2x-ncnn-vulkan-{tag}-{Host.System.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -165,7 +165,7 @@ class Realesr(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag, version = ("https://github.com/xinntao/Real-ESRGAN/releases/download", "v0.2.5.0", "20220424")
-        return f"{release}/{tag}/realesrgan-ncnn-vulkan-{version}-{BrokenPlatform.System.replace('linux', 'ubuntu')}.zip"
+        return f"{release}/{tag}/realesrgan-ncnn-vulkan-{version}-{Host.System.replace('linux', 'ubuntu')}.zip"
 
     @staticmethod
     def _binary_name() -> str:
@@ -222,7 +222,7 @@ class Upscayl(UpscalerNCNN_Base):
     @staticmethod
     def _download_url() -> str:
         release, tag = ("https://github.com/upscayl/upscayl/releases/download", "2.15.0")
-        platform = BrokenPlatform.System.replace("windows", "win").replace("macos", "mac")
+        platform = Host.System.replace("windows", "win").replace("macos", "mac")
         return f"{release}/v{tag}/upscayl-{tag}-{platform}.zip"
 
     @staticmethod
@@ -230,7 +230,7 @@ class Upscayl(UpscalerNCNN_Base):
         return "upscayl-bin"
 
     def download(self) -> Path:
-        if BrokenPlatform.OnLinux:
+        if Host.OnLinux:
             Environment.add_to_path("/opt/Upscayl/resources/bin") # Ubuntu package
             Environment.add_to_path("/opt/upscayl/bin") # Arch Linux
         return UpscalerNCNN_Base.download(self)

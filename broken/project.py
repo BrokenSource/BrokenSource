@@ -12,7 +12,7 @@ from platformdirs import PlatformDirs
 import broken
 from broken.envy import Environment, Runtime
 from broken.logging import BrokenLogging
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.utils import list_get
 
 # ---------------------------------------------------------------------------- #
@@ -36,7 +36,7 @@ class BrokenProject:
 
         # Print version information and quit if requested
         if (list_get(sys.argv, 1) in ("--version", "-V")):
-            print(f"{self.APP_NAME} {self.VERSION} {BrokenPlatform.Host.value}")
+            print(f"{self.APP_NAME} {self.VERSION} {Host.System.value}-{Host.Arch.value}")
             sys.exit(0)
 
         # Create refactored classes
@@ -46,7 +46,7 @@ class BrokenProject:
         # Replace with the first initialized project
         if (project := getattr(broken, "PROJECT", None)):
             if (project is BROKEN):
-                if (BrokenPlatform.Root and not Runtime.Docker):
+                if (Host.Root and not Runtime.Docker):
                     logger.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
                 BrokenLogging.set_project(self.APP_NAME)
                 globals()["PROJECT"] = self

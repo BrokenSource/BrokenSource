@@ -13,7 +13,7 @@ from typer import Option
 
 from broken.enumx import BrokenEnum
 from broken.envy import Environment, Runtime
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.typerx import BrokenTyper
 from broken.utils import BrokenCache, denum, every, shell
 
@@ -180,7 +180,7 @@ class SimpleTorch(BrokenEnum):
 
     @staticmethod
     def prompt() -> TorchRelease:
-        if BrokenPlatform.OnMacOS:
+        if Host.OnMacOS:
             return SimpleTorch.MACOS.value
 
         from rich import get_console
@@ -204,13 +204,13 @@ class SimpleTorch(BrokenEnum):
 
         # Note: Sizes are the total size after installing (1) on an empty environment, and may vary across versions slightly.
         # (1): `uv pip install torch --index-url https://download.pytorch.org/whl/{flavor} --python-platform {linux,windows}`
-        if BrokenPlatform.OnWindows:
+        if Host.OnWindows:
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "5.9 GB", "Latest consumer GPUs, recommended option")
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, mainly servers")
             table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   "-",                                   "-", "Not supported yet (https://pytorch.org/)")
             table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.name.lower(),     "3.5 GB", "Desktop Arc or Integrated Graphics")
             table.add_row("-",                "CPU",            SimpleTorch.CPU.name.lower(),     "1.3 GB", "Slow but most compatible, small models")
-        elif BrokenPlatform.OnLinux:
+        elif Host.OnLinux:
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "6.5 GB", "Latest consumer GPUs, recommended option")
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, mainly servers")
             table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   SimpleTorch.ROCM.name.lower(),   "23.3 GB", "Check GPU support, override GFX if needed")
@@ -225,7 +225,7 @@ class SimpleTorch(BrokenEnum):
             choice: str = Prompt.ask(
                 "\n:: What PyTorch version do you want to install?\n\n",
                 choices=list(SimpleTorch._prompt_choices()),
-                default=("cpu" if BrokenPlatform.OnWindows else "cpu"),
+                default=("cpu" if Host.OnWindows else "cpu"),
             )
             console.print()
         except KeyboardInterrupt:
@@ -250,14 +250,13 @@ class BrokenTorch:
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
         """Current torch version if any, may return a string if not part of known enum"""
+        import runpy
 
         # Note: Reversed as Windows lists system first, and we might have multiple on Docker
         for site_packages in map(Path, reversed(site.getsitepackages())):
             if (script := (site_packages/"torch"/"version.py")).exists():
-                exec(script.read_text("utf-8"), namespace := {})
-                version = namespace.get("__version__")
-                version = re.sub(r"\.dev\d{8}", "", version)
-                return TorchRelease.get(version) or version
+                version = runpy.run_path(script).get("__version__")
+                return (TorchRelease.get(version) or version)
 
     @staticmethod
     def install(
@@ -296,7 +295,7 @@ class BrokenTorch:
                 version = denum(SimpleTorch.CUDA124)
 
             # Fixed single version for macOS
-            if BrokenPlatform.OnMacOS:
+            if Host.OnMacOS:
                 logger.info("• There is only one PyTorch version for macOS")
                 version = denum(SimpleTorch.MACOS)
 

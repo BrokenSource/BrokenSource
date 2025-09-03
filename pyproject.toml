@@ -10,7 +10,7 @@ Homepage  = "https://brokensrc.dev/"
 [project]
 name         = "broken-source"
 description  = "🚀 Broken Source Software Main Library"
-authors      = [{name="Tremeschin", email="29046864+Tremeschin@users.noreply.github.com"}]
+authors      = [{name="Tremeschin"}]
 dynamic      = ["keywords"]
 version      = "0.10.0"
 readme       = ".github/readme.md"
@@ -21,8 +21,6 @@ dependencies = [
     "attrs~=25.3.0",
     "pydantic~=2.11.7",
     "dotmap~=1.3.30",
-    "aenum~=3.1.16",
-    "pyyaml~=6.0.2",
     "toml~=0.10.2",
     # Utils
     "loguru~=0.7.3",
@@ -32,7 +30,6 @@ dependencies = [
     "platformdirs~=4.4.0",
     "validators~=0.35.0",
     "distro~=1.9.0",
-    "setuptools",
     "packaging",
     # Internet
     "requests-cache~=1.2.1",
@@ -51,7 +48,7 @@ extra = [
     "halo~=0.0.31",
     "tqdm~=4.67.1",
     "dill~=0.4.0",
-    "uv~=0.8.14",
+    "uv~=0.8.15",
 ]
 
 [dependency-groups]
@@ -68,6 +65,7 @@ dev = [
     "mkdocs-site-urls~=0.3.0",
     "markdown-callouts~=0.4.0",
     "cairosvg~=2.8.2",
+    "pyyaml~=6.0.2",
     "black~=25.1.0",
     # Build system and testing
     "pytest-sugar~=1.1.1",
@@ -148,5 +146,8 @@ addopts = [
     "-v",
     "-ra",
 ]
-python_classes = "__PyTest__"
-python_files = ["core/*.py"]
+python_classes = "__pytest__"
+python_files = [
+    "enumx.py",
+    "resolution.py",
+]

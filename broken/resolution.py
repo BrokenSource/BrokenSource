@@ -107,7 +107,7 @@ class BrokenResolution:
 
 # ---------------------------------------------------------------------------- #
 
-class __PyTest__:
+class __pytest__:
     def test_round(self):
         assert BrokenResolution.nearest(100) == 100
         assert BrokenResolution.nearest(2.5) == 2

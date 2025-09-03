@@ -1,5 +1,4 @@
 import contextlib
-import copy
 import enum
 import functools
 import inspect
@@ -206,20 +205,6 @@ def multi_context(*contexts: contextlib.AbstractContextManager) -> Generator:
         for context in flatten(contexts):
             stack.enter_context(context)
         yield None
-
-
-@contextlib.contextmanager
-def tempvars(**variables: str) -> Generator:
-    """Temporarily sets environment variables inside a context"""
-    original = os.environ.copy()
-    os.environ.update(variables)
-    try:
-        logger.info(f"Setting environment variables: {tuple(variables.items())}")
-        yield None
-    finally:
-        logger.info(f"Restoring environment variables: {tuple(variables.keys())}")
-        os.environ.clear()
-        os.environ.update(original)
 
 
 def smartproxy(object: Any) -> Any:

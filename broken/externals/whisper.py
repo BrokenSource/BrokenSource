@@ -15,7 +15,7 @@ from broken.enumx import BrokenEnum
 from broken.externals import ExternalModelsBase, ExternalTorchBase
 from broken.path import BrokenPath
 from broken.project import BROKEN
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.utils import install, shell
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class BrokenWhisper(ExternalModelsBase, ExternalTorchBase):
         install(package="faster_whisper")
 
         # Copy PyPI libcudnn to avoid setting LD_LIBRARY_PATH
-        if BrokenPlatform.OnLinux:
+        if Host.OnLinux:
             for target in ("libcudnn_ops_infer.so.8", "libcudnn_cnn_infer.so.8"):
                 if (libcudnn := Path(f"/usr/lib/{target}")).exists():
                     continue

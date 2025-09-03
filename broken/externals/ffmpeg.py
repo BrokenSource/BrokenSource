@@ -22,7 +22,7 @@ from typer import Option
 from broken.enumx import BrokenEnum
 from broken.model import BrokenModel
 from broken.path import BrokenPath
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.typerx import BrokenTyper
 from broken.types import Bytes, Hertz, Seconds
 from broken.utils import denum, every, flatten, nearest, shell
@@ -1337,14 +1337,14 @@ class BrokenFFmpeg(BrokenModel):
         if all(map(BrokenPath.which, ("ffmpeg", "ffprobe"))):
             return None
 
-        if (not BrokenPlatform.OnMacOS):
+        if (not Host.OnMacOS):
             logger.info("FFmpeg wasn't found on System Path, will download a BtbN's Build")
             BrokenPath.get_external(''.join((
                 "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/",
                 "ffmpeg-master-latest-",
-                BrokenPlatform.System.value.replace("windows", "win"),
-                BrokenPlatform.Arch.replace("amd64", "64"),
-                ("-gpl.zip" if BrokenPlatform.OnWindows else "-gpl.tar.xz")
+                Host.System.value.replace("windows", "win"),
+                Host.Arch.replace("amd64", "64"),
+                ("-gpl.zip" if Host.OnWindows else "-gpl.tar.xz")
             )))
         else:
             logger.info("FFmpeg wasn't found on System Path, will download a EverMeet's Build")

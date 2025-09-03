@@ -1,6 +1,5 @@
 """
 # ---------------------------------------------------------------------------- #
-
 (c) 2024, Tremeschin, MIT License
 
 Example file for running the projects / DepthFlow on [Modal](https://modal.com/). Be sure to follow

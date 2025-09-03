@@ -8,10 +8,14 @@ time.absolute = (lambda: time.perf_counter() - time.zero)
 
 # ---------------------------------------------------------------------------- #
 
+import contextlib
+import importlib.metadata
 import sys
 from pathlib import Path
 
 from broken.envy import Environment
+
+__version__ = importlib.metadata.version("broken-source")
 
 # Keep the repository clean of bytecode cache files
 if (_venv := Path(__file__).parent.parent/".venv").exists():
@@ -56,16 +60,13 @@ if Environment.flag("RICH_TRACEBACK", 1):
 
 # Don't import asyncio in loguru, seems fine
 if Environment.flag("LOGURU_NO_ASYNCIO", 1):
-    class _fake: get_running_loop = (lambda: None)
-    original = sys.modules.pop("asyncio", None)
-    sys.modules["asyncio"] = _fake
-    import loguru
-    sys.modules["asyncio"] = original
-    if (original is None):
-        sys.modules.pop("asyncio")
+    with contextlib.suppress(ImportError):
+        class _fake: get_running_loop = (lambda: None)
+        original = sys.modules.pop("asyncio", None)
+        sys.modules["asyncio"] = _fake
+        import loguru
+        sys.modules["asyncio"] = original
+        if (original is None):
+            sys.modules.pop("asyncio")
 
 # ---------------------------------------------------------------------------- #
-
-import importlib.metadata
-
-__version__ = importlib.metadata.version("broken-source")

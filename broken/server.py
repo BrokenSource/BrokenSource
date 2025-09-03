@@ -9,7 +9,7 @@ from attrs import Factory, define
 from fastapi import FastAPI
 from typer import Option
 
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.worker import BrokenWorker
 
 # ---------------------------------------------------------------------------- #
@@ -19,7 +19,7 @@ class Hosts:
     WILDCARD: str = "0.0.0.0"
 
 # Wildcard isn't necessarily localhost on Windows, make it explicit
-DEFAULT_HOST: str = (Hosts.WILDCARD if BrokenPlatform.OnUnix else Hosts.LOOPBACK)
+DEFAULT_HOST: str = (Hosts.WILDCARD if Host.OnUnix else Hosts.LOOPBACK)
 DEFAULT_PORT: int = 8000
 
 # ---------------------------------------------------------------------------- #

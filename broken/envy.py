@@ -85,8 +85,7 @@ class Environment:
         )))
 
     @contextlib.contextmanager
-    def tempvars(**variables: str):
-        """Temporarily sets environment variables inside a context"""
+    def temporary(**variables: str):
         original = os.environ.copy()
         os.environ.update(variables)
         try:
@@ -109,7 +108,7 @@ class Runtime:
     """True if running from uvx (https://docs.astral.sh/uv/concepts/tools/)"""
 
     PyPI: bool = (Distribution.from_name("broken-source").read_text("direct_url.json") is None)
-    """True if running as a installed package from PyPI (https://brokensrc.dev/get/pypi/)"""
+    """True if running as a installed package from PyPI"""
 
     Installer: bool = (Pyaket)
     """True if running from any executable build"""

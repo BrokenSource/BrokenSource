@@ -1,13 +1,25 @@
 import contextlib
 import enum
 import functools
-from typing import Any, Optional, Self, Union
+from abc import abstractmethod
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    Optional,
+    Self,
+    Union,
+)
 
-import attrs
-from aenum import MultiValueEnum
+if TYPE_CHECKING:
+    import attrs
 
+class BrokenEnum(enum.Enum):
 
-class _BrokenEnum:
+    @classmethod
+    @abstractmethod
+    def _missing_(cls, value: Any) -> Self:
+        """Casual reminder this method exists!"""
 
     @classmethod
     @functools.cache
@@ -66,26 +78,31 @@ class _BrokenEnum:
     # # Smart methods
 
     @functools.cache
-    def next(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
+    def roll(self, value: Any=None, *, n: int=1) -> Self:
         """Get the next enum member defined in the class"""
         cls   = type(self)
         value = cls.get(value or self)
-        return cls.options()[(cls.options().index(value) + offset) % len(cls)]
+        index = cls.options().index(value) + n
+        return cls.options()[index % len(cls)]
+
+    @functools.cache
+    def next(self, value: Any=None, *, n: int=1) -> Self:
+        """Get the next enum member defined in the class"""
+        return self.roll(value, n=n)
 
     def __next__(self) -> Self:
         return self.next()
 
     @functools.cache
-    def previous(self, value: Union[str, enum.Enum]=None, *, offset: int=1) -> Self:
+    def previous(self, value: Any=None, *, n: int=1) -> Self:
         """Get the previous enum member defined in the class"""
-        cls   = type(self)
-        value = cls.get(value or self)
-        return cls.options()[(cls.options().index(value) - offset) % len(cls)]
+        return self.roll(value, n=-n)
 
     # # Advanced functions
 
-    def field(self, **kwargs: dict[str, Any]) -> attrs.Attribute:
+    def field(self, **kwargs: dict[str, Any]) -> "attrs.Attribute":
         """Get an attrs.field() with this option as default and Enum.get as converter"""
+        import attrs
         return attrs.field(
             default=self,
             converter=type(self).get,
@@ -97,16 +114,9 @@ class _BrokenEnum:
         """Dynamically extend the enum with a new member (name=value)"""
         raise NotImplementedError("This method is not implemented yet")
 
-class BrokenEnum(_BrokenEnum, enum.Enum):
-    ...
-
-class MultiEnum(_BrokenEnum, MultiValueEnum):
-    ...
-
 # ---------------------------------------------------------------------------- #
 
-class __PyTest__:
-
+class __pytest__:
     def get_fruits(self) -> BrokenEnum:
         class Fruits(BrokenEnum):
             Apple  = "Maçã"

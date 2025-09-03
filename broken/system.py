@@ -2,20 +2,29 @@ import ctypes
 import os
 import platform
 from collections.abc import Iterable
-from typing import Optional, Self
+from typing import Any, Optional, Self
 
 import distro
-from loguru import logger
 
-from broken.enumx import BrokenEnum, MultiEnum
+from broken.enumx import BrokenEnum
 from broken.envy import Environment
 
 
-class SystemEnum(str, MultiEnum):
+class SystemEnum(str, BrokenEnum):
     Linux:   str = "linux"
-    Windows: str = ("windows", "win")
-    MacOS:   str = ("macos", "darwin", "osx")
-    BSD:     str = ("bsd", "freebsd", "openbsd", "netbsd")
+    Windows: str = "windows"
+    MacOS:   str = "macos"
+    BSD:     str = "bsd"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Self:
+        if value in ("win32", "win", "windows", "cygwin"):
+            return cls.Windows
+        if value in ("darwin", "macos", "osx"):
+            return cls.MacOS
+        if ("bsd" in value):
+            return cls.BSD
+        return None
 
     def is_linux(self) -> bool:
         return (self is self.Linux)
@@ -43,11 +52,19 @@ class SystemEnum(str, MultiEnum):
         return ".bin"
 
 
-class ArchEnum(str, MultiEnum):
-    AMD32: str = ("amd32", "x86", "i686")
-    AMD64: str = ("amd64", "x86_64")
+class ArchEnum(str, BrokenEnum):
+    AMD32: str = "amd32"
+    AMD64: str = "amd64"
     ARM32: str = "arm32"
     ARM64: str = "arm64"
+
+    @classmethod
+    def _missing_(cls, value: object):
+        if value in ("x86", "i686"):
+            return cls.AMD32
+        elif value in ("x86_64",):
+            return cls.AMD64
+        return None
 
     def is_arm(self) -> bool:
         return ("arm" in self.value)
@@ -64,10 +81,10 @@ class ArchEnum(str, MultiEnum):
 
 class PlatformEnum(str, BrokenEnum):
     """List of common platforms targets for releases"""
-    WindowsAMD64: str = "windows-amd64"
-    WindowsARM64: str = "windows-arm64"
     LinuxAMD64:   str = "linux-amd64"
     LinuxARM64:   str = "linux-arm64"
+    WindowsAMD64: str = "windows-amd64"
+    WindowsARM64: str = "windows-arm64"
     MacosAMD64:   str = "macos-amd64"
     MacosARM64:   str = "macos-arm64"
 
@@ -101,7 +118,7 @@ class PlatformEnum(str, BrokenEnum):
     @staticmethod
     def all_host() -> Iterable[Self]:
         for option in PlatformEnum:
-            if (option.system == BrokenPlatform.System):
+            if (option.system == Host.System):
                 yield option
 
     @property
@@ -140,14 +157,14 @@ class PlatformEnum(str, BrokenEnum):
                 yield f"macosx_{major}_{minor}_arm64"
 
 
-class BrokenPlatform:
+class Host:
     Arch: ArchEnum = ArchEnum.get(platform.machine().lower())
     """The current machine's architecture"""
 
     System: SystemEnum = SystemEnum.get(platform.system().lower())
     """The current machine's operating system"""
 
-    Host: PlatformEnum = PlatformEnum.from_parts(System, Arch)
+    Platform: PlatformEnum = PlatformEnum.from_parts(System, Arch)
     """The current machine's full platform"""
 
     # Primary platforms
@@ -194,20 +211,16 @@ class BrokenPlatform:
     # ------------------------------------------ #
 
     Wayland: bool = (Environment.get("XDG_SESSION_TYPE") == "wayland")
-    """Check if the current session is Wayland (False on non-linux)"""
+    """Current windowing session protocol is Wayland"""
 
     X11: bool = (Environment.get("XDG_SESSION_TYPE") == "x11")
-    """Check if the current session is X11 (False on non-linux)"""
+    """Current windowing session protocol is X11"""
 
     # ------------------------------------------ #
 
     @staticmethod
-    def log_system_info() -> None:
-        logger.info(f"• System Info: {platform.system()} {platform.release()}, Python {platform.python_version()} {platform.machine()}")
-
-    @staticmethod
     def clear_terminal() -> None:
-        os.system("cls" if BrokenPlatform.OnWindows else "clear")
+        os.system("cls" if Host.OnWindows else "clear")
 
     # Literally, why Windows/Python have different directory names for scripts? ...
     # https://github.com/pypa/virtualenv/commit/993ba1316a83b760370f5a3872b3f5ef4dd904c1
@@ -233,7 +246,7 @@ class BrokenPlatform:
         @staticmethod
         def set(state: bool=True):
             import winreg
-            if (not BrokenPlatform.Root):
+            if (not Host.Root):
                 raise PermissionError("Administrator privileges are required to enable Developer Mode")
             key_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
             key = winreg.CreateKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_ALL_ACCESS)
@@ -242,8 +255,8 @@ class BrokenPlatform:
 
         @staticmethod
         def enable() -> bool:
-            return BrokenPlatform.DeveloperMode.set(True)
+            return Host.DeveloperMode.set(True)
 
         @staticmethod
         def enabled() -> bool:
-            return BrokenPlatform.DeveloperMode.status()
+            return Host.DeveloperMode.status()

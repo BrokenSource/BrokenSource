@@ -12,7 +12,7 @@ from dotmap import DotMap
 
 from broken.path import BrokenPath
 from broken.project import BROKEN
-from broken.system import BrokenPlatform
+from broken.system import Host
 
 monorepo = BROKEN.DIRECTORIES.REPO_WEBSITE
 
@@ -98,7 +98,7 @@ class BrokenMkdocs:
                 self.virtual(nav, data=virtual)
 
     def __attrs_post_init__(self):
-        BrokenPlatform.clear_terminal()
+        Host.clear_terminal()
         self.smartnav(self.config.nav)
 
         # Copy themes and overrides folder

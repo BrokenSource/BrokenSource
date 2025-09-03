@@ -1,5 +1,3 @@
-import json
-import re
 import sys
 from pathlib import Path
 from typing import Annotated, Self
@@ -14,7 +12,7 @@ from broken import __version__
 from broken.enumx import BrokenEnum
 from broken.path import BrokenPath
 from broken.project import BROKEN
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.typerx import BrokenTyper
 from broken.utils import shell
 
@@ -136,7 +134,7 @@ class CodeProject:
         """🔥 Run this project with all arguments that follow"""
 
         while True:
-            BrokenPlatform.clear_terminal() if clear else None
+            Host.clear_terminal() if clear else None
 
             if self.is_python:
                 logger.info(f"Hey! Just type '{self.name.lower()}' to run the project directly, it's faster 😉")
@@ -185,7 +183,6 @@ class CodeProject:
         pyaket.compile(output=BROKEN.DIRECTORIES.REPO_RELEASES)
 
 # ---------------------------------------------------------------------------- #
-
 
 SKIP_DIRECTORIES = {
     "venv", ".venv","__pycache__",

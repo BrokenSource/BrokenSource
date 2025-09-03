@@ -16,7 +16,7 @@ import broken
 import broken.project
 from broken.enumx import BrokenEnum
 from broken.envy import Environment
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.types import FileExtensions
 from broken.utils import StaticClass, denum, flatten, shell
 
@@ -172,7 +172,7 @@ class BrokenPath(StaticClass):
         try:
             virtual.symlink_to(real)
         except Exception as error:
-            if BrokenPlatform.OnWindows:
+            if Host.OnWindows:
                 logger.minor("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
             else:
                 raise error
@@ -181,7 +181,7 @@ class BrokenPath(StaticClass):
 
     def make_executable(path: Path, *, echo=True) -> Path:
         """Make a file executable"""
-        if BrokenPlatform.OnUnix:
+        if Host.OnUnix:
             shell("chmod", "+x", path, echo=echo)
         return path
 
@@ -447,11 +447,11 @@ class BrokenPath(StaticClass):
         path = Path(path)
         if path.is_file():
             path = path.parent
-        if BrokenPlatform.OnWindows:
+        if Host.OnWindows:
             os.startfile(str(path))
-        elif BrokenPlatform.OnLinux:
+        elif Host.OnLinux:
             shell("xdg-open", path, Popen=True)
-        elif BrokenPlatform.OnMacOS:
+        elif Host.OnMacOS:
             shell("open", path, Popen=True)
 
     class Windows:

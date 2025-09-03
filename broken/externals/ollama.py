@@ -10,7 +10,7 @@ from typer import Option
 
 from broken.externals import ExternalModelsBase
 from broken.path import BrokenPath
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.utils import shell
 
 
@@ -25,14 +25,14 @@ class BrokenOllama(ExternalModelsBase):
 
         logger.warn("Ollama binary [green]'ollama'[/] wasn't found on PATH, installing..")
 
-        if BrokenPlatform.OnMacOS:
+        if Host.OnMacOS:
             raise RuntimeError("Ollama installaion on macOS is untested, please get it at their website")
             url = "https://github.com/ollama/ollama/releases/latest/download/Ollama-darwin.zip"
 
-        elif BrokenPlatform.OnWindows:
+        elif Host.OnWindows:
             url = "https://github.com/ollama/ollama/releases/latest/download/ollama-windows-amd64.zip"
 
-        elif BrokenPlatform.OnLinux:
+        elif Host.OnLinux:
             logger.warn("")
             logger.warn("The installation on Linux is slightly non-trivial, and it's better to use their official script")
             logger.warn("• Please, get it at their website https://ollama.com/download/linux")

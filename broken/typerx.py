@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from typer.models import OptionInfo
 
 from broken.envy import Environment, Runtime
-from broken.system import BrokenPlatform
+from broken.system import Host
 from broken.utils import list_get, shell
 
 # Apply custom styling to typer
@@ -285,7 +285,7 @@ class BrokenTyper:
         self.shell = all((
             Environment.flag("REPL", 1),
             (Runtime.Installer),
-            (not BrokenPlatform.OnLinux),
+            (not Host.OnLinux),
             (not Environment.arguments()),
         ))
         return self
