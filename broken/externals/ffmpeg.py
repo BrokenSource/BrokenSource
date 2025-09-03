@@ -495,49 +495,6 @@ class FFmpegVideoCodecH265_AMF(FFmpegModuleBase):
     ... # Todo
 
 
-# Note: See full help with `ffmpeg -h encoder=libvpx-vp9`
-class FFmpegVideoCodecVP9(FFmpegModuleBase):
-    """Use [blue][link=https://trac.ffmpeg.org/wiki/Encode/VP9]libvpx-vp9[/link][/] for VP9 encoding"""
-    type: Annotated[Literal["vp9"], BrokenTyper.exclude()] = "vp9"
-
-    crf: Annotated[int,
-        Option("--crf", "-c", min=1, max=63)] = \
-        Field(30, ge=1, le=64)
-    """Constant Rate Factor (0-63). Lower values mean better quality, recommended (15-31)
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#constantq]→ Documentation[/]"""
-
-    speed: Annotated[int,
-        Option("--speed", "-s", min=1, max=6)] = \
-        Field(4, ge=1, le=6)
-    """Speed level (0-6). Higher values yields faster encoding but innacuracies in rate control
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#CPUUtilizationSpeed]→ Documentation[/]"""
-
-    class Deadline(str, BrokenEnum):
-        Good     = "good"
-        Best     = "best"
-        Realtime = "realtime"
-
-    deadline: Annotated[Deadline,
-        Option("--deadline", "-d")] = \
-        Field(Deadline.Good)
-    """Tweak the encoding time philosophy for better quality or faster encoding
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#DeadlineQuality]→ Documentation[/]"""
-
-    row_multithreading: Annotated[bool,
-        Option("--row-multithreading", "-rmt", " /--no-row-multithreading", " /-rmt")] = \
-        Field(True)
-    """Faster encodes by splitting rows into multiple threads
-    [blue link=https://trac.ffmpeg.org/wiki/Encode/VP9#rowmt]→ Documentation[/]"""
-
-    def command(self, ffmpeg: BrokenFFmpeg) -> Iterable[str]:
-        yield ("-c:v", "libvpx-vp9")
-        yield ("-crf", self.crf)
-        yield ("-b:v", 0)
-        yield ("-deadline", denum(self.deadline))
-        yield ("-cpu-used", self.speed)
-        yield ("-row-mt", "1") * self.row_multithreading
-
-
 # Note: See full help with `ffmpeg -h encoder=libsvtav1`
 class FFmpegVideoCodecAV1_SVT(FFmpegModuleBase):
     """Use [bold orange3][link=https://gitlab.com/AOMediaCodec/SVT-AV1]AOM's[/link][/] [blue][link=https://www.ffmpeg.org/ffmpeg-all.html#libsvtav1]SVT-AV1[/link][/]"""
@@ -719,7 +676,6 @@ FFmpegVideoCodecType: TypeAlias = Union[
     FFmpegVideoCodecH264_NVENC,
     FFmpegVideoCodecH265,
     FFmpegVideoCodecH265_NVENC,
-    FFmpegVideoCodecVP9,
     FFmpegVideoCodecAV1_SVT,
     FFmpegVideoCodecAV1_NVENC,
     FFmpegVideoCodecAV1_RAV1E,
@@ -954,7 +910,6 @@ class BrokenFFmpeg(BrokenModel):
         H264_NVENC = FFmpegVideoCodecH264_NVENC
         H265       = FFmpegVideoCodecH265
         H265_NVENC = FFmpegVideoCodecH265_NVENC
-        VP9        = FFmpegVideoCodecVP9
         AV1_SVT    = FFmpegVideoCodecAV1_SVT
         AV1_NVENC  = FFmpegVideoCodecAV1_NVENC
         AV1_RAV1E  = FFmpegVideoCodecAV1_RAV1E
@@ -1169,10 +1124,6 @@ class BrokenFFmpeg(BrokenModel):
     def h265_nvenc(self, **options) -> Self:
         return self.set_video_codec(FFmpegVideoCodecH265_NVENC(**options))
 
-    @functools.wraps(FFmpegVideoCodecVP9)
-    def vp9(self, **options) -> Self:
-        return self.set_video_codec(FFmpegVideoCodecVP9(**options))
-
     @functools.wraps(FFmpegVideoCodecAV1_SVT)
     def av1_svt(self, **options) -> Self:
         return self.set_video_codec(FFmpegVideoCodecAV1_SVT(**options))
@@ -1203,7 +1154,6 @@ class BrokenFFmpeg(BrokenModel):
             typer.command(FFmpegVideoCodecH264_NVENC, post=self.set_video_codec, name="h264-nvenc")
             typer.command(FFmpegVideoCodecH265,       post=self.set_video_codec, name="h265")
             typer.command(FFmpegVideoCodecH265_NVENC, post=self.set_video_codec, name="h265-nvenc")
-            typer.command(FFmpegVideoCodecVP9,        post=self.set_video_codec, name="vp9", hidden=True)
             typer.command(FFmpegVideoCodecAV1_SVT,    post=self.set_video_codec, name="av1-svt")
             typer.command(FFmpegVideoCodecAV1_NVENC,  post=self.set_video_codec, name="av1-nvenc")
             typer.command(FFmpegVideoCodecAV1_RAV1E,  post=self.set_video_codec, name="av1-rav1e")

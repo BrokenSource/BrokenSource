@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import contextlib
 import functools
 import inspect
@@ -243,7 +241,7 @@ class BrokenTyper:
         return app(*sys.argv[1:])
 
     @staticmethod
-    def toplevel(**options) -> BrokenTyper:
+    def toplevel(**options) -> Self:
         return BrokenTyper(
             help=False,
             description = (

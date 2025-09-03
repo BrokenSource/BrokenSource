@@ -243,9 +243,8 @@ class BrokenTorch:
         # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
         # We'll target newest cuda versions for the latest consumer GPUs, even if servers
         # are often on older versions, as they can start off 'cpu' and override torch
-        yield TorchRelease.TORCH_271_CPU
-        yield TorchRelease.TORCH_271_CUDA_118
-        yield TorchRelease.TORCH_271_CUDA_128
+        yield TorchRelease.TORCH_280_CPU
+        yield TorchRelease.TORCH_280_CUDA_128
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:

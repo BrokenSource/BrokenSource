@@ -1,5 +1,4 @@
 import contextlib
-import importlib.metadata
 import os
 import site
 import sys
