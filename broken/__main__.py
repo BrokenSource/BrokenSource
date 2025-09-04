@@ -104,8 +104,9 @@ class BrokenManager(ProjectManager):
         # Read the monorepo docker compose file
         compose: Path = (BROKEN.DIRECTORIES.REPOSITORY/"docker-compose.yml")
         compose: dict = DotMap(yaml.safe_load(compose.read_text()))
+        Environment.set("COMPOSE_BAKE", "true")
 
-        # Optimization: Parallel build images
+        # Optimization: Parallel build all images
         shell("docker", "compose", "build", skip=bool(regex) or Runtime.GitHub)
 
         # Iterate on all specified images
@@ -125,7 +126,6 @@ class BrokenManager(ProjectManager):
                 # Note: Must use same as in images ARGs
                 Environment.set("TORCH_FLAVOR",  build.torch and build.torch.flavor)
                 Environment.set("TORCH_VERSION", build.torch and build.torch.number)
-                Environment.set("COMPOSE_BAKE", "true")
 
                 # Complex build the final image name
                 final = '-'.join(filter(None, (

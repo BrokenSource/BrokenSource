@@ -1,9 +1,6 @@
 <div align="center">
   <a href="https://brokensrc.dev"><img src="https://raw.githubusercontent.com/BrokenSource/BrokenSource/main/broken/resources/images/logo.png" width="200"></a>
   <h2 style="margin-top: 0">Broken Source Software</h2>
-  Here lies <b>Broken</b>: The <b>Shared Library</b> and <b>Submodules</b> of all my <b>Projects</b>
-  <br>
-  <br>
   <a href="https://pypi.org/project/broken-source/"><img src="https://img.shields.io/pypi/v/broken-source?label=PyPI&color=blue"></a>
   <a href="https://pypi.org/project/broken-source/"><img src="https://img.shields.io/pypi/dw/broken-source?label=Installs&color=blue"></a>
   <a href="https://github.com/BrokenSource/BrokenSource"><img src="https://img.shields.io/github/v/tag/BrokenSource/BrokenSource?label=GitHub&color=orange"></a>
@@ -13,9 +10,48 @@
 
 <br>
 
-# 🔥 Description
+> [!NOTE]
+> This repository is the main development environment for all my professional and personal projects, including libraries, applications, infrastructure and some private components.
+>
+> <sup><b>Warning:</b> Expect a developer-centric experience within a complex monorepo structure 🙂</sup>
 
-> **Broken** is the shared library that powers all my projects • utilities of a lifetime
+Always evolving code, a wisdom rabbit hole to know the ins and outs of the system as a whole. I could only hope to ever have it all properly documented, as the focus is always on the code itself.
 
-- **🌟 Framework**: A solution for Unification and Consistency
-- **🚀 Automation**: Spend more time **using** the Projects
+- This readme is intentionally vague in a sense, as there's just too much going on. Instead of talking about everything and nothing at the same time, go exploring the self-documented codebase!
+- Feel free to get in touch to learn how it works or python monorepos advice.
+
+
+## 📦 Structure
+
+Roughly speaking, the important parts are:
+
+### ♻️ Common
+
+- [`📁/.github`](../.github): Workflows, readmes + [special](https://github.com/BrokenSource/.github) organization repository
+- [`📁/website`](../website): Mkdocs documentation [`mkdocs-base.yml`](../mkdocs-base.yml)
+
+### 🗿 Monorepo
+
+- [`📁/docker`](../docker): Everything docker for all projects
+- `📁/meta`: Optional directory to link off-branch projects
+- [`📁/projects`](../projects): Application projects (has entry points)
+- [`action.yml`](../action.yml): Setup workflow
+
+### 🐍 Python
+
+- `📁/.venv`: Global venv from [uv](https://github.com/astral-sh/uv)
+- [`📁/broken`](../broken): Main shared library
+- `📁/dist`: Common build directory
+- [`📁/packages`](../packages): Library projects
+
+### 🦀 Rust
+
+- [`📁/crates`](../crates): Library projects
+- `📁/target`: Build directory
+
+
+## 💡 Tips
+
+- Export `PYTHONPYCACHEPREFIX=/tmp/__pycache__` in `/etc/environment` to avoid `*.pyc` clutter
+- Always run `uv sync --all-packages` or `uv sync --package (name)` for select python
+- Use `docker compose run --rm --build (service)` from [`docker-compose.yml`](../docker-compose.yml)

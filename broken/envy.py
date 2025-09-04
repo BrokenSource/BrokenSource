@@ -11,7 +11,7 @@ class Environment:
     """Utilities for managing environment variables"""
 
     def __new__(cls) -> None:
-        raise TypeError(f"{cls.__name__} class shouldn't be instantiated")
+        raise TypeError(f"{cls.__name__} class cannot be instantiated")
 
     def get(key: str, default: str=None) -> str:
         return os.getenv(key, default)
@@ -40,6 +40,9 @@ class Environment:
     def exists(key: str) -> bool:
         return (key in os.environ)
 
+    def absent(key: str) -> bool:
+        return (key not in os.environ)
+
     def int(key: str, default: int=0) -> int:
         return int(os.getenv(key, default))
 
@@ -58,8 +61,6 @@ class Environment:
 
     def flag(key: str, default: bool=False) -> bool:
         return Environment.bool(key, default)
-
-    # # Arguments
 
     def arguments() -> bool:
         return (len(sys.argv) > 1)

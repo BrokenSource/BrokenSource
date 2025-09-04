@@ -17,15 +17,10 @@ from broken.envy import Environment
 
 __version__ = importlib.metadata.version("broken-source")
 
-# Keep the repository clean of bytecode cache files
-if (_venv := Path(__file__).parent.parent/".venv").exists():
-    sys.pycache_prefix = str(_venv/"pycache")
-
 # Python <= 3.10 typing fixes
 if sys.version_info < (3, 11):
     import typing # noqa
-    from typing_extensions import Self, TypeAlias
-    typing.TypeAlias = TypeAlias
+    from typing_extensions import Self
     typing.Self = Self
 
 # Fix weird Pydantic use_attribute_docstrings error in older Python
