@@ -10,7 +10,6 @@ from attrs import define
 from PIL import Image
 from PIL.Image import Image as ImageType
 
-import broken
 from broken.path import BrokenPath
 from broken.utils import BrokenCache
 

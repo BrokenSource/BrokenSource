@@ -5,7 +5,6 @@ from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
     Optional,
     Self,
     Union,
@@ -108,11 +107,6 @@ class BrokenEnum(enum.Enum):
             converter=type(self).get,
             **kwargs
         )
-
-    @classmethod
-    def extend(cls, name: str, value: Any) -> Self:
-        """Dynamically extend the enum with a new member (name=value)"""
-        raise NotImplementedError("This method is not implemented yet")
 
 # ---------------------------------------------------------------------------- #
 

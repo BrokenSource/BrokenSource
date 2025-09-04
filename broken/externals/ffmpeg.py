@@ -24,7 +24,6 @@ from broken.model import BrokenModel
 from broken.path import BrokenPath
 from broken.system import Host
 from broken.typerx import BrokenTyper
-from broken.types import Bytes, Hertz, Seconds
 from broken.utils import denum, every, flatten, nearest, shell
 
 # ---------------------------------------------------------------------------- #
@@ -1505,7 +1504,7 @@ class BrokenAudioReader:
     samplerate: int = None
     """The sample rate of the audio file"""
 
-    chunk: Seconds = 0.1
+    chunk: float = 0.1
     """The amount of seconds to yield data at a time"""
 
     read: int = 0

@@ -114,9 +114,7 @@ class BrokenManager(ProjectManager):
             local: str = f"{image}:local"
 
             # Filter wanted images
-            if image.startswith("_"):
-                continue
-            elif not re.match(regex, image):
+            if not re.match(regex, image):
                 continue
 
             # Iterate on multiple releases

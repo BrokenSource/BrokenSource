@@ -1,9 +1,7 @@
 import functools
-import re
 import site
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Iterable, Optional, Union
 
@@ -17,8 +15,6 @@ from broken.system import Host
 from broken.typerx import BrokenTyper
 from broken.utils import BrokenCache, denum, every, shell
 
-# Nightly builds are daily and it's safe-ish to use 'yesterday' as the dev version
-YESTERDAY: str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%d")
 TORCH_INDEX_URL_NIGHTLY: str = "https://download.pytorch.org/whl/nightly/"
 TORCH_INDEX_URL_STABLE:  str = "https://download.pytorch.org/whl/"
 
@@ -68,6 +64,14 @@ class TorchRelease(str, BrokenEnum):
     TORCH_280_ROCM_640 = "2.8.0+rocm6.4"
     TORCH_280_XPU      = "2.8.0+xpu"
     # ---------------------------------- #
+    TORCH_290_MACOS    = "2.9.0"
+    TORCH_290_CPU      = "2.9.0+cpu"
+    TORCH_290_CUDA_126 = "2.9.0+cu126"
+    TORCH_290_CUDA_128 = "2.9.0+cu128"
+    TORCH_290_CUDA_129 = "2.9.0+cu129"
+    TORCH_290_CUDA_130 = "2.9.0+cu130"
+    TORCH_290_XPU      = "2.9.0+xpu"
+    # ---------------------------------- #
 
     # # Differentiators
 
@@ -85,6 +89,11 @@ class TorchRelease(str, BrokenEnum):
     @property
     def version(self) -> Version:
         """The full version of the torch release '2.6.0+cu124'"""
+        from datetime import datetime, timedelta, timezone
+
+        # Nightly builds are daily and it's safe-ish to use 'yesterday' as the dev version
+        YESTERDAY: str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y%m%d")
+
         return ''.join(filter(None, (
             f"torch=={self.number}",
             f".dev{YESTERDAY}"*(self.is_nightly),

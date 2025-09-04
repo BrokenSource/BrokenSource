@@ -4,7 +4,7 @@ import site
 import sys
 from importlib.metadata import Distribution
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 
 class Environment:
@@ -13,7 +13,7 @@ class Environment:
     def __new__(cls) -> None:
         raise TypeError(f"{cls.__name__} class cannot be instantiated")
 
-    def get(key: str, default: str=None) -> str:
+    def get(key: str, default: str=None) -> Optional[str]:
         return os.getenv(key, default)
 
     def set(key: str, value: Optional[str]) -> None:
@@ -52,15 +52,25 @@ class Environment:
     def bool(key: str, default: bool=False) -> bool:
         value = str(os.getenv(key, default)).lower()
 
-        if value in ("1", "true", "yes", "y", "on"):
+        if value in ("1", "true", "t", "yes", "y", "on"):
             return True
-        elif value in ("0", "false", "no", "n", "off"):
+        elif value in ("0", "false", "f", "no", "n", "off"):
             return False
 
         raise ValueError(f"Invalid boolean for environment variable '{key}': {value}")
 
     def flag(key: str, default: bool=False) -> bool:
         return Environment.bool(key, default)
+
+    @contextlib.contextmanager
+    def temporary(**variables: str):
+        original = os.environ.copy()
+        Environment.update(**variables)
+        try:
+            yield None
+        finally:
+            os.environ.clear()
+            os.environ.update(original)
 
     def arguments() -> bool:
         return (len(sys.argv) > 1)
@@ -83,16 +93,6 @@ class Environment:
             Environment.get("PATH", ""),
             f"{os.pathsep}{path}" * (not prepend),
         )))
-
-    @contextlib.contextmanager
-    def temporary(**variables: str):
-        original = os.environ.copy()
-        os.environ.update(variables)
-        try:
-            yield None
-        finally:
-            os.environ.clear()
-            os.environ.update(original)
 
 # ---------------------------------------------------------------------------- #
 

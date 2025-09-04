@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import sys
 import tempfile
@@ -29,8 +27,8 @@ class BrokenProject:
     ABOUT:      str = "No description provided"
 
     # Refactored functionality
-    DIRECTORIES: _Directories = None
-    RESOURCES:   _Resources   = None
+    DIRECTORIES: "_Directories" = None
+    RESOURCES:   "_Resources"   = None
 
     def __attrs_post_init__(self):
 
