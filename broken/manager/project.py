@@ -37,7 +37,7 @@ class CodeProject:
     def __eq__(self, other: Self) -> bool:
         return (self.path == other.path)
 
-    # ------------------------------------------ #
+    # -------------------------------- #
 
     languages: set[ProjectLanguage] = Factory(set)
 
@@ -49,7 +49,7 @@ class CodeProject:
         if self.is_cpp:    return f"🔵 [dim grey58](C/C++ )[/] {self.description}"
         return self.description
 
-    # ------------------------------------------ #
+    # -------------------------------- #
     # Shorthands for project language
 
     @property
@@ -72,7 +72,7 @@ class CodeProject:
     def is_cpp(self) -> bool:
         return (ProjectLanguage.CPP in self.languages)
 
-    # ------------------------------------------ #
+    # -------------------------------- #
 
     @property
     def pyproject(self) -> DotMap:
@@ -90,7 +90,7 @@ class CodeProject:
     def description(self) -> str:
         return str(self.pyproject.project.description)
 
-    # ------------------------------------------ #
+    # -------------------------------- #
     # Actions
 
     def __attrs_post_init__(self) -> None:

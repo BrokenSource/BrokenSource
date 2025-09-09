@@ -362,7 +362,7 @@ class StaticClass:
     """A class that can't be instantiated directl, only used for static methods (namespace)"""
 
     def __new__(cls, *args, **kwargs):
-        raise TypeError(f"Can't instantiate static class '{cls.__name__}'")
+        raise TypeError(f"Cannot instantiate static class '{cls.__name__}'")
 
 
 class BrokenSingleton(ABC):

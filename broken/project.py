@@ -22,7 +22,7 @@ class BrokenProject:
 
     # App information
     APP_NAME:   str
-    APP_AUTHOR: str = "brokensource"
+    APP_AUTHOR: str = "BrokenSource"
     VERSION:    str = "0.0.0"
     ABOUT:      str = "No description provided"
 

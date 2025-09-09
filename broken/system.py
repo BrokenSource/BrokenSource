@@ -208,7 +208,7 @@ class Host:
     OnNetBSD:  bool = (LinuxDistro == "netbsd")
     BSDLike:   bool = (OnFreeBSD or OnOpenBSD or OnNetBSD)
 
-    # ------------------------------------------ #
+    # -------------------------------- #
 
     Wayland: bool = (Environment.get("XDG_SESSION_TYPE") == "wayland")
     """Current windowing session protocol is Wayland"""
@@ -216,7 +216,7 @@ class Host:
     X11: bool = (Environment.get("XDG_SESSION_TYPE") == "x11")
     """Current windowing session protocol is X11"""
 
-    # ------------------------------------------ #
+    # -------------------------------- #
 
     @staticmethod
     def clear_terminal() -> None:
