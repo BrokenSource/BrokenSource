@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Annotated, Self
 
-import toml
+import tomli
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger
@@ -76,11 +76,11 @@ class CodeProject:
 
     @property
     def pyproject(self) -> DotMap:
-        return DotMap(toml.load(self.path/"pyproject.toml"))
+        return DotMap(tomli.load(self.path/"pyproject.toml"))
 
     @property
     def cargo(self) -> DotMap:
-        return DotMap(toml.load(self.path/"Cargo.toml"))
+        return DotMap(tomli.load(self.path/"Cargo.toml"))
 
     @property
     def name(self) -> str:

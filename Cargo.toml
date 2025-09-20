@@ -1,6 +1,6 @@
 [workspace]
-members = ["crates/*"]
-exclude = ["projects/Pyaket/pyaket"]
+members  = ["crates/*"]
+exclude  = []
 resolver = "3"
 
 [workspace.package]
