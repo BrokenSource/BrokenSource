@@ -1,11 +1,8 @@
 {
 	"folders": [
-		{"name": "ShaderFlow",  "path": "projects/ShaderFlow"},
-		{"name": "DepthFlow",   "path": "projects/DepthFlow"},
-		{"name": "Pyaket",      "path": "projects/Pyaket"},
-		{"name": "Packages",    "path": "packages"},
-		{"name": "Meta",        "path": "meta"},
-		{"name": "Code",        "path": "."},
+		{"name": "Meta",     "path": "meta"},
+		{"name": "Packages", "path": "packages"},
+		{"name": "Code",     "path": "."},
 	],
 
 	"extensions": {
@@ -30,6 +27,8 @@
 			".stfolder": true,
 			"**/__pycache__": true,
 			"**/node_modules": true,
+			"meta": true,
+			"packages": true,
 		},
 
 		// Better minimap

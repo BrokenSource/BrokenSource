@@ -22,9 +22,6 @@ runs:
 
     - name: Setup uv
       uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-        prune-cache: false
 
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
