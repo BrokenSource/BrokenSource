@@ -29,9 +29,9 @@ icon: material/language-python
         <hr>
         2. Run any [project](https://pypi.org/user/Tremeschin/) simply with:
         ```sh title=""
-        uvx (project) (args)
+        uvx --python 3.13 (project) (args)
         ```
-        :material-arrow-right: For example `uvx depthflow gradio`
+        :material-arrow-right: For example `uvx --python 3.13 depthflow gradio`
     === ":simple-python: Package"
         <div align="center">
           <img class="os-logo" src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/python.svg">

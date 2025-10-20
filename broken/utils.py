@@ -76,7 +76,7 @@ def flatten(
         `cast`ed object with all `unpack`ed `items` without any of the `block`ed values
     """
     def flatten(data):
-        if bool(block):
+        if block is not None:
             data = filter(lambda item: (item not in block), data)
         for item in data:
             if isinstance(item, unpack):

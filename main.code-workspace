@@ -2,6 +2,7 @@
 	"folders": [
 		{"name": "Meta",     "path": "meta"},
 		{"name": "Packages", "path": "packages"},
+		{"name": "Projects", "path": "projects"},
 		{"name": "Code",     "path": "."},
 	],
 
@@ -9,12 +10,10 @@
 		"recommendations": [
 			"aaron-bond.better-comments",
 			"charliermarsh.ruff",
-			"geforcelegend.vscode-glsl",
 			"ms-python.python",
 			"ms-python.vscode-pylance",
 			"pkief.material-icon-theme",
 			"shardulm94.trailing-spaces",
-			"slevesque.shader",
 			"tamasfe.even-better-toml",
 			"usernamehw.errorlens",
 		]
@@ -22,13 +21,11 @@
 
 	"settings": {
 		"files.exclude": {
-			".next": true,
 			".nomedia": true,
 			".stfolder": true,
-			"**/__pycache__": true,
-			"**/node_modules": true,
 			"meta": true,
 			"packages": true,
+			"projects": true,
 		},
 
 		// Better minimap
@@ -71,6 +68,8 @@
 			"pyaket":      "tools",
 			"quick":       "other",
 			"rust":        "src",
+			"rustbin":     "tools",
+			"rustman":     "tools",
 			"scenes":      "core",
 			"shaderflow":  "tools",
 			"soundfonts":  "audio",

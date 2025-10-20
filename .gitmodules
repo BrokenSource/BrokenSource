@@ -22,3 +22,6 @@
 [submodule "packages/Typenaut"]
 	path = packages/Typenaut
 	url = https://github.com/BrokenSource/Typenaut
+[submodule "packages/Rustman"]
+	path = packages/Rustman
+	url = https://github.com/BrokenSource/Rustman
