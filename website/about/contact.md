@@ -20,11 +20,6 @@ icon: material/chat-processing-outline
     <ul><li>Larger uploads can be useful</li></ul>
     [:octicons-arrow-right-24:{.lg .middle} **Join Group**](https://t.me/BrokenSource)
 
--   :fontawesome-solid-envelope:{.lg .middle} **Email**
-    <p>Get in touch directly and privately</p>
-    <ul><li>Business or Traditional</li></ul>
-    [:octicons-arrow-right-24:{.lg .middle} **Send a Message**](mailto:contact@brokensrc.dev)
-
 </div>
 
 !!! note "I live on the **UTC-04:00 Timezone** (EDT), so I might be sleeping when you send me a message"

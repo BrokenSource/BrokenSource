@@ -4,7 +4,7 @@ import site
 import sys
 from importlib.metadata import Distribution
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 
 class Environment:
