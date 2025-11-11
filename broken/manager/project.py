@@ -76,11 +76,13 @@ class CodeProject:
 
     @property
     def pyproject(self) -> DotMap:
-        return DotMap(tomli.load(self.path/"pyproject.toml"))
+        data = (self.path/"pyproject.toml").read_text("utf-8")
+        return DotMap(tomli.loads(data))
 
     @property
     def cargo(self) -> DotMap:
-        return DotMap(tomli.load(self.path/"Cargo.toml"))
+        data = (self.path/"Cargo.toml").read_text("utf-8")
+        return DotMap(tomli.loads(data))
 
     @property
     def name(self) -> str:

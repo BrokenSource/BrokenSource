@@ -70,6 +70,8 @@ class TorchRelease(str, BrokenEnum):
     TORCH_290_CUDA_128 = "2.9.0+cu128"
     TORCH_290_CUDA_129 = "2.9.0+cu129"
     TORCH_290_CUDA_130 = "2.9.0+cu130"
+    TORCH_290_ROCM_630 = "2.9.0+rocm6.3"
+    TORCH_290_ROCM_640 = "2.9.0+rocm6.4"
     TORCH_290_XPU      = "2.9.0+xpu"
     # ---------------------------------- #
 
@@ -173,12 +175,13 @@ class TorchRelease(str, BrokenEnum):
 
 class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
-    CPU     = TorchRelease.TORCH_280_CPU
-    MACOS   = TorchRelease.TORCH_280_MACOS
+    CPU     = TorchRelease.TORCH_290_CPU
+    MACOS   = TorchRelease.TORCH_290_MACOS
     CUDA118 = TorchRelease.TORCH_271_CUDA_118
-    CUDA128 = TorchRelease.TORCH_280_CUDA_128
-    ROCM    = TorchRelease.TORCH_280_ROCM_640
-    XPU     = TorchRelease.TORCH_280_XPU
+    CUDA128 = TorchRelease.TORCH_290_CUDA_128
+    CUDA130 = TorchRelease.TORCH_290_CUDA_130
+    ROCM    = TorchRelease.TORCH_290_ROCM_640
+    XPU     = TorchRelease.TORCH_290_XPU
 
     @classmethod
     def _prompt_choices(cls) -> Iterable[str]:
@@ -214,15 +217,17 @@ class SimpleTorch(BrokenEnum):
         # Note: Sizes are the total size after installing (1) on an empty environment, and may vary across versions slightly.
         # (1): `uv pip install torch --index-url https://download.pytorch.org/whl/{flavor} --python-platform {linux,windows}`
         if Host.OnWindows:
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "5.9 GB", "Latest consumer GPUs, recommended option")
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, mainly servers")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Latest drivers, recommended option")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "5.9 GB", "Previous major version, still good")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, usually servers")
             table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   "-",                                   "-", "Not supported yet (https://pytorch.org/)")
             table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.name.lower(),     "3.5 GB", "Desktop Arc or Integrated Graphics")
             table.add_row("-",                "CPU",            SimpleTorch.CPU.name.lower(),     "1.3 GB", "Slow but most compatible, small models")
         elif Host.OnLinux:
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "6.5 GB", "Latest consumer GPUs, recommended option")
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, mainly servers")
-            table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   SimpleTorch.ROCM.name.lower(),   "23.3 GB", "Check GPU support, override GFX if needed")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Latest drivers, recommended option")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "6.5 GB", "Previous major version, still good")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, usually servers")
+            table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   SimpleTorch.ROCM.name.lower(),   "15.5 GB", "Check GPU support, override GFX if needed")
             table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.name.lower(),     "3.0 GB", "Desktop Arc or Integrated Graphics")
             table.add_row("-",                "CPU",            SimpleTorch.CPU.name.lower(),     "0.7 GB", "Slow but most compatible, small models")
 
@@ -252,8 +257,8 @@ class BrokenTorch:
         # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
         # We'll target newest cuda versions for the latest consumer GPUs, even if servers
         # are often on older versions, as they can start off 'cpu' and override torch
-        yield TorchRelease.TORCH_280_CPU
-        yield TorchRelease.TORCH_280_CUDA_128
+        yield TorchRelease.TORCH_290_CPU
+        yield TorchRelease.TORCH_290_CUDA_130
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:
@@ -300,7 +305,7 @@ class BrokenTorch:
             # Assume it's a Linux server on NVIDIA
             if (not Runtime.Interactive):
                 logger.info("• Assuming Linux server with NVIDIA GPU")
-                version = denum(SimpleTorch.CUDA124)
+                version = denum(SimpleTorch.CUDA128)
 
             # Fixed single version for macOS
             if Host.OnMacOS:
