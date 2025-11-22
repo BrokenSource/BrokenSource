@@ -40,8 +40,8 @@ def override_module(name: str, mock: Any) -> Generator:
     finally:
         if (not exist):
             del sys.modules[name]
-            return
-        sys.modules[name] = saved
+        else:
+            sys.modules[name] = saved
 
 
 @contextlib.contextmanager
