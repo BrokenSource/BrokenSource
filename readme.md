@@ -27,26 +27,26 @@ Roughly speaking, the important parts are:
 
 ### ♻️ Common
 
-- [`📁/.github`](../.github): Workflows, readmes + [special](https://github.com/BrokenSource/.github) organization repository
-- [`📁/website`](../website): Mkdocs documentation derived from [`mkdocs-base.yml`](../mkdocs-base.yml)
+- [`📁/.github`](./.github): Workflows, readmes + [special](https://github.com/BrokenSource/.github) organization repository
+- [`📁/website`](./website): Mkdocs documentation derived from [`mkdocs-base.yml`](./mkdocs-base.yml)
 
 ### 🗿 Monorepo
 
-- [`📁/docker`](../docker): Everything docker for all projects
+- [`📁/docker`](./docker): Everything docker for all projects
 - `📁/meta`: Optional directory to link off-branch projects
-- [`📁/projects`](../projects): Application projects (has entry points)
-- [`📁/packages`](../packages): Library projects (
-- [`action.yml`](../action.yml): Setup workflow
+- [`📁/projects`](./projects): Application projects (has entry points)
+- [`📁/packages`](./packages): Library projects (
+- [`action.yml`](./action.yml): Setup workflow
 
 ### 🐍 Python
 
 - `📁/.venv`: Global venv from [uv](https://github.com/astral-sh/uv)
-- [`📁/broken`](../broken): Main shared library
+- [`📁/broken`](./broken): Main shared library
 - `📁/dist`: Common build directory
 
 ### 🦀 Rust
 
-- [`📁/crates`](../crates): Library projects
+- [`📁/crates`](./crates): Library projects
 - `📁/target`: Build directory
 
 
@@ -54,4 +54,4 @@ Roughly speaking, the important parts are:
 
 - Export `PYTHONPYCACHEPREFIX=/tmp/__pycache__` in `/etc/environment` to avoid `*.pyc` clutter
 - Always run `uv sync --all-packages` or `uv sync --package (name)` for select projects
-- Use `docker compose run --rm --build (service)` from [`docker-compose.yml`](../docker-compose.yml)
+- Use `docker compose run --rm --build (service)` from [`docker-compose.yml`](./docker-compose.yml)
