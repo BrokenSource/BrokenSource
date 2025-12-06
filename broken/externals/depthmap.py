@@ -1,5 +1,6 @@
 # pyright: reportMissingImports=false
 import copy
+import sys
 from abc import ABC, abstractmethod
 from io import BytesIO
 from pathlib import Path
@@ -25,7 +26,7 @@ from broken.project import PROJECT
 from broken.resolution import BrokenResolution
 from broken.typerx import BrokenTyper
 from broken.types import MiB
-from broken.utils import BrokenCache, install
+from broken.utils import BrokenCache, install, shell
 from broken.vectron import Vectron
 
 if TYPE_CHECKING:
@@ -142,7 +143,7 @@ class DepthAnythingBase(DepthEstimatorBase):
         Large = "large"
 
     model: Annotated[Model, Option("--model", "-m")] = Field(Model.Small)
-    """The model of DepthAnythingV2 to use"""
+    """The model of DepthAnything to use"""
 
     _processor: Any = PrivateAttr(None)
 
@@ -189,27 +190,64 @@ class DepthAnythingV2(DepthAnythingBase):
     """Configure and use DepthAnythingV2 [dim](by https://github.com/DepthAnything/Depth-Anything-V2)[/]"""
     type: Annotated[Literal["depthanything2"], BrokenTyper.exclude()] = "depthanything2"
 
-    indoor: Annotated[bool, Option("--indoor")] = Field(False)
-    """Use the indoors fine-tuned metric model variant [bold dim](Not recommended for DepthFlow)[/]"""
-
-    outdoor: Annotated[bool, Option("--outdoor")] = Field(False)
-    """Use the outdoor fine-tuned metric model variant [bold dim](Not recommended for DepthFlow)[/]"""
-
     @property
     def _huggingface_model(self) -> str:
-        if (self.indoor):
-            return f"depth-anything/Depth-Anything-V2-Metric-Indoor-{self.model.value}-hf"
-        elif (self.outdoor):
-            return f"depth-anything/Depth-Anything-V2-Metric-Outdoor-{self.model.value}-hf"
-        else:
-            return f"depth-anything/Depth-Anything-V2-{self.model.value}-hf"
+        return f"depth-anything/Depth-Anything-V2-{self.model.value}-hf"
 
     def _thicken(self, depth: np.ndarray) -> np.ndarray:
         from scipy.ndimage import gaussian_filter, maximum_filter
-        if (self.indoor or self.outdoor):
-            depth = (np.max(depth) - depth)
         depth = gaussian_filter(input=depth, sigma=0.6)
         depth = maximum_filter(input=depth, size=5)
+        return depth
+
+# ---------------------------------------------------------------------------- #
+
+class DepthAnythingV3(DepthEstimatorBase):
+    """Configure and use DepthAnythingV3 [dim](by https://github.com/ByteDance-Seed/depth-anything-3)[/]"""
+    type: Annotated[Literal["depthanything3"], BrokenTyper.exclude()] = "depthanything3"
+
+    class Model(str, BrokenEnum):
+        Small = "small"
+        Base  = "base"
+        Large = "large"
+        Giant = "giant"
+
+    model: Annotated[Model, Option("--model", "-m")] = Field(Model.Small)
+    """The model of DepthAnything3 to use"""
+
+    @property
+    def _huggingface_model(self) -> str:
+        return f"depth-anything/DA3-{self.model.value.upper()}-hf"
+
+    def _load_model(self) -> None:
+        try:
+            import depth_anything_3
+        except ImportError:
+            shell(
+                sys.executable, "-m", "uv", "pip", "install",
+                "git+https://github.com/BrokenSource/Depth-Anything-3",
+            )
+        if (self.model != self.Model.Small):
+            logger.warn("[bold light_coral]• This depth estimator model is licensed under CC BY-NC 4.0 (non-commercial)[/]")
+        from depth_anything_3.api import DepthAnything3
+        self._model = DepthAnything3.from_pretrained(f"depth-anything/da3-{self.model.value}")
+        self._model.to(self.device)
+
+    def _estimate(self, image: np.ndarray) -> np.ndarray:
+        prediction = self._model.inference(
+            image=[image],
+            process_res=Environment.int("DA3_QUALITY", 1024),
+            export_format="npz",
+            use_ray_pose=True,
+        )
+        depth = prediction.depth[0]
+        depth = 1.0 / depth
+        return depth
+
+    def _thicken(self, depth: np.ndarray) -> np.ndarray:
+        from scipy.ndimage import gaussian_filter, maximum_filter
+        depth = gaussian_filter(input=depth, sigma=0.1)
+        depth = maximum_filter(input=depth, size=3)
         return depth
 
 # ---------------------------------------------------------------------------- #
@@ -350,6 +388,7 @@ DepthEstimator: TypeAlias = Union[
     DepthEstimatorBase,
     DepthAnythingV1,
     DepthAnythingV2,
+    DepthAnythingV3,
     DepthPro,
     ZoeDepth,
     Marigold,
