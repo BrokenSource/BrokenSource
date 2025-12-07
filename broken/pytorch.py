@@ -20,14 +20,7 @@ TORCH_INDEX_URL_STABLE:  str = "https://download.pytorch.org/whl/"
 
 class TorchRelease(str, BrokenEnum):
     # ---------------------------------- #
-    TORCH_251_MACOS    = "2.5.1"
-    TORCH_251_CPU      = "2.5.1+cpu"
-    TORCH_251_CUDA_118 = "2.5.1+cu118"
-    TORCH_251_CUDA_121 = "2.5.1+cu121"
-    TORCH_251_CUDA_124 = "2.5.1+cu124"
-    TORCH_251_ROCM_610 = "2.5.1+rocm6.1"
-    TORCH_251_ROCM_620 = "2.5.1+rocm6.2"
-    # ---------------------------------- #
+    # Jan 29, 2025
     TORCH_260_MACOS    = "2.6.0"
     TORCH_260_CPU      = "2.6.0+cpu"
     TORCH_260_CUDA_118 = "2.6.0+cu118"
@@ -37,6 +30,7 @@ class TorchRelease(str, BrokenEnum):
     TORCH_260_ROCM_624 = "2.6.0+rocm6.2.4"
     TORCH_260_XPU      = "2.6.0+xpu"
     # ---------------------------------- #
+    # Apr 23, 2025
     TORCH_270_MACOS    = "2.7.0"
     TORCH_270_CPU      = "2.7.0+cpu"
     TORCH_270_CUDA_118 = "2.7.0+cu118"
@@ -46,6 +40,7 @@ class TorchRelease(str, BrokenEnum):
     TORCH_270_ROCM_630 = "2.7.0+rocm6.3"
     TORCH_270_XPU      = "2.7.0+xpu"
     # ---------------------------------- #
+    # Jun 4, 2025
     TORCH_271_MACOS    = "2.7.1"
     TORCH_271_CPU      = "2.7.1+cpu"
     TORCH_271_CUDA_118 = "2.7.1+cu118"
@@ -55,6 +50,7 @@ class TorchRelease(str, BrokenEnum):
     TORCH_271_ROCM_630 = "2.7.1+rocm6.3"
     TORCH_271_XPU      = "2.7.1+xpu"
     # ---------------------------------- #
+    # Aug 6, 2025
     TORCH_280_MACOS    = "2.8.0"
     TORCH_280_CPU      = "2.8.0+cpu"
     TORCH_280_CUDA_126 = "2.8.0+cu126"
@@ -64,6 +60,7 @@ class TorchRelease(str, BrokenEnum):
     TORCH_280_ROCM_640 = "2.8.0+rocm6.4"
     TORCH_280_XPU      = "2.8.0+xpu"
     # ---------------------------------- #
+    # Oct 15, 2025
     TORCH_290_MACOS    = "2.9.0"
     TORCH_290_CPU      = "2.9.0+cpu"
     TORCH_290_CUDA_126 = "2.9.0+cu126"
@@ -73,6 +70,17 @@ class TorchRelease(str, BrokenEnum):
     TORCH_290_ROCM_630 = "2.9.0+rocm6.3"
     TORCH_290_ROCM_640 = "2.9.0+rocm6.4"
     TORCH_290_XPU      = "2.9.0+xpu"
+    # ---------------------------------- #
+    # Nov 12, 2025
+    TORCH_291_MACOS    = "2.9.1"
+    TORCH_291_CPU      = "2.9.1+cpu"
+    TORCH_291_CUDA_126 = "2.9.1+cu126"
+    TORCH_291_CUDA_128 = "2.9.1+cu128"
+    TORCH_291_CUDA_129 = "2.9.1+cu129"
+    TORCH_291_CUDA_130 = "2.9.1+cu130"
+    TORCH_291_ROCM_630 = "2.9.1+rocm6.3"
+    TORCH_291_ROCM_640 = "2.9.1+rocm6.4"
+    TORCH_291_XPU      = "2.9.1+xpu"
     # ---------------------------------- #
 
     # # Differentiators
@@ -175,13 +183,13 @@ class TorchRelease(str, BrokenEnum):
 
 class SimpleTorch(BrokenEnum):
     """Global torch versions target and suggestions"""
-    CPU     = TorchRelease.TORCH_290_CPU
-    MACOS   = TorchRelease.TORCH_290_MACOS
+    CPU     = TorchRelease.TORCH_291_CPU
+    MACOS   = TorchRelease.TORCH_291_MACOS
     CUDA118 = TorchRelease.TORCH_271_CUDA_118
-    CUDA128 = TorchRelease.TORCH_290_CUDA_128
-    CUDA130 = TorchRelease.TORCH_290_CUDA_130
-    ROCM    = TorchRelease.TORCH_290_ROCM_640
-    XPU     = TorchRelease.TORCH_290_XPU
+    CUDA128 = TorchRelease.TORCH_291_CUDA_128
+    CUDA130 = TorchRelease.TORCH_291_CUDA_130
+    ROCM    = TorchRelease.TORCH_291_ROCM_640
+    XPU     = TorchRelease.TORCH_291_XPU
 
     @classmethod
     def _prompt_choices(cls) -> Iterable[str]:
@@ -217,15 +225,15 @@ class SimpleTorch(BrokenEnum):
         # Note: Sizes are the total size after installing (1) on an empty environment, and may vary across versions slightly.
         # (1): `uv pip install torch --index-url https://download.pytorch.org/whl/{flavor} --python-platform {linux,windows}`
         if Host.OnWindows:
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Latest drivers, recommended option")
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "5.9 GB", "Previous major version, still good")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "5.9 GB", "Most compatible (driver, packages)")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Smallest option (Turing+ GPUs)")
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, usually servers")
             table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   "-",                                   "-", "Not supported yet (https://pytorch.org/)")
             table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.name.lower(),     "3.5 GB", "Desktop Arc or Integrated Graphics")
             table.add_row("-",                "CPU",            SimpleTorch.CPU.name.lower(),     "1.3 GB", "Slow but most compatible, small models")
         elif Host.OnLinux:
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Latest drivers, recommended option")
-            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "6.5 GB", "Previous major version, still good")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA128.name.lower(), "6.5 GB", "Most compatible (driver, packages)")
+            table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA130.name.lower(), "4.5 GB", "Smallest option (Turing+ GPUs)")
             table.add_row("[green]NVIDIA[/]", "[green]CUDA[/]", SimpleTorch.CUDA118.name.lower(), "5.5 GB", "For older drivers, usually servers")
             table.add_row("[red]Radeon[/]",   "[red]ROCm[/]",   SimpleTorch.ROCM.name.lower(),   "15.5 GB", "Check GPU support, override GFX if needed")
             table.add_row("[blue]Intel[/]",   "[blue]XPU[/]",   SimpleTorch.XPU.name.lower(),     "3.0 GB", "Desktop Arc or Integrated Graphics")
@@ -258,7 +266,7 @@ class BrokenTorch:
         # We'll target newest cuda versions for the latest consumer GPUs, even if servers
         # are often on older versions, as they can start off 'cpu' and override torch
         yield TorchRelease.TORCH_290_CPU
-        yield TorchRelease.TORCH_290_CUDA_130
+        yield TorchRelease.TORCH_290_CUDA_128
 
     @staticmethod
     def version() -> Optional[Union[TorchRelease, str]]:

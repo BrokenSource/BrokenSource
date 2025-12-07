@@ -310,7 +310,7 @@ class BrokenTyper:
     def shell_prompt(self) -> bool:
         try:
             sys.argv[1:] = shlex.split(typer.prompt(
-                text="", prompt_suffix="\n❯",
+                text="", prompt_suffix="\n> ",
                 show_default=False,
                 default=""
             ))
