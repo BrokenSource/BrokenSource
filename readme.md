@@ -55,3 +55,4 @@ Roughly speaking, the important parts are:
 - Export `PYTHONPYCACHEPREFIX=/tmp/__pycache__` in `/etc/environment` to avoid `*.pyc` clutter
 - Always run `uv sync --all-packages` or `uv sync --package (name)` for select projects
 - Use `docker compose run --rm --build (service)` from [`docker-compose.yml`](./docker-compose.yml)
+- Add `root="/tmp/containerd"` in `/etc/containerd/config.toml ` if you got the RAM to save SSD in Docker

@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Optional
 
 
+def abs_path(x: Path) -> Path:
+    return Path(x).expanduser().resolve().absolute()
+
 class Environment:
     """Utilities for managing environment variables"""
 
@@ -62,6 +65,9 @@ class Environment:
     def flag(key: str, default: bool=False) -> bool:
         return Environment.bool(key, default)
 
+    def path(key: str, default: str="") -> Path:
+        return abs_path(Path(os.getenv(key, default)))
+
     @contextlib.contextmanager
     def temporary(**variables: str):
         original = os.environ.copy()
@@ -77,17 +83,14 @@ class Environment:
 
     # # System PATH
 
-    def _abs_path(x: Path) -> Path:
-        return Path(x).expanduser().resolve().absolute()
-
-    def path() -> list[Path]:
+    def PATH() -> list[Path]:
         return list(Path(x) for x in os.getenv("PATH", "").split(os.pathsep) if x)
 
     def in_path(path: Path) -> bool:
-        return (Environment._abs_path(path) in Environment.path())
+        return (abs_path(path) in Environment.PATH())
 
     def add_to_path(path: Path, prepend: bool=True) -> None:
-        path = Environment._abs_path(path)
+        path = abs_path(path)
         Environment.set("PATH", ''.join((
             f"{path}{os.pathsep}" * (prepend),
             Environment.get("PATH", ""),

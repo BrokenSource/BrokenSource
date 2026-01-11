@@ -14,30 +14,20 @@ class BrokenLogging:
     def __new__(cls, *args, **kwargs):
         raise RuntimeError(f"{cls.__name__} class shouldn't be instantiated")
 
-    @staticmethod
-    def project() -> str:
-        return Environment.get("BROKEN_APP_NAME", "Broken")
-
-    @staticmethod
-    def set_project(name: str) -> None:
-        Environment.setdefault("BROKEN_APP_NAME", name)
-
     @classmethod
     def format(cls, data: dict) -> str:
         when = time.absolute()
         data["time"] = f"{int(when//60)}'{(when%60):06.3f}"
-        data["project"] = cls.project()
 
         # Simpler logging for non UTF or workflows
         if Runtime.GitHub or Environment.flag("SIMPLE_LOGGING", 0):
-            return ("[{project}][{time}][{level:5}] {message}").format(**data)
+            return ("[{time}][{level:5}] {message}").format(**data)
 
         elif Environment.flag("PLAIN_LOGGING", 0):
             return ("[{level:5}] {message}").format(**data)
 
         return (
-            f"│[dodger_blue3]{cls.project()}[/]├"
-            "┤[green]{time}[/]├"
+            "│[dodger_blue3]{time}[/]├"
             "┤[{level.icon}]{level:5}[/{level.icon}]│ "
             "▸ {message}"
         ).format(**data)

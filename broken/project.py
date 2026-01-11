@@ -46,7 +46,6 @@ class BrokenProject:
             if (project is BROKEN):
                 if (Host.Root and not Runtime.Docker):
                     logger.warn("Running as [bold blink red]Administrator or Root[/] is discouraged unless necessary!")
-                BrokenLogging.set_project(self.APP_NAME)
                 globals()["PROJECT"] = self
 
         # Convenience symlink the project's workspace

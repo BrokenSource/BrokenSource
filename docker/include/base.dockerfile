@@ -10,8 +10,9 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 ENV DEBIAN_FRONTEND="noninteractive"
 
 # Enable caching in APT - Save the Bytes, Save the World!
-RUN echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 RUN rm /etc/apt/apt.conf.d/docker-clean
+RUN echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' \
+    > /etc/apt/apt.conf.d/keep-cache
 
 # Fixme: Can we avoid parroting '--mount' everywhere?
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \

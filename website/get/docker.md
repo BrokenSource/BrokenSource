@@ -121,12 +121,14 @@ There are *quite a lot* of combinations in hardware[^1], platform and intention 
 Per Monorepo structure, I've configured a [**`.docker-compose.yml`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker-compose.yml) file that builds a [**`base.dockerfile`**](https://github.com/BrokenSource/BrokenSource/blob/main/docker/base.dockerfile) with common dependencies, and {>>hopefully<<} **OpenGL Acceleration**. The other dockerfiles starts of at the end of this base image for the specific project
 
 ??? tip "Have enough RAM and don't want to hurt your SSD's TBW?"
-    Edit or create the file `sudo nano /etc/docker/daemon.json` and add:
+    **Docker v29+**: Add to the file `/etc/containerd/config.toml`
+    ```toml
+    root = "/tmp/containerd"
+    ```
+
+    **Previous**: Add to the file `/etc/docker/daemon.json`
     ```json
-    {
-        "data-root": "/tmp/docker",
-        // ...
-    }
+    {"data-root": "/tmp/docker"}
     ```
 
 Most Projects uses [**ModernGL**](https://github.com/moderngl/moderngl) for interfacing with OpenGL, that renders the Shaders. The Context creation is handled by [**glcontext**](https://github.com/moderngl/glcontext), which selects the proper platform's API to use

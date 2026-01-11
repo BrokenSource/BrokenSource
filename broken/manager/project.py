@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Annotated, Self
 
-import tomli
+import tomlkit
 from attrs import Factory, define, field
 from dotmap import DotMap
 from loguru import logger
@@ -77,12 +77,12 @@ class CodeProject:
     @property
     def pyproject(self) -> DotMap:
         data = (self.path/"pyproject.toml").read_text("utf-8")
-        return DotMap(tomli.loads(data))
+        return DotMap(tomlkit.loads(data))
 
     @property
     def cargo(self) -> DotMap:
         data = (self.path/"Cargo.toml").read_text("utf-8")
-        return DotMap(tomli.loads(data))
+        return DotMap(tomlkit.loads(data))
 
     @property
     def name(self) -> str:
