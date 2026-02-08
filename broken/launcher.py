@@ -7,8 +7,8 @@ from pathlib import Path
 
 import typer
 from attrs import Factory, define
-from loguru import logger
 
+from broken import logger
 from broken.envy import Environment, Runtime
 from broken.project import BrokenProject
 from broken.typerx import BrokenTyper

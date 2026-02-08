@@ -10,12 +10,12 @@ import numpy as np
 import xxhash
 from diskcache import Cache as DiskCache
 from halo import Halo
-from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import Field, PrivateAttr
 from typer import Option
 
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.envy import Environment
 from broken.externals import ExternalModelsBase, ExternalTorchBase

@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import click
-from loguru import logger
 
 import broken
 import broken.project
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.envy import Environment
 from broken.system import Host
@@ -56,30 +56,30 @@ class BrokenPath(StaticClass):
 
         return path
 
-    def copy(src: Path, dst: Path, *, echo=True) -> Path:
+    def copy(src: Path, dst: Path) -> Path:
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
         BrokenPath.mkdir(dst.parent)
         if src.is_dir():
-            logger.info(f"Copy ({src})\n   → ({dst})", echo=echo)
+            logger.info(f"Copy ({src})\n   → ({dst})")
             shutil.copytree(src, dst)
         else:
-            logger.info(f"Copy ({src})\n   → ({dst})", echo=echo)
+            logger.info(f"Copy ({src})\n   → ({dst})")
             shutil.copy2(src, dst)
         return dst
 
-    def move(src: Path, dst: Path, *, echo=True) -> Path:
+    def move(src: Path, dst: Path) -> Path:
         src, dst = BrokenPath.get(src), BrokenPath.get(dst)
-        logger.info(f"Moving ({src})\n     → ({dst})", echo=echo)
+        logger.info(f"Moving ({src})\n     → ({dst})")
         shutil.move(src, dst)
         return dst
 
-    def remove(path: Path, *, confirm=False, echo=True) -> Path:
+    def remove(path: Path, *, confirm=False) -> Path:
 
         # Already removed or doesn't exist
         if not (path := BrokenPath.get(path)).exists():
             return path
 
-        logger.info(f"Removing Path ({path})", echo=echo)
+        logger.info(f"Removing Path ({path})")
 
         # Safety: Must not be common
         if path in (Path.cwd(), Path.home()):
@@ -108,34 +108,32 @@ class BrokenPath(StaticClass):
 
         return path
 
-    def mkdir(path: Path, parent: bool=False, *, echo=True) -> Path:
+    def mkdir(path: Path, parent: bool=False) -> Path:
         """Creates a directory and its parents, fail safe™"""
         path = BrokenPath.get(path)
         make = (path.parent if parent else path)
         if make.exists():
             return path
-        logger.info(f"Creating directory {make}", echo=echo)
+        logger.info(f"Creating directory {make}")
         make.mkdir(parents=True, exist_ok=True)
         return path
 
-    def recreate(path: Path, *, echo=True) -> Path:
+    def recreate(path: Path) -> Path:
         """Delete and re-create a directory"""
-        return BrokenPath.mkdir(BrokenPath.remove(path, echo=echo), echo=echo)
+        return BrokenPath.mkdir(BrokenPath.remove(path))
 
     @contextlib.contextmanager
     def pushd(path: Path, *, echo: bool=True) -> Generator[Path, None, None]:
         """Change directory, then change back when done"""
         path = BrokenPath.get(path)
         cwd = os.getcwd()
-        logger.minor(f"Enter directory ({path})", echo=echo)
         os.chdir(path)
         yield path
-        logger.minor(f"Leave directory ({path})", echo=echo)
         os.chdir(cwd)
 
-    def symlink(virtual: Path, real: Path, *, echo: bool=True) -> Path:
+    def symlink(virtual: Path, real: Path) -> Path:
         """Symlink 'virtual' file to -> 'real' true path"""
-        logger.info(f"Symlinking ({virtual})\n→ ({real})", echo=echo)
+        logger.info(f"Symlinking ({virtual})\n→ ({real})")
 
         # Return if already symlinked
         if (BrokenPath.get(virtual) == BrokenPath.get(real)):
@@ -158,14 +156,14 @@ class BrokenPath(StaticClass):
 
         # Virtual is a directory and not empty
         elif virtual.is_dir() and (not os.listdir(virtual)):
-            BrokenPath.remove(virtual, echo=False)
+            BrokenPath.remove(virtual)
 
         else:
             if click.confirm('\n'.join((
                 f"Path ({virtual}) exists, but Broken wants to create a symlink to ({real})",
                 "• Confirm removing the 'virtual' path and continuing? (It might contain data or be a important symlink)"
             ))):
-                BrokenPath.remove(virtual, echo=False)
+                BrokenPath.remove(virtual)
             else:
                 return
 
@@ -173,24 +171,24 @@ class BrokenPath(StaticClass):
             virtual.symlink_to(real)
         except Exception as error:
             if Host.OnWindows:
-                logger.minor("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
+                logger.error("Failed to create Symlink. Consider enabling 'Developer Mode' on Windows (https://rye.astral.sh/guide/faq/#windows-developer-mode)")
             else:
                 raise error
 
         return virtual
 
-    def make_executable(path: Path, *, echo=True) -> Path:
+    def make_executable(path: Path) -> Path:
         """Make a file executable"""
         if Host.OnUnix:
-            shell("chmod", "+x", path, echo=echo)
+            shell("chmod", "+x", path)
         return path
 
     def zip(path: Path, output: Path=None, *, format: ShutilFormat="zip", echo: bool=True, **options) -> Path:
         format = ShutilFormat.get(format).value
         output = BrokenPath.get(output or path).with_suffix(f".{format}")
         path   = BrokenPath.get(path)
-        logger.info(f"Zipping ({path})\n→ ({output})", echo=echo)
-        BrokenPath.remove(output, echo=echo)
+        logger.info(f"Zipping ({path})\n→ ({output})")
+        BrokenPath.remove(output)
         shutil.make_archive(
             base_name=output.with_suffix(""),
             format=format,
@@ -205,7 +203,7 @@ class BrokenPath(StaticClass):
 
         import tarfile
 
-        logger.info(f"Compressing ({path}) → ({output})", echo=echo)
+        logger.info(f"Compressing ({path}) → ({output})")
 
         with tarfile.open(output, "w:gz") as tar:
             if path.is_dir():
@@ -214,7 +212,7 @@ class BrokenPath(StaticClass):
             else:
                 tar.add(path, arcname=path.name)
         if remove:
-            BrokenPath.remove(path, echo=echo)
+            BrokenPath.remove(path)
 
         return output
 
@@ -260,10 +258,10 @@ class BrokenPath(StaticClass):
 
         # A file to skip if it exists, created after successful extraction
         if (extract_flag := (output/"BrokenPath.extract.ok")).exists():
-            logger.minor(f"Already extracted ({output})", echo=echo)
+            logger.info(f"Already extracted ({output})")
         else:
             # Show progress as this might take a while on slower IOs
-            logger.info(f"Extracting ({path})\n→ ({output})", echo=echo)
+            logger.info(f"Extracting ({path})\n→ ({output})")
             shutil.unpack_archive(path, output)
             extract_flag.touch()
 
@@ -300,24 +298,24 @@ class BrokenPath(StaticClass):
         if (output := BrokenPath.get(output)).is_dir():
             output /= BrokenPath.url_filename(url)
 
-        logger.info(f"Downloading\n• URL:  ({url})\n• Path: ({output})", echo=echo)
+        logger.info(f"Downloading\n• URL:  ({url})\n• Path: ({output})")
 
         # Without size check, the existence of the file is enough
         if (not size_check) and output.exists():
-            logger.minor("• File exists and Size check was skipped", echo=echo)
+            logger.info("• File exists and Size check was skipped")
             return None
 
         try:
             import requests
             response = requests.get(url, stream=True, headers={"Accept-Encoding": None})
         except requests.exceptions.RequestException as error:
-            logger.error(f"• Failed to download: {error}", echo=echo)
+            logger.error(f"• Failed to download: {error}")
             # Note: Return output as it might be downloaded but we're without internet
             return output
 
         # Note: The length header is not always present, if that, just check for existence
         if not (expected_size := int(response.headers.get('content-length', 0))):
-            logger.minor("The Download doesn't advertise a size, just checking for existence", echo=echo)
+            logger.info("The Download doesn't advertise a size, just checking for existence")
             if output.exists():
                 return output
 
@@ -327,7 +325,7 @@ class BrokenPath(StaticClass):
                 return output
             if (len(output.read_bytes()) == expected_size):
                 return output
-            logger.warn("• Wrong Download size", echo=echo)
+            logger.warn("• Wrong Download size")
 
         BrokenPath.mkdir(output.parent)
         import tqdm
@@ -343,16 +341,16 @@ class BrokenPath(StaticClass):
 
         # Url was invalid or something
         if (response.status_code != 200):
-            logger.error(f"Failed to Download File at ({url}):", echo=echo)
-            logger.error(f"• HTTP Error: {response.status_code}", echo=echo)
+            logger.error(f"Failed to Download File at ({url}):")
+            logger.error(f"• HTTP Error: {response.status_code}")
             return
 
         # Wrong downloaded and expected size
         elif (expected_size and size_check) and (output.stat().st_size != expected_size):
-            logger.error(f"File ({output}) was not downloaded correctly ({output.stat().st_size} != {expected_size})", echo=echo)
+            logger.error(f"File ({output}) was not downloaded correctly ({output.stat().st_size} != {expected_size})")
             return
 
-        logger.ok(f"Downloaded file ({output}) from ({url})", echo=echo)
+        logger.info(f"Downloaded file ({output}) from ({url})")
         return output
 
     def redirect(url: str) -> str:
@@ -393,11 +391,11 @@ class BrokenPath(StaticClass):
         directory = (directory/subdir/file.name)
 
         # Finally download the file
-        file = BrokenPath.download(denum(url), directory, echo=echo)
+        file = BrokenPath.download(denum(url), directory)
 
         # Maybe extract the downloaded file
         if ARCHIVE:
-            file = BrokenPath.extract(file, echo=echo)
+            file = BrokenPath.extract(file)
 
         for item in file.rglob("*"):
             if item.is_dir():

@@ -8,12 +8,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TypeAlias, Union
 
-from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import ConfigDict, Field
 from typer import Option
 
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.externals import ExternalModelsBase
 from broken.loaders import LoadableImage, LoadImage

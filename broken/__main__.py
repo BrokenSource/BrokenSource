@@ -4,10 +4,9 @@ from typing import Annotated
 
 from attrs import define
 from dotmap import DotMap
-from loguru import logger
 from typer import Argument, Option
 
-from broken import __version__
+from broken import __version__, logger
 from broken.envy import Environment, Runtime
 from broken.manager import ProjectManager
 from broken.path import BrokenPath
@@ -52,12 +51,12 @@ class BrokenManager(ProjectManager):
 
         # If the path isn't a repo, use the repository name
         if (path.exists()) and (not (Path(path)/".git").exists()):
-            logger.minor(f"Path {path} isn't a repository, appending the url name")
+            logger.info(f"Path {path} isn't a repository, appending the url name")
             path = (path/Path(urlparse(str(repo).removesuffix(".git")).path).stem)
 
         # Only attempt cloning if non-existent
         if (not path.exists()):
-            with BrokenPath.pushd(path.parent, echo=False):
+            with BrokenPath.pushd(path.parent):
                 shell("git", "clone", ("--recurse-submodules"*recurse), repo, path)
 
         # Not having .git is a failed clone
@@ -65,7 +64,7 @@ class BrokenManager(ProjectManager):
             logger.error(f"Invalid repository at ({path}), perhaps try removing it")
             exit(1)
 
-        with BrokenPath.pushd(path, echo=False):
+        with BrokenPath.pushd(path):
             shell("git", "submodule", "foreach", "--recursive", f"git checkout {checkout} || true")
 
         return path

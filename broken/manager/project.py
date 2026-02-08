@@ -5,10 +5,9 @@ from typing import Annotated, Self
 import tomlkit
 from attrs import Factory, define, field
 from dotmap import DotMap
-from loguru import logger
 from typer import Context, Option
 
-from broken import __version__
+from broken import __version__, logger
 from broken.enumx import BrokenEnum
 from broken.path import BrokenPath
 from broken.project import BROKEN
@@ -169,7 +168,7 @@ class CodeProject:
                 break
 
             import rich.prompt
-            logger.ok(f"Project ({self.name}) finished successfully")
+            logger.info(f"Project ({self.name}) finished successfully")
             if not rich.prompt.Confirm.ask("(Infinite mode) Press Enter to run again", default=True):
                 break
 

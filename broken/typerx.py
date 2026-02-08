@@ -13,10 +13,10 @@ import rich
 import typer
 import typer.rich_utils
 from attrs import Factory, define
-from loguru import logger
 from pydantic import BaseModel
 from typer.models import OptionInfo
 
+from broken import logger
 from broken.envy import Environment, Runtime
 from broken.system import Host
 from broken.utils import list_get, shell
@@ -270,7 +270,7 @@ class BrokenTyper:
             ctx: typer.Context=None,
         ) -> None:
             """🟢 Run a script file or enter the shell"""
-            shell(sys.executable, script, *ctx.args, echo=False)
+            shell(sys.executable, script, *ctx.args)
         self.command(python, context=True)
         return self
 
@@ -373,7 +373,7 @@ class BrokenTyper:
                 pass
 
             except KeyboardInterrupt:
-                logger.ok(f"{type(self)} exit KeyboardInterrupt")
+                logger.info(f"{type(self)} exit KeyboardInterrupt")
 
             except Exception as error:
                 if (not self.shell):

@@ -5,12 +5,12 @@ from pathlib import Path
 from subprocess import DEVNULL
 from typing import Annotated, Literal
 
-from loguru import logger
 from PIL import Image
 from PIL.Image import Image as ImageType
 from pydantic import Field, field_validator
 from typer import Option
 
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.envy import Environment
 from broken.externals.upscaler import UpscalerBase
@@ -143,7 +143,6 @@ class Waifu2x(UpscalerNCNN_Base):
                     single_core=single_core,
                     cwd=self.download().parent,
                     stderr=DEVNULL,
-                    echo=echo,
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 
@@ -197,7 +196,6 @@ class Realesr(UpscalerNCNN_Base):
                     stderr=DEVNULL,
                     single_core=single_core,
                     cwd=self.download().parent,
-                    echo=echo,
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 
@@ -277,7 +275,6 @@ class Upscayl(UpscalerNCNN_Base):
                     "-n", denum(self.model) + "-4x",
                     single_core=single_core,
                     stderr=DEVNULL,
-                    echo=echo,
                 )
                 return Image.open(io.BytesIO(output.read_bytes()))
 

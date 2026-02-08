@@ -15,10 +15,10 @@ import numpy as np
 import typer
 from attrs import define
 from halo import Halo
-from loguru import logger
 from pydantic import ConfigDict, Field, field_validator
 from typer import Option
 
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.model import BrokenModel
 from broken.path import BrokenPath
@@ -1324,7 +1324,7 @@ class BrokenFFmpeg(BrokenModel):
         # Optional override or inline
         output = (output or path)
         looped = output.with_stem(f"{output.stem}-{times}-loops")
-        logger.info(f"Looping video ({path}) {times}x times to ({output})", echo=echo)
+        logger.info(f"Looping video ({path}) {times}x times to ({output})")
 
         # Fastest way to loop a video, no re-encoding
         (BrokenFFmpeg(stream_loop=(times - 1)).quiet().copy_audio().copy_video()
@@ -1340,12 +1340,12 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Video Resolution of ({path})", echo=echo)
+        logger.info(f"Getting Video Resolution of ({path})")
         import PIL
         return PIL.Image.open(io.BytesIO(shell(
             "ffmpeg", "-hide_banner", "-loglevel", "error",
             "-i", path, "-vframes", "1", "-f", "image2pipe", "-",
-            stdout=PIPE, echo=echo
+            stdout=PIPE
         ).stdout), formats=["jpeg"]).size
 
     @staticmethod
@@ -1355,7 +1355,7 @@ class BrokenFFmpeg(BrokenModel):
             return None
         BrokenFFmpeg.install()
         (width, height) = BrokenFFmpeg.get_video_resolution(path)
-        logger.minor(f"Streaming Video Frames from file ({path}) @ ({width}x{height})", echo=echo)
+        logger.info(f"Streaming Video Frames from file ({path}) @ ({width}x{height})")
         ffmpeg = (BrokenFFmpeg(vsync="cfr")
             .quiet()
             .input(path=path)
@@ -1366,7 +1366,7 @@ class BrokenFFmpeg(BrokenModel):
                 pixel_format="rgb24",
                 format="rawvideo",
             )
-        ).popen(stdout=PIPE, echo=echo)
+        ).popen(stdout=PIPE)
 
         # Keep reading frames until we run out, each pixel is 3 bytes !
         while (raw := ffmpeg.stdout.read(width * height * 3)):
@@ -1379,7 +1379,7 @@ class BrokenFFmpeg(BrokenModel):
         BrokenFFmpeg.install()
         return (shell(
             "ffmpeg", "-hide_banner", "-loglevel", "error",
-            "-i", path, "-f", "null", "-", echo=echo,
+            "-i", path, "-f", "null", "-",
             stderr=DEVNULL, stdout=DEVNULL
         ).returncode == 0)
 
@@ -1390,12 +1390,12 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        with Halo(logger.minor(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
+        with Halo(logger.info(f"Getting total frames of video ({path}) by decoding every frame, might take a while..")):
             return int(re.compile(r"frame=\s*(\d+)").findall((
                 BrokenFFmpeg(vsync="cfr")
                 .input(path=path)
                 .pipe_output(format="null")
-            ).run(stderr=PIPE, echo=echo).stderr.decode())[-1])
+            ).run(stderr=PIPE).stderr.decode())[-1])
 
     @staticmethod
     @functools.lru_cache
@@ -1403,13 +1403,13 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Video Duration of file ({path})", echo=echo)
+        logger.info(f"Getting Video Duration of file ({path})")
         return float(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "format=duration",
             "-v", "quiet", "-of", "csv=p=0",
-            output=True, echo=echo
+            output=True
         ))
 
     @staticmethod
@@ -1418,10 +1418,10 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Video Framerate of file ({path})", echo=echo)
+        logger.info(f"Getting Video Framerate of file ({path})")
         if precise:
-            A = BrokenFFmpeg.get_video_total_frames(path, echo=False)
-            B = BrokenFFmpeg.get_video_duration(path, echo=False)
+            A = BrokenFFmpeg.get_video_total_frames(path)
+            B = BrokenFFmpeg.get_video_duration(path)
             return (A/B)
         else:
             return float(flatten(eval(shell(
@@ -1429,7 +1429,7 @@ class BrokenFFmpeg(BrokenModel):
                 "-i", path,
                 "-show_entries", "stream=r_frame_rate",
                 "-v", "quiet", "-of", "csv=p=0",
-                output=True, echo=echo
+                output=True
             ).splitlines()[0]))[0])
 
     # # Audio
@@ -1440,13 +1440,13 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Audio Samplerate of file ({path})", echo=echo)
+        logger.info(f"Getting Audio Samplerate of file ({path})")
         return int(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "stream=sample_rate",
             "-v", "quiet", "-of", "csv=p=0",
-            output=True, echo=echo
+            output=True
         ).strip().splitlines()[stream])
 
     @staticmethod
@@ -1455,13 +1455,13 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Audio Channels of file ({path})", echo=echo)
+        logger.info(f"Getting Audio Channels of file ({path})")
         return int(shell(
             BrokenPath.which("ffprobe"),
             "-i", path,
             "-show_entries", "stream=channels",
             "-v", "quiet", "-of", "csv=p=0",
-            output=True, echo=echo
+            output=True
         ).strip().splitlines()[stream])
 
     @staticmethod
@@ -1479,7 +1479,7 @@ class BrokenFFmpeg(BrokenModel):
         if not (path := BrokenPath.get(path, exists=True)):
             return None
         BrokenFFmpeg.install()
-        logger.minor(f"Getting Audio as Numpy Array of file ({path})", echo=echo)
+        logger.info(f"Getting Audio as Numpy Array of file ({path})")
         return np.concatenate(list(BrokenAudioReader(path=path, chunk=10).stream))
 
 # ---------------------------------------------------------------------------- #
@@ -1532,8 +1532,8 @@ class BrokenAudioReader:
         self.path = path
 
         # Get audio file attributes
-        self.channels   = BrokenFFmpeg.get_audio_channels(self.path, echo=False)
-        self.samplerate = BrokenFFmpeg.get_audio_samplerate(self.path, echo=False)
+        self.channels   = BrokenFFmpeg.get_audio_channels(self.path)
+        self.samplerate = BrokenFFmpeg.get_audio_samplerate(self.path)
         self.format = FFmpegPCM.get(self.format)
         self.bytes_per_sample = self.format.size
         self.dtype = self.format.dtype

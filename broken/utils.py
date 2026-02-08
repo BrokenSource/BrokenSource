@@ -20,8 +20,8 @@ from typing import TYPE_CHECKING, Any, Optional, Self, Union
 import click
 from attrs import Factory, define
 from dotmap import DotMap
-from loguru import logger
 
+from broken import logger
 from broken.envy import Environment
 
 if TYPE_CHECKING:
@@ -152,7 +152,7 @@ def shell(
     _log = (logger.skip if skip else logger.info)
     _the = ("[dim]Skip" if skip else "Call")
     _cwd = f" @ ({kwargs.get('cwd', '') or Path.cwd()})"
-    _log(f"{_the} {args}{_cwd}", echo=echo)
+    _log(f"{_the} {args}{_cwd}")
     if skip: return
 
     if (shell is True):
@@ -182,7 +182,7 @@ def shell(
 
     # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
-        logger.minor("shell(preexec_fn=...) is not supported on Windows, ignoring..")
+        logger.warning("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
     # Actually run the command
     if (output):

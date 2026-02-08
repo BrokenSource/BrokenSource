@@ -13,7 +13,6 @@ from multiprocessing import Manager, Process
 from queue import Queue as ThreadQueue
 from threading import Condition as ThreadCondition
 from threading import Lock, Thread
-from time import perf_counter as now
 from typing import Any, Self, TypeAlias, Union
 from uuid import UUID, uuid4
 
@@ -27,7 +26,7 @@ WorkerType: TypeAlias = Union[Thread, Process]
 @define(eq=False)
 class WorkerTask:
     payload: Any
-    created: float = Factory(now)
+    created: float = Factory(time.monotonic)
 
     @classmethod
     def get(cls, object: Union[Self, Any]) -> Self:
@@ -258,7 +257,7 @@ class BrokenWorker:
     ) -> Union[Any, list[Any], None, Exception, TimeoutError]:
 
         # Internal timer for timeouts
-        _start: float = (_start or now())
+        _start: float = (_start or time.monotonic())
 
         # Handle multiple tasks
         if isinstance(task, Iterable):
@@ -268,7 +267,7 @@ class BrokenWorker:
 
         # Wait until the task is done
         while block and (key not in self._results):
-            if (now() - _start) > (timeout or math.inf):
+            if (time.monotonic() - _start) > (timeout or math.inf):
                 return TimeoutError(task)
             with self._signal:
                 self._signal.wait(poll)

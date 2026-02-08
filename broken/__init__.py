@@ -1,14 +1,5 @@
-import time
+from dearlog import logger # isort: split
 
-time.zero = time.perf_counter()
-"""Precise time at which the program started since last boot"""
-
-time.absolute = (lambda: time.perf_counter() - time.zero)
-"""Precise time since the program started running"""
-
-# ---------------------------------------------------------------------------- #
-
-import contextlib
 import importlib.metadata
 import sys
 from pathlib import Path
@@ -52,16 +43,3 @@ if Environment.flag("RICH_TRACEBACK", 1):
             width=None,
         )(type, value, traceback)
     sys.excepthook = _lazy_hook
-
-# Don't import asyncio in loguru, seems fine
-if Environment.flag("LOGURU_NO_ASYNCIO", 1):
-    with contextlib.suppress(ImportError):
-        class _fake: get_running_loop = (lambda: None)
-        original = sys.modules.pop("asyncio", None)
-        sys.modules["asyncio"] = _fake
-        import loguru
-        sys.modules["asyncio"] = original
-        if (original is None):
-            sys.modules.pop("asyncio")
-
-# ---------------------------------------------------------------------------- #

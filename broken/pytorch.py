@@ -5,10 +5,10 @@ import sys
 from pathlib import Path
 from typing import Annotated, Iterable, Optional, Union
 
-from loguru import logger
 from packaging.version import Version
 from typer import Option
 
+from broken import logger
 from broken.enumx import BrokenEnum
 from broken.envy import Environment, Runtime
 from broken.system import Host

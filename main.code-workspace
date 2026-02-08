@@ -8,7 +8,6 @@
 
 	"extensions": {
 		"recommendations": [
-			"aaron-bond.better-comments",
 			"charliermarsh.ruff",
 			"ms-python.python",
 			"ms-python.vscode-pylance",
@@ -82,43 +81,9 @@
 			"upscalin":    "tools",
 			"user":        "home",
 			"vertex":      "shader",
-			"wheels":      "python",
-			"workspace":   "container",
 		},
 		"material-icon-theme.files.associations": {
 			".stignore": "credits"
 		},
-
-		// Better comments colors
-		"better-comments.tags": [
-			{"tag": "//",           "color": "#98C379"},
-			{"tag": "debug",        "color": "#FCC203"},
-			{"tag": "error",        "color": "#FF2D00"},
-			{"tag": "fixme",        "color": "#3498DB"},
-			{"tag": "hack",         "color": "#FF2D00"},
-			{"tag": "idea",         "color": "#B10DC9"},
-			{"tag": "info",         "color": "#3498DB"},
-			{"tag": "nice",         "color": "#00FF00"},
-			{"tag": "note",         "color": "#584576"},
-			{"tag": "optimization", "color": "#3498DB"},
-			{"tag": "stable",       "color": "#00FF00"},
-			{"tag": "todo",         "color": "#FF8C00"},
-			{"tag": "warn",         "color": "#FCC203"},
-			{"tag": "workaround",   "color": "#3498DB"},
-		],
-
-		// Independent meson projects
-		"mesonbuild.selectRootDir": false,
 	},
-
-	"tasks": {
-		"version": "2.0.0",
-		"tasks": [
-			{
-				"label": "get-insiders",
-				"command": ["uv", "run", "broken", "insiders"],
-				"type": "shell",
-			},
-		]
-	}
 }

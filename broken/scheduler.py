@@ -12,7 +12,7 @@ NULL_CONTEXT = contextlib.nullcontext()
 
 def precise_sleep(sleep: float, *, error: float=0.001) -> None:
     """Low cpu thread spin. Increases CPU usage."""
-    start = time.perf_counter()
+    start = time.monotonic()
 
     # Sleep close due time, as it overshoots
     if (ahead := max(0, sleep - error)):
@@ -21,7 +21,7 @@ def precise_sleep(sleep: float, *, error: float=0.001) -> None:
         return
 
     # Spin the thread until time is up
-    while (time.perf_counter() - start) < sleep:
+    while (time.monotonic() - start) < sleep:
         pass
 
 
@@ -71,7 +71,7 @@ class SchedulerTask:
 
     # # Timing
 
-    started: float = Factory(lambda: time.absolute())
+    started: float = Factory(time.monotonic)
     """Time when client was started (initializes $now+started, value in now() seconds)"""
 
     next_call: float = None
@@ -89,7 +89,7 @@ class SchedulerTask:
         self._dt = ("dt" in signature.parameters)
 
         # Assign idealistic values for decoupled
-        if self.freewheel: self.started = time.zero
+        if self.freewheel: self.started = 0
         self.last_call = (self.last_call or self.started) - self.period
         self.next_call = (self.next_call or self.started)
 
@@ -139,7 +139,7 @@ class SchedulerTask:
     def next(self, block: bool=True) -> Self:
 
         # Time to wait for next call if block
-        wait = max(0, (self.next_call - time.absolute()))
+        wait = max(0, (self.next_call - time.monotonic()))
 
         # Rendering is instant
         if self.freewheel:
@@ -157,7 +157,7 @@ class SchedulerTask:
             return None
 
         # The assumed instant the code below will run instantly
-        now = (self.next_call if self.freewheel else time.absolute())
+        now = (self.next_call if self.freewheel else time.monotonic())
 
         if (self._dt):
             self.kwargs["dt"] = (now - self.last_call)

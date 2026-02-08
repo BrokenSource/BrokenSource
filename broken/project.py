@@ -4,12 +4,11 @@ import tempfile
 from pathlib import Path
 
 from attrs import define, field
-from loguru import logger
 from platformdirs import PlatformDirs
 
 import broken
+from broken import logger
 from broken.envy import Environment, Runtime
-from broken.logging import BrokenLogging
 from broken.system import Host
 from broken.utils import list_get
 
