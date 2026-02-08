@@ -1,7 +1,7 @@
 import math
 from numbers import Number
 from typing import Optional, Union
-
+import builtins
 
 class BrokenResolution:
 
@@ -63,7 +63,8 @@ class BrokenResolution:
         max_width, max_height = (max or (None, None))
 
         # Force or keep either component
-        (width, height) = ((new_width or old_width), (new_height or old_height))
+        width  = (new_width  or old_width)
+        height = (new_height or old_height)
 
         if not all((width, height)):
             raise ValueError(f"Can't build a resolution with missing component(s): ({width=}, {height=})")
@@ -91,7 +92,7 @@ class BrokenResolution:
             # Limit the resolution to (mw, mh) bounding box and keep aspect ratio
             # - The idea is to find the maximum reduce factor for either component so it normalizes
             #   to the respective (mw, mh), and apply it to both components to scale down
-            reduce = __builtins__["max"](
+            reduce = builtins.max(
                 width/(min(width, max_width or math.inf) or 1),
                 height/(min(height, max_height or math.inf) or 1)
             ) or 1

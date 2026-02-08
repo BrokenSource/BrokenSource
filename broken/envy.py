@@ -25,9 +25,8 @@ class Environment:
             return None
         Environment.pop(key)
 
-    def setdefault(key: str, value: Optional[str]) -> None:
-        if (value is not None):
-            os.environ.setdefault(key, str(value))
+    def setdefault(key: str, value: str) -> None:
+        os.environ.setdefault(key, str(value))
 
     def pop(key: str) -> Optional[str]:
         return os.environ.pop(key, None)
@@ -35,10 +34,6 @@ class Environment:
     def update(**values: Optional[str]) -> None:
         for key, value in values.items():
             Environment.set(key, value)
-
-    def updatedefault(**values: Optional[str]) -> None:
-        for key, value in values.items():
-            Environment.setdefault(key, value)
 
     def exists(key: str) -> bool:
         return (key in os.environ)
@@ -142,4 +137,4 @@ class Runtime:
 if Runtime.uvx:
     # Find venv from "~/.cache/uv/archive-v0/(hash)/lib/python3.12/site-packages"
     _VIRTUAL_ENV = Path(site.getsitepackages()[0]).parent.parent.parent
-    Environment.setdefault("VIRTUAL_ENV", _VIRTUAL_ENV)
+    os.environ.setdefault("VIRTUAL_ENV", _VIRTUAL_ENV)

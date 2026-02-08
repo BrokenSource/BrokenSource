@@ -2,6 +2,10 @@ from typing import Any, Iterable, Self, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from pathlib import Path
+
+# Fix weird Pydantic use_attribute_docstrings error in older Python
+Path.endswith = (lambda self, suffix: str(self).endswith(suffix))
 
 class BrokenModel(BaseModel):
     model_config = ConfigDict(
