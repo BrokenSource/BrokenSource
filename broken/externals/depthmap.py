@@ -25,7 +25,6 @@ from broken.path import BrokenPath
 from broken.project import PROJECT
 from broken.resolution import BrokenResolution
 from broken.typerx import BrokenTyper
-from broken.types import MiB
 from broken.utils import BrokenCache, install, shell
 from broken.vectron import Vectron
 
@@ -42,7 +41,7 @@ class DepthEstimatorBase(
 ):
     _cache: DiskCache = PrivateAttr(default_factory=lambda: DiskCache(
         directory=BrokenPath.mkdir(PROJECT.DIRECTORIES.CACHE/"depthmap"),
-        size_limit=int(Environment.float("DEPTHMAP_CACHE_SIZE_MB", 50)*MiB),
+        size_limit=int(Environment.float("DEPTHMAP_CACHE_SIZE_MB", 50)*(1024**2)),
     ))
     """DiskCache object for caching depth maps"""
 

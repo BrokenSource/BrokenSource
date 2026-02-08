@@ -2,8 +2,7 @@ import contextlib
 import inspect
 import time
 from collections import deque
-from collections.abc import Callable, Iterable
-from threading import Lock
+from collections.abc import Iterable
 from typing import Any, Optional, Self
 
 from attrs import Factory, define, field
@@ -11,7 +10,7 @@ from attrs import Factory, define, field
 NULL_CONTEXT = contextlib.nullcontext()
 
 def precise_sleep(sleep: float, *, error: float=0.001) -> None:
-    """Low cpu thread spin. Increases CPU usage."""
+    """Low cpu thread spin near sleep time"""
     start = time.monotonic()
 
     # Sleep close due time, as it overshoots
@@ -30,9 +29,8 @@ class SchedulerTask:
 
     # # Basic
 
-    task: Callable = None
-    """Function callable to call every synchronization. Automatically sends a 'time' or 'dt'
-    argument if the function's signature contains it"""
+    task: callable = None
+    """Method that gets called"""
 
     args: list[Any] = field(factory=list, repr=False)
     """Method's positional arguments"""
@@ -43,28 +41,25 @@ class SchedulerTask:
     output: Any = field(default=None, repr=False)
     """Method's return value of the last call"""
 
-    context: Any = None
-    """Context to use when calling task (with statement)"""
-
-    lock: Lock = None
-    """Threading Lock to use when calling task (with statement)"""
+    context: Any = NULL_CONTEXT
+    """Context to use when calling task"""
 
     enabled: bool = True
-    """Whether to enable this client or not"""
+    """Whether to call task or skip it"""
 
     once: bool = False
-    """Client will be removed after next call"""
+    """Remove the task after first call"""
 
     # # Synchronization
 
     frequency: float = 60.0
-    """Ideal frequency of task calls"""
+    """Frequency of task calls"""
 
     frameskip: bool = True
     """Constant deltatime mode (False) or real deltatime mode (True)"""
 
     freewheel: bool = False
-    """"Rendering" mode, do not sleep on real time, exact virtual frametimes"""
+    """Rendering mode, does not sleep, perfect virtual frametimes"""
 
     precise: bool = False
     """Use precise time sleeping for near-perfect frametimes"""
@@ -72,17 +67,18 @@ class SchedulerTask:
     # # Timing
 
     started: float = Factory(time.monotonic)
-    """Time when client was started (initializes $now+started, value in now() seconds)"""
+    """Time when task was created"""
 
     next_call: float = None
-    """Next time to call task (initializes $now+next_call, value in now() seconds)"""
+    """Next time to call task (auto: started + period)"""
 
     last_call: float = None
-    """Last time task was called (initializes $now+last_call, value in now() seconds)"""
+    """Last time task was called (auto: started)"""
 
     # # Flags
 
     _dt: bool = False
+    """Whether to send a dt= parameter"""
 
     def __attrs_post_init__(self):
         signature = inspect.signature(self.task)
@@ -122,7 +118,7 @@ class SchedulerTask:
     def should_live(self) -> bool:
         return (not self.should_delete)
 
-    # # Sorting (prioritizes 'once' clients)
+    # # Sorting (prioritize 'once' clients)
 
     def __lt__(self, other: Self) -> bool:
         if (self.once and not other.once):
@@ -138,23 +134,20 @@ class SchedulerTask:
 
     def next(self, block: bool=True) -> Self:
 
-        # Time to wait for next call if block
-        wait = max(0, (self.next_call - time.monotonic()))
+        # Rendering doesn't sleep
+        if (not self.freewheel):
 
-        # Rendering is instant
-        if self.freewheel:
-            pass
+            # Time to wait for next call
+            wait = max(0, (self.next_call - time.monotonic()))
 
-        # Block until due
-        elif block:
+            # Non-blocking not due yet
+            if (not block) and (wait > 0):
+                return self
+
             if self.precise:
                 precise_sleep(wait)
             else:
                 time.sleep(wait)
-
-        # Non-blocking not due yet
-        elif wait > 0:
-            return None
 
         # The assumed instant the code below will run instantly
         now = (self.next_call if self.freewheel else time.monotonic())
@@ -168,10 +161,9 @@ class SchedulerTask:
 
         self.last_call = now
 
-        # Enter contexts, call task with args and kwargs
-        with (self.lock or NULL_CONTEXT):
-            with (self.context or NULL_CONTEXT):
-                self.output = self.task(*self.args, **self.kwargs)
+        # Actually call task
+        with self.context:
+            self.output = self.task(*self.args, **self.kwargs)
 
         # Find a future multiple of period
         while (self.next_call <= now):
@@ -192,11 +184,11 @@ class BrokenScheduler:
         self.tasks.append(task)
         return task
 
-    def new(self, task: Callable, **options) -> SchedulerTask:
+    def new(self, task: callable, **options) -> SchedulerTask:
         """Add a new task to the scheduler"""
         return self.add(SchedulerTask(task=task, **options))
 
-    def once(self, task: Callable, **options) -> SchedulerTask:
+    def once(self, task: callable, **options) -> SchedulerTask:
         """Add a new task that shall only run once and immediately"""
         return self.add(SchedulerTask(task=task, **options, once=True))
 

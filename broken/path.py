@@ -17,7 +17,6 @@ from broken import logger
 from broken.enumx import BrokenEnum
 from broken.envy import Environment
 from broken.system import Host
-from broken.types import FileExtensions
 from broken.utils import StaticClass, denum, flatten, shell
 
 
@@ -368,6 +367,14 @@ class BrokenPath(StaticClass):
 
         # Is this file a .zip, .tar, etc..?
         ARCHIVE = any((str(file).endswith(ext) for ext in ShutilFormat.values()))
+
+        class FileExtensions:
+            Audio:     set[str] = {".wav", ".ogg", ".flac", ".mp3"}
+            Image:     set[str] = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".webp"}
+            Video:     set[str] = {".mp4", ".mkv", ".webm", ".avi", ".mov", ".wmv", ".flv"}
+            Font:      set[str] = {".ttf", ".otf", ".woff", ".woff2"}
+            Midi:      set[str] = {".mid", ".midi"}
+            Soundfont: set[str] = {".sf2", ".sf3"}
 
         # File is some known type, move to their own external directory
         if bool(subdir):
