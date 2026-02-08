@@ -182,7 +182,7 @@ def shell(
 
     # Windows: preexec_fn is not supported, remove from kwargs
     if (os.name == "nt") and (kwargs.pop("preexec_fn", None)):
-        logger.warning("shell(preexec_fn=...) is not supported on Windows, ignoring..")
+        logger.warn("shell(preexec_fn=...) is not supported on Windows, ignoring..")
 
     # Actually run the command
     if (output):

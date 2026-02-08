@@ -104,36 +104,6 @@ class DepthEstimatorBase(
     def _post(self, depth: np.ndarray) -> np.ndarray:
         return depth
 
-    # # Command line interface
-
-    @classmethod
-    def cli(cls, typer: BrokenTyper, name: str) -> BrokenTyper:
-
-        # Workaround to order the IO fields first
-        class InputsOutputs(BrokenModel):
-            input: Annotated[str, Option("--input", "-i")] = Field(None, exclude=True)
-            """Path of the image or URL to estimate"""
-
-            output: Annotated[Optional[Path], Option("--output", "-o")] = Field(None, exclude=True)
-            """Path to save the depthmap, defaults to '(input).depth.png'"""
-
-        # Todo: Common "Single • multi smart IO handler" class
-        class CommandLine(cls, InputsOutputs):
-            def _post(self):
-                if (self.output is None):
-                    self.output = Path(self.input).with_suffix(".depth.png")
-                logger.info(f"Estimating depthmap for {self.input}")
-                depth = self.estimate(image=self.input)
-                depth = Vectron.normalize(depth, dtype=self.dtype)
-                Image.fromarray(depth).save(self.output)
-                logger.info(f"Depthmap saved to {self.output}")
-
-        return (typer.command(
-            target=CommandLine, name=name,
-            description=cls.__doc__,
-            post=CommandLine._post,
-        ) or typer)
-
 # ---------------------------------------------------------------------------- #
 
 class DepthAnythingBase(DepthEstimatorBase):
